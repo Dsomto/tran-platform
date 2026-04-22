@@ -26,7 +26,12 @@ export const metadata: Metadata = {
     "Ubuntu Bridge Initiative",
   ],
   icons: {
-    icon: "/favicon.png",
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon.png", type: "image/png" },
+    ],
+    apple: "/apple-touch-icon.svg",
+    shortcut: "/favicon.svg",
   },
 };
 

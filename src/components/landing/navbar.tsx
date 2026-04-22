@@ -38,7 +38,19 @@ export function Navbar() {
           <div className="flex items-center gap-3">
             {!isHome && (
               <button
-                onClick={() => router.back()}
+                onClick={() => {
+                  // If the user arrived from within this site, go back in history.
+                  // Otherwise (direct link, bookmark, search), send them to the landing page.
+                  const cameFromOurSite =
+                    typeof document !== "undefined" &&
+                    document.referrer &&
+                    new URL(document.referrer).origin === window.location.origin;
+                  if (cameFromOurSite && window.history.length > 1) {
+                    router.back();
+                  } else {
+                    router.push("/");
+                  }
+                }}
                 aria-label="Go back"
                 className="flex items-center justify-center w-9 h-9 rounded-full border border-border/60 bg-white/60 backdrop-blur hover:bg-white text-muted hover:text-foreground transition-colors"
               >

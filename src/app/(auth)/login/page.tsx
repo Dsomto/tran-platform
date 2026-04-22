@@ -91,9 +91,9 @@ export default function LoginPage() {
 
       <div className="mt-6 text-center">
         <p className="text-sm text-muted">
-          Don&apos;t have an account?{" "}
-          <Link href="/register" className="font-semibold text-blue hover:text-blue-dark transition-colors">
-            Register
+          Not in the programme yet?{" "}
+          <Link href="/apply" className="font-semibold text-blue hover:text-blue-dark transition-colors">
+            Apply
           </Link>
         </p>
       </div>
