@@ -6,20 +6,27 @@ const prisma = new PrismaClient();
 async function main() {
   console.log("Seeding database...");
 
-  // Create admin user
-  const adminPassword = await bcrypt.hash("admin123456", 12);
-  const admin = await prisma.user.upsert({
-    where: { email: "admin@tran.io" },
-    update: {},
-    create: {
-      email: "admin@tran.io",
-      password: adminPassword,
-      firstName: "Admin",
-      lastName: "UBI",
-      role: "SUPER_ADMIN",
-    },
-  });
-  console.log("Created admin:", admin.email);
+  // Admin user — read from env; skip if not provided (production DB already has one).
+  const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+  const adminPasswordPlain = process.env.ADMIN_PASSWORD;
+
+  if (adminEmail && adminPasswordPlain) {
+    const adminPassword = await bcrypt.hash(adminPasswordPlain, 12);
+    const admin = await prisma.user.upsert({
+      where: { email: adminEmail },
+      update: { password: adminPassword, role: "SUPER_ADMIN" },
+      create: {
+        email: adminEmail,
+        password: adminPassword,
+        firstName: process.env.ADMIN_FIRST_NAME ?? "Admin",
+        lastName: process.env.ADMIN_LAST_NAME ?? "User",
+        role: "SUPER_ADMIN",
+      },
+    });
+    console.log("Admin ready:", admin.email);
+  } else {
+    console.log("Skipping admin seed — set ADMIN_EMAIL and ADMIN_PASSWORD to create/update one.");
+  }
 
   // Create sample teams
   const teams = await Promise.all(
@@ -219,7 +226,9 @@ async function main() {
   console.log("Created 5 pending applications for admin review");
 
   console.log("\nSeed complete!");
-  console.log("\nAdmin login: admin@tran.io / admin123456");
+  if (adminEmail) {
+    console.log(`\nAdmin login: ${adminEmail} / (the password you provided)`);
+  }
   console.log("Intern login: aisha.okonkwo@example.com / intern123456");
 }
 
