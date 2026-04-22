@@ -19,7 +19,7 @@ const tracks = [
     color: "cyan",
     tools: ["Splunk", "ELK Stack", "YARA", "MITRE ATT&CK", "Wireshark", "CrowdStrike"],
     roles: ["SOC Analyst", "Threat Hunter", "Incident Responder"],
-    image: "/images/track-soc.jpg",
+    image: "/images/tracks/soc-analyst.jpg",
   },
   {
     emoji: "🎯",
@@ -30,7 +30,7 @@ const tracks = [
     color: "amber",
     tools: ["Burp Suite", "Metasploit", "Nmap", "Kali Linux", "Hashcat", "Gobuster"],
     roles: ["Penetration Tester", "Red Team Operator", "Security Researcher"],
-    image: "/images/track-ethical-hacking.jpg",
+    image: "/images/tracks/ethical-hacking.jpg",
   },
   {
     emoji: "📋",
@@ -41,7 +41,7 @@ const tracks = [
     color: "emerald",
     tools: ["ISO 27001", "NIST CSF", "SOC 2", "Risk Registers", "PCI DSS", "GDPR"],
     roles: ["GRC Analyst", "Compliance Officer", "Risk Manager"],
-    image: "/images/track-grc.png",
+    image: "/images/tracks/grc.png",
   },
 ];
 

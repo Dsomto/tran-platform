@@ -3,33 +3,33 @@
 const reasons = [
   {
     emoji: "🔥",
-    title: "Pressure builds talent",
-    desc: "The elimination format mirrors real industry pressure — survive UBI, and you're ready for anything.",
+    title: "It gets harder on purpose",
+    desc: "The earlier stages are fair. Later stages are not gentle. If you cannot handle pressure here, you cannot handle it in a real SOC — and we would rather find that out now than have it happen on the job.",
   },
   {
     emoji: "🛡️",
-    title: "The skills gap is real",
-    desc: "3.5 million cybersecurity jobs are unfilled globally. Employers want proof — not just certifications.",
+    title: "Employers want proof, not paper",
+    desc: "Recruiters across Africa keep telling us the same thing: they receive a hundred certificates and no evidence anyone can actually do the work. What you produce here is evidence.",
   },
   {
     emoji: "🌍",
-    title: "No barriers",
-    desc: "Fully remote, fully free. Interns join from 30+ countries. Your talent matters — not your zip code.",
+    title: "Nothing to pay, ever",
+    desc: "No tuition. No exam fees if we accept you and you reach Stage 5 — we cover it. No weekly data bill if you qualify for the scholarship. The only thing you bring is effort.",
   },
   {
     emoji: "🧪",
-    title: "We test, not teach",
-    desc: "Real challenges, real deadlines. We drop you into scenarios and see if you can deliver under pressure.",
+    title: "You investigate breaches, not watch videos",
+    desc: "Every stage is a scenario: logs to read, attacks to reconstruct, a report to write. The work mirrors what a junior analyst actually does in their first three months.",
   },
   {
     emoji: "🚀",
-    title: "Fast-track to career",
-    desc: "Companies recruit directly from our finalist pool. No resume spam — your work speaks for itself.",
+    title: "We introduce you to people who hire",
+    desc: "At Stage 5 you start meeting cybersecurity teams. If your work is good, they already know who you are by the time you apply.",
   },
   {
     emoji: "❤️",
-    title: "Community that lasts",
-    desc: "Alumni hire each other, mentor the next cohort, and stay connected. A career network, not a course.",
+    title: "Alumni stay — and hire each other",
+    desc: "The first cohort is already helping the second. That is the part we did not plan for, and the part we are most proud of.",
   },
 ];
 
@@ -78,11 +78,12 @@ export function Why() {
             Why UBI
           </p>
           <h2 id="why-heading" className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
-            Why we built this
+            Why this exists
           </h2>
           <p className="mt-4 text-base text-muted leading-relaxed">
-            The cybersecurity industry has a problem: too many openings, not enough
-            battle-tested talent. We&apos;re fixing that.
+            Cybersecurity is one of the few fields in Africa where demand massively
+            outstrips supply — and the paths in are mostly paywalled. TRAN is the path
+            we wished we had.
           </p>
         </div>
 

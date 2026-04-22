@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { LogoMark } from "@/components/logo";
-import { Menu, X } from "lucide-react";
+import { Menu, X, ArrowLeft } from "lucide-react";
 
 const navLinks = [
   ["Tracks", "/tracks"],
@@ -15,6 +16,9 @@ const navLinks = [
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const pathname = usePathname();
+  const router = useRouter();
+  const isHome = pathname === "/";
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -31,12 +35,23 @@ export function Navbar() {
     >
       <nav aria-label="Main navigation" className="max-w-6xl mx-auto px-5 sm:px-8">
         <div className="flex items-center justify-between h-16">
-          <Link href="/" aria-label="UBI homepage" className="flex items-center gap-2.5">
-            <LogoMark size={28} />
-            <span className="text-base font-semibold tracking-tight text-foreground">
-              UBI
-            </span>
-          </Link>
+          <div className="flex items-center gap-3">
+            {!isHome && (
+              <button
+                onClick={() => router.back()}
+                aria-label="Go back"
+                className="flex items-center justify-center w-9 h-9 rounded-full border border-border/60 bg-white/60 backdrop-blur hover:bg-white text-muted hover:text-foreground transition-colors"
+              >
+                <ArrowLeft className="w-4 h-4" />
+              </button>
+            )}
+            <Link href="/" aria-label="UBI homepage" className="flex items-center gap-2.5">
+              <LogoMark size={28} />
+              <span className="text-base font-semibold tracking-tight text-foreground">
+                UBI
+              </span>
+            </Link>
+          </div>
 
           <ul className="hidden md:flex items-center gap-8" role="list">
             {navLinks.map(([label, href]) => (

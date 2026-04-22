@@ -64,17 +64,14 @@ CRON_SECRET        = (paste the second secret you generated)
 
 1. In Vercel → Project → **Settings → Domains**.
 2. Add `therootaccessnetwork.com` → Vercel shows you a CNAME/A record to add.
-3. Add each stage subdomain — Vercel free tier doesn't support wildcards, so add them one at a time:
-   - `stage-0.therootaccessnetwork.com`
-   - `stage-1.therootaccessnetwork.com`
-   - `stage-2.therootaccessnetwork.com`
-   - `stage-3.therootaccessnetwork.com`
-   - `stage-4.therootaccessnetwork.com`
+3. Add `www.therootaccessnetwork.com` too (redirect to apex).
 4. Go back to **Cloudflare → DNS → Records** and add the records Vercel requested. Each should be:
    - Type: **CNAME**
    - Target: `cname.vercel-dns.com`
    - Proxy status: **DNS only** (grey cloud — Vercel handles SSL directly)
 5. Back in Vercel, click **Refresh** next to each domain. They should go green within a minute or two.
+
+**Note on stage URLs:** stages are reached at path tokens (e.g. `therootaccessnetwork.com/k7m2xq9bt4`) rather than subdomains. No wildcard needed — works on Vercel Hobby. Tokens live in `src/lib/stage-routes.ts` — rotate there if one leaks.
 
 ---
 

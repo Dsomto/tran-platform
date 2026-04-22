@@ -2,6 +2,7 @@
 
 import { Eye, Crosshair, FileCheck, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 const tracks = [
   {
@@ -9,6 +10,7 @@ const tracks = [
     name: "SOC Analysis",
     slug: "soc",
     color: "cyan",
+    image: "/images/tracks/soc-analyst.jpg",
     description:
       "Monitor, detect, and respond to security incidents in real-time. Master SIEM tools and incident playbooks.",
     tools: ["Splunk", "ELK Stack", "YARA", "MITRE ATT&CK"],
@@ -19,6 +21,7 @@ const tracks = [
     name: "Ethical Hacking",
     slug: "ethical-hacking",
     color: "amber",
+    image: "/images/tracks/ethical-hacking.jpg",
     description:
       "Think like an attacker. Perform penetration tests, exploit vulnerabilities, and write professional reports.",
     tools: ["Burp Suite", "Metasploit", "Nmap", "Kali Linux"],
@@ -29,6 +32,7 @@ const tracks = [
     name: "GRC",
     slug: "grc",
     color: "emerald",
+    image: "/images/tracks/grc.png",
     description:
       "Governance, Risk & Compliance. Build security policies, run risk assessments, and drive compliance.",
     tools: ["ISO 27001", "NIST CSF", "SOC 2", "Risk Registers"],
@@ -106,8 +110,19 @@ export function Tracks() {
                 href={`/tracks/${track.slug}`}
                 data-aos="fade-up"
                 data-aos-delay={i * 100}
-                className={`glass-card rounded-2xl p-7 flex flex-col group cursor-pointer ${c.border}`}
+                className={`glass-card rounded-2xl overflow-hidden flex flex-col group cursor-pointer ${c.border}`}
               >
+                <div className="relative w-full aspect-[16/10] overflow-hidden">
+                  <Image
+                    src={track.image}
+                    alt={track.name}
+                    fill
+                    className="object-cover group-hover:scale-[1.03] transition-transform duration-500"
+                    sizes="(max-width: 1024px) 100vw, 33vw"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/0 to-transparent" />
+                </div>
+                <div className="p-7 flex flex-col flex-1">
                 <div className={`w-11 h-11 rounded-xl ${c.bg} flex items-center justify-center mb-5 ${c.bgHover} transition-colors`}>
                   <track.icon className={`w-5 h-5 ${c.text}`} aria-hidden="true" />
                 </div>
@@ -135,6 +150,7 @@ export function Tracks() {
                   Explore this track
                   <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
                 </span>
+                </div>
               </Link>
             );
           })}

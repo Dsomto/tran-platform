@@ -548,7 +548,7 @@ export async function sendStageDoorCode(
           </thead>
           <tbody>${rows}</tbody>
         </table>
-        <p style="margin-top:12px;font-size:12px;color:#94A3B8;">Each room lives on its own subdomain — stage-0.ubinitiative.org, stage-1.ubinitiative.org, and so on. You can regenerate this password from your dashboard if you ever lose this email.</p>
+        <p style="margin-top:12px;font-size:12px;color:#94A3B8;">Each room has its own hidden path. You will receive the exact link for the next stage when it opens. Keep this email safe — it is also how you log in if you forget your credentials.</p>
       `
     ),
   });

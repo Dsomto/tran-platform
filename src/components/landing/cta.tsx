@@ -69,15 +69,15 @@ export function CTA() {
 
         <div data-aos="fade-up" data-aos-delay="100">
           <p className="text-xs font-medium text-blue uppercase tracking-[0.15em] mb-3">
-            Join the network
+            2026 Cohort
           </p>
           <h2 id="cta-heading" className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
-            Ready to prove yourself?
+            Apply. Earn your place.
           </h2>
         </div>
         <p className="mt-4 text-base text-muted leading-relaxed" data-aos="fade-up" data-aos-delay="150">
-          Applications for Cohort 1 are open. Limited spots. If you have the skill
-          and the grit, we want you on UBI.
+          Applications take about fifteen minutes. We read every one. If you make it
+          through screening, we will send you your first stage within the week.
         </p>
         <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center" data-aos="fade-up" data-aos-delay="200">
           <Link

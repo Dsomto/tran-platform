@@ -6,26 +6,26 @@ import Image from "next/image";
 const features = [
   {
     emoji: "⚡",
-    title: "Stage-based progression",
-    desc: "10 stages. Each one harder than the last. Only the most skilled and dedicated make it through.",
+    title: "You either do the work or you're out",
+    desc: "Every stage ends with a report. If the grader passes you, you move on. If not, you revise until the deadline. No participation trophies.",
     color: "blue",
   },
   {
     emoji: "👥",
-    title: "Team collaboration",
-    desc: "Work in teams, compete on the leaderboard, build real security tools together.",
+    title: "Graded by real people",
+    desc: "Not a quiz engine. Real cybersecurity practitioners read your reports and give you the kind of feedback you'd get in a working SOC.",
     color: "cyan",
   },
   {
     emoji: "🏆",
-    title: "Points & rankings",
-    desc: "Every submission earns points. Climb the individual and team leaderboards in real time.",
+    title: "Proof you can show an employer",
+    desc: "Every stage produces an artefact — a writeup, a forensic report, a pentest finding. By Stage 5 you have a portfolio, not just a certificate.",
     color: "amber",
   },
   {
     emoji: "💼",
-    title: "Career placement",
-    desc: "Finalists get direct access to our hiring network. Companies recruit directly from our pool.",
+    title: "We pay for your certs",
+    desc: "Make it to Stage 5 and we cover your Security+ or ISO 27001 voucher. Weekly data credits too, if cost is what's in your way.",
     color: "emerald",
   },
 ];
@@ -55,11 +55,12 @@ export function About() {
               How it works
             </p>
             <h2 id="program-heading" className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
-              Not a course. Not a bootcamp.
+              This is not a course. It is an internship.
             </h2>
             <p className="mt-4 text-base text-muted leading-relaxed">
-              UBI is an elimination-based internship. You prove your skills
-              at every stage or you&apos;re out. We don&apos;t teach — we test readiness.
+              You will not sit through lectures. You will investigate a simulated
+              breach, find the flaws, write the report, and defend it. Most people
+              who start don&apos;t finish. The ones who do have something real to show.
             </p>
           </div>
 

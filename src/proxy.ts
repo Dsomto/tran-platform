@@ -1,31 +1,39 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { TOKEN_TO_STAGE, STAGE_TOKENS } from "./lib/stage-routes";
 
 /**
- * Subdomain proxy for TRAN's foundation rooms.
+ * Path-token routing for TRAN's foundation rooms.
  *
- * Each of the five foundation rooms is reachable on its own subdomain:
- *   stage-0.<ROOT_DOMAIN> → /subdomains/stage-0/...
- *   stage-1.<ROOT_DOMAIN> → /subdomains/stage-1/...
- *   stage-2.<ROOT_DOMAIN> → /subdomains/stage-2/...
- *   stage-3.<ROOT_DOMAIN> → /subdomains/stage-3/...
- *   stage-4.<ROOT_DOMAIN> → /subdomains/stage-4/...
+ * Each of the five foundation rooms is reached via a hard-to-guess path token
+ * (instead of a subdomain, because Vercel Hobby doesn't support wildcards):
  *
- * In production ROOT_DOMAIN = "ubinitiative.org" — so `stage-0.ubinitiative.org`
- * resolves to the files under `src/app/subdomains/stage-0/`.  Locally during
- * development we accept `stage-0.localhost:3000` (Chrome/Firefox resolve
- * `*.localhost` to 127.0.0.1 without /etc/hosts edits).
+ *   domain.com/<token-0>/... → /subdomains/stage-0/...
+ *   domain.com/<token-1>/... → /subdomains/stage-1/...
+ *   ... and so on for stages 2-4
  *
- * `/api/*` and Next internals (`_next`, favicon, static) bypass the rewrite so
- * API routes stay mounted at the normal path.
+ * Tokens live in src/lib/stage-routes.ts — rotate them there to change the URLs.
+ *
+ * For local development, both path-token and the legacy subdomain form
+ * (stage-N.localhost:3000) are accepted so existing bookmarks still work.
  */
-const STAGE_SLUGS = new Set(["stage-0", "stage-1", "stage-2", "stage-3", "stage-4"]);
+const STAGE_SLUGS = new Set(Object.keys(STAGE_TOKENS));
 
 function extractStageFromHost(host: string | null): string | null {
   if (!host) return null;
   const hostname = host.split(":")[0].toLowerCase();
   const firstLabel = hostname.split(".")[0];
   return STAGE_SLUGS.has(firstLabel) ? firstLabel : null;
+}
+
+function extractStageFromPath(pathname: string): { stage: string; rest: string } | null {
+  // First path segment: /<token>/...
+  const match = pathname.match(/^\/([a-z0-9]{6,32})(\/.*)?$/i);
+  if (!match) return null;
+  const [, token, rest] = match;
+  const stage = TOKEN_TO_STAGE[token.toLowerCase()];
+  if (!stage) return null;
+  return { stage, rest: rest || "" };
 }
 
 export function proxy(request: NextRequest) {
@@ -43,14 +51,26 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Path-token routing (production on any single domain).
+  const fromPath = extractStageFromPath(pathname);
+  if (fromPath) {
+    const url = request.nextUrl.clone();
+    url.pathname = `/subdomains/${fromPath.stage}${fromPath.rest}`;
+    url.search = search;
+    return NextResponse.rewrite(url);
+  }
+
+  // Subdomain routing fallback (local dev on stage-N.localhost:3000).
   const host = request.headers.get("host");
   const stage = extractStageFromHost(host);
-  if (!stage) return NextResponse.next();
+  if (stage) {
+    const url = request.nextUrl.clone();
+    url.pathname = `/subdomains/${stage}${pathname === "/" ? "" : pathname}`;
+    url.search = search;
+    return NextResponse.rewrite(url);
+  }
 
-  const url = request.nextUrl.clone();
-  url.pathname = `/subdomains/${stage}${pathname === "/" ? "" : pathname}`;
-  url.search = search;
-  return NextResponse.rewrite(url);
+  return NextResponse.next();
 }
 
 export const config = {

@@ -136,17 +136,18 @@ export function Hero() {
               <div data-aos="fade-up">
                 <span className="inline-flex items-center gap-2 text-xs font-medium text-blue tracking-[0.15em] uppercase mb-6">
                   <span className="w-1.5 h-1.5 rounded-full bg-blue animate-pulse" aria-hidden="true" />
-                  Cohort 1 — Applications Open
+                  2026 Cohort — Applications open
                 </span>
               </div>
 
               <h1 id="hero-heading" data-aos="fade-up" data-aos-delay="100" className="text-4xl sm:text-5xl lg:text-[3.5rem] font-bold tracking-tight leading-[1.08] text-foreground">
-                Build your career in <span className="text-blue">cybersecurity</span>
+                Break into <span className="text-blue">cybersecurity</span> without paying for it.
               </h1>
 
               <p data-aos="fade-up" data-aos-delay="200" className="mt-6 text-base sm:text-lg text-muted leading-relaxed max-w-xl">
-                A 10-stage intensive internship that takes you from fundamentals to
-                specialization. Real challenges, real teams, real career outcomes.
+                A free, selective internship for young Africans who are ready to do the
+                work. Five foundation stages, then one specialist track. Real breaches
+                to investigate — not videos to watch. You pay nothing. Ever.
               </p>
 
               <div data-aos="fade-up" data-aos-delay="300" className="mt-10 flex flex-wrap gap-3">
