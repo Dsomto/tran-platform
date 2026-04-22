@@ -1,0 +1,31 @@
+{
+  "order": 3,
+  "title": "The Query That Should Not Exist",
+  "description": "Tunde: 'The .env they pulled had the database credentials in plaintext. But they were inside the login form before they even used those. We have the MySQL general query log from that night. One query in there should not be possible — it does not match any legitimate application flow. Find it.'\n\nAmaka: 'When you find the anomalous query, read what it returned. The server logged the first matched row. That row contains a field that is not plain text. Decode it — Cipher Tools in another browser tab handles that format — and follow where it points.'",
+  "maxPoints": 15,
+  "kind": "FLAG",
+  "widget": "WEB_TERMINAL",
+  "widgetConfig": {
+    "prompt": "intern@sankofa:/sqllog$",
+    "welcome": [
+      "Sankofa SOC forensic shell.",
+      "MySQL query log extract mounted read-only at /sqllog/",
+      "Type `help` for commands, `ls -la` to list including hidden files."
+    ],
+    "files": {
+      "/sqllog/README.md": "MySQL general query log extract, 2024-01-14 02:00–04:00 UTC.\nProduced by: mysqld --general-log --general-log-file=/var/log/mysql/general.log\n\nThis log records every query the application sent to the database.\nMost entries are routine. One is not.",
+      "/sqllog/mysql-general.log": "/usr/sbin/mysqld, Version: 5.7.38-log (MySQL Community Server (GPL))\n\n2024-01-14T02:00:01Z    1 Connect   root@localhost as sankofa_app on sankofa_db\n2024-01-14T02:00:01Z    1 Query     SET NAMES utf8\n2024-01-14T02:04:12Z    2 Query     SELECT id,username,email FROM users WHERE id=14\n2024-01-14T02:04:33Z    3 Query     SELECT * FROM audit_log ORDER BY created_at DESC LIMIT 50\n2024-01-14T02:07:01Z    4 Query     SELECT id,username,email FROM users WHERE id=9\n2024-01-14T02:07:14Z    5 Query     INSERT INTO sessions (uid,token,expires) VALUES (9,'b3f44a1d',DATE_ADD(NOW(),INTERVAL 8 HOUR))\n2024-01-14T02:15:44Z    6 Query     SELECT id,name,account_no,balance FROM customers WHERE id=2201\n2024-01-14T02:16:01Z    7 Query     SELECT id,name,account_no,balance FROM customers WHERE id=2202\n2024-01-14T02:22:09Z    8 Query     SELECT id,name,account_no,balance FROM customers WHERE account_no='GH-4401-220194'\n2024-01-14T02:30:18Z    9 Query     UPDATE customers SET balance=balance-500.00 WHERE id=2201\n2024-01-14T02:30:19Z   10 Query     UPDATE customers SET balance=balance+500.00 WHERE id=2202\n2024-01-14T02:30:19Z   11 Query     INSERT INTO transactions (from_id,to_id,amount,ts) VALUES (2201,2202,500.00,NOW())\n2024-01-14T02:44:07Z   12 Query     SELECT id,username,email FROM users WHERE id=7\n2024-01-14T02:44:22Z   13 Query     INSERT INTO sessions (uid,token,expires) VALUES (7,'c91bae72',DATE_ADD(NOW(),INTERVAL 8 HOUR))\n2024-01-14T02:50:04Z   14 Query     SELECT * FROM audit_log WHERE action='export' ORDER BY created_at DESC LIMIT 20\n2024-01-14T03:01:22Z   15 Connect   root@localhost as sankofa_app on sankofa_db\n2024-01-14T03:09:44Z   16 Query     SELECT * FROM users WHERE username='' OR ''='' AND password='' OR ''='' LIMIT 1\n2024-01-14T03:09:44Z   16 Result    id=1 username=admin email=admin@sankofa.internal role=super_admin session_token=c2Fua29mYS1sZWdhY3ktYWRtaW4v\n2024-01-14T03:09:44Z   17 Query     INSERT INTO sessions (uid,token,expires) VALUES (1,'a4d19f03',DATE_ADD(NOW(),INTERVAL 24 HOUR))\n2024-01-14T03:10:01Z   18 Query     SELECT id,username,email,role FROM users ORDER BY id ASC\n2024-01-14T03:10:44Z   19 Query     SELECT * FROM customers LIMIT 500\n2024-01-14T03:11:02Z   20 Query     SELECT * FROM customers LIMIT 500 OFFSET 500\n2024-01-14T03:11:20Z   21 Query     SELECT * FROM customers LIMIT 500 OFFSET 1000\n2024-01-14T03:44:18Z   22 Query     SELECT * FROM users WHERE username='amaka' AND password=MD5('correct-password') LIMIT 1\n2024-01-14T03:44:18Z   22 Result    id=3 username=amaka email=amaka@sankofa.internal role=analyst session_token=YW5hbHlzdA==\n2024-01-14T03:44:18Z   23 Query     INSERT INTO sessions (uid,token,expires) VALUES (3,'f72c0a18',DATE_ADD(NOW(),INTERVAL 8 HOUR))\n",
+      "/sqllog/sankofa-legacy-admin/access.tran": {
+        "kind": "flag",
+        "salt": "stage-2-task-3-salt"
+      },
+      "/sqllog/sankofa-legacy-admin/decoy.tran": "TRAN{not-the-session-token}",
+      "/sqllog/analyst/access.tran": "TRAN{wrong-account-wrong-query}"
+    },
+    "hints": []
+  },
+  "flagSalt": "stage-2-task-3-salt",
+  "choices": null,
+  "correctIndex": null,
+  "minWords": null
+}

@@ -1,0 +1,23 @@
+{
+  "order": 5,
+  "title": "Innocuous",
+  "description": "Tunde slides over an image. 'Last file in The Griot's drop. Everyone who has looked at it called it junk — just a generic gradient. It came in a directory of promotional assets. But it was the only PNG next to a pile of audit notes. Tunde wants you to look harder.'\n\nAmaka: 'No tool will tell you what to do here. There is more than one way an image can carry data. Figure out whether this one does, and if so, extract it.'\n\nWhen you recover what is hidden, submit the flag that surfaces.",
+  "maxPoints": 15,
+  "kind": "FLAG",
+  "widget": "STEGO_VIEWER",
+  "widgetConfig": {
+    "stegoMessage": "{FLAG}",
+    "exif": {
+      "FileName": "promo-cover-draft-07.png",
+      "ImageWidth": "360",
+      "ImageHeight": "200",
+      "ColorSpace": "sRGB",
+      "Software": "Photomagic 4.2",
+      "DateTime": "2024-01-13 22:14"
+    }
+  },
+  "flagSalt": "stage-1-task-5-salt",
+  "choices": null,
+  "correctIndex": null,
+  "minWords": null
+}

@@ -1,0 +1,25 @@
+{
+  "order": 7,
+  "title": "The Accepted Token",
+  "description": "Amaka hands you a captured JWT that The Griot used successfully against Sankofa's legacy admin API. The audit team wants to know what the root cause was.\n\n  eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJzdWIiOiJhZG1pbiIsInJvbGUiOiJzdXBlcl9hZG1pbiIsImlhdCI6MTcwMDAwMDAwMH0.\n\nDecode it yourself first if you need to — the tools are on your machine. Then pick the root cause. Be careful: three of the options describe real JWT weaknesses, but only one describes this specific token.",
+  "maxPoints": 12,
+  "kind": "MULTIPLE_CHOICE",
+  "widget": "MCQ_QUIZ",
+  "widgetConfig": {
+    "choices": [
+      "The header specifies alg=none, which some JWT libraries accept as a valid signature algorithm meaning no signature is verified at all — the server trusted the unsigned claims.",
+      "The signature is missing entirely, which any compliant JWT verifier would reject, so the root cause must be a logic bug elsewhere in the server.",
+      "The token uses HS256 with a weak shared secret that the attacker guessed, which is why the signature on the third segment verifies.",
+      "The token claims role=super_admin — the server should never have accepted that claim for a user whose account is only admin."
+    ]
+  },
+  "flagSalt": null,
+  "choices": [
+    "The header specifies alg=none, which some JWT libraries accept as a valid signature algorithm meaning no signature is verified at all — the server trusted the unsigned claims.",
+    "The signature is missing entirely, which any compliant JWT verifier would reject, so the root cause must be a logic bug elsewhere in the server.",
+    "The token uses HS256 with a weak shared secret that the attacker guessed, which is why the signature on the third segment verifies.",
+    "The token claims role=super_admin — the server should never have accepted that claim for a user whose account is only admin."
+  ],
+  "correctIndex": 0,
+  "minWords": null
+}

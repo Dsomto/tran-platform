@@ -1,0 +1,13 @@
+{
+  "order": 3,
+  "title": "Three Strings",
+  "description": "Tunde slides three artefacts across the desk. Each was recovered from a different part of The Griot's staging drop. No labels. Your task: identify what each is, recover the plaintext where applicable, and write an analyst note (minimum 120 words) naming each family, explaining what tells you so, and stating whether it is encryption or encoding.\n\nArtefact A: Kyve wchi oav ri uqk yq mmwtdvxkvh. Qhx. Lqvjmt xc Hqi lsuy.\n\nArtefact B: U3RhZ2luZyBiYWNrdXAgdGFrZW4gMDIzMC4gR3Jpb3QncyBrZXkgd2FzIGxlZnQgaW4gY29uZmlnLiBSb29raWUu\n\nArtefact C: 4c657420416d616b61206b6e6f77207468652067726f75702069732073617465642e",
+  "maxPoints": 10,
+  "kind": "WRITEUP",
+  "widget": "CIPHER_TOOLS",
+  "widgetConfig": {},
+  "flagSalt": null,
+  "choices": null,
+  "correctIndex": null,
+  "minWords": 120
+}

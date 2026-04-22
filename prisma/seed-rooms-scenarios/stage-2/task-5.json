@@ -1,0 +1,25 @@
+{
+  "order": 5,
+  "title": "The Note That Watched Everyone",
+  "description": "Amaka: 'The search field was bad. The notes feature was worse. The Griot posted something to the notes board and walked away. For the next six hours, every analyst who opened that dashboard executed The Griot's code in their own browser — without clicking anything, without a link, without being tricked. The payload just sat there in the database and fired automatically.'\n\nTunde: 'This is a different class of problem from the search field, even though the mechanism looks similar on the surface. Confirm the injection point in the lab. Understand the difference between what you did in the previous task and what this one represents.'",
+  "maxPoints": 15,
+  "kind": "FLAG",
+  "widget": "VULN_APP_SIM",
+  "widgetConfig": {
+    "scenario": "notes",
+    "triggers": [
+      {
+        "regex": "<\\s*script[^>]*>|<\\s*img[^>]+onerror\\s*=|<\\s*svg[^>]+on\\w+\\s*=|<\\s*iframe|<\\s*details[^>]+on\\w+|<\\s*video[^>]+on\\w+",
+        "renderKind": "text",
+        "response": "Note saved successfully.\n\nContent stored to database: [PAYLOAD PERSISTED WITHOUT SANITISATION]\n\nThis content will be rendered into the page DOM for every user who loads /legacy-admin/dashboard.\nNo link click required. The payload executes on page load.\n\nStored injection confirmed. Flag: {flag}"
+      }
+    ],
+    "fallback": {
+      "response": "Note saved."
+    }
+  },
+  "flagSalt": "stage-2-task-5-salt",
+  "choices": null,
+  "correctIndex": null,
+  "minWords": null
+}

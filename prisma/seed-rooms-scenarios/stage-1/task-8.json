@@ -1,0 +1,34 @@
+{
+  "order": 8,
+  "title": "Operational Mistake",
+  "description": "Tunde: 'The Griot used AES-GCM properly on one file — real authenticated encryption, done right. The reason we got inside it is that they left the key and IV in a companion config. Rookie move. Recover the plaintext and follow what it tells you.'\n\nAmaka: 'I am not going to tell you which file holds what, or how to chain the tools. You have a shell. You have Cipher Tools in another tab. Use your head. When you find what the plaintext points to, open it and read.'",
+  "maxPoints": 15,
+  "kind": "FLAG",
+  "widget": "WEB_TERMINAL",
+  "widgetConfig": {
+    "prompt": "intern@sankofa:/staging$",
+    "welcome": [
+      "Sankofa SOC forensic shell.",
+      "Staging-drop directory mounted read-only at /staging/",
+      "Type `help` for commands, `ls -la` to list including hidden files."
+    ],
+    "files": {
+      "/staging/README.md": "Recovered files from legacy-prod staging, 2024-01-14.\n\nMost files are mundane deploy artefacts — the interesting items are marked .enc.\n\nOne file was encrypted with proper authenticated encryption. Another file in this tree leaks the key material for it. Do not mix up which is which.",
+      "/staging/deploy.log": "2024-01-13 22:00 [INFO] deploy.prepare artifact=sankofa-legacy-v2.1.tgz\n2024-01-13 22:03 [INFO] deploy.migrate env=staging\n2024-01-13 22:07 [INFO] deploy.restart service=legacy-admin\n2024-01-13 22:14 [DEBUG] deploy.promo.generate asset=promo-cover-draft-07.png\n2024-01-13 22:45 [INFO] deploy.finalize\n",
+      "/staging/config.env": "APP_NAME=sankofa-legacy\nAPP_ENV=staging\n# DO NOT COMMIT — rotated every 24h in theory\nENC_KEY=8bd5313001e94b200bcdb9322f2b2a97\nENC_IV=6957a982c4e2d47e07224e25\n# used by encrypt_secret.py — see notes/encrypt_secret.py\n",
+      "/staging/vault/pointer.enc": "c83ccc3ac0605a9a46e7a0d063dab4121846d237fc97f73cc4c301479c4ddfed7775c522cc5d3716f4ff1b902e197113589c46e700bd",
+      "/staging/vault/access.tran": {
+        "kind": "flag",
+        "salt": "stage-1-task-8-salt"
+      },
+      "/staging/vault/decoy-a.tran": "TRAN{not-this-one}",
+      "/staging/vault/decoy-b.tran": "TRAN{also-not-this-one}",
+      "/staging/notes/encrypt_secret.py": "# quick helper Tunde wrote — don't judge\n# usage: python encrypt_secret.py <plaintext>\n# outputs hex(ciphertext||tag) to stdout\n# AES-GCM. Key + IV read from config.env.\n"
+    },
+    "hints": []
+  },
+  "flagSalt": "stage-1-task-8-salt",
+  "choices": null,
+  "correctIndex": null,
+  "minWords": null
+}

@@ -1,0 +1,25 @@
+{
+  "order": 6,
+  "title": "Hashes in the Breach File",
+  "description": "Amaka drops a copy of the staging server's password file on your desk. 'A junior engineer asked me which of these accounts we need to rotate first. Good question. The hashes tell you what you need to know. Which of the following is the most urgent to rotate, and why?'\n\nAccount A: $2b$12$eImiTXuWVxfM37uY4JANjQ==.dF9A77h0uJjHBA9I.N5SZbHfxbsOG\nAccount B: 5f4dcc3b5aa765d61d8327deb882cf99\nAccount C: 5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8\nAccount D: $argon2id$v=19$m=65536,t=3,p=4$c29tZXNhbHQ$RdescudvJCsgt3ub+b+dWRWJTmaaJObG",
+  "maxPoints": 12,
+  "kind": "MULTIPLE_CHOICE",
+  "widget": "MCQ_QUIZ",
+  "widgetConfig": {
+    "choices": [
+      "Account B — an unsalted MD5 of a common password; a modern GPU can crack this against a public rainbow table in seconds.",
+      "Account A — bcrypt is obsolete; modern attackers bypass it routinely.",
+      "Account D — argon2id produces long hashes which suggests it is slow, and slow means cheap to brute force.",
+      "Account C — SHA-256 is a cryptographic hash and any cryptographic hash that long can be reversed by GPU farms within hours."
+    ]
+  },
+  "flagSalt": null,
+  "choices": [
+    "Account B — an unsalted MD5 of a common password; a modern GPU can crack this against a public rainbow table in seconds.",
+    "Account A — bcrypt is obsolete; modern attackers bypass it routinely.",
+    "Account D — argon2id produces long hashes which suggests it is slow, and slow means cheap to brute force.",
+    "Account C — SHA-256 is a cryptographic hash and any cryptographic hash that long can be reversed by GPU farms within hours."
+  ],
+  "correctIndex": 0,
+  "minWords": null
+}

@@ -1,0 +1,17 @@
+{
+  "order": 8,
+  "title": "Hash-ID it",
+  "description": "Amaka pins four hash samples from the incident bucket onto the whiteboard and waves you over. Before anyone cracks anything, she wants to know you can read a hash on sight — length, charset, and prefix are usually enough.\n\n  #1  5d41402abc4b2a76b9719d911017c592\n  #2  aaf4c61ddcc5e8a2dabede0f3b482cd9ea86f1a1\n  #3  $2b$12$R9h/cIPz0gi.URNNX3kh2OPST9/PgBkqquzi.Ss7KIUgO2t0jWMUW\n  #4  2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae\n\nAmaka taps the board next to sample #3: \"Which format is hash #3?\" Pick the algorithm from the options below.",
+  "maxPoints": 6,
+  "kind": "MULTIPLE_CHOICE",
+  "widget": "MCQ_QUIZ",
+  "widgetConfig": {
+    "prompt": "Which format is hash #3?",
+    "choices": ["MD5", "SHA-1", "SHA-256", "bcrypt"],
+    "shuffle": false
+  },
+  "flagSalt": null,
+  "choices": ["MD5", "SHA-1", "SHA-256", "bcrypt"],
+  "correctIndex": 3,
+  "minWords": null
+}

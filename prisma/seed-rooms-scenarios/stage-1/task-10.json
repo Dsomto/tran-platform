@@ -1,0 +1,16 @@
+{
+  "order": 10,
+  "title": "Brief the Board",
+  "description": "Amaka closes her laptop. 'Tomorrow the board will ask what we learned from this room. They will not care about AES modes or Vigenère. They will ask three things, and I need an analyst who can answer them in plain language.'\n\nWrite a structured board-facing note (minimum 180 words) covering:\n\n1. What confidentiality alone did NOT give Sankofa — and why The Griot's own crypto fell apart despite using a modern algorithm. Reference a specific operational mistake you saw in this room.\n\n2. Why an organisation should never rely on a hash or checksum alone to detect tampering of stored files. Name the class of control that is actually needed.\n\n3. One pattern the board should audit for across Sankofa's own systems, based on what you observed about The Griot's mistakes. One pattern — not a laundry list.\n\nWrite this the way you would write it for a CFO. No jargon without a one-sentence gloss. No lists without a lead sentence. Amaka signs this before it goes up.",
+  "maxPoints": 14,
+  "kind": "WRITEUP",
+  "widget": "WRITEUP_PAD",
+  "widgetConfig": {
+    "minWords": 180,
+    "placeholder": "Board-facing note for Amaka..."
+  },
+  "flagSalt": null,
+  "choices": null,
+  "correctIndex": null,
+  "minWords": 180
+}

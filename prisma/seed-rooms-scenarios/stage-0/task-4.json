@@ -1,0 +1,21 @@
+{
+  "order": 4,
+  "title": "Decode the memo",
+  "description": "Amaka forwards you a short memo recovered from The Griot's Q2 data dump. It came through a leaky pastebin scraper, so it's wrapped in base64 before anything legible appears. Open Cipher Tools, switch to the Base64 tab, and paste the blob below into the left pane. The right pane will render the plaintext memo.\n\nThe decoded plaintext is a template — the literal token {FLAG} is where your per-intern flag belongs. Your flag for this task is derived from the task salt `stage-0-task-4-salt` against your intern ID (the same HMAC-SHA256 recipe every Root Access task uses). You can read your flag off the intern dashboard's task detail panel, or simply submit it directly — the server compares the HMAC on its side.\n\nBase64 blob:\n\nTWVtbyBmcm9tIFRoZSBHcmlvdDogJ09wZXJhdGlvbiBjb250aW51ZXMuIEZsYWcgY2hlY2s6IHtGTEFHfSc=\n\nOnce you've read the memo, submit the TRAN flag that belongs in the `{FLAG}` slot.",
+  "maxPoints": 8,
+  "kind": "FLAG",
+  "widget": "CIPHER_TOOLS",
+  "widgetConfig": {
+    "initialTab": "base64",
+    "base64Ciphertext": "TWVtbyBmcm9tIFRoZSBHcmlvdDogJ09wZXJhdGlvbiBjb250aW51ZXMuIEZsYWcgY2hlY2s6IHtGTEFHfSc=",
+    "expectedPlaintext": "Memo from The Griot: 'Operation continues. Flag check: {FLAG}'",
+    "flagSubstitution": {
+      "placeholder": "{FLAG}",
+      "source": "flag"
+    }
+  },
+  "flagSalt": "stage-0-task-4-salt",
+  "choices": null,
+  "correctIndex": null,
+  "minWords": null
+}

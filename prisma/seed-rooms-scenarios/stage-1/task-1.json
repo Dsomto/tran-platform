@@ -1,0 +1,31 @@
+{
+  "order": 1,
+  "title": "The Staging Drop",
+  "description": "Amaka drops a zip of files onto your workstation. 'Tunde grabbed these from The Griot's staging server before it went dark. Start poking around. Find what should not be there. The flag will make itself obvious when you read the right file.'\n\nShe leaves without telling you which file matters, what format the flag takes, or which commands to run. You have a shell. That is it.\n\nThe flag format for the whole programme is TRAN{...}. When you find yours, paste it in the answer box.",
+  "maxPoints": 10,
+  "kind": "FLAG",
+  "widget": "WEB_TERMINAL",
+  "widgetConfig": {
+    "prompt": "intern@sankofa:/staging$",
+    "welcome": [
+      "Sankofa SOC forensic shell — isolated lab environment.",
+      "You have been dropped into /staging. Type `help` for commands."
+    ],
+    "files": {
+      "/staging/README.md": "Staging server drop — recovered 2024-01-14 03:47 UTC.\nContents: assorted files pulled from /opt/legacy/ before the host was quarantined.\nDo not modify. This is evidence.",
+      "/staging/config.env": "APP_NAME=sankofa-legacy\nAPP_ENV=staging\n# TODO: rotate before prod promotion\nAPI_KEY=c2Fua29mYS1kZW1vLWtleS0yMDIz\nFEATURE_FLAGS=import_url,debug_panel,dev_routes",
+      "/staging/notes.txt": "reminder: admin panel at /legacy-admin/ — credentials in .creds.bak\n\ngriot keeps coming back for the /legacy-admin/export endpoint. rate-limit?",
+      "/staging/.creds.bak": "root:P@ssw0rd!\nadmin:admin123\nbackup:l3tm3in",
+      "/staging/evidence/intercept.log": "2024-01-14 03:12:07 [auth] GET /legacy-admin/login - 192.168.44.101\n2024-01-14 03:12:09 [auth] POST /legacy-admin/login - 192.168.44.101 - 200 OK\n2024-01-14 03:12:11 [access] GET /legacy-admin/export?format=sql - 192.168.44.101\n2024-01-14 03:12:14 [alert] unusual volume — 48MB response",
+      "/staging/evidence/flag.tran": {
+        "kind": "flag",
+        "salt": "stage-1-task-1-salt"
+      }
+    },
+    "hints": []
+  },
+  "flagSalt": "stage-1-task-1-salt",
+  "choices": null,
+  "correctIndex": null,
+  "minWords": null
+}

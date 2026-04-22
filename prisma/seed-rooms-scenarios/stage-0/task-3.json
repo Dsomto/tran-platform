@@ -1,0 +1,32 @@
+{
+  "order": 3,
+  "title": "Hash this",
+  "description": "Tunde Bakare dropped a scrap of evidence in /home/intern/evidence/q2_snapshot.txt — pulled straight from a compromised workstation. Open it up and hand the TRAN flag back to Amaka. Quick shell refresher: sha256sum <path> prints the SHA-256 hex digest of the file at <path> followed by the filename (useful for verifying an artefact hasn't been tampered with). For this drop, the flag is embedded directly inside the file, so cat the file to read it out.",
+  "maxPoints": 10,
+  "kind": "FLAG",
+  "widget": "WEB_TERMINAL",
+  "widgetConfig": {
+    "prompt": "intern@sankofa:~$",
+    "welcome": [
+      "Sankofa Digital · Training Shell",
+      "Tunde: I dumped the Q2 snapshot into ~/evidence. Read it and tell me what's inside.",
+      "Type `help` to list supported commands."
+    ],
+    "files": {
+      "/home/intern/evidence/q2_snapshot.txt": {
+        "kind": "flag",
+        "salt": "stage-0-task-3-salt"
+      },
+      "/home/intern/README.md": "Tunde left evidence under ~/evidence. cat the file to read it; sha256sum <path> prints the SHA-256 digest of any file if you want to verify integrity."
+    },
+    "hints": [
+      "Try `ls ~/evidence/`",
+      "cat /home/intern/evidence/q2_snapshot.txt",
+      "sha256sum <path> gives you the SHA-256 of a file — handy for integrity checks"
+    ]
+  },
+  "flagSalt": "stage-0-task-3-salt",
+  "choices": null,
+  "correctIndex": null,
+  "minWords": null
+}

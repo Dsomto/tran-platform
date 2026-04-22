@@ -1,0 +1,36 @@
+{
+  "order": 5,
+  "title": "Least privilege",
+  "description": "Amaka slides a ticket across the desk: Tunde spotted /home/intern/config/secrets.env with world-writable perms on the training host. That is exactly the kind of misconfiguration The Griot loves. First confirm the problem with `stat /home/intern/config/secrets.env`, then tighten it with `chmod 600 /home/intern/config/secrets.env`. Once the file is restricted to owner-only access, `cat` it to read the confirmation line Amaka stamped inside. That line is your flag.",
+  "maxPoints": 10,
+  "kind": "FLAG",
+  "widget": "WEB_TERMINAL",
+  "widgetConfig": {
+    "prompt": "intern@sankofa:~$ ",
+    "cwd": "/home/intern",
+    "welcome": [
+      "Sankofa Digital training shell",
+      "Amaka: permissions audit on /home/intern/config/secrets.env.",
+      "Run `stat` on it, then `chmod 600` to bring it back to least privilege.",
+      "Type `help` for supported commands."
+    ],
+    "hints": [
+      "Start with `stat /home/intern/config/secrets.env` to see the current mode.",
+      "World-writable (mode 666) means owner, group, and world can all write. Fix it with `chmod 600 /home/intern/config/secrets.env`.",
+      "After locking it down, `cat /home/intern/config/secrets.env` to read Amaka's confirmation line."
+    ],
+    "files": {
+      "/home/intern/README.md": "Amaka: routine hardening drill. Every sensitive file on this host must be 600 (owner rw, nothing else).\nIf you ever see 666 on something with the word `secret` in it, fix it before you touch anything else.",
+      "/home/intern/config/README": "Config directory. Contains environment files consumed by the Sankofa training services.\nPolicy: *.env files must be mode 600. Anything looser is an audit finding.",
+      "/home/intern/config/app.env": "APP_NAME=sankofa-training\nAPP_ENV=lab\nLOG_LEVEL=info",
+      "/home/intern/config/secrets.env": { "kind": "flag", "salt": "stage-0-task-5-salt" }
+    },
+    "commands": {
+      "whoami": { "output": "intern" }
+    }
+  },
+  "flagSalt": "stage-0-task-5-salt",
+  "choices": null,
+  "correctIndex": null,
+  "minWords": null
+}

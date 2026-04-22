@@ -1,0 +1,25 @@
+{
+  "order": 9,
+  "title": "Integrity Without a Key",
+  "description": "A developer on Amaka's team proposes a design: every file uploaded to Sankofa's portal is stored alongside its SHA-256 hash, so the portal can detect if the stored copy is ever tampered with.\n\nAmaka: 'Stop. Tell me what is wrong with that design. It sounds right and it is not. Pick the option that names the gap.'",
+  "maxPoints": 10,
+  "kind": "MULTIPLE_CHOICE",
+  "widget": "MCQ_QUIZ",
+  "widgetConfig": {
+    "choices": [
+      "An attacker who compromises the storage layer can replace both the file and its hash together, so the hash alone gives no guarantee — you need an HMAC or a signature where the verifier holds a secret or public key the attacker does not.",
+      "SHA-256 is cryptographically broken and should never be used for integrity — MD5 is still fine for legacy systems.",
+      "The design is essentially sound, but SHA-256 should be replaced with SHA-512 because longer hashes are harder to collide against.",
+      "The gap is that SHA-256 is reversible under sufficient GPU load, so the stored hash leaks the file content to anyone with database access."
+    ]
+  },
+  "flagSalt": null,
+  "choices": [
+    "An attacker who compromises the storage layer can replace both the file and its hash together, so the hash alone gives no guarantee — you need an HMAC or a signature where the verifier holds a secret or public key the attacker does not.",
+    "SHA-256 is cryptographically broken and should never be used for integrity — MD5 is still fine for legacy systems.",
+    "The design is essentially sound, but SHA-256 should be replaced with SHA-512 because longer hashes are harder to collide against.",
+    "The gap is that SHA-256 is reversible under sufficient GPU load, so the stored hash leaks the file content to anyone with database access."
+  ],
+  "correctIndex": 0,
+  "minWords": null
+}

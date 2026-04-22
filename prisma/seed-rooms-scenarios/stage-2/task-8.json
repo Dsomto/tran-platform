@@ -1,0 +1,25 @@
+{
+  "order": 8,
+  "title": "The Right Remedy",
+  "description": "The engineering team submitted four proposed fixes for the SQL injection vulnerability in the login form. Amaka returns three of them with a red mark. One — and only one — actually resolves the root cause.\n\nThe vulnerability: the application builds its SQL query by concatenating user-supplied strings directly into the query text. The fix must address why the injection was possible in the first place, not just what characters the attacker used.",
+  "maxPoints": 10,
+  "kind": "MULTIPLE_CHOICE",
+  "widget": "MCQ_QUIZ",
+  "widgetConfig": {
+    "choices": [
+      "Replace string concatenation with parameterised queries (prepared statements) throughout the data access layer — the database driver then treats user input as a value, never as executable query syntax, regardless of what characters it contains.",
+      "Add a server-side input validator that rejects any login attempt containing apostrophes, double dashes, or the OR keyword — these characters and keywords are what the attacker used to manipulate the query.",
+      "Rate-limit the login endpoint to three attempts per IP per minute and add CAPTCHA — this prevents the attacker from sending enough requests to exploit the weakness before being blocked.",
+      "Switch to an ORM that auto-generates SQL — ORMs produce safe queries by design, so the underlying string concatenation code does not need to be changed."
+    ]
+  },
+  "flagSalt": null,
+  "choices": [
+    "Replace string concatenation with parameterised queries (prepared statements) throughout the data access layer — the database driver then treats user input as a value, never as executable query syntax, regardless of what characters it contains.",
+    "Add a server-side input validator that rejects any login attempt containing apostrophes, double dashes, or the OR keyword — these characters and keywords are what the attacker used to manipulate the query.",
+    "Rate-limit the login endpoint to three attempts per IP per minute and add CAPTCHA — this prevents the attacker from sending enough requests to exploit the weakness before being blocked.",
+    "Switch to an ORM that auto-generates SQL — ORMs produce safe queries by design, so the underlying string concatenation code does not need to be changed."
+  ],
+  "correctIndex": 0,
+  "minWords": null
+}

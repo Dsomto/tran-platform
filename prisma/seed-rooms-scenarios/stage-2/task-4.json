@@ -1,0 +1,25 @@
+{
+  "order": 4,
+  "title": "What the Search Field Returned",
+  "description": "Tunde: 'Once inside the dashboard, The Griot tested every input field. The customer search returned something it should not have. The network capture shows they sent one request to that field and the response was different from any legitimate search result — the browser would have executed content that came back from the server.'\n\nAmaka: 'We have reconstructed the search endpoint in the lab. The server-side behaviour is identical to what was running on the night of the breach. Figure out what The Griot sent, and confirm the injection point exists.'",
+  "maxPoints": 15,
+  "kind": "FLAG",
+  "widget": "VULN_APP_SIM",
+  "widgetConfig": {
+    "scenario": "search",
+    "triggers": [
+      {
+        "regex": "<\\s*script[^>]*>|<\\s*img[^>]+onerror\\s*=|<\\s*svg[^>]+on\\w+\\s*=|javascript\\s*:|<\\s*iframe|<\\s*body[^>]+on\\w+",
+        "renderKind": "text",
+        "response": "Search results for your query:\n\n[SERVER RENDERED INPUT UNESCAPED]\n\nContent-Type: text/html\nX-Content-Type-Options: (not set)\n\nThe response body contains the submitted value without HTML encoding.\nA browser loading this response would interpret the markup as part of the page DOM.\n\nInjection confirmed. Flag: {flag}"
+      }
+    ],
+    "fallback": {
+      "response": "No customers found matching your query."
+    }
+  },
+  "flagSalt": "stage-2-task-4-salt",
+  "choices": null,
+  "correctIndex": null,
+  "minWords": null
+}

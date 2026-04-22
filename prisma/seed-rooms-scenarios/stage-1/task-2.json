@@ -1,0 +1,20 @@
+{
+  "order": 2,
+  "title": "Needle in the Log",
+  "description": "Tunde dumps a log bundle on the shared drive. Three files. 'One of these contains an anomaly — a line where one of The Griot's drops leaked a plaintext token into the debug stream. It is in there. The rest is noise.'\n\nAmaka adds: 'Half the lines in these logs will contain strings that look like flags. Operators test tokens, red-team fixtures leave fixtures, developers paste dummies. You have to identify the real one — the flag for this task starts with TRAN{ and contains hexadecimal characters only inside the braces. Read the surrounding context to justify your pick. Then submit it.'\n\nYou have three tabs: auth, app, debug. The filter bar accepts regex. Click lines to mark them as evidence.",
+  "maxPoints": 12,
+  "kind": "FLAG",
+  "widget": "LOG_VIEWER",
+  "widgetConfig": {
+    "instructions": "Regex filter supported. Look for lines that match the flag format, then read the surrounding context to pick the real one.",
+    "logs": {
+      "auth": "2024-01-14 02:58:14 [INFO]  auth.session.create user=amaka.eze src=10.0.0.14 TRAN{deadbeef}\n2024-01-14 02:58:15 [INFO]  auth.session.refresh user=amaka.eze\n2024-01-14 03:02:11 [INFO]  auth.session.create user=tunde.bakare src=10.0.0.15\n2024-01-14 03:05:00 [WARN]  auth.fixture.loaded scenario=stub-admin tok=TRAN{fixture-1}\n2024-01-14 03:11:41 [INFO]  auth.session.create user=unknown src=192.168.44.101\n2024-01-14 03:11:41 [ALERT] auth.anomaly geo_mismatch=true\n2024-01-14 03:12:07 [INFO]  auth.session.refresh user=unknown\n2024-01-14 03:12:14 [INFO]  auth.login.success user=admin src=192.168.44.101",
+      "app": "2024-01-14 03:12:15 [INFO]  app.legacy-admin.access user=admin endpoint=/dashboard\n2024-01-14 03:12:16 [DEBUG] app.route.mount=/legacy-admin/export\n2024-01-14 03:12:18 [INFO]  app.export.start format=sql\n2024-01-14 03:12:19 [DEBUG] app.test.harness tok=TRAN{harness-42} comment=used-in-ci-only\n2024-01-14 03:12:24 [INFO]  app.export.stream bytes=512000\n2024-01-14 03:12:45 [INFO]  app.export.stream bytes=48012800\n2024-01-14 03:12:46 [WARN]  app.export.size_exceeds_normal\n2024-01-14 03:12:47 [INFO]  app.export.complete\n2024-01-14 03:13:02 [DEBUG] app.migration.dummy tok=TRAN{migration-dummy} env=dev",
+      "debug": "2024-01-14 03:12:49 [DEBUG] debug.dump.request headers={'X-Debug-Key':'TRAN{xdebug-local}', 'Authorization':'Bearer <redacted>'}\n2024-01-14 03:12:50 [DEBUG] debug.dump.response=<stream>\n2024-01-14 03:12:51 [DEBUG] debug.dump.session_state\n2024-01-14 03:12:52 [DEBUG] debug.leaked_token=TRAN{leaked-from-debug}  comment=THIS_SHOULD_NEVER_APPEAR_IN_LOGS\n2024-01-14 03:12:52 [DEBUG] debug.actual_session_token={FLAG}  user=unknown  note=redaction-filter-bypassed\n2024-01-14 03:12:53 [DEBUG] debug.dump.close\n2024-01-14 03:12:58 [DEBUG] debug.sanity tok=TRAN{sanity-0} ignore=true"
+    }
+  },
+  "flagSalt": "stage-1-task-2-salt",
+  "choices": null,
+  "correctIndex": null,
+  "minWords": null
+}

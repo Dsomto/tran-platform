@@ -1,0 +1,16 @@
+{
+  "order": 9,
+  "title": "Write the Finding",
+  "description": "Amaka: 'Pick one. The SQL injection or the SSRF. Write it up as a proper penetration test finding — not a summary, a structured finding that could go into a client-facing report. I need a technical lead who has never seen this application to understand exactly what happened, why it is dangerous, and what to do about it.'\n\nTunde: 'Your finding needs four things: what was observed (the specific behaviour, not just the class name), why it is dangerous (what an attacker can achieve and how far the impact reaches), what the root cause is at the code or design level, and what the recommended fix is. One finding. Done properly. Minimum two hundred words.'\n\nAmaka signs these before they go to the client.",
+  "maxPoints": 20,
+  "kind": "WRITEUP",
+  "widget": "WRITEUP_PAD",
+  "widgetConfig": {
+    "minWords": 200,
+    "placeholder": "Penetration test finding — write for a technical lead who has never seen this application…"
+  },
+  "flagSalt": null,
+  "choices": null,
+  "correctIndex": null,
+  "minWords": 200
+}

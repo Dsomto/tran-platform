@@ -1,0 +1,17 @@
+{
+  "order": 9,
+  "title": "Ethics dilemma",
+  "description": "You walk past a colleague's desk and see their SSO password on a sticky note. What do you do? Respond in 150+ words citing at least two ISC2 Code of Ethics canons (protect society/common good; act honorably; provide diligent service; advance the profession). Amaka grades this personally.",
+  "maxPoints": 14,
+  "kind": "WRITEUP",
+  "widget": "WRITEUP_PAD",
+  "widgetConfig": {
+    "minWords": 150,
+    "placeholder": "Describe your response. Name the canons you invoke and explain how you would act, who you would inform, and how you would help your colleague without shaming them.",
+    "maxChars": 20000
+  },
+  "flagSalt": null,
+  "choices": null,
+  "correctIndex": null,
+  "minWords": 150
+}

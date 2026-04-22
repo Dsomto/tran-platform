@@ -1,0 +1,17 @@
+{
+  "order": 10,
+  "title": "Password-policy critique",
+  "description": "Amaka drops a dog-eared printout on your desk. \"HR just forwarded this to every new hire. Tunde and I have opinions. We want yours on paper before the 4pm standup.\"\n\nThe printout reads, verbatim:\n\n---\nSankofa Digital Password Policy v3.1:\n1. Passwords must be exactly 8 characters.\n2. Must contain at least one uppercase, one lowercase, one digit, one special character.\n3. Must be changed every 30 days.\n4. May not be reused from the last 3 passwords.\n5. Forgotten passwords may be reset via verbal confirmation with IT.\n---\n\nThis policy is a graveyard of outdated habits. Exactly four of its clauses are broken when you hold them up against modern guidance, and The Griot would happily take advantage of every one of them. Your job: write a 200+ word critique naming all four flaws and proposing replacements that align with NIST Special Publication 800-63B (Digital Identity Guidelines, Authentication and Lifecycle Management).\n\nAt minimum, your writeup must:\n\n1. Identify the fixed short length (exactly 8 characters) as a flaw. Explain why an 8-character ceiling slashes the keyspace and falls well short of NIST's recommendation to allow long passphrases (at least 64 characters maximum, 8 minimum for user-chosen secrets, and 6 minimum for random PINs).\n2. Identify the forced rotation every 30 days as a flaw. Explain why NIST 800-63B section 5.1.1.2 explicitly says verifiers SHOULD NOT require periodic rotation and SHOULD only force a change on evidence of compromise, because forced rotation pushes users toward predictable mutations (Summer2025!, Summer2025!!).\n3. Identify the tiny reuse window (last 3 passwords) as a flaw, or more accurately as an artefact of the rotation anti-pattern. Explain why a meaningful history check is moot once rotation itself is removed, and why checking candidate passwords against a breach corpus (haveibeenpwned-style) is the control NIST actually asks for.\n4. Identify the verbal-confirmation reset channel as a flaw. Explain why phone-based identity proofing is trivially defeated by social engineering and vishing, and describe an account-recovery flow that relies on a registered authenticator, an out-of-band channel bound to the account, or supervised in-person verification.\n\nFrame the critique as if you were handing it to Amaka: blunt, specific, and actionable. Name each flaw, cite the NIST control that fixes it, and propose concrete replacement wording for policy v3.2. Minimum 200 words.",
+  "maxPoints": 12,
+  "kind": "WRITEUP",
+  "widget": "WRITEUP_PAD",
+  "widgetConfig": {
+    "minWords": 200,
+    "maxChars": 20000,
+    "placeholder": "Draft your critique of Sankofa Digital Password Policy v3.1. Name the four flaws, cite NIST 800-63B, propose replacements..."
+  },
+  "flagSalt": null,
+  "choices": null,
+  "correctIndex": null,
+  "minWords": 200
+}

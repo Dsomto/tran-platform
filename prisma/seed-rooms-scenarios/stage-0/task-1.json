@@ -1,0 +1,29 @@
+{
+  "order": 1,
+  "title": "Shell warmup",
+  "description": "Amaka: 'First task — settle into the SOC workstation. Open your home directory, find the intro folder, and read the README. The flag is printed at the bottom. Use ls and cat.'",
+  "maxPoints": 8,
+  "kind": "FLAG",
+  "widget": "WEB_TERMINAL",
+  "widgetConfig": {
+    "prompt": "intern@sankofa:~$",
+    "welcome": [
+      "Sankofa SOC shell · scripted environment · type `help` for commands.",
+      "You are logged in as intern. Home directory: /home/intern."
+    ],
+    "files": {
+      "/home/intern/intro/README.md": {
+        "kind": "flag",
+        "salt": "stage-0-task-1-salt"
+      }
+    },
+    "hints": [
+      "try `ls ~/intro/`",
+      "`cat ~/intro/README.md` prints the file"
+    ]
+  },
+  "flagSalt": "stage-0-task-1-salt",
+  "choices": null,
+  "correctIndex": null,
+  "minWords": null
+}

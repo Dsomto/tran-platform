@@ -1,0 +1,36 @@
+{
+  "order": 2,
+  "title": "Find the hidden file",
+  "description": "Amaka leans over your shoulder: real attackers never leave artefacts with obvious names. They prefix them with a dot so a casual `ls` skips right past. Navigate into /home/intern/evidence/archive/ and locate the .leak_manifest file The Griot stashed there. Its contents are the flag. Remember: plain `ls` won't show it.",
+  "maxPoints": 8,
+  "kind": "FLAG",
+  "widget": "WEB_TERMINAL",
+  "widgetConfig": {
+    "prompt": "intern@sankofa:~$ ",
+    "cwd": "/home/intern",
+    "welcome": [
+      "Sankofa Digital training shell",
+      "Amaka: the archive is under ~/evidence/archive. The Griot drops dotfiles.",
+      "Type `help` for supported commands."
+    ],
+    "hints": [
+      "Dotfiles are hidden from plain `ls` — try `ls -a`.",
+      "cd into /home/intern/evidence/archive and look again.",
+      "Once you see it, `cat` the file to read the flag."
+    ],
+    "files": {
+      "/home/intern/README.md": "Welcome, intern. Your evidence drops land under ~/evidence/.\nAmaka's rule: assume adversaries hide things in plain sight.",
+      "/home/intern/notes.txt": "Q2 auth anomaly. Ticket #SNK-4412. Flagged by Tunde.",
+      "/home/intern/evidence/index.txt": "archive/  -- quarantined artefacts pulled from the compromised host\nchain-of-custody.log  -- signed by Amaka Eze",
+      "/home/intern/evidence/chain-of-custody.log": "2025-06-14 09:12 UTC  pulled by: tunde.bakare\n2025-06-14 09:41 UTC  sealed by: amaka.eze\n2025-06-14 10:05 UTC  handed to: intern",
+      "/home/intern/evidence/archive/access.log": "10.12.0.4 - - [14/Jun/2025:02:17:42] \"GET /legacy-admin/ HTTP/1.1\" 200\n10.12.0.4 - - [14/Jun/2025:02:17:58] \"POST /legacy-admin/login HTTP/1.1\" 302",
+      "/home/intern/evidence/archive/suspects.csv": "ip,country,asn\n10.12.0.4,NG,AS37154\n41.58.200.12,ZA,AS37105",
+      "/home/intern/evidence/archive/README": "Contents pulled from the compromised staging host. Handle with care.",
+      "/home/intern/evidence/archive/.leak_manifest": { "kind": "flag", "salt": "stage-0-task-2-salt" }
+    }
+  },
+  "flagSalt": "stage-0-task-2-salt",
+  "choices": null,
+  "correctIndex": null,
+  "minWords": null
+}

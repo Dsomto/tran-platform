@@ -1,0 +1,25 @@
+{
+  "order": 4,
+  "title": "Authenticated or Not",
+  "description": "Amaka sets a scenario: 'Your bank is transmitting customer balance updates between two services over an encrypted channel. The team argues over which AES mode to use.'\n\nOne engineer proposes AES-CBC. A second proposes AES-GCM. A third says it doesn't matter as long as the key is strong. The fourth says to use ECB because it's simpler.\n\nWhich answer should the team take, and why? Read the options carefully — the distractors reflect real arguments you will hear in real rooms.",
+  "maxPoints": 10,
+  "kind": "MULTIPLE_CHOICE",
+  "widget": "MCQ_QUIZ",
+  "widgetConfig": {
+    "choices": [
+      "AES-GCM — it encrypts AND produces an authentication tag, so any bit-flip by an attacker in transit is detected before the receiver processes the message.",
+      "AES-CBC — it is the oldest widely-deployed mode, so it has been battle-tested longest and is the safest choice.",
+      "Any mode — if the key is strong enough, an attacker cannot decrypt, and that is all that matters for a financial channel.",
+      "AES-ECB — it is simplest to implement and has the fewest edge cases, which matters more than theoretical concerns for internal services."
+    ]
+  },
+  "flagSalt": null,
+  "choices": [
+    "AES-GCM — it encrypts AND produces an authentication tag, so any bit-flip by an attacker in transit is detected before the receiver processes the message.",
+    "AES-CBC — it is the oldest widely-deployed mode, so it has been battle-tested longest and is the safest choice.",
+    "Any mode — if the key is strong enough, an attacker cannot decrypt, and that is all that matters for a financial channel.",
+    "AES-ECB — it is simplest to implement and has the fewest edge cases, which matters more than theoretical concerns for internal services."
+  ],
+  "correctIndex": 0,
+  "minWords": null
+}

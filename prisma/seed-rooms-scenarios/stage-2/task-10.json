@@ -1,0 +1,16 @@
+{
+  "order": 10,
+  "title": "Brief the CISO",
+  "description": "Amaka: 'The CISO gets ninety seconds tomorrow. She has read the technical report. What she has not seen is a clear answer to three questions the board will push her on — and those are the ones I need you to answer.'\n\nWrite a structured note (minimum 180 words) covering:\n\n1. How a single misconfigured URL-fetching feature — the import function — resulted in The Griot obtaining persistent credentials to Sankofa's production infrastructure. Trace the logic clearly: what made the server's position privileged, and why that privilege was exploitable without any additional authentication.\n\n2. What the SQL injection and the SSRF had in common at the design level — not the technical mechanism, but the underlying failure that let both exist in a production system.\n\n3. The single most important architectural control Sankofa should fund. One control — not a list. Justify it in terms of what it would have stopped in this specific investigation.\n\nWrite for the CISO, not for an engineer. No jargon without a one-line explanation. Amaka reads this before it reaches the boardroom.",
+  "maxPoints": 14,
+  "kind": "WRITEUP",
+  "widget": "WRITEUP_PAD",
+  "widgetConfig": {
+    "minWords": 180,
+    "placeholder": "CISO brief — plain language, three questions answered…"
+  },
+  "flagSalt": null,
+  "choices": null,
+  "correctIndex": null,
+  "minWords": 180
+}

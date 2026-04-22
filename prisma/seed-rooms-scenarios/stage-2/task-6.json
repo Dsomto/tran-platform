@@ -1,0 +1,30 @@
+{
+  "order": 6,
+  "title": "The Request the Server Made",
+  "description": "Tunde: 'The IAM credentials were not stolen through the front end. The admin panel had an import feature — submit a URL and the server fetches the content on your behalf. This is where the breach became a full infrastructure compromise.'\n\nAmaka: 'The network capture shows the server making an outbound HTTP request to an address in the 169.254.0.0/16 range — a block that is only reachable from within the cloud instance itself. From the open internet you cannot touch it. From inside the instance, it is always there. The Griot knew that.'\n\nReconstruct the request The Griot made to the import form. The simulated server will respond the same way the production server did.",
+  "maxPoints": 15,
+  "kind": "FLAG",
+  "widget": "VULN_APP_SIM",
+  "widgetConfig": {
+    "scenario": "import",
+    "triggers": [
+      {
+        "match": "169.254.169.254",
+        "renderKind": "json",
+        "response": "{\n  \"fetching\": \"http://169.254.169.254/latest/meta-data/\",\n  \"status\": 200,\n  \"body\": {\n    \"ami-id\": \"ami-0abcdef1234567890\",\n    \"instance-id\": \"i-0a1b2c3d4e5f67890\",\n    \"instance-type\": \"t3.medium\",\n    \"placement\": {\"region\": \"af-south-1\", \"availability-zone\": \"af-south-1a\"},\n    \"iam\": {\n      \"security-credentials\": {\n        \"sankofa-prod-role\": {\n          \"AccessKeyId\": \"ASIAREDACTED00000001\",\n          \"SecretAccessKey\": \"REDACTED/REDACTED/REDACTED+REDACTED\",\n          \"Token\": \"IQoJb3JpZ2luX2VjREDACTEDREDACTED==\",\n          \"Expiration\": \"2024-01-14T06:00:00Z\",\n          \"Type\": \"AWS-HMAC\"\n        }\n      }\n    },\n    \"flag\": \"{flag}\"\n  }\n}"
+      },
+      {
+        "regex": "localhost|127\\.0\\.0\\.1|0\\.0\\.0\\.0",
+        "renderKind": "text",
+        "response": "Fetch attempted: internal address blocked by application-layer filter.\nTry the cloud metadata range instead."
+      }
+    ],
+    "fallback": {
+      "response": "Fetching URL...\n\nHTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: 0\n\n(empty response body)"
+    }
+  },
+  "flagSalt": "stage-2-task-6-salt",
+  "choices": null,
+  "correctIndex": null,
+  "minWords": null
+}

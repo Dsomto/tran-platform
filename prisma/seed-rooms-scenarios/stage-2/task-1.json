@@ -1,0 +1,36 @@
+{
+  "order": 1,
+  "title": "First Contact",
+  "description": "Amaka opens a folder on the desk. 'The night of the breach, The Griot spent twelve minutes casing the perimeter before touching anything. Tunde's team pulled the raw reconnaissance artefacts from the network capture. They are in /recon/. Not all of them are complete — the attacker used staged scans. Read what is there, follow what it points to, and tell me how they got their first live data from this host.'\n\nYou have a shell. The answer is not in the first file you open.",
+  "maxPoints": 12,
+  "kind": "FLAG",
+  "widget": "WEB_TERMINAL",
+  "widgetConfig": {
+    "prompt": "intern@sankofa:/recon$",
+    "welcome": [
+      "Sankofa SOC forensic shell.",
+      "Captured recon artefacts mounted read-only at /recon/",
+      "Type `help` for commands, `ls -la` to list including hidden files."
+    ],
+    "files": {
+      "/recon/README.md": "Recovered recon artefacts from attacker egress capture, 2024-01-14 02:58–03:14 UTC.\n\nThree scan outputs are present. They were run in sequence — fast, full, then targeted.\nNot all stages completed. One output was truncated mid-run.\n\nAnalysis notes are in /recon/notes/.",
+      "/recon/scan-fast.txt": "Starting Nmap 7.94 at 2024-01-14 02:58 UTC\nNmap scan report for legacy.sankofa.internal (10.0.1.44)\nHost is up (0.0031s latency).\n\nPORT    STATE SERVICE VERSION\n22/tcp  open  ssh     OpenSSH 7.4 (Ubuntu)\n80/tcp  open  http    nginx 1.14.0\n443/tcp open  https   nginx 1.14.0\n\nNmap done: 1 IP address (1 host up) scanned in 1.84s\n",
+      "/recon/scan-full.txt": "Starting Nmap 7.94 at 2024-01-14 03:01 UTC\nNmap scan report for legacy.sankofa.internal (10.0.1.44)\nHost is up (0.0028s latency).\nScanned 65535 ports.\n\nPORT     STATE    SERVICE       VERSION\n21/tcp   open     ftp           vsftpd 3.0.3 — anonymous login enabled\n22/tcp   open     ssh           OpenSSH 7.4 (Ubuntu)\n80/tcp   open     http          nginx 1.14.0\n443/tcp  open     https         nginx 1.14.0 (TLS 1.2)\n3306/tcp open     mysql         MySQL 5.7.38\n6379/tcp open     redis         Redis 5.0.3 — CONFIG GET requirepass: (empty string)\n8080/tcp open     http-alt      Jetty 9.4 admin console\n9200/tcp open     elasticsearch Elasticsearch 6.8.0 — cluster: sankofa-prod — xpack.security.enabled: false\n25/tcp   filtered smtp\n445/tcp  filtered smb\n\nNmap done: 1 IP address (1 host up) scanned in 147.32s\n",
+      "/recon/scan-vuln.txt": "Starting Nmap 7.94 (vuln scripts) at 2024-01-14 03:04 UTC\n\n| elasticsearch-info:\n|   cluster_name: sankofa-prod\n|   version: 6.8.0\n|   security: DISABLED — no authentication required\n|   indices:\n|     customer_pii       (docs: 84210)\n|     transaction_log    (docs: 1203940)\n|     intern_access      (docs: 3)\n|\n| redis-info:\n|   requirepass: NOT SET\n|   databases: db0 (keys: 14), db1 (keys: 2)\n|   config_rewrite: no\n|\n[scan truncated — attacker interrupted at 03:06:12]\n",
+      "/recon/notes/README.md": "Analysis artefacts from post-breach review.\nTwo extracted files from the live Elasticsearch index at the time of breach.",
+      "/recon/notes/es-intern_access.json": "[\n  {\"_id\":\"1\",\"_source\":{\"event\":\"first_query\",\"ts\":\"2024-01-14T03:06:44Z\",\"index\":\"customer_pii\",\"query\":\"match_all\",\"hits\":84210}},\n  {\"_id\":\"2\",\"_source\":{\"event\":\"pivot\",\"ts\":\"2024-01-14T03:07:01Z\",\"note\":\"customer PII confirmed. pivoting to credentials index.\",\"next\":\"/recon/notes/es-creds-extract.json\"}},\n  {\"_id\":\"3\",\"_source\":{\"event\":\"exfil\",\"ts\":\"2024-01-14T03:07:44Z\",\"bytes_out\":12480,\"destination\":\"185.220.101.9\"}}\n]",
+      "/recon/notes/es-creds-extract.json": "{\n  \"_index\": \"intern_access\",\n  \"_source\": {\n    \"record\": \"staging_vault_path\",\n    \"note\": \"recovered from ES index before credential rotation\",\n    \"path\": \"/recon/vault/first-access.tran\"\n  }\n}",
+      "/recon/vault/first-access.tran": {
+        "kind": "flag",
+        "salt": "stage-2-task-1-salt"
+      },
+      "/recon/vault/decoy-a.tran": "TRAN{not-the-right-index}",
+      "/recon/vault/decoy-b.tran": "TRAN{wrong-service-wrong-pivot}"
+    },
+    "hints": []
+  },
+  "flagSalt": "stage-2-task-1-salt",
+  "choices": null,
+  "correctIndex": null,
+  "minWords": null
+}

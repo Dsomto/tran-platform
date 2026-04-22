@@ -1,0 +1,527 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+// ─── ENUMS ────────────────────────────────────────────────
+
+enum Role {
+  INTERN
+  GRADER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum ReportStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  GRADED
+  PASSED
+  FAILED
+  LATE
+}
+
+enum EmailKind {
+  STAGE_PASSED
+  STAGE_FAILED
+  REPORT_GRADED
+  DEADLINE_REMINDER
+  SCHOLARSHIP_RESULT
+  GENERAL
+}
+
+enum EmailQueueStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+enum ScholarshipStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ApplicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum Stage {
+  STAGE_0
+  STAGE_1
+  STAGE_2
+  STAGE_3
+  STAGE_4
+  STAGE_5
+  STAGE_6
+  STAGE_7
+  STAGE_8
+  STAGE_9
+}
+
+enum Track {
+  SOC_ANALYSIS
+  ETHICAL_HACKING
+  GRC
+}
+
+enum AssignmentStatus {
+  PENDING
+  SUBMITTED
+  GRADED
+  LATE
+}
+
+enum TaskKind {
+  FLAG
+  WRITEUP
+  UPLOAD
+  MULTIPLE_CHOICE
+}
+
+enum TaskWidget {
+  NONE
+  WEB_TERMINAL
+  CIPHER_TOOLS
+  STEGO_VIEWER
+  LOG_VIEWER
+  VULN_APP_SIM
+  PORT_SCANNER
+  FILE_DOWNLOAD
+  DIAGRAM_UPLOAD
+  MCQ_QUIZ
+  WRITEUP_PAD
+}
+
+// ─── USER ─────────────────────────────────────────────────
+
+model User {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  email         String    @unique
+  password      String
+  firstName     String
+  lastName      String
+  role          Role      @default(INTERN)
+  avatarUrl     String?
+  slackId       String?
+  phone         String?
+  bio           String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  application   Application?
+  intern        Intern?
+  announcements Announcement[]  @relation("AuthorAnnouncements")
+  sentEmails    Email[]
+  gradedReports StageReport[]   @relation("ReportGrader")
+  queuedEmails  EmailQueueItem[] @relation("EmailQueueUser")
+  scholarshipReviews DataScholarshipApplication[] @relation("ScholarshipReviewer")
+
+  @@index([role])
+}
+
+// ─── APPLICATION ──────────────────────────────────────────
+
+model Application {
+  id              String            @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String            @unique @db.ObjectId
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status          ApplicationStatus @default(PENDING)
+
+  whyJoin         String
+  experience      String
+  portfolioUrl    String?
+  githubUrl       String?
+  linkedinUrl     String?
+  preferredTrack  Track
+  hoursPerWeek    Int
+  country         String
+  timezone        String
+  referralSource  String?
+
+  reviewedBy      String?
+  reviewedAt      DateTime?
+  reviewNotes     String?
+
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@index([status])
+  @@index([preferredTrack])
+}
+
+// ─── INTERN ───────────────────────────────────────────────
+
+model Intern {
+  id              String       @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String       @unique @db.ObjectId
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  currentStage    Stage        @default(STAGE_0)
+  track           Track
+  points          Int          @default(0)
+  isActive        Boolean      @default(true)
+  finalist        Boolean      @default(false)
+  stageDoorCode   String?                     // per-intern password for stage-door logins (plain, hashed on User)
+
+  teamId          String?      @db.ObjectId
+  team            Team?        @relation(fields: [teamId], references: [id])
+
+  submissions     Submission[]
+  pointLogs       PointLog[]
+  testimonials    Testimonial[]
+  stageHistory    StageHistory[]
+  reports         StageReport[]
+
+  joinedAt        DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@index([currentStage])
+  @@index([track])
+  @@index([teamId])
+  @@index([points(sort: Desc)])
+}
+
+// ─── TEAM ─────────────────────────────────────────────────
+
+model Team {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String   @unique
+  description String?
+  avatarUrl   String?
+  totalPoints Int      @default(0)
+
+  members     Intern[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([totalPoints(sort: Desc)])
+}
+
+// ─── ASSIGNMENT ───────────────────────────────────────────
+
+model Assignment {
+  id          String       @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String
+  stage       Stage
+  track       Track?
+  dueDate     DateTime?
+  maxPoints   Int          @default(100)
+  resources   String?
+
+  // Room linkage
+  roomId        String?      @db.ObjectId
+  room          Room?        @relation(fields: [roomId], references: [id], onDelete: SetNull)
+  order         Int?
+  kind          TaskKind     @default(WRITEUP)
+  widget        TaskWidget   @default(NONE)
+  widgetConfig  Json?
+  flagSalt      String?                      // FLAG: expected = TRAN{HMAC(flagSalt,internId)[:16]}
+  choices       Json?                        // MULTIPLE_CHOICE: array of strings
+  correctIndex  Int?                         // MULTIPLE_CHOICE: 0-based
+  minWords      Int?                         // WRITEUP: enforced gate
+
+  submissions Submission[]
+
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([stage])
+  @@index([track])
+  @@index([dueDate])
+  @@index([roomId, order])
+}
+
+// ─── ROOM ─────────────────────────────────────────────────
+
+model Room {
+  id                 String   @id @default(auto()) @map("_id") @db.ObjectId
+  slug               String   @unique       // "induction-at-the-gate"
+  stage              Stage    @unique       // one room per foundation stage
+  order              Int                    // 0..4
+
+  title              String
+  codename           String                 // "Operation Root Access — Chapter 1"
+  synopsis           String
+  briefing           String                 // markdown
+  debrief            String                 // markdown
+  learningObjectives String                 // markdown bullets
+  themeColor         String   @default("#2563EB") // per-room theme hex
+  totalPoints        Int      @default(100)
+  passThreshold      Int      @default(70)  // % required to advance
+
+  isPublished        Boolean  @default(false)
+  publishedAt        DateTime?
+
+  assignments        Assignment[]
+
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@index([isPublished])
+}
+
+// ─── SUBMISSION ───────────────────────────────────────────
+
+model Submission {
+  id            String           @id @default(auto()) @map("_id") @db.ObjectId
+  internId      String           @db.ObjectId
+  intern        Intern           @relation(fields: [internId], references: [id], onDelete: Cascade)
+  assignmentId  String           @db.ObjectId
+  assignment    Assignment       @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+
+  content       String
+  attachmentUrl String?
+  status        AssignmentStatus @default(PENDING)
+  score         Int?
+  feedback      String?
+
+  submittedAt   DateTime         @default(now())
+  gradedAt      DateTime?
+
+  @@unique([internId, assignmentId])
+  @@index([status])
+  @@index([internId, status])
+  @@index([assignmentId, status])
+}
+
+// ─── POINT LOG ────────────────────────────────────────────
+
+model PointLog {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  internId    String   @db.ObjectId
+  intern      Intern   @relation(fields: [internId], references: [id], onDelete: Cascade)
+  points      Int
+  reason      String
+  awardedBy   String?
+  createdAt   DateTime @default(now())
+
+  @@index([internId])
+}
+
+// ─── STAGE HISTORY ────────────────────────────────────────
+
+model StageHistory {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  internId    String   @db.ObjectId
+  intern      Intern   @relation(fields: [internId], references: [id], onDelete: Cascade)
+  fromStage   Stage
+  toStage     Stage
+  promotedBy  String?
+  reason      String?
+  createdAt   DateTime @default(now())
+
+  @@index([internId])
+}
+
+// ─── ANNOUNCEMENT ─────────────────────────────────────────
+
+model Announcement {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  title     String
+  content   String
+  authorId  String   @db.ObjectId
+  author    User     @relation("AuthorAnnouncements", fields: [authorId], references: [id])
+  stage     Stage?
+  track     Track?
+  isPinned  Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([createdAt(sort: Desc)])
+}
+
+// ─── TESTIMONIAL ──────────────────────────────────────────
+
+model Testimonial {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  internId  String   @db.ObjectId
+  intern    Intern   @relation(fields: [internId], references: [id], onDelete: Cascade)
+  content   String
+  rating    Int      @default(5)
+  isPublic  Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+
+  @@index([isPublic])
+}
+
+// ─── MEETING ──────────────────────────────────────────────
+
+model Meeting {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String?
+  meetingUrl  String
+  stage       Stage?
+  track       Track?
+  startTime   DateTime
+  endTime     DateTime
+
+  createdAt   DateTime @default(now())
+
+  @@index([startTime])
+}
+
+// ─── EMAIL LOG ────────────────────────────────────────────
+
+model Email {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id])
+  subject   String
+  body      String
+  sentAt    DateTime @default(now())
+  status    String   @default("sent")
+
+  @@index([userId])
+}
+
+// ─── PUBLIC APPLICATION (no account required) ─────────────
+
+model PublicApplication {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  fullName        String
+  email           String   @unique
+  country         String
+  ageRange        String
+  gender          String?
+  currentStatus   String
+  experience      String
+  trackInterest   String
+  dedication      String
+  goals           String
+  referralSource  String?
+  referralCode    String   @unique
+  referredBy      String?
+  referralCount   Int      @default(0)
+  status          String   @default("pending")
+  stage           Int      @default(-1)     // -1 = not started, 0-9 = active stages, 10 = finalist
+  stageStatus     String   @default("none") // none | active | advanced | eliminated
+  internId        String?  @unique          // e.g. UBI-2025-0001
+  loginPassword   String?                   // plain text stored temporarily for email, hashed on first login
+  createdAt       DateTime @default(now())
+
+  @@index([createdAt(sort: Desc)])
+  @@index([stage, stageStatus])
+  @@index([status])
+}
+
+// ─── COUNTER (atomic sequences, e.g. intern IDs) ──────────
+model Counter {
+  id    String @id @map("_id")
+  value Int    @default(0)
+}
+
+// ─── STAGE REPORT (long-form, per-intern, per-stage) ─────
+// Separate from task-level Submissions. This is the 5–15 page
+// report a participant writes after completing the stage's tasks,
+// framed in-story (addressed to the fictional org).
+model StageReport {
+  id               String        @id @default(auto()) @map("_id") @db.ObjectId
+  internId         String        @db.ObjectId
+  intern           Intern        @relation(fields: [internId], references: [id], onDelete: Cascade)
+  stage            Stage
+
+  executiveSummary String                        // short summary typed into the form, required
+  reportUrl        String?                       // link to the PDF (Google Drive / Dropbox / etc.) — required on submit
+  body             String?                       // optional freeform notes (kept for future; unused in links-only flow)
+  attachmentUrl    String?                       // optional secondary attachment link
+
+  status           ReportStatus  @default(DRAFT)
+  version          Int           @default(1)     // bumps on each resubmit
+
+  // Grading
+  graderId         String?       @db.ObjectId
+  grader           User?         @relation("ReportGrader", fields: [graderId], references: [id])
+  claimedAt        DateTime?
+  score            Int?                          // 0-100
+  feedback         String?                       // required when graded
+  gradedAt         DateTime?
+
+  submittedAt      DateTime?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  @@unique([internId, stage])                   // one report record per intern per stage
+  @@index([stage, status])
+  @@index([graderId, status])
+  @@index([status, submittedAt])                // claim queue: oldest SUBMITTED first
+}
+
+// ─── STAGE WINDOW (timing + passing score per stage) ─────
+// Configurable by admin. Once submitUntil elapses, reports can't
+// be submitted or resubmitted for that stage.
+model StageWindow {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  stage        Stage    @unique
+  activeFrom   DateTime
+  submitUntil  DateTime
+  passingScore Int      @default(70)            // 0-100
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+// ─── EMAIL QUEUE (FIFO, drained by cron at N/day) ────────
+// Handles Resend rate caps. Cron drains in createdAt ASC order.
+model EmailQueueItem {
+  id          String           @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String           @db.ObjectId
+  user        User             @relation("EmailQueueUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  kind        EmailKind
+  toEmail     String
+  subject     String
+  body        String                            // html or plaintext
+  context     Json?                             // template data
+
+  status      EmailQueueStatus @default(PENDING)
+  attempts    Int              @default(0)
+  sentAt      DateTime?
+  failReason  String?
+
+  enqueuedAt  DateTime         @default(now())
+
+  @@index([status, enqueuedAt])                // FIFO drain
+  @@index([userId])
+  @@index([kind, status])
+}
+
+// ─── DATA SCHOLARSHIP APPLICATION ────────────────────────
+// Separate from the main intern application. Participants apply
+// for weekly mobile data credits; admins review and approve.
+model DataScholarshipApplication {
+  id              String            @id @default(auto()) @map("_id") @db.ObjectId
+  fullName        String
+  email           String
+  phone           String
+  country         String
+  internCode      String?                       // UBI-XXXX-XXXX if already in programme
+  currentStage    String?                       // free text: "Stage 2", "Not yet started", etc.
+  dataSituation   String                        // describe current connectivity
+  reason          String                        // why they need the scholarship
+  referralSource  String?
+
+  status          ScholarshipStatus @default(PENDING)
+  reviewerId      String?           @db.ObjectId
+  reviewer        User?             @relation("ScholarshipReviewer", fields: [reviewerId], references: [id])
+  reviewedAt      DateTime?
+  reviewNotes     String?
+
+  createdAt       DateTime          @default(now())
+
+  @@index([status, createdAt])
+  @@index([email])
+}
