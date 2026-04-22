@@ -13,18 +13,66 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "UBI — Ubuntu Bridge Initiative",
+  metadataBase: new URL("https://ubuntubridgeinitiatives.org"),
+  title: {
+    default: "UBI — Free Cybersecurity Internship in Africa | Ubuntu Bridge Initiative",
+    template: "%s · UBI",
+  },
   description:
-    "A 10-stage intensive internship that takes you from beginner to job-ready cybersecurity professional. Real challenges, real teams, real results.",
+    "A free, selective cybersecurity internship for young Africans. Five foundation stages, three specialist tracks — SOC, Ethical Hacking, and GRC. Real breaches, no tuition, no hidden fees.",
   keywords: [
-    "cybersecurity",
-    "internship",
+    "cybersecurity internship",
+    "free cybersecurity training",
+    "cybersecurity Africa",
+    "SOC analyst training",
+    "ethical hacking bootcamp",
+    "GRC compliance training",
     "penetration testing",
-    "SOC",
-    "security",
-    "training",
+    "Nigeria cybersecurity",
     "Ubuntu Bridge Initiative",
+    "UBI",
   ],
+  authors: [{ name: "Ubuntu Bridge Initiative" }],
+  creator: "Ubuntu Bridge Initiative",
+  publisher: "Ubuntu Bridge Initiative",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://ubuntubridgeinitiatives.org",
+    siteName: "Ubuntu Bridge Initiative",
+    title: "UBI — Free Cybersecurity Internship in Africa",
+    description:
+      "Break into cybersecurity without paying for it. A free, selective internship for young Africans. Five foundation stages plus specialist tracks.",
+    images: [
+      {
+        url: "/apple-touch-icon.svg",
+        width: 180,
+        height: 180,
+        alt: "UBI logo",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary",
+    title: "UBI — Free Cybersecurity Internship in Africa",
+    description:
+      "Break into cybersecurity without paying for it. Free, selective internship for young Africans.",
+    images: ["/apple-touch-icon.svg"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
   icons: {
     icon: [
       { url: "/favicon.svg", type: "image/svg+xml" },

@@ -304,8 +304,8 @@ function renderResultEmail(opts: {
   return `
     <div style="font-family:'Segoe UI',sans-serif;max-width:600px;margin:0 auto;background:#F8FAFC;padding:40px 20px;">
       <div style="background:linear-gradient(135deg,#2563EB,#0891B2);padding:32px;border-radius:16px;text-align:center;color:white;">
-        <h1 style="margin:0 0 8px;font-size:24px;font-weight:700;">TRAN</h1>
-        <p style="margin:0;font-size:13px;opacity:0.9;">The Root Access Network</p>
+        <h1 style="margin:0 0 8px;font-size:24px;font-weight:700;">UBI</h1>
+        <p style="margin:0;font-size:13px;opacity:0.9;">Ubuntu Bridge Initiative</p>
       </div>
       <div style="background:white;padding:32px;border-radius:16px;margin-top:20px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
         <h2 style="color:#0F172A;margin:0 0 16px;">Hi ${firstName},</h2>
@@ -322,7 +322,7 @@ function renderResultEmail(opts: {
         ${slackBlock}
       </div>
       <p style="text-align:center;color:#94A3B8;font-size:12px;margin-top:24px;">
-        The Root Access Network · ubuntubridgeinitiatives.org
+        Ubuntu Bridge Initiative · ubuntubridgeinitiatives.org
       </p>
     </div>
   `;

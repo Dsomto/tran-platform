@@ -56,7 +56,7 @@ export function Footer() {
         </div>
 
         <div className="mt-12 pt-6 border-t border-border/40 flex flex-col sm:flex-row justify-between items-center gap-3">
-          <p className="text-[11px] text-muted">&copy; {new Date().getFullYear()} UBI. All rights reserved. A programme by <a href="https://therootaccessnetwork.com/" target="_blank" rel="noopener noreferrer" className="text-blue hover:underline">The Root Access Network</a>.</p>
+          <p className="text-[11px] text-muted">&copy; {new Date().getFullYear()} Ubuntu Bridge Initiative. All rights reserved.</p>
         </div>
       </div>
     </footer>

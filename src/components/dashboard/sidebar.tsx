@@ -20,6 +20,8 @@ import {
   FileText,
   Gavel,
   Heart,
+  Activity,
+  Shield,
 } from "lucide-react";
 import { LogoMark } from "@/components/logo";
 import { useState } from "react";
@@ -42,9 +44,11 @@ const internLinks = [
   { href: "/dashboard/team", label: "My Team", icon: Users },
   { href: "/dashboard/meetings", label: "Meetings", icon: Video },
   { href: "/dashboard/feedback", label: "Feedback", icon: MessageSquare },
+  { href: "/dashboard/settings/security", label: "Security", icon: Shield },
 ];
 
 const adminLinks = [
+  { href: "/ops", label: "Operations", icon: Activity },
   { href: "/admin", label: "Overview", icon: LayoutDashboard },
   { href: "/admin/applicants", label: "Applicants", icon: UserCheck },
   { href: "/admin/interns", label: "Interns", icon: Users },
