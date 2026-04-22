@@ -245,10 +245,23 @@ export async function sendPublicAcceptanceEmail(
           </div>
           ` : ""}
 
+          ${process.env.SLACK_CHANNEL_URL ? `
+          <!-- Slack Invite -->
+          <div style="margin: 0 20px 24px; padding: 20px; background: rgba(74, 21, 75, 0.25); border: 1px solid rgba(138, 66, 159, 0.4); border-radius: 12px;">
+            <p style="color: #C084FC; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; margin: 0 0 8px; font-weight: 700;">Join the cohort channel</p>
+            <p style="color: #E9D5FF; font-size: 13px; line-height: 1.6; margin: 0 0 14px;">
+              Our cohort lives on Slack. Mentor office-hours, announcements, and help from other participants all happen here. Join on day one — we expect everyone inside.
+            </p>
+            <a href="${process.env.SLACK_CHANNEL_URL}" style="display: inline-block; background: #4A154B; color: white; padding: 10px 22px; border-radius: 9999px; text-decoration: none; font-weight: 600; font-size: 13px;">
+              Join the Slack workspace
+            </a>
+          </div>
+          ` : ""}
+
           <!-- Important Notice -->
           <div style="margin: 0 20px 24px; padding: 16px; background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 10px;">
             <p style="color: #FCA5A5; font-size: 13px; line-height: 1.6; margin: 0;">
-              <strong style="color: #F87171;">Mandatory:</strong> Attend orientation on 30th May. The programme is elimination-based — meet the requirements at each stage or face elimination. Slack invite and onboarding details will follow.
+              <strong style="color: #F87171;">Mandatory:</strong> Attend orientation on 30th May. The programme is elimination-based — meet the requirements at each stage or face elimination.
             </p>
           </div>
 

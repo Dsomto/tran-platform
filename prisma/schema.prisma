@@ -171,6 +171,8 @@ model Intern {
   isActive        Boolean      @default(true)
   finalist        Boolean      @default(false)
   stageDoorCode   String?                     // per-intern password for stage-door logins (plain, hashed on User)
+  slackJoined     Boolean      @default(false) // self-attested: has the intern joined the Slack workspace
+  slackJoinedAt   DateTime?
 
   teamId          String?      @db.ObjectId
   team            Team?        @relation(fields: [teamId], references: [id])

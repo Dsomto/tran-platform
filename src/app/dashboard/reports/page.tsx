@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { FileText, Clock, CheckCircle2, XCircle, AlertTriangle } from "lucide-react";
+import { FileText, Clock, CheckCircle2, XCircle, AlertTriangle, Award } from "lucide-react";
+import { certificateShareSig } from "@/lib/certificate-link";
 
 const STAGE_META: Record<string, { label: string; subtitle: string }> = {
   STAGE_0: { label: "Stage 0", subtitle: "Foundations" },
@@ -100,7 +101,18 @@ export default async function ReportsPage() {
                     </details>
                   )}
                 </div>
-                <div className="flex gap-2 shrink-0">
+                <div className="flex gap-2 shrink-0 flex-wrap">
+                  {r?.status === "PASSED" && (
+                    <a
+                      href={`/api/certificate/${r.id}?sig=${certificateShareSig(r.id, intern.id)}`}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      className="inline-flex items-center gap-1.5 justify-center px-3 py-2 text-sm font-medium rounded-lg border border-blue/30 bg-blue/5 text-blue hover:bg-blue/10"
+                    >
+                      <Award className="h-4 w-4" />
+                      Certificate
+                    </a>
+                  )}
                   {isClosed && !r ? (
                     <span className="text-sm text-muted-foreground italic px-3 py-2">
                       Deadline passed

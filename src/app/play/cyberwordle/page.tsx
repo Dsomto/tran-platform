@@ -4,12 +4,13 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { Navbar } from "@/components/landing/navbar";
 import { Footer } from "@/components/landing/footer";
-import { getDailyWord, WORDS } from "@/lib/words";
+import { getDailyWordByLength, WORDS, maxGuessesFor } from "@/lib/words";
 import { ArrowRight } from "lucide-react";
 
 // ── Constants ─────────────────────────────────────────────────
 
-const MAX_GUESSES = 6;
+const LENGTH_OPTIONS = [4, 5, 6, 7] as const;
+const DEFAULT_LENGTH = 5;
 
 const KEYBOARD_ROWS = [
   ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"],
@@ -76,11 +77,14 @@ const WIN_MESSAGES = ["Genius!", "Magnificent!", "Impressive!", "Splendid!", "Gr
 // ── Component ─────────────────────────────────────────────────
 
 export default function PlayPage() {
+  const [wordLength, setWordLength] = useState<number>(DEFAULT_LENGTH);
   const [solution, setSolution] = useState("");
   const [dayNum, setDayNum] = useState(0);
   const [guesses, setGuesses] = useState<string[]>([]);
   const [currentGuess, setCurrentGuess] = useState("");
   const [gameStatus, setGameStatus] = useState<GameStatus>("playing");
+
+  const MAX_GUESSES = maxGuessesFor(wordLength);
 
   // Reveal animation: which row is revealing, how many tiles revealed
   const [revealingRow, setRevealingRow] = useState(-1);
@@ -106,41 +110,59 @@ export default function PlayPage() {
 
   // ── Init ──────────────────────────────────────────────────
 
+  // One-time init: dictionary, saved length preference, stats.
   useEffect(() => {
-    const { word, index } = getDailyWord();
-    setSolution(word);
-    setDayNum(index);
-
-    const today = getToday();
     try {
-      const saved = localStorage.getItem(`cyberwordle-${today}`);
-      if (saved) {
-        const s = JSON.parse(saved);
-        setGuesses(s.guesses || []);
-        setGameStatus(s.gameStatus || "playing");
+      const savedLen = localStorage.getItem("cyberwordle-length");
+      if (savedLen) {
+        const n = parseInt(savedLen, 10);
+        if (LENGTH_OPTIONS.includes(n as (typeof LENGTH_OPTIONS)[number])) {
+          setWordLength(n);
+        }
       }
       const savedStats = localStorage.getItem("cyberwordle-stats");
       if (savedStats) setStats(JSON.parse(savedStats));
     } catch { /* ignore corrupt storage */ }
 
-    // Load dictionary for guess validation
     fetch("/dictionary.txt")
       .then((r) => r.text())
       .then((text) => {
         const dict = new Set(text.split("\n").map((w) => w.trim().toUpperCase()).filter(Boolean));
-        // Always include all cybersecurity solution words
         WORDS.forEach((w) => dict.add(w.toUpperCase()));
         setValidWords(dict);
       })
       .catch(() => {
-        // If dictionary fails to load, still include cyber terms
         setValidWords(new Set(WORDS.map((w) => w.toUpperCase())));
       });
 
     setMounted(true);
-
     return () => timersRef.current.forEach(clearTimeout);
   }, []);
+
+  // Load the word + saved state for the current length. Runs whenever
+  // the user changes length (different daily word per length).
+  useEffect(() => {
+    const { word, index } = getDailyWordByLength(wordLength);
+    setSolution(word);
+    setDayNum(index);
+    setCurrentGuess("");
+
+    const today = getToday();
+    try {
+      const saved = localStorage.getItem(`cyberwordle-${today}-${wordLength}`);
+      if (saved) {
+        const s = JSON.parse(saved);
+        setGuesses(s.guesses || []);
+        setGameStatus(s.gameStatus || "playing");
+      } else {
+        setGuesses([]);
+        setGameStatus("playing");
+      }
+    } catch {
+      setGuesses([]);
+      setGameStatus("playing");
+    }
+  }, [wordLength]);
 
   // ── Persist state ─────────────────────────────────────────
 
@@ -148,10 +170,10 @@ export default function PlayPage() {
     if (!mounted || !solution) return;
     const today = getToday();
     localStorage.setItem(
-      `cyberwordle-${today}`,
+      `cyberwordle-${today}-${wordLength}`,
       JSON.stringify({ guesses, gameStatus })
     );
-  }, [guesses, gameStatus, mounted, solution]);
+  }, [guesses, gameStatus, mounted, solution, wordLength]);
 
   // ── Countdown ─────────────────────────────────────────────
 
@@ -201,6 +223,7 @@ export default function PlayPage() {
     if (currentGuess.length !== solution.length) {
       setShake(true);
       showToast(`Must be ${solution.length} letters`);
+      if (typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate(30);
       const sid = setTimeout(() => setShake(false), 600);
       timersRef.current.push(sid);
       return;
@@ -212,6 +235,7 @@ export default function PlayPage() {
     if (validWords && !validWords.has(guess)) {
       setShake(true);
       showToast("Not in word list");
+      if (typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate(30);
       const sid = setTimeout(() => setShake(false), 600);
       timersRef.current.push(sid);
       return;
@@ -355,16 +379,37 @@ export default function PlayPage() {
 
   return (
     <>
-      <Navbar />
-      <main className="relative min-h-screen bg-background bg-scan overflow-hidden">
-        {/* Decorative */}
+      {/* Desktop: show navbar + footer. Mobile: full-screen game. */}
+      <div className="hidden md:block">
+        <Navbar />
+      </div>
+      <main className="relative min-h-[100svh] bg-background bg-scan overflow-hidden">
+        {/* Mobile close-bar — lets users get back without a navbar eating screen space */}
+        <div className="md:hidden sticky top-0 z-20 flex items-center justify-between px-3 py-2 bg-background/90 backdrop-blur border-b border-border/40">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1 text-xs font-medium text-muted hover:text-foreground"
+            aria-label="Back to home"
+          >
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+            Home
+          </Link>
+          <span className="text-[11px] font-semibold text-foreground tracking-tight">
+            🔐 CyberWordle
+          </span>
+          <div className="w-10" />
+        </div>
+
+        {/* Decorative — desktop only */}
         <div className="orb orb-blue w-[300px] h-[300px] top-[5%] right-[10%] hidden lg:block" aria-hidden="true" />
         <div className="orb orb-cyan w-[180px] h-[180px] bottom-[10%] left-[5%] hidden lg:block" style={{ animationDelay: "-5s" }} aria-hidden="true" />
         <div className="crosshair top-[15%] left-[10%] hidden lg:block" aria-hidden="true" />
         <div className="crosshair bottom-[20%] right-[12%] hidden lg:block" aria-hidden="true" />
         <div className="hex-grid" aria-hidden="true" />
 
-        <div className="relative z-[1] max-w-lg mx-auto px-4 pt-24 pb-4 flex flex-col min-h-screen">
+        <div className="relative z-[1] max-w-lg mx-auto px-3 sm:px-4 pt-3 md:pt-24 pb-2 flex flex-col min-h-[calc(100svh-2.5rem)] md:min-h-screen">
           {/* ── Header ── */}
           <div className="text-center mb-4">
             <div className="flex items-center justify-center gap-3 mb-1">
@@ -388,8 +433,49 @@ export default function PlayPage() {
                 </svg>
               </button>
             </div>
-            <p className="text-[13px] text-muted">
-              Guess the cybersecurity term — <strong className="text-foreground">{wordLength} letters</strong> today
+
+            {/* ── Length selector ── */}
+            <div
+              role="radiogroup"
+              aria-label="Choose word length"
+              className="inline-flex items-center gap-1 bg-white/60 border border-border rounded-full p-1 mt-2"
+            >
+              {LENGTH_OPTIONS.map((len) => {
+                const active = len === wordLength;
+                return (
+                  <button
+                    key={len}
+                    role="radio"
+                    aria-checked={active}
+                    onClick={() => {
+                      if (len === wordLength) return;
+                      const hasProgress = guesses.length > 0 && gameStatus === "playing";
+                      if (hasProgress) {
+                        const ok = confirm(
+                          `Switch to ${len}-letter words? Your current ${wordLength}-letter game will stay saved, but the board will reset.`
+                        );
+                        if (!ok) return;
+                      }
+                      try {
+                        localStorage.setItem("cyberwordle-length", String(len));
+                      } catch { /* ignore storage errors */ }
+                      setWordLength(len);
+                    }}
+                    className={`px-3 py-1 text-xs font-semibold rounded-full transition-colors cursor-pointer ${
+                      active
+                        ? "bg-blue text-white"
+                        : "text-muted hover:text-foreground"
+                    }`}
+                  >
+                    {len}
+                  </button>
+                );
+              })}
+            </div>
+
+            <p className="text-[13px] text-muted mt-2">
+              <strong className="text-foreground">{wordLength} letters</strong>,{" "}
+              <strong className="text-foreground">{MAX_GUESSES} tries</strong>
             </p>
           </div>
 
@@ -547,8 +633,8 @@ export default function PlayPage() {
             ))}
           </div>
 
-          {/* ── UBI branding ── */}
-          <div className="text-center py-3 border-t border-border/30">
+          {/* ── UBI branding — desktop only ── */}
+          <div className="hidden md:block text-center py-3 border-t border-border/30">
             <Link href="/" className="text-[11px] text-muted hover:text-foreground transition-colors">
               Built by <strong>UBI</strong> — Ubuntu Bridge Initiative
             </Link>
@@ -577,8 +663,8 @@ export default function PlayPage() {
 
               <h3 className="text-sm font-semibold text-foreground mb-3">Guess Distribution</h3>
               <div className="space-y-1.5 mb-6">
-                {stats.distribution.map((count, i) => {
-                  const max = Math.max(...stats.distribution, 1);
+                {stats.distribution.slice(0, MAX_GUESSES).map((count, i) => {
+                  const max = Math.max(...stats.distribution.slice(0, MAX_GUESSES), 1);
                   const pct = (count / max) * 100;
                   const isLastGuess = gameStatus === "won" && guesses.length === i + 1;
                   return (
@@ -642,7 +728,13 @@ export default function PlayPage() {
                   </div>
                 </div>
 
-                <p>A new word appears every day at midnight. The word length varies between <strong className="text-foreground">5 and 9 letters</strong>.</p>
+                <p>A new word appears every day at midnight. Pick your difficulty at the top:</p>
+                <ul className="list-disc list-inside text-xs space-y-1 pl-1">
+                  <li><strong className="text-foreground">4 letters</strong> — 4 tries</li>
+                  <li><strong className="text-foreground">5 letters</strong> — 5 tries</li>
+                  <li><strong className="text-foreground">6 letters</strong> — 6 tries</li>
+                  <li><strong className="text-foreground">7 letters</strong> — 6 tries</li>
+                </ul>
               </div>
 
               <button
@@ -704,7 +796,10 @@ export default function PlayPage() {
         }
       `}</style>
 
-      <Footer />
+      {/* Footer — desktop only; mobile is a full-screen game */}
+      <div className="hidden md:block">
+        <Footer />
+      </div>
     </>
   );
 }

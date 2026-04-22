@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth";
 import { logger } from "@/lib/logger";
+import { certificateUrl } from "@/lib/certificate-link";
 
 const STAGE_KEYS = [
   "STAGE_0",
@@ -127,6 +128,8 @@ export async function POST(request: NextRequest) {
 
     const stageNum = stage.replace("STAGE_", "");
     const nextStage = `STAGE_${Number(stageNum) + 1}` as StageKey;
+    const origin = process.env.PUBLIC_APP_URL || "https://ubuntubridgeinitiatives.org";
+    const slackUrl = process.env.SLACK_CHANNEL_URL || "";
 
     // Promote passers and queue pass emails.
     for (const r of willPass) {
@@ -150,6 +153,13 @@ export async function POST(request: NextRequest) {
           },
         });
       }
+
+      const certUrl = certificateUrl({
+        origin,
+        reportId: r.id,
+        internId: r.intern.id,
+      });
+
       await prisma.emailQueueItem.create({
         data: {
           userId: r.intern.user.id,
@@ -163,12 +173,15 @@ export async function POST(request: NextRequest) {
             score: r.score ?? 0,
             feedback: r.feedback ?? "",
             passingScore: Math.round(threshold),
+            certUrl,
+            slackUrl,
           }),
           context: {
             reportId: r.id,
             stage,
             score: r.score,
             passingScore: Math.round(threshold),
+            certUrl,
           },
         },
       });
@@ -193,6 +206,8 @@ export async function POST(request: NextRequest) {
             score: r.score ?? 0,
             feedback: r.feedback ?? "",
             passingScore: Math.round(threshold),
+            certUrl: null,
+            slackUrl,
           }),
           context: {
             reportId: r.id,
@@ -236,10 +251,21 @@ function renderResultEmail(opts: {
   score: number;
   feedback: string;
   passingScore: number;
+  certUrl: string | null;
+  slackUrl: string;
 }): string {
-  const { firstName, stageNumber, passed, score, feedback, passingScore } = opts;
+  const {
+    firstName,
+    stageNumber,
+    passed,
+    score,
+    feedback,
+    passingScore,
+    certUrl,
+    slackUrl,
+  } = opts;
   const headline = passed
-    ? `Congratulations — you've made it to Stage ${Number(stageNumber) + 1}.`
+    ? `Congratulations — you've passed Stage ${stageNumber}.`
     : `Your Stage ${stageNumber} results are in.`;
   const cta = passed
     ? `Stage ${Number(stageNumber) + 1} is now open to you. Log in to continue.`
@@ -249,6 +275,31 @@ function renderResultEmail(opts: {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/\n/g, "<br/>");
+
+  const certBlock =
+    passed && certUrl
+      ? `
+        <div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:10px;padding:16px;margin:20px 0;text-align:center;">
+          <p style="margin:0 0 10px;color:#1E40AF;font-size:14px;font-weight:600;">Your certificate of completion is ready</p>
+          <p style="margin:0 0 14px;color:#1E3A8A;font-size:13px;">Download a signed PDF with your name for this stage.</p>
+          <a href="${certUrl}" style="display:inline-block;background:#2563EB;color:white;padding:10px 22px;border-radius:9999px;font-size:13px;font-weight:600;text-decoration:none;">
+            Download certificate (PDF)
+          </a>
+        </div>`
+      : "";
+
+  const slackBlock =
+    passed && slackUrl
+      ? `
+        <div style="border-top:1px solid #E2E8F0;margin-top:20px;padding-top:20px;">
+          <p style="margin:0 0 10px;color:#334155;font-size:14px;">
+            <strong>Join the cohort channel.</strong> This is where announcements, mentor office-hours, and cohort help happen.
+          </p>
+          <a href="${slackUrl}" style="display:inline-block;background:#4A154B;color:white;padding:9px 18px;border-radius:9999px;font-size:13px;font-weight:600;text-decoration:none;">
+            Join the Slack channel
+          </a>
+        </div>`
+      : "";
 
   return `
     <div style="font-family:'Segoe UI',sans-serif;max-width:600px;margin:0 auto;background:#F8FAFC;padding:40px 20px;">
@@ -264,12 +315,14 @@ function renderResultEmail(opts: {
             <strong>Your score:</strong> ${score} / 100 &nbsp;·&nbsp; <strong>Passing:</strong> ${passingScore}
           </p>
         </div>
+        ${certBlock}
         <h3 style="color:#0F172A;margin:24px 0 8px;font-size:16px;">Grader feedback</h3>
         <div style="color:#475569;line-height:1.7;font-size:14px;background:#F8FAFC;border-radius:8px;padding:16px;">${safeFeedback}</div>
         <p style="color:#475569;line-height:1.7;margin:24px 0 0;">${cta}</p>
+        ${slackBlock}
       </div>
       <p style="text-align:center;color:#94A3B8;font-size:12px;margin-top:24px;">
-        The Root Access Network · therootaccessnetwork.com
+        The Root Access Network · ubuntubridgeinitiatives.org
       </p>
     </div>
   `;

@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { formatDate, stageToNumber, trackLabel } from "@/lib/utils";
 import Link from "next/link";
+import { SlackCard } from "@/components/dashboard/slack-card";
 
 export default async function DashboardPage() {
   const session = await getSession();
@@ -107,13 +108,24 @@ export default async function DashboardPage() {
       take: 5,
     }),
     prisma.announcement.findMany({
+      where: {
+        // Show announcements targeted to everyone, or this intern's stage, or this intern's track.
+        AND: [
+          {
+            OR: [{ stage: null }, { stage: intern.currentStage }],
+          },
+          {
+            OR: [{ track: null }, { track: intern.track }],
+          },
+        ],
+      },
       include: {
         author: {
           select: { firstName: true, lastName: true },
         },
       },
       orderBy: [{ isPinned: "desc" }, { createdAt: "desc" }],
-      take: 3,
+      take: 4,
     }),
     prisma.intern.findMany({
       where: { isActive: true },
@@ -145,6 +157,12 @@ export default async function DashboardPage() {
       />
 
       <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <SlackCard
+          inviteUrl={process.env.SLACK_CHANNEL_URL ?? null}
+          joined={intern.slackJoined ?? false}
+          joinedAt={intern.slackJoinedAt ? intern.slackJoinedAt.toISOString() : null}
+        />
+
         {/* Stats Row */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <Card variant="glass">
@@ -303,6 +321,14 @@ export default async function DashboardPage() {
               <h3 className="text-lg font-semibold text-foreground">
                 Announcements
               </h3>
+              {announcements.length > 0 && (
+                <Link
+                  href="/dashboard/announcements"
+                  className="text-sm text-primary hover:text-primary-dark font-medium"
+                >
+                  See all →
+                </Link>
+              )}
             </div>
             {announcements.length === 0 ? (
               <Card variant="glass" className="text-center py-8">
@@ -311,25 +337,31 @@ export default async function DashboardPage() {
             ) : (
               <div className="space-y-3">
                 {announcements.map((a) => (
-                  <Card key={a.id} variant="glass">
-                    <CardContent>
-                      <div className="flex items-start gap-2 mb-2">
-                        {a.isPinned && (
-                          <Pin className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-                        )}
-                        <h4 className="text-sm font-semibold text-foreground">
-                          {a.title}
-                        </h4>
-                      </div>
-                      <p className="text-sm text-muted leading-relaxed line-clamp-2">
-                        {a.content}
-                      </p>
-                      <p className="text-xs text-muted/60 mt-2">
-                        {a.author.firstName} {a.author.lastName} &bull;{" "}
-                        {formatDate(a.createdAt)}
-                      </p>
-                    </CardContent>
-                  </Card>
+                  <Link
+                    key={a.id}
+                    href={`/dashboard/announcements#${a.id}`}
+                    className="block"
+                  >
+                    <Card variant="glass" className="hover:bg-white/60 transition-colors cursor-pointer">
+                      <CardContent>
+                        <div className="flex items-start gap-2 mb-2">
+                          {a.isPinned && (
+                            <Pin className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                          )}
+                          <h4 className="text-sm font-semibold text-foreground">
+                            {a.title}
+                          </h4>
+                        </div>
+                        <p className="text-sm text-muted leading-relaxed line-clamp-2">
+                          {a.content}
+                        </p>
+                        <p className="text-xs text-muted/60 mt-2">
+                          {a.author.firstName} {a.author.lastName} &bull;{" "}
+                          {formatDate(a.createdAt)}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </Link>
                 ))}
               </div>
             )}

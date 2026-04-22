@@ -37,6 +37,7 @@ const internLinks = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
   { href: "/dashboard/assignments", label: "Assignments", icon: BookOpen },
   { href: "/dashboard/reports", label: "Reports", icon: FileText },
+  { href: "/dashboard/announcements", label: "Announcements", icon: Megaphone },
   { href: "/dashboard/leaderboard", label: "Leaderboard", icon: Trophy },
   { href: "/dashboard/team", label: "My Team", icon: Users },
   { href: "/dashboard/meetings", label: "Meetings", icon: Video },
