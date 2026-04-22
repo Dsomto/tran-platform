@@ -360,8 +360,6 @@ export default function PlayPage() {
     );
   }
 
-  const wordLength = solution.length;
-
   // ── Tile sizing based on word length ──────────────────────
 
   const tileSize =
