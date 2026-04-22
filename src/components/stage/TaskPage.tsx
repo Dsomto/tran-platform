@@ -78,8 +78,27 @@ export default function TaskPageClient(props: TaskPageProps) {
 
   const accent = props.theme.accentHex;
 
+  // Widgets like WEB_TERMINAL, LOG_VIEWER, VULN_APP_SIM, CIPHER_TOOLS assume
+  // a roomy screen — they do not degrade gracefully below ~768px. Warn mobile
+  // users rather than force them through a broken experience.
+  const widgetNeedsDesktop =
+    props.widgetKind === "WEB_TERMINAL" ||
+    props.widgetKind === "LOG_VIEWER" ||
+    props.widgetKind === "VULN_APP_SIM" ||
+    props.widgetKind === "CIPHER_TOOLS" ||
+    props.widgetKind === "PORT_SCANNER" ||
+    props.widgetKind === "STEGO_VIEWER";
+
   return (
     <article className="space-y-6">
+      {widgetNeedsDesktop && (
+        <div className="md:hidden rounded-xl border border-amber-400/40 bg-amber-400/10 p-3 text-xs leading-relaxed text-amber-100">
+          <strong className="font-semibold">Better on a laptop.</strong>{" "}
+          This task uses a tool (terminal, log viewer, or simulator) that is
+          hard to use on a phone. Open this page on a desktop or laptop when
+          you can — the experience is much better there.
+        </div>
+      )}
       <header className="flex items-start justify-between gap-4">
         <div>
           <div className="text-xs font-mono text-white/50">Task {String(props.order).padStart(2, "0")}</div>

@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth";
 import { logger } from "@/lib/logger";
 import { certificateUrl } from "@/lib/certificate-link";
+import { recordAudit, auditMetaFromRequest } from "@/lib/audit";
 
 const STAGE_KEYS = [
   "STAGE_0",
@@ -73,7 +74,7 @@ export async function GET(request: NextRequest) {
 // re-evaluates and enqueues again (so use with care).
 export async function POST(request: NextRequest) {
   try {
-    await requireAdmin();
+    const admin = await requireAdmin();
     const body = await request.json();
     const { stage, passingScore, dryRun } = body ?? {};
 
@@ -218,6 +219,20 @@ export async function POST(request: NextRequest) {
         },
       });
     }
+
+    await recordAudit({
+      actor: admin,
+      action: "stage-results.publish",
+      targetType: "STAGE_RESULTS",
+      targetId: stage,
+      details: {
+        stage,
+        threshold: Math.round(threshold),
+        passed: willPass.length,
+        failed: willFail.length,
+      },
+      ...auditMetaFromRequest(request),
+    });
 
     return Response.json({
       published: true,

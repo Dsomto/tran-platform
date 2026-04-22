@@ -16,6 +16,7 @@ export async function GET(request: NextRequest) {
     const stage = url.searchParams.get("stage");
     const track = url.searchParams.get("track");
     const teamId = url.searchParams.get("teamId");
+    const q = url.searchParams.get("q")?.trim();
     const page = Math.max(1, parseInt(url.searchParams.get("page") || "1") || 1);
     const rawLimit = parseInt(url.searchParams.get("limit") || "50") || 50;
     const limit = Math.min(MAX_PAGE_SIZE, Math.max(1, rawLimit));
@@ -24,6 +25,18 @@ export async function GET(request: NextRequest) {
     if (stage) where.currentStage = stage;
     if (track) where.track = track;
     if (teamId) where.teamId = teamId;
+    if (q && q.length > 0) {
+      // Search across the linked User's firstName, lastName, email.
+      where.user = {
+        is: {
+          OR: [
+            { firstName: { contains: q, mode: "insensitive" } },
+            { lastName: { contains: q, mode: "insensitive" } },
+            { email: { contains: q, mode: "insensitive" } },
+          ],
+        },
+      };
+    }
 
     const [interns, total] = await Promise.all([
       prisma.intern.findMany({

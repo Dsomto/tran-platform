@@ -48,7 +48,7 @@ export function generateStageCertificate(opts: {
       .fontSize(11)
       .font("Helvetica-Bold")
       .fillColor("#2563EB")
-      .text("THE ROOT ACCESS NETWORK · TRAN", 0, 72, {
+      .text("UBUNTU BRIDGE INITIATIVE · UBI", 0, 72, {
         align: "center",
         width: pageWidth,
       });
@@ -156,7 +156,7 @@ export function generateStageCertificate(opts: {
       .font("Helvetica-Bold")
       .fillColor("#374151")
       .text("Okoma Somtochukwu", 120, baselineY + 8);
-    doc.font("Helvetica").text("Head of Programme · TRAN");
+    doc.font("Helvetica").text("Head of Programme · UBI");
 
     // Date (right)
     const dateStr = issuedAt.toLocaleDateString("en-GB", {

@@ -43,7 +43,7 @@ async function handleDrain(request: NextRequest): Promise<Response> {
       maxMessages: 100,
     });
 
-    const from = `"The Root Access Network" <${process.env.SMTP_USER}>`;
+    const from = `"Ubuntu Bridge Initiative" <${process.env.SMTP_USER}>`;
 
     let sent = 0;
     let failed = 0;

@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth";
 import { logger } from "@/lib/logger";
+import { recordAudit, auditMetaFromRequest } from "@/lib/audit";
 
 export async function PATCH(
   request: NextRequest,
@@ -31,6 +32,19 @@ export async function PATCH(
         reviewerId: session.id,
         reviewedAt: new Date(),
       },
+    });
+
+    await recordAudit({
+      actor: session,
+      action: status ? `scholarship.${status.toLowerCase()}` : "scholarship.note",
+      targetType: "SCHOLARSHIP",
+      targetId: app.id,
+      details: {
+        applicantEmail: app.email,
+        status: app.status,
+        hasNotes: Boolean(reviewNotes),
+      },
+      ...auditMetaFromRequest(request),
     });
 
     // If approved/rejected, enqueue a result email.
@@ -84,7 +98,7 @@ function renderScholarshipEmail(
         <p style="color:#334155;line-height:1.7;margin:0 0 12px;">${headline}</p>
         <p style="color:#475569;line-height:1.7;margin:0 0 16px;">${body}</p>
         ${safeNotes ? `<div style="background:#F8FAFC;border-left:4px solid #2563EB;padding:12px 16px;border-radius:0 8px 8px 0;color:#334155;line-height:1.6;font-size:14px;">${safeNotes}</div>` : ""}
-        <p style="color:#94A3B8;font-size:12px;margin-top:24px;">The Root Access Network</p>
+        <p style="color:#94A3B8;font-size:12px;margin-top:24px;">Ubuntu Bridge Initiative · a programme of The Root Access Network</p>
       </div>
     </div>
   `;

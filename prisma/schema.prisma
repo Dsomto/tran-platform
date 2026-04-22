@@ -48,6 +48,19 @@ enum ScholarshipStatus {
   REJECTED
 }
 
+enum AuditTargetType {
+  APPLICATION
+  INTERN
+  USER
+  REPORT
+  SCHOLARSHIP
+  STAGE_WINDOW
+  STAGE_RESULTS
+  ANNOUNCEMENT
+  EMAIL_QUEUE
+  OTHER
+}
+
 enum ApplicationStatus {
   PENDING
   APPROVED
@@ -429,6 +442,32 @@ model PublicApplication {
 model Counter {
   id    String @id @map("_id")
   value Int    @default(0)
+}
+
+// ─── AUDIT LOG ───────────────────────────────────────────
+// Records admin/grader actions so we can answer "who approved this, when,
+// and why." Intentionally append-only — never updated or deleted through
+// the app. Cleanup is an ops job (retention policy), not a feature.
+model AuditLog {
+  id         String          @id @default(auto()) @map("_id") @db.ObjectId
+  actorId    String          @db.ObjectId           // User who performed the action
+  actorEmail String                                  // Snapshot — survives User deletion
+  actorRole  String                                  // Snapshot — survives User role change
+
+  action     String                                  // e.g. "application.approve", "report.grade"
+  targetType AuditTargetType
+  targetId   String?                                 // id of the affected entity, if any
+  details    Json?                                   // optional context (score, reason, etc.)
+
+  ip         String?                                 // best-effort from x-forwarded-for
+  userAgent  String?
+
+  createdAt  DateTime        @default(now())
+
+  @@index([actorId, createdAt(sort: Desc)])
+  @@index([targetType, targetId])
+  @@index([createdAt(sort: Desc)])
+  @@index([action])
 }
 
 // ─── STAGE REPORT (long-form, per-intern, per-stage) ─────

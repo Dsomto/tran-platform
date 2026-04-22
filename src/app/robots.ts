@@ -8,20 +8,11 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: ["/", "/apply", "/tracks", "/hire", "/play"],
-        disallow: [
-          "/api/",
-          "/admin/",
-          "/ops/",
-          "/dashboard/",
-          "/login",
-          "/subdomains/",
-          // Stage token paths — don't advertise them.
-          "/k7m2xq9bt4",
-          "/j9p3r8nhv2",
-          "/w4c7qy5dlm",
-          "/z2f8gt3kxs",
-          "/h6vb1wnq7e",
-        ],
+        // Deliberately NOT listing /admin, /ops, /dashboard, or the stage
+        // token paths. Listing them in robots.txt would advertise their
+        // existence. Those routes respond with 404 to unauthenticated
+        // visitors — that is the gate, not robots.txt.
+        disallow: ["/api/", "/subdomains/", "/login"],
       },
     ],
     sitemap: `${BASE_URL}/sitemap.xml`,

@@ -19,6 +19,7 @@ import {
 import { formatDate, stageToNumber, trackLabel } from "@/lib/utils";
 import Link from "next/link";
 import { SlackCard } from "@/components/dashboard/slack-card";
+import { OnboardingWalkthrough } from "@/components/dashboard/onboarding-walkthrough";
 
 export default async function DashboardPage() {
   const session = await getSession();
@@ -156,12 +157,16 @@ export default async function DashboardPage() {
         avatarUrl={session.avatarUrl}
       />
 
+      <OnboardingWalkthrough />
+
       <div className="flex-1 overflow-y-auto p-6 space-y-6">
-        <SlackCard
-          inviteUrl={process.env.SLACK_CHANNEL_URL ?? null}
-          joined={intern.slackJoined ?? false}
-          joinedAt={intern.slackJoinedAt ? intern.slackJoinedAt.toISOString() : null}
-        />
+        <div id="slack-card">
+          <SlackCard
+            inviteUrl={process.env.SLACK_CHANNEL_URL ?? null}
+            joined={intern.slackJoined ?? false}
+            joinedAt={intern.slackJoinedAt ? intern.slackJoinedAt.toISOString() : null}
+          />
+        </div>
 
         {/* Stats Row */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

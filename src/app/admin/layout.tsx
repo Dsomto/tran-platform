@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import { Sidebar } from "@/components/dashboard/sidebar";
 
@@ -9,12 +9,15 @@ export default async function AdminLayout({
 }) {
   const session = await getSession();
 
+  // Return 404 — not a /login redirect — for anyone not already privileged.
+  // This prevents external scanners from discovering /admin by watching for
+  // auth redirects. The path looks exactly like a non-existent route.
   if (!session) {
-    redirect("/login");
+    notFound();
   }
 
   if (session.role !== "ADMIN" && session.role !== "SUPER_ADMIN" && session.role !== "GRADER") {
-    redirect("/dashboard");
+    notFound();
   }
 
   return (

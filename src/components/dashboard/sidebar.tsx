@@ -87,7 +87,7 @@ export function Sidebar({ role, userName }: SidebarProps) {
           <LogoMark size={28} className="shrink-0" />
           {!collapsed && (
             <span className="text-lg font-bold text-foreground tracking-tight">
-              Net<span className="text-blue">Forge</span>
+              <span className="text-blue">UBI</span>
             </span>
           )}
         </Link>

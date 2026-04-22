@@ -126,6 +126,12 @@ export default async function OpsDashboardPage() {
           >
             Publish results
           </Link>
+          <Link
+            href="/ops/audit"
+            className="px-3 py-1.5 rounded-lg border border-border hover:bg-muted/50"
+          >
+            Audit log
+          </Link>
         </nav>
       </header>
 

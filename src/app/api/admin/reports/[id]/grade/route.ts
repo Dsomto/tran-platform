@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { getSession, isGrader } from "@/lib/auth";
 import { logger } from "@/lib/logger";
+import { recordAudit, auditMetaFromRequest } from "@/lib/audit";
 
 // Grader records score + feedback. No pass/fail decision happens here.
 // Status moves to GRADED. The admin later bulk-publishes stage results
@@ -62,6 +63,20 @@ export async function POST(
         gradedAt: new Date(),
         graderId: report.graderId ?? session!.id,
       },
+    });
+
+    await recordAudit({
+      actor: session!,
+      action: "report.grade",
+      targetType: "REPORT",
+      targetId: report.id,
+      details: {
+        stage: report.stage,
+        score: intScore,
+        feedbackLength: feedback.trim().length,
+        internId: report.internId,
+      },
+      ...auditMetaFromRequest(request),
     });
 
     return Response.json({ report: updated });

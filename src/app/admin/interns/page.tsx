@@ -41,6 +41,8 @@ export default function InternsPage() {
   const [pointsModal, setPointsModal] = useState<InternData | null>(null);
   const [pointsValue, setPointsValue] = useState("");
   const [pointsReason, setPointsReason] = useState("");
+  const [query, setQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
   const [adminUser, setAdminUser] = useState({
     firstName: "",
     lastName: "",
@@ -53,12 +55,25 @@ export default function InternsPage() {
       .then((d) => d.user && setAdminUser(d.user));
   }, []);
 
+  // Debounce search input so we don't fire a query on every keystroke.
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedQuery(query.trim()), 250);
+    return () => clearTimeout(t);
+  }, [query]);
+
+  // Reset to page 1 whenever the search changes.
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedQuery]);
+
   const fetchInterns = useCallback(async () => {
-    const res = await fetch(`/api/interns?page=${page}&limit=50`);
+    const params = new URLSearchParams({ page: String(page), limit: "50" });
+    if (debouncedQuery) params.set("q", debouncedQuery);
+    const res = await fetch(`/api/interns?${params.toString()}`);
     const data = await res.json();
     setInterns(data.interns || []);
     setTotalPages(data.pagination?.totalPages || 1);
-  }, [page]);
+  }, [page, debouncedQuery]);
 
   useEffect(() => {
     fetchInterns();
@@ -126,6 +141,29 @@ export default function InternsPage() {
       />
 
       <div className="flex-1 overflow-y-auto p-6">
+        {/* Search */}
+        <div className="mb-4">
+          <Input
+            type="search"
+            placeholder="Search by name, email, or intern ID..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="max-w-md"
+          />
+          {debouncedQuery && (
+            <p className="text-xs text-muted mt-2">
+              Showing results for <strong>&ldquo;{debouncedQuery}&rdquo;</strong> ·{" "}
+              <button
+                type="button"
+                onClick={() => setQuery("")}
+                className="text-blue hover:underline"
+              >
+                Clear
+              </button>
+            </p>
+          )}
+        </div>
+
         {/* Bulk Actions */}
         {selectedIds.size > 0 && (
           <div className="flex items-center gap-3 mb-4 p-4 glass rounded-2xl">
