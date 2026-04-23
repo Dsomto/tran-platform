@@ -1,58 +1,35 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { Topbar } from "@/components/dashboard/topbar";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import {
-  BookOpen,
-  Clock,
-  Lock,
-  LockOpen,
+  Calendar,
   CheckCircle2,
   ChevronRight,
-  TrendingUp,
+  Lock,
+  LockOpen,
+  Award,
+  Users,
 } from "lucide-react";
 
-interface AssignmentRow {
-  id: string;
-  order: number | null;
-  title: string;
+interface StageRow {
   stage: string;
-  track: string | null;
-  kind: string;
-  dueDate: string | null;
-  maxPoints: number;
+  label: string;
+  activeFrom: string | null;
+  submitUntil: string | null;
   passingScore: number | null;
   isClosed: boolean;
-  publishedAt: string | null;
-  eligible: number;
-  started: number;
+  atStage: number;
   submitted: number;
   graded: number;
+  passed: number;
+  failed: number;
 }
 
-const STAGE_ORDER = [
-  "STAGE_0",
-  "STAGE_1",
-  "STAGE_2",
-  "STAGE_3",
-  "STAGE_4",
-  "STAGE_5",
-  "STAGE_6",
-  "STAGE_7",
-  "STAGE_8",
-  "STAGE_9",
-];
-
-function stageLabel(s: string) {
-  return s.replace("STAGE_", "Stage ");
-}
-
-function formatDeadline(iso: string | null): { text: string; overdue: boolean } {
-  if (!iso) return { text: "No deadline", overdue: false };
+function formatDue(iso: string | null): { text: string; overdue: boolean } {
+  if (!iso) return { text: "No deadline set", overdue: false };
   const d = new Date(iso);
   const now = new Date();
   const overdue = d < now;
@@ -60,6 +37,7 @@ function formatDeadline(iso: string | null): { text: string; overdue: boolean } 
     text: d.toLocaleString("en-GB", {
       day: "numeric",
       month: "short",
+      year: "numeric",
       hour: "2-digit",
       minute: "2-digit",
     }),
@@ -68,13 +46,8 @@ function formatDeadline(iso: string | null): { text: string; overdue: boolean } 
 }
 
 export default function AssignmentsPage() {
-  const [rows, setRows] = useState<AssignmentRow[]>([]);
+  const [rows, setRows] = useState<StageRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [query, setQuery] = useState("");
-  const [stageFilter, setStageFilter] = useState<string>("ALL");
-  const [statusFilter, setStatusFilter] = useState<"ALL" | "OPEN" | "CLOSED" | "PUBLISHED">(
-    "ALL"
-  );
   const [admin, setAdmin] = useState({
     firstName: "",
     lastName: "",
@@ -90,11 +63,11 @@ export default function AssignmentsPage() {
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    fetch("/api/admin/assignments-analytics")
+    fetch("/api/admin/stages-overview")
       .then((r) => r.json())
       .then((d) => {
         if (cancelled) return;
-        setRows(d.assignments ?? []);
+        setRows(d.stages ?? []);
       })
       .finally(() => !cancelled && setLoading(false));
     return () => {
@@ -102,116 +75,27 @@ export default function AssignmentsPage() {
     };
   }, []);
 
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return rows.filter((r) => {
-      if (stageFilter !== "ALL" && r.stage !== stageFilter) return false;
-      if (statusFilter === "OPEN" && r.isClosed) return false;
-      if (statusFilter === "CLOSED" && !r.isClosed) return false;
-      if (statusFilter === "PUBLISHED" && !r.publishedAt) return false;
-      if (q && !r.title.toLowerCase().includes(q)) return false;
-      return true;
-    });
-  }, [rows, query, stageFilter, statusFilter]);
-
-  const grouped = useMemo(() => {
-    const byStage = new Map<string, AssignmentRow[]>();
-    for (const r of filtered) {
-      const arr = byStage.get(r.stage) ?? [];
-      arr.push(r);
-      byStage.set(r.stage, arr);
-    }
-    return STAGE_ORDER
-      .filter((s) => byStage.has(s))
-      .map((s) => ({
-        stage: s,
-        items: (byStage.get(s) ?? []).sort(
-          (a, b) => (a.order ?? 0) - (b.order ?? 0)
-        ),
-      }));
-  }, [filtered]);
-
-  const summary = useMemo(() => {
-    return {
-      total: rows.length,
-      open: rows.filter((r) => !r.isClosed).length,
-      closed: rows.filter((r) => r.isClosed).length,
-      published: rows.filter((r) => r.publishedAt).length,
-    };
-  }, [rows]);
-
   return (
     <>
       <Topbar
         title="Assignments"
-        subtitle={`${summary.total} total · ${summary.open} open · ${summary.closed} closed`}
+        subtitle="One per stage — set the deadline, set the passing grade, close submissions"
         firstName={admin.firstName}
         lastName={admin.lastName}
         avatarUrl={admin.avatarUrl}
       />
 
-      <div className="flex-1 overflow-y-auto p-6 space-y-6">
-        {/* Filters */}
-        <div className="flex flex-wrap gap-3 items-center">
-          <Input
-            type="search"
-            placeholder="Search by title…"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            className="max-w-xs"
-          />
-          <select
-            value={stageFilter}
-            onChange={(e) => setStageFilter(e.target.value)}
-            className="px-3 py-2 text-sm border border-border rounded-lg bg-white"
-          >
-            <option value="ALL">All stages</option>
-            {STAGE_ORDER.map((s) => (
-              <option key={s} value={s}>
-                {stageLabel(s)}
-              </option>
-            ))}
-          </select>
-          <div className="flex gap-1 border border-border rounded-lg p-1 bg-white">
-            {(["ALL", "OPEN", "CLOSED", "PUBLISHED"] as const).map((s) => (
-              <button
-                key={s}
-                onClick={() => setStatusFilter(s)}
-                className={`px-2.5 py-1 text-xs font-medium rounded ${
-                  statusFilter === s ? "bg-foreground text-background" : "text-muted hover:text-foreground"
-                }`}
-              >
-                {s === "ALL" ? "All" : s.charAt(0) + s.slice(1).toLowerCase()}
-              </button>
-            ))}
-          </div>
-        </div>
-
+      <div className="flex-1 overflow-y-auto p-6">
         {loading ? (
           <div className="py-16 text-center text-muted-foreground text-sm">Loading…</div>
-        ) : grouped.length === 0 ? (
+        ) : rows.length === 0 ? (
           <Card variant="glass" className="text-center py-12">
-            <BookOpen className="w-10 h-10 text-muted/40 mx-auto mb-3" />
-            <p className="text-sm text-muted">No assignments match your filters.</p>
+            <p className="text-sm text-muted">No stages configured yet.</p>
           </Card>
         ) : (
-          <div className="space-y-8">
-            {grouped.map(({ stage, items }) => (
-              <section key={stage}>
-                <header className="flex items-center gap-3 mb-3">
-                  <h2 className="text-sm font-semibold text-foreground uppercase tracking-wide">
-                    {stageLabel(stage)}
-                  </h2>
-                  <span className="text-xs text-muted-foreground">
-                    {items.length} assignment{items.length === 1 ? "" : "s"}
-                  </span>
-                </header>
-                <div className="space-y-2">
-                  {items.map((a) => (
-                    <AssignmentRowCard key={a.id} row={a} />
-                  ))}
-                </div>
-              </section>
+          <div className="space-y-3 max-w-4xl">
+            {rows.map((r) => (
+              <StageRowCard key={r.stage} row={r} />
             ))}
           </div>
         )}
@@ -220,57 +104,101 @@ export default function AssignmentsPage() {
   );
 }
 
-function AssignmentRowCard({ row }: { row: AssignmentRow }) {
-  const deadline = formatDeadline(row.dueDate);
-  const submissionPct =
-    row.eligible > 0 ? Math.round((row.submitted / row.eligible) * 100) : 0;
+function StageRowCard({ row }: { row: StageRow }) {
+  const due = formatDue(row.submitUntil);
+  const published = row.passed + row.failed > 0;
 
   return (
-    <Link href={`/admin/assignments/${row.id}`}>
-      <div className="group p-4 bg-white border border-border rounded-xl hover:border-blue/40 hover:shadow-sm transition-all flex items-center gap-4">
-        <div className="shrink-0 w-10 h-10 rounded-lg bg-muted/40 flex items-center justify-center text-xs font-mono text-muted-foreground">
-          {row.order ?? "·"}
-        </div>
+    <Link href={`/admin/assignments/${row.stage}`}>
+      <div className="group p-5 bg-white border border-border rounded-xl hover:border-blue/40 hover:shadow-sm transition-all">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-3 flex-wrap">
+              <h2 className="text-lg font-semibold text-foreground">{row.label}</h2>
+              {row.isClosed ? (
+                <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200">
+                  <Lock className="w-3 h-3" /> Closed
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200">
+                  <LockOpen className="w-3 h-3" /> Open
+                </span>
+              )}
+              {published && (
+                <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded bg-blue/10 text-blue border border-blue/30">
+                  <CheckCircle2 className="w-3 h-3" /> Results published
+                </span>
+              )}
+            </div>
 
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <h3 className="font-semibold text-foreground text-sm truncate">
-              {row.title}
-            </h3>
-            <Badge variant="default" size="sm">
-              {row.kind}
-            </Badge>
-            {row.isClosed && (
-              <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200">
-                <Lock className="w-3 h-3" /> Closed
-              </span>
-            )}
-            {row.publishedAt && row.passingScore != null && (
-              <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200">
-                <CheckCircle2 className="w-3 h-3" /> Pass ≥ {row.passingScore}
-              </span>
+            <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+              <Metric
+                icon={Calendar}
+                label="Deadline"
+                value={due.text}
+                tone={due.overdue ? "rose" : undefined}
+              />
+              <Metric
+                icon={Award}
+                label="Passing score"
+                value={row.passingScore != null ? `${row.passingScore}/100` : "Not set"}
+                tone={row.passingScore == null ? "muted" : undefined}
+              />
+              <Metric
+                icon={Users}
+                label="Interns at stage"
+                value={String(row.atStage)}
+              />
+              <Metric
+                icon={CheckCircle2}
+                label="Reports"
+                value={`${row.submitted} in · ${row.graded} graded`}
+              />
+            </div>
+
+            {published && (
+              <div className="mt-3 flex items-center gap-4 text-xs text-muted-foreground">
+                <span>
+                  <strong className="text-emerald-700">{row.passed}</strong> passed
+                </span>
+                <span>
+                  <strong className="text-rose-700">{row.failed}</strong> below threshold
+                </span>
+              </div>
             )}
           </div>
-          <div className="mt-1 flex items-center gap-4 text-xs text-muted-foreground flex-wrap">
-            <span className="inline-flex items-center gap-1">
-              <Clock className="w-3 h-3" />
-              <span className={deadline.overdue ? "text-rose-700 font-medium" : ""}>
-                {deadline.text}
-              </span>
-            </span>
-            <span>
-              {row.started}/{row.eligible} started
-            </span>
-            <span className="inline-flex items-center gap-1">
-              <TrendingUp className="w-3 h-3" />
-              {row.submitted} submitted ({submissionPct}%)
-            </span>
-            <span>{row.graded} graded</span>
-          </div>
-        </div>
 
-        <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-foreground shrink-0" />
+          <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-foreground shrink-0" />
+        </div>
       </div>
     </Link>
+  );
+}
+
+function Metric({
+  icon: Icon,
+  label,
+  value,
+  tone,
+}: {
+  icon: React.ElementType;
+  label: string;
+  value: string;
+  tone?: "rose" | "muted";
+}) {
+  const color =
+    tone === "rose"
+      ? "text-rose-700"
+      : tone === "muted"
+        ? "text-muted-foreground"
+        : "text-foreground";
+  return (
+    <div className="min-w-0">
+      <div className="inline-flex items-center gap-1 text-[11px] text-muted-foreground uppercase tracking-wide">
+        <Icon className="h-3 w-3" />
+        {label}
+      </div>
+      <div className={`text-sm font-medium truncate ${color}`}>{value}</div>
+    </div>
   );
 }
