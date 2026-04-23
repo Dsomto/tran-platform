@@ -1,13 +1,10 @@
 import { NextRequest } from "next/server";
-import { login } from "@/lib/auth";
+import { login, SESSION_MAX_AGE_SECONDS } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { cookies } from "next/headers";
 import { signChallenge } from "@/lib/login-challenge";
 import { rateLimit, rateLimitResponse, getClientKey, RATE_LIMITS } from "@/lib/rate-limit";
 import { logger } from "@/lib/logger";
-
-// Cookie lifetime matches the JWT expiry (24h) set in lib/auth.ts.
-const SESSION_COOKIE_MAX_AGE = 60 * 60 * 24;
 
 export async function POST(request: NextRequest) {
   try {
@@ -58,7 +55,7 @@ export async function POST(request: NextRequest) {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      maxAge: SESSION_COOKIE_MAX_AGE,
+      maxAge: SESSION_MAX_AGE_SECONDS,
       path: "/",
     });
 

@@ -25,12 +25,14 @@ export async function verifyPassword(
   return bcrypt.compare(password, hashedPassword);
 }
 
-// Shorter-lived tokens (was 7d). Combined with logout clearing the cookie,
-// this bounds the blast radius of a leaked token to 24 hours instead of a
-// week. Full revocation via tokenVersion is reserved for a future pass — it
-// would require a DB hit on every authenticated request.
+// 1-hour absolute lifetime. Combined with the sliding refresh in
+// `refreshSessionIfStale()` below, this gives "1 hour of inactivity" semantics:
+// active users get silently re-issued a fresh token on every authenticated
+// page load; idle users lose access after an hour.
+export const SESSION_MAX_AGE_SECONDS = 60 * 60;
+
 export function createToken(user: SessionUser): string {
-  return jwt.sign(user, jwtSecret(), { expiresIn: "24h" });
+  return jwt.sign(user, jwtSecret(), { expiresIn: SESSION_MAX_AGE_SECONDS });
 }
 
 export function verifyToken(token: string): SessionUser | null {
@@ -45,7 +47,34 @@ export async function getSession(): Promise<SessionUser | null> {
   const cookieStore = await cookies();
   const token = cookieStore.get("session-token")?.value;
   if (!token) return null;
-  return verifyToken(token);
+  const user = verifyToken(token);
+  if (!user) return null;
+  // Sliding window: if the token is mid-life (>30 min old), re-issue a fresh one
+  // so the user's session extends as long as they are actively using the site.
+  // Idle users still expire at the hour boundary because no refresh happens.
+  await refreshSessionIfStale(token, user);
+  return user;
+}
+
+async function refreshSessionIfStale(token: string, user: SessionUser): Promise<void> {
+  try {
+    const decoded = jwt.decode(token) as { iat?: number; exp?: number } | null;
+    if (!decoded?.iat || !decoded?.exp) return;
+    const ageSeconds = Math.floor(Date.now() / 1000) - decoded.iat;
+    // Only refresh if more than half the token's life has elapsed.
+    if (ageSeconds < SESSION_MAX_AGE_SECONDS / 2) return;
+    const fresh = createToken(user);
+    const cookieStore = await cookies();
+    cookieStore.set("session-token", fresh, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: SESSION_MAX_AGE_SECONDS,
+      path: "/",
+    });
+  } catch {
+    // If refresh fails for any reason, keep the existing token.
+  }
 }
 
 export async function requireAuth(): Promise<SessionUser> {
