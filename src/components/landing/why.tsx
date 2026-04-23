@@ -82,7 +82,7 @@ export function Why() {
           </h2>
           <p className="mt-4 text-base text-muted leading-relaxed">
             Cybersecurity is one of the few fields in Africa where demand massively
-            outstrips supply — and the paths in are mostly paywalled. TRAN is the path
+            outstrips supply — and the paths in are mostly paywalled. UBI is the path
             we wished we had.
           </p>
         </div>

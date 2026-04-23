@@ -61,7 +61,7 @@ export default function OnakoyaProposalPage() {
             <p className="text-[13px] text-gray-800 mb-6">Dear Tunde,</p>
 
             <p className="text-[13px] font-bold text-gray-900 mb-6 underline underline-offset-4">
-              A REQUEST FOR YOUR HELP — UBI TRAINS 5,000 NIGERIAN YOUTH IN CYBERSECURITY, AT NO COST TO THEM
+              A REQUEST FOR YOUR HELP — UBI TRAINS 5,000 YOUNG PEOPLE IN CYBERSECURITY, AT NO COST TO THEM · AFRICA-FIRST, OPEN WORLDWIDE
             </p>
 
             <div className="text-[13px] text-gray-800 leading-[1.85] space-y-4">
@@ -78,22 +78,22 @@ export default function OnakoyaProposalPage() {
               <p className="font-bold text-gray-900 mt-6 mb-2">Who We Are</p>
 
               <p>
-                I run <strong>The Root Access Network (TRAN)</strong>. We are a nonprofit. Our flagship programme is the <strong>Ubuntu Bridge Initiative (UBI)</strong> — a free, selective cybersecurity internship for young Nigerians and Africans. Free to them, always. No tuition, no hidden fees, no participation cost.
+                I run <strong>The Root Access Network (TRAN)</strong>. We are a nonprofit. Our flagship programme is the <strong>Ubuntu Bridge Initiative (UBI)</strong> — a free, selective cybersecurity internship. Africa is our primary market and the centre of gravity for everything we do, but the programme is open to young people anywhere in the world who can meet the bar. Free to them, always. No tuition, no hidden fees, no participation cost.
               </p>
 
               <p>
-                We trained over <strong>1,000 participants</strong> in our 2025 foundational cohort. We are scaling to <strong>5,000 in 2026</strong>, including expansion into secondary schools and underserved communities where cybersecurity is not yet visible as a career.
+                We trained over <strong>1,000 participants</strong> in our 2025 foundational cohort. We are scaling to <strong>5,000 in 2026</strong>, including deliberate expansion into secondary schools and underserved communities across the continent — and we will take serious applicants from anywhere they come from.
               </p>
 
               <p>
-                We do with cybersecurity what you have done with chess. We believe merit travels further than circumstance. We believe the children from Ikorodu and Makoko and Oshodi can defend digital infrastructure as well as any child from Lekki, given the same access. What Chess in Slums proved on the board, UBI wants to prove in the keyboard.
+                We do with cybersecurity what you have done with chess. We believe merit travels further than circumstance. We believe the children from Ikorodu and Makoko and Oshodi can defend digital infrastructure as well as any child from Lekki or London, given the same access. What Chess in Slums proved on the board, UBI wants to prove on the keyboard.
               </p>
 
               {/* ── THE ASK ── */}
               <p className="font-bold text-gray-900 mt-6 mb-2">The Ask</p>
 
               <p>
-                We need funding, and I am asking you directly. Not because you have the deepest pockets — I know you do not — but because you have something rarer: a demonstrated conviction about African youth and a platform that converts conviction into support. Anything you give or anything you move toward us matters more than its face value.
+                We need funding, and I am asking you directly. Not because you have the deepest pockets — I know you do not — but because you have something rarer: a demonstrated conviction about African youth, a refusal to accept that circumstance defines ceiling, and a platform that converts that conviction into support. The majority of our participants will be African. A fraction will be from elsewhere. Every one of them is a young person who chose to do the work. Anything you give or move toward us matters more than its face value.
               </p>
 
               <p>
@@ -113,7 +113,7 @@ export default function OnakoyaProposalPage() {
                 <tbody>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 font-semibold align-top">Professional certifications</td>
-                    <td className="py-2">CompTIA Security+, ISO 27001 Foundation, CEH exam vouchers for the top participants who reach Stage 5. A single certification can change a young Nigerian&apos;s career overnight — nobody should be blocked from it because the voucher costs ₦250,000.</td>
+                    <td className="py-2">CompTIA Security+, ISO 27001 Foundation, CEH exam vouchers for the top participants who reach Stage 5. A single certification can change a young person&apos;s career overnight — nobody should be blocked from it because the voucher costs the equivalent of a few months&apos; rent.</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-2 font-semibold align-top">Weekly data scholarships</td>
@@ -153,7 +153,7 @@ export default function OnakoyaProposalPage() {
                 <li><strong>₦100,000</strong> — weekly data credits for twenty participants for one month.</li>
                 <li><strong>₦500,000</strong> — one refurbished laptop for a high-performer who has been borrowing one.</li>
                 <li><strong>₦1,000,000</strong> — a school outreach tour of four Lagos secondary schools, including equipment and volunteer stipends.</li>
-                <li><strong>₦2,000,000</strong> — sponsors a full named cohort — e.g. &ldquo;The Onakoya Scholars&rdquo; — of ten participants through the entire programme, including certifications.</li>
+                <li><strong>₦2,000,000</strong> — sponsors a full named cohort — e.g. &ldquo;The Onakoya Scholars&rdquo; including certifications.</li>
               </ul>
 
               <p>
