@@ -1,24 +1,27 @@
 import Link from "next/link";
 import { LogoMark } from "@/components/logo";
 
+// Anchor links point at landing-page sections. Prefix with "/" so they work
+// from any route — e.g. clicking "Stages" from /play takes you to /#stages,
+// not /play#stages (which doesn't exist).
 const links = {
   Program: [
     ["Apply", "/apply"],
-    ["Stages", "#stages"],
-    ["Tracks", "#tracks"],
-    ["FAQ", "#faq"],
+    ["Stages", "/#stages"],
+    ["Tracks", "/#tracks"],
+    ["FAQ", "/#faq"],
   ],
   Company: [
-    ["About", "#program"],
-    ["Why UBI", "#why"],
-    ["Graduates", "#testimonials"],
+    ["About", "/#program"],
+    ["Why UBI", "/#why"],
+    ["Graduates", "/#testimonials"],
     ["For Employers", "/hire"],
-    ["Contact", "#"],
+    ["Contact", "/apply"],
   ],
   Legal: [
-    ["Privacy", "#"],
-    ["Terms", "#"],
-    ["Code of Conduct", "#"],
+    ["Privacy", "/"],
+    ["Terms", "/"],
+    ["Code of Conduct", "/"],
   ],
 };
 

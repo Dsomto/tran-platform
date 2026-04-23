@@ -44,7 +44,7 @@ export default async function GradePage({
       {report.reportUrl && (
         <section className="mb-6 bg-blue/5 border border-blue/20 rounded-xl p-5">
           <h2 className="text-sm font-semibold text-foreground mb-2 uppercase tracking-wide">
-            Report PDF (open in a new tab to read)
+            Report folder (open in a new tab to review)
           </h2>
           <a
             href={report.reportUrl}

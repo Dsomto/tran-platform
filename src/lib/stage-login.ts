@@ -1,7 +1,6 @@
 import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
-
-const JWT_SECRET = process.env.NEXTAUTH_SECRET || "fallback-secret-change-me";
+import { jwtSecret } from "./secrets";
 
 export type StageSlug = "stage-0" | "stage-1" | "stage-2" | "stage-3" | "stage-4";
 
@@ -33,12 +32,12 @@ export function doorCookieName(stage: StageSlug): string {
 }
 
 export function signDoorToken(payload: Omit<StageDoorSession, "iat">): string {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: "7d" });
+  return jwt.sign(payload, jwtSecret(), { expiresIn: "7d" });
 }
 
 export function verifyDoorToken(token: string): StageDoorSession | null {
   try {
-    return jwt.verify(token, JWT_SECRET) as StageDoorSession;
+    return jwt.verify(token, jwtSecret()) as StageDoorSession;
   } catch {
     return null;
   }

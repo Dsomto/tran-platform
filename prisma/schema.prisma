@@ -135,6 +135,15 @@ model User {
   totpEnabled   Boolean   @default(false)
   totpLastUsedAt DateTime?
 
+  // ─── Session revocation — bumped on logout / password change / 2FA disable ───
+  // Tokens carry a `v` claim; verifyToken() rejects any with a mismatch.
+  // This is how we revoke JWTs without maintaining a blocklist.
+  tokenVersion  Int       @default(0)
+
+  // ─── Login lockout (brute-force protection) ───
+  failedLoginCount  Int       @default(0)
+  lockedUntil       DateTime?
+
   application   Application?
   intern        Intern?
   announcements Announcement[]  @relation("AuthorAnnouncements")

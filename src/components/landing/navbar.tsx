@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { LogoMark } from "@/components/logo";
 import { Menu, X, ArrowLeft } from "lucide-react";
 
@@ -17,7 +17,6 @@ export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
-  const router = useRouter();
   const isHome = pathname === "/";
 
   useEffect(() => {
@@ -37,25 +36,13 @@ export function Navbar() {
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-3">
             {!isHome && (
-              <button
-                onClick={() => {
-                  // If the user arrived from within this site, go back in history.
-                  // Otherwise (direct link, bookmark, search), send them to the landing page.
-                  const cameFromOurSite =
-                    typeof document !== "undefined" &&
-                    document.referrer &&
-                    new URL(document.referrer).origin === window.location.origin;
-                  if (cameFromOurSite && window.history.length > 1) {
-                    router.back();
-                  } else {
-                    router.push("/");
-                  }
-                }}
-                aria-label="Go back"
+              <Link
+                href="/"
+                aria-label="Go to home"
                 className="flex items-center justify-center w-9 h-9 rounded-full border border-border/60 bg-white/60 backdrop-blur hover:bg-white text-muted hover:text-foreground transition-colors"
               >
                 <ArrowLeft className="w-4 h-4" />
-              </button>
+              </Link>
             )}
             <Link href="/" aria-label="UBI homepage" className="flex items-center gap-2.5">
               <LogoMark size={28} />

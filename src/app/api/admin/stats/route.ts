@@ -5,7 +5,7 @@ export async function GET() {
   try {
     const session = await getSession();
     if (!session || (session.role !== "ADMIN" && session.role !== "SUPER_ADMIN")) {
-      return Response.json({ error: "Not authorized" }, { status: 403 });
+      return new Response(null, { status: 404 });
     }
 
     const [

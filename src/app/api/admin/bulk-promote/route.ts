@@ -6,7 +6,7 @@ export async function POST(request: NextRequest) {
   try {
     const session = await getSession();
     if (!session || (session.role !== "ADMIN" && session.role !== "SUPER_ADMIN")) {
-      return Response.json({ error: "Not authorized" }, { status: 403 });
+      return new Response(null, { status: 404 });
     }
 
     const { internIds, action } = await request.json();

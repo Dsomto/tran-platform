@@ -1,11 +1,12 @@
 // Short-lived signed token issued after a valid password when 2FA is required.
 // The user POSTs this token + their TOTP code to /api/auth/2fa to complete login.
 import crypto from "crypto";
+import { cronSecret } from "./secrets";
 
 const CHALLENGE_TTL_MS = 5 * 60_000;
 
 function secret(): string {
-  return process.env.CRON_SECRET || "fallback";
+  return cronSecret();
 }
 
 export function signChallenge(userId: string, issuedAt: number = Date.now()): string {

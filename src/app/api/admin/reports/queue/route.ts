@@ -10,7 +10,8 @@ export async function GET(request: NextRequest) {
   try {
     const session = await getSession();
     if (!isGrader(session)) {
-      return Response.json({ error: "Forbidden" }, { status: 403 });
+      // 404 instead of 403 — don't leak that this endpoint exists.
+      return new Response(null, { status: 404 });
     }
 
     const url = new URL(request.url);

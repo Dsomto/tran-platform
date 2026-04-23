@@ -1,6 +1,13 @@
 import { prisma } from "@/lib/db";
+import { getSession } from "@/lib/auth";
 
 export async function GET(request: Request) {
+  // The board exposes participant names, countries, and tracks. Require a
+  // logged-in session so random scrapers can't harvest the cohort list.
+  // Unauthenticated = 404 (not 401) so the endpoint doesn't advertise itself.
+  const session = await getSession();
+  if (!session) return new Response(null, { status: 404 });
+
   const { searchParams } = new URL(request.url);
   const stage = searchParams.get("stage");
   const search = searchParams.get("search") || "";

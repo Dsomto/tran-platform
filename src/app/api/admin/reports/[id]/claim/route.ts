@@ -12,7 +12,7 @@ export async function POST(
   try {
     const session = await getSession();
     if (!isGrader(session)) {
-      return Response.json({ error: "Forbidden" }, { status: 403 });
+      return new Response(null, { status: 404 });
     }
 
     const { id } = await ctx.params;
@@ -57,7 +57,7 @@ export async function DELETE(
   try {
     const session = await getSession();
     if (!isGrader(session)) {
-      return Response.json({ error: "Forbidden" }, { status: 403 });
+      return new Response(null, { status: 404 });
     }
 
     const { id } = await ctx.params;

@@ -1,21 +1,20 @@
 import crypto from "crypto";
+import { cronSecret } from "./secrets";
 
 // Share signature that goes in the certificate URL. Not a full secret —
 // just enough to stop unauthenticated scraping. The recipient has the link
 // via email, or can access via their logged-in dashboard.
 export function certificateShareSig(reportId: string, internId: string): string {
-  const secret = process.env.CRON_SECRET || "fallback";
   return crypto
-    .createHmac("sha256", secret)
+    .createHmac("sha256", cronSecret())
     .update(`share:${reportId}:${internId}`)
     .digest("hex")
     .slice(0, 16);
 }
 
 export function certificateIdFor(reportId: string): string {
-  const secret = process.env.CRON_SECRET || "fallback";
   return crypto
-    .createHmac("sha256", secret)
+    .createHmac("sha256", cronSecret())
     .update(`cert:${reportId}`)
     .digest("hex")
     .slice(0, 12)

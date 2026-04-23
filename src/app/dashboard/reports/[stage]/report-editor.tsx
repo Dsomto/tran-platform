@@ -109,7 +109,7 @@ export function ReportEditor({
       return;
     }
     if (!isValidUrl(reportUrl)) {
-      setError("Paste a valid link to your report PDF (Google Drive, Dropbox, etc.).");
+      setError("Paste a valid link to your report folder (Google Drive, Dropbox, etc.).");
       return;
     }
     setSubmitting(true);
@@ -183,13 +183,21 @@ export function ReportEditor({
           How to submit your report
         </h2>
         <ol className="list-decimal list-inside text-sm text-foreground/80 space-y-1.5 leading-relaxed">
-          <li>Write your report in Google Docs, Microsoft Word, or any tool you prefer.</li>
-          <li>Export it as a PDF when you're done.</li>
           <li>
-            Upload the PDF to Google Drive (or Dropbox / OneDrive), set sharing to{" "}
-            <strong>anyone with the link can view</strong>, and copy the share link.
+            Put every file the stage asks for into a single Google Drive folder
+            (or a shared folder on Dropbox / OneDrive).
           </li>
-          <li>Paste the link below, write a short executive summary, and submit.</li>
+          <li>
+            Right-click the folder → <strong>Share</strong> → set access to{" "}
+            <strong>anyone with the link can view</strong>, then copy the folder link.
+          </li>
+          <li>
+            Paste the folder link below, write a short executive summary, and submit.
+          </li>
+          <li>
+            Do not delete, rename, or move files in that folder after submitting — the
+            grader may revisit it.
+          </li>
         </ol>
         <details className="mt-4">
           <summary className="text-sm font-medium text-blue cursor-pointer">
@@ -240,10 +248,11 @@ export function ReportEditor({
       <div className="space-y-6 bg-white border border-border rounded-xl p-6">
         <section>
           <label className="block text-sm font-semibold text-foreground mb-2">
-            Link to your report PDF *
+            Link to your report folder *
           </label>
           <p className="text-xs text-muted-foreground mb-2">
-            Make sure the link is set so <strong>anyone with the link can view</strong> —
+            Paste the share link to a <strong>folder</strong> containing everything the
+            stage asks for. Set it to <strong>anyone with the link can view</strong> —
             otherwise the grader will not be able to open it.
           </p>
           <input
@@ -254,7 +263,7 @@ export function ReportEditor({
               setDirty(true);
             }}
             disabled={locked}
-            placeholder="https://drive.google.com/file/d/…/view"
+            placeholder="https://drive.google.com/drive/folders/…"
             className="w-full p-3 border border-border rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue/30 disabled:bg-muted/30"
           />
           {reportUrl && isValidUrl(reportUrl) && (
@@ -264,7 +273,7 @@ export function ReportEditor({
               rel="noreferrer noopener"
               className="mt-2 inline-flex items-center gap-1 text-xs text-blue hover:underline"
             >
-              <ExternalLink className="h-3 w-3" /> Open link in new tab to verify
+              <ExternalLink className="h-3 w-3" /> Open folder in new tab to verify sharing
             </a>
           )}
         </section>
@@ -278,7 +287,7 @@ export function ReportEditor({
           </label>
           <p className="text-xs text-muted-foreground mb-2">
             Three to five short paragraphs so the grader can skim your argument before
-            opening the PDF. A non-technical reader should finish this knowing what
+            opening the folder. A non-technical reader should finish this knowing what
             happened, why it matters, and what you recommend.
           </p>
           <textarea
