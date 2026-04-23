@@ -186,7 +186,7 @@ export default async function Stage4RoomPage() {
                     <span className="stage-4-pill">
                       <span className="opacity-70">ITEM</span>
                       <span className="font-bold text-cyan-200">
-                        {String.fromCharCode(64 + a.order)}
+                        {String.fromCharCode(64 + (a.order ?? 0))}
                       </span>
                     </span>
                     <span
