@@ -251,6 +251,12 @@ model Assignment {
   correctIndex  Int?                         // MULTIPLE_CHOICE: 0-based
   minWords      Int?                         // WRITEUP: enforced gate
 
+  // Admin controls per assignment — set from /admin/assignments/[id]
+  isClosed      Boolean      @default(false) // true = no more submissions accepted
+  passingScore  Int?                         // set after submissions close; null = not published yet
+  closedAt      DateTime?
+  publishedAt   DateTime?
+
   submissions Submission[]
 
   createdAt   DateTime     @default(now())

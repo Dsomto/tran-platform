@@ -95,6 +95,14 @@ export async function POST(request: NextRequest) {
       return Response.json({ error: "Assignment not found" }, { status: 404 });
     }
 
+    // An admin can close an assignment to stop accepting further submissions.
+    if (assignment.isClosed) {
+      return Response.json(
+        { error: "This assignment is closed. No further submissions are accepted." },
+        { status: 409 }
+      );
+    }
+
     const isLate = assignment.dueDate != null && new Date() > assignment.dueDate;
 
     // Upsert so a re-submission updates the existing record (matches the
