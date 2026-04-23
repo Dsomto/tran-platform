@@ -1,4 +1,5 @@
 import { prisma } from "./db";
+import type { Prisma } from "@/generated/prisma";
 import type { SessionUser } from "./auth";
 import { logger } from "./logger";
 
@@ -36,7 +37,9 @@ export async function recordAudit(ctx: AuditContext): Promise<void> {
         action: ctx.action,
         targetType: ctx.targetType,
         targetId: ctx.targetId ?? null,
-        details: ctx.details ?? undefined,
+        // Prisma's InputJsonValue is strict; our details are constrained to
+        // JSON-safe primitives at every call site, so the cast is safe.
+        details: (ctx.details ?? undefined) as Prisma.InputJsonValue | undefined,
         ip: ctx.ip ?? null,
         userAgent: ctx.userAgent ?? null,
       },
