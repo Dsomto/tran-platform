@@ -41,7 +41,7 @@ const trackData: Record<string, TrackData> = {
     color: "cyan",
     colorHex: "#0891B2",
     icon: Eye,
-    heroImage: "https://images.unsplash.com/photo-1563986768609-322da13575f2?w=800&h=500&fit=crop",
+    heroImage: "/images/tracks/soc-analyst.jpg",
     description:
       "Security Operations Center analysts are the watchful eyes of any organization. You'll learn to monitor networks in real-time, detect anomalies using SIEM platforms, investigate alerts, and coordinate incident response. This track prepares you for the 24/7 world of threat detection.",
     whyThisTrack:
@@ -69,7 +69,7 @@ const trackData: Record<string, TrackData> = {
     color: "amber",
     colorHex: "#D97706",
     icon: Crosshair,
-    heroImage: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=800&h=500&fit=crop",
+    heroImage: "/images/tracks/ethical-hacking.jpg",
     description:
       "Ethical hackers — also known as penetration testers — are hired to attack systems before real attackers do. You'll learn to enumerate targets, exploit vulnerabilities in web apps, networks, and APIs, escalate privileges, and write professional pentest reports. This track teaches you the offensive mindset.",
     whyThisTrack:
@@ -97,7 +97,7 @@ const trackData: Record<string, TrackData> = {
     color: "emerald",
     colorHex: "#059669",
     icon: FileCheck,
-    heroImage: "https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&h=500&fit=crop&crop=faces",
+    heroImage: "/images/tracks/grc.png",
     description:
       "Governance, Risk & Compliance professionals are the strategists of cybersecurity. You'll learn to assess organizational risk, build security policies, manage compliance programs (SOC 2, ISO 27001, NIST), conduct audits, and communicate security posture to executives and regulators.",
     whyThisTrack:
