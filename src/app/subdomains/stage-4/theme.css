@@ -1,0 +1,307 @@
+/* ──────────────────────────────────────────────────────────
+ * STAGE 4 — "The Debrief"
+ * Visual language: boardroom blueprint · executive briefing
+ * Deep navy background, cyan architectural-grid, serif hero
+ * typography, blueprint rules, data-dashboard affordances.
+ * ────────────────────────────────────────────────────────── */
+
+.bg-stage-4 {
+  background-color: #050812;
+  color: #e0f2fe;
+  position: relative;
+}
+
+.bg-stage-4 header {
+  background: rgba(5, 8, 18, 0.9) !important;
+  backdrop-filter: blur(10px) saturate(140%);
+  -webkit-backdrop-filter: blur(10px) saturate(140%);
+  border-bottom: 1px solid rgba(34, 211, 238, 0.18) !important;
+}
+
+.bg-stage-4 header,
+.bg-stage-4 header * {
+  color: inherit;
+}
+
+.bg-stage-4 header .font-semibold {
+  color: #67e8f9;
+  font-family: "Georgia", "Times New Roman", serif;
+  letter-spacing: 0.005em;
+}
+
+.bg-stage-4 header .text-white\/50,
+.bg-stage-4 header .text-white\/70 {
+  color: rgba(186, 230, 253, 0.6) !important;
+}
+
+.bg-stage-4 header .bg-white\/5 {
+  background: rgba(34, 211, 238, 0.07) !important;
+  color: #a5f3fc !important;
+  border: 1px solid rgba(34, 211, 238, 0.22);
+}
+
+.bg-stage-4 footer {
+  border-top: 1px solid rgba(34, 211, 238, 0.14) !important;
+  color: rgba(186, 230, 253, 0.5) !important;
+}
+
+.bg-stage-4 main {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Background: deep navy + blueprint architectural grid + atmospheric glow ── */
+.stage-4-field {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse at 25% 10%, rgba(34, 211, 238, 0.1) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 95%, rgba(59, 130, 246, 0.12) 0%, transparent 55%),
+    linear-gradient(180deg, #050812 0%, #070c1a 100%);
+}
+
+.stage-4-field::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(34, 211, 238, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(34, 211, 238, 0.06) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.9) 40%, transparent 80%);
+  -webkit-mask-image: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.9) 40%, transparent 80%);
+}
+
+.stage-4-field::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(34, 211, 238, 0.12) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(34, 211, 238, 0.12) 1px, transparent 1px);
+  background-size: 240px 240px;
+  opacity: 0.4;
+}
+
+/* ── Panels: blueprint cards with corner-markers ── */
+.stage-4-panel {
+  background: linear-gradient(180deg, rgba(8, 14, 30, 0.92), rgba(5, 9, 20, 0.92));
+  border: 1px solid rgba(34, 211, 238, 0.18);
+  border-radius: 2px;
+  position: relative;
+  box-shadow:
+    0 1px 0 rgba(34, 211, 238, 0.08) inset,
+    0 12px 40px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(8, 14, 30, 0.5) inset,
+    0 2px 14px rgba(34, 211, 238, 0.04);
+  color: #e0f2fe;
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Cyan crosshairs at corners — blueprint feel */
+.stage-4-panel::before,
+.stage-4-panel::after {
+  content: "";
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  pointer-events: none;
+}
+.stage-4-panel::before {
+  top: -5px; left: -5px;
+  border-top: 1px solid rgba(103, 232, 249, 0.8);
+  border-left: 1px solid rgba(103, 232, 249, 0.8);
+}
+.stage-4-panel::after {
+  bottom: -5px; right: -5px;
+  border-bottom: 1px solid rgba(103, 232, 249, 0.8);
+  border-right: 1px solid rgba(103, 232, 249, 0.8);
+}
+
+.stage-4-panel:hover {
+  border-color: rgba(103, 232, 249, 0.4);
+  box-shadow:
+    0 1px 0 rgba(103, 232, 249, 0.12) inset,
+    0 16px 52px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(8, 14, 30, 0.5) inset,
+    0 4px 22px rgba(34, 211, 238, 0.12);
+  transform: translateY(-2px);
+}
+
+.stage-4-panel h1,
+.stage-4-panel h2,
+.stage-4-panel h3,
+.stage-4-panel h4 {
+  color: #e0f2fe;
+}
+
+.stage-4-panel p {
+  color: rgba(224, 242, 254, 0.8);
+}
+
+/* ── Headings: serif, classical (FT / boardroom feel) ── */
+.stage-4-heading {
+  font-family: "Georgia", "Times New Roman", "Source Serif Pro", serif;
+  color: #67e8f9;
+  letter-spacing: -0.01em;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.stage-4-heading-mono {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-size: 10.5px;
+  color: rgba(103, 232, 249, 0.75);
+  font-weight: 600;
+}
+
+/* ── Pills: blueprint-label chip ── */
+.stage-4-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.22rem 0.7rem;
+  border-radius: 2px;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10.5px;
+  background: rgba(34, 211, 238, 0.08);
+  color: #67e8f9;
+  border: 1px solid rgba(34, 211, 238, 0.3);
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+/* ── Coordinates / axis labels ── */
+.stage-4-coord {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10px;
+  color: rgba(103, 232, 249, 0.55);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+/* ── Blueprint ruled divider ── */
+.stage-4-rule {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1.5rem 0;
+  font-family: var(--font-mono), monospace;
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: rgba(103, 232, 249, 0.7);
+}
+.stage-4-rule::before,
+.stage-4-rule::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(103, 232, 249, 0.45), transparent);
+}
+
+/* ── KPI card for capstone dashboard ── */
+.stage-4-kpi {
+  padding: 1.1rem 1.2rem;
+  background: linear-gradient(180deg, rgba(8, 14, 30, 0.92), rgba(5, 9, 20, 0.92));
+  border: 1px solid rgba(34, 211, 238, 0.2);
+  border-radius: 2px;
+  position: relative;
+  overflow: hidden;
+}
+
+.stage-4-kpi::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3px;
+  height: 100%;
+  background: linear-gradient(180deg, #67e8f9, #0ea5e9);
+}
+
+.stage-4-kpi-label {
+  font-family: var(--font-mono), monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: rgba(103, 232, 249, 0.65);
+}
+
+.stage-4-kpi-value {
+  font-family: "Georgia", "Times New Roman", serif;
+  color: #e0f2fe;
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1;
+  margin-top: 0.25rem;
+}
+
+/* ── Compass-rose style animated detail for hero ── */
+@keyframes stage4-compass {
+  0%, 100% { transform: rotate(0deg); opacity: 0.35; }
+  50% { transform: rotate(180deg); opacity: 0.6; }
+}
+
+.stage-4-compass {
+  position: absolute;
+  top: -80px;
+  right: -80px;
+  width: 320px;
+  height: 320px;
+  border-radius: 50%;
+  border: 1px solid rgba(103, 232, 249, 0.2);
+  pointer-events: none;
+  animation: stage4-compass 28s linear infinite;
+}
+
+.stage-4-compass::before,
+.stage-4-compass::after {
+  content: "";
+  position: absolute;
+  border: 1px dashed rgba(103, 232, 249, 0.18);
+  border-radius: 50%;
+}
+.stage-4-compass::before { inset: 10%; }
+.stage-4-compass::after { inset: 25%; border-style: solid; opacity: 0.7; }
+
+/* ── Marker line between agenda items ── */
+.stage-4-axis {
+  position: relative;
+  padding-left: 1.75rem;
+}
+.stage-4-axis::before {
+  content: "";
+  position: absolute;
+  left: 0.5rem;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: linear-gradient(
+    180deg,
+    rgba(103, 232, 249, 0.5),
+    rgba(103, 232, 249, 0.15)
+  );
+}
+
+/* ── Stamp / classification for FINALE stage ── */
+.stage-4-stamp {
+  display: inline-block;
+  padding: 0.35rem 0.9rem;
+  font-family: "Georgia", serif;
+  font-style: italic;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #67e8f9;
+  border: 1px solid rgba(103, 232, 249, 0.5);
+  background: rgba(34, 211, 238, 0.06);
+  border-radius: 2px;
+}

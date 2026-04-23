@@ -1,0 +1,17 @@
+{
+  "order": 2,
+  "title": "The NDPA Notification Letter",
+  "description": "Draft the letter Sankofa Digital will file with the Nigeria Data Protection Commission (NDPC) under Section 40 of the NDPA 2023. You have 72 hours from the moment of discovery — the clock started at 04:12 UTC on 2024-01-15.\n\nThe letter must:\n\n  •  State the data controller's name and the DPO's name+contact (you may invent reasonable placeholders).\n  •  State the categories and approximate volume of affected data subjects (base this on what Stage 2 revealed about the exposed Elasticsearch index — do not inflate).\n  •  State the nature of the breach in plain language (three sentences max).\n  •  State the consequences and the containment actions already taken.\n  •  State the remediation roadmap.\n  •  Sign off in a form that would be defensible if quoted in court.\n\nAvoid: unnecessary hedging, legalese you cannot define, and figures you cannot support with evidence from the investigation. A letter that misstates facts is worse than a late letter.\n\nThis is a board-visible artefact — it will be quoted back at you if the investigation concludes differently. Write it accordingly.",
+  "maxPoints": 60,
+  "kind": "WRITEUP",
+  "widget": "WRITEUP_PAD",
+  "widgetConfig": {
+    "placeholder": "Nigeria Data Protection Commission\nNo. 10 Broad Street, Central Business District\nAbuja\n\n15 January 2024\n\nRe: Notification of Personal Data Breach — Sankofa Digital Ltd\n\nDear Commissioner, ...",
+    "minWords": 450,
+    "maxWords": 900
+  },
+  "flagSalt": null,
+  "choices": null,
+  "correctIndex": null,
+  "minWords": 450
+}

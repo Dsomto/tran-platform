@@ -1,0 +1,17 @@
+{
+  "order": 2,
+  "title": "Build the Incident Timeline",
+  "description": "Using only the artefacts in /evidence/ from Task 1, write a single-paragraph incident timeline suitable for the board. Each sentence must cite the artefact it came from (filename + line or timestamp). No sentence may contain jargon a non-technical board member would not understand.\n\nRequired coverage — your timeline must name, in order:\n\n  1. The moment of initial access (time, method, source IP).\n  2. The reconnaissance step that revealed the path to privilege.\n  3. The sudoers abuse that enabled escalation — in one sentence, in plain language.\n  4. The persistence mechanism and the user account it piggybacks on.\n  5. The first C2 callback (time, destination, content of the beacon).\n\nScoring: jargon in the final paragraph loses 2 pts per word. Missing citations lose 5 pts per step. A timeline that is internally inconsistent with the evidence loses 15 pts.\n\nThe chair reads the first and last sentence only — make them count.",
+  "maxPoints": 35,
+  "kind": "WRITEUP",
+  "widget": "WRITEUP_PAD",
+  "widgetConfig": {
+    "placeholder": "On [time] UTC, an authorised-looking SSH login from [IP] opened a session on [host]…",
+    "minWords": 150,
+    "maxWords": 320
+  },
+  "flagSalt": null,
+  "choices": null,
+  "correctIndex": null,
+  "minWords": 150
+}

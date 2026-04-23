@@ -1,0 +1,17 @@
+{
+  "order": 1,
+  "title": "The Risk Register",
+  "description": "The board wants a risk register on the screen at 09:05, right after the chair's opening remarks. You have five slots. Each slot is one risk and must contain:\n\n  •  A risk statement — one sentence. What could fail, under what condition, with what consequence.\n  •  A likelihood score (1–5, with justification).\n  •  A business impact score (1–5, anchored in ₦, customer count, or regulatory exposure).\n  •  The single control that, if implemented, would most reduce this risk — named concretely (a product, a policy, a process — not a platitude).\n  •  The accountable owner by role — not by name.\n\nScoring: vague controls lose 4 pts each ('improve monitoring' is vague — 'deploy Wazuh agents on 100% of in-scope endpoints with 30-day retention' is concrete). Risks not traceable to evidence from Stages 1-3 lose 8 pts each. Use of the words 'robust', 'holistic', or 'synergies' is an automatic zero.\n\nStructure your answer as five numbered blocks. Use numerals for scores. Be brief — each risk fits inside 90 words.",
+  "maxPoints": 50,
+  "kind": "WRITEUP",
+  "widget": "WRITEUP_PAD",
+  "widgetConfig": {
+    "placeholder": "1. Risk: ...\n   Likelihood: 4/5 — ...\n   Impact:     5/5 — ...\n   Control:    ...\n   Owner:      Head of Security Engineering\n\n2. ...",
+    "minWords": 300,
+    "maxWords": 650
+  },
+  "flagSalt": null,
+  "choices": null,
+  "correctIndex": null,
+  "minWords": 300
+}
