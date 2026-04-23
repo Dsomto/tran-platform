@@ -66,7 +66,17 @@ export function Navbar() {
 
   const authedHome = auth.status === "authed" ? homeForRole(auth.role) : "/";
   const logoHref = auth.status === "authed" ? authedHome : "/";
-  const backHref = auth.status === "authed" ? authedHome : "/";
+  const backFallback = auth.status === "authed" ? authedHome : "/";
+
+  function handleBack() {
+    // Only use history.back() when we're sure there's app history behind us —
+    // otherwise a fresh tab on /tracks/x would jump to whatever was there before.
+    if (typeof window !== "undefined" && window.history.length > 2) {
+      router.back();
+    } else {
+      router.push(backFallback);
+    }
+  }
 
   async function handleLogout() {
     try {
@@ -90,13 +100,14 @@ export function Navbar() {
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-3">
             {!isHome && (
-              <Link
-                href={backHref}
-                aria-label={auth.status === "authed" ? "Back to dashboard" : "Back to home"}
-                className="flex items-center justify-center w-9 h-9 rounded-full border border-border/60 bg-white/60 backdrop-blur hover:bg-white text-muted hover:text-foreground transition-colors"
+              <button
+                type="button"
+                onClick={handleBack}
+                aria-label="Go back"
+                className="flex items-center justify-center w-9 h-9 rounded-full border border-border/60 bg-white/60 backdrop-blur hover:bg-white text-muted hover:text-foreground transition-colors cursor-pointer"
               >
                 <ArrowLeft className="w-4 h-4" />
-              </Link>
+              </button>
             )}
             <Link
               href={logoHref}
