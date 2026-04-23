@@ -10,9 +10,11 @@ async function main() {
   const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
   const adminPasswordPlain = process.env.ADMIN_PASSWORD;
 
+  let admin: { id: string; email: string } | null = null;
+
   if (adminEmail && adminPasswordPlain) {
     const adminPassword = await bcrypt.hash(adminPasswordPlain, 12);
-    const admin = await prisma.user.upsert({
+    admin = await prisma.user.upsert({
       where: { email: adminEmail },
       update: { password: adminPassword, role: "SUPER_ADMIN" },
       create: {
@@ -22,10 +24,22 @@ async function main() {
         lastName: process.env.ADMIN_LAST_NAME ?? "User",
         role: "SUPER_ADMIN",
       },
+      select: { id: true, email: true },
     });
     console.log("Admin ready:", admin.email);
   } else {
-    console.log("Skipping admin seed — set ADMIN_EMAIL and ADMIN_PASSWORD to create/update one.");
+    // Fall back to any existing SUPER_ADMIN so downstream rows that need
+    // a reviewedBy user still link to a real user.
+    const existing = await prisma.user.findFirst({
+      where: { role: "SUPER_ADMIN" },
+      select: { id: true, email: true },
+    });
+    admin = existing;
+    if (!admin) {
+      console.log(
+        "No admin in DB and no ADMIN_EMAIL/ADMIN_PASSWORD env set — sample application rows will have reviewedBy=null."
+      );
+    }
   }
 
   // Create sample teams
@@ -104,8 +118,8 @@ async function main() {
         hoursPerWeek: 20 + (i % 3) * 10,
         country: ["Nigeria", "India", "USA", "Kenya", "Brazil", "Germany", "Japan", "Ghana"][i % 8],
         timezone: ["WAT", "IST", "EST", "EAT", "BRT", "CET", "JST", "GMT"][i % 8],
-        reviewedBy: admin.id,
-        reviewedAt: new Date(),
+        reviewedBy: admin?.id ?? null,
+        reviewedAt: admin ? new Date() : null,
       },
     });
 
@@ -167,26 +181,30 @@ async function main() {
   }
   console.log(`Created ${assignments.length} sample assignments`);
 
-  // Create announcements
-  await prisma.announcement.create({
-    data: {
-      title: "Welcome to UBI Cohort 1!",
-      content: "Welcome to the first ever UBI cohort! We're excited to have you all here. Make sure to set up your environment, join the Slack workspace, and check your first assignment. The journey starts now — let's build some cybersecurity excellence!",
-      authorId: admin.id,
-      isPinned: true,
-    },
-  });
+  // Create announcements — requires an admin (authorId is required on Announcement).
+  if (admin) {
+    await prisma.announcement.create({
+      data: {
+        title: "Welcome to UBI Cohort 1!",
+        content: "Welcome to the first ever UBI cohort! We're excited to have you all here. Make sure to set up your environment, join the Slack workspace, and check your first assignment. The journey starts now — let's build some cybersecurity excellence!",
+        authorId: admin.id,
+        isPinned: true,
+      },
+    });
 
-  await prisma.announcement.create({
-    data: {
-      title: "Stage 0 Deadline Reminder",
-      content: "Reminder: the Stage 0 assignment (Environment Setup & Basic Recon) is due in 5 days. Make sure to submit before the deadline. Late submissions will be penalized. If you need help, reach out in #stage-0 on Slack.",
-      authorId: admin.id,
-      stage: "STAGE_0",
-    },
-  });
+    await prisma.announcement.create({
+      data: {
+        title: "Stage 0 Deadline Reminder",
+        content: "Reminder: the Stage 0 assignment (Environment Setup & Basic Recon) is due in 5 days. Make sure to submit before the deadline. Late submissions will be penalized. If you need help, reach out in #stage-0 on Slack.",
+        authorId: admin.id,
+        stage: "STAGE_0",
+      },
+    });
 
-  console.log("Created sample announcements");
+    console.log("Created sample announcements");
+  } else {
+    console.log("Skipping announcement seeds — no admin available to attribute them to.");
+  }
 
   // Create pending applications for admin review
   for (let i = 0; i < 5; i++) {
