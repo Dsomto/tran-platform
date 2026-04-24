@@ -1,15 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 
-const faces = [
-  { src: "https://images.unsplash.com/photo-1589156229687-496a31ad1d1f?w=80&h=80&fit=crop&crop=faces", alt: "Member 1" },
-  { src: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&crop=faces", alt: "Member 2" },
-  { src: "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=80&h=80&fit=crop&crop=faces", alt: "Member 3" },
-  { src: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=80&h=80&fit=crop&crop=faces", alt: "Member 4" },
-  { src: "https://images.unsplash.com/photo-1580894732444-8ecded7900cd?w=80&h=80&fit=crop&crop=faces", alt: "Member 5" },
+// Track-coloured markers stand in for the cohort — mix of SOC/EH/GRC to
+// telegraph that the programme covers all three specialisations.
+const markers = [
+  { emoji: "🛡️", bg: "bg-cyan-light", text: "text-cyan-dark", track: "SOC Analysis" },
+  { emoji: "🎯", bg: "bg-amber-light", text: "text-amber-dark", track: "Ethical Hacking" },
+  { emoji: "📋", bg: "bg-emerald-light", text: "text-emerald-dark", track: "GRC" },
+  { emoji: "🛡️", bg: "bg-cyan-light", text: "text-cyan-dark", track: "SOC Analysis" },
+  { emoji: "🎯", bg: "bg-amber-light", text: "text-amber-dark", track: "Ethical Hacking" },
 ];
 
 export function CTA() {
@@ -50,18 +51,18 @@ export function CTA() {
       </div>
 
       <div className="relative z-[1] max-w-2xl mx-auto px-5 sm:px-8 text-center">
-        {/* Avatar stack */}
+        {/* Cohort marker stack — anonymous, track-coloured */}
         <div className="flex justify-center mb-8" data-aos="fade-up">
           <div className="flex -space-x-3">
-            {faces.map((face, i) => (
-              <div key={i} className="relative w-10 h-10 rounded-full overflow-hidden ring-2 ring-white" style={{ zIndex: faces.length - i }}>
-                <Image
-                  src={face.src}
-                  alt={face.alt}
-                  fill
-                  className="object-cover"
-                  sizes="40px"
-                />
+            {markers.map((m, i) => (
+              <div
+                key={i}
+                className={`w-10 h-10 rounded-full ring-2 ring-white grid place-items-center text-base ${m.bg} ${m.text}`}
+                style={{ zIndex: markers.length - i }}
+                aria-label={`Cohort member — ${m.track} track`}
+                role="img"
+              >
+                <span aria-hidden="true">{m.emoji}</span>
               </div>
             ))}
           </div>
