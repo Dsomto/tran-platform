@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Navbar } from "@/components/landing/navbar";
 import { Footer } from "@/components/landing/footer";
 import { ArrowRight } from "lucide-react";
+import { ApplicationClosed } from "./application-closed";
 import AOS from "aos";
 import "aos/dist/aos.css";
 
@@ -55,6 +56,15 @@ export default function ApplyPageWrapper() {
   );
 }
 
+type WindowState = {
+  isAcceptingApplications: boolean;
+  reason: "open" | "not_yet_open" | "manually_closed" | "closed_past_deadline";
+  opensAt: string | null;
+  closesAt: string | null;
+  note: string | null;
+  secondsUntilOpen: number | null;
+};
+
 function ApplyPage() {
   const searchParams = useSearchParams();
   const refCode = searchParams.get("ref");
@@ -68,8 +78,38 @@ function ApplyPage() {
   const [copied, setCopied] = useState(false);
   const [myReferralCode, setMyReferralCode] = useState("");
 
+  // Window state: null while loading — we render a lightweight loading view so
+  // the form doesn't flash before we know whether to show the countdown.
+  const [windowState, setWindowState] = useState<WindowState | null>(null);
+
   useEffect(() => {
     AOS.init({ duration: 800, easing: "ease-out-cubic", once: true, offset: 60 });
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/settings/applications")
+      .then((r) => r.json())
+      .then((d: WindowState) => {
+        if (!cancelled) setWindowState(d);
+      })
+      .catch(() => {
+        // Fail open — show the form rather than block the funnel if the
+        // status endpoint is down.
+        if (!cancelled) {
+          setWindowState({
+            isAcceptingApplications: true,
+            reason: "open",
+            opensAt: null,
+            closesAt: null,
+            note: null,
+            secondsUntilOpen: null,
+          });
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -191,117 +231,172 @@ function ApplyPage() {
             : "https://ubinitiative.org/apply";
           const shareText = `I just applied to UBI — a free 10-week cybersecurity internship by Ubuntu Bridge Initiative. SOC, Ethical Hacking, or GRC tracks. Apply with my link for a headstart!`;
 
+          async function copy(value: string, label: "link" | "code") {
+            try {
+              await navigator.clipboard.writeText(value);
+            } catch {
+              // Fallback for older browsers.
+              const ta = document.createElement("textarea");
+              ta.value = value;
+              ta.style.position = "fixed";
+              ta.style.opacity = "0";
+              document.body.appendChild(ta);
+              ta.select();
+              try { document.execCommand("copy"); } catch { /* ignore */ }
+              document.body.removeChild(ta);
+            }
+            setCopied(true);
+            window.setTimeout(() => setCopied(false), 1800);
+            // Touch the label so TS keeps it referenced (useful later for toasts).
+            void label;
+          }
+
           return (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" onClick={() => setShowShare(false)}>
-              <div className="glass-card-elevated rounded-2xl p-8 max-w-sm w-full text-center animate-in" onClick={(e) => e.stopPropagation()}>
-                <span className="text-5xl block mb-4">🚀</span>
-                <h2 className="text-xl font-bold text-foreground mb-2">Share your referral link</h2>
-                <p className="text-sm text-foreground/70 leading-relaxed mb-2">
-                  The more people who apply with your link, the bigger your <strong className="text-blue">headstart</strong> in the programme.
-                </p>
-                <p className="text-xs text-foreground/50 mb-6">
-                  Referrals give you priority and bonus points in early stages.
-                </p>
-
-                {/* Referral code display */}
-                {myReferralCode && (
-                  <div className="bg-blue/5 border border-blue/20 rounded-xl px-4 py-3 mb-5">
-                    <p className="text-[11px] text-foreground/50 uppercase tracking-wider font-medium mb-1">Your referral code</p>
-                    <p className="text-lg font-bold text-blue tracking-wider">{myReferralCode}</p>
-                  </div>
-                )}
-
-                <div className="space-y-3">
-                  {/* Copy link */}
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(referralLink);
-                      setCopied(true);
-                      setTimeout(() => setCopied(false), 2000);
-                    }}
-                    className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl border-2 border-blue/20 bg-blue/[0.03] hover:bg-blue/[0.08] transition-colors cursor-pointer text-left"
-                  >
-                    <span className="w-10 h-10 rounded-full bg-blue/10 flex items-center justify-center shrink-0">
-                      {copied ? (
-                        <svg className="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                        </svg>
-                      ) : (
-                        <svg className="w-5 h-5 text-blue" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                        </svg>
-                      )}
-                    </span>
-                    <div>
-                      <p className="text-sm font-semibold text-foreground">{copied ? "Copied!" : "Copy referral link"}</p>
-                      <p className="text-[11px] text-foreground/50 truncate max-w-[200px]">{referralLink.replace("https://", "")}</p>
-                    </div>
-                  </button>
-
-                  {/* WhatsApp */}
-                  <a
-                    href={`https://wa.me/?text=${encodeURIComponent(`${shareText} 🛡️\n\n${referralLink}`)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl border border-green-200 bg-green-50/50 hover:bg-green-50 transition-colors text-left"
-                  >
-                    <span className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center shrink-0">
-                      <svg className="w-5 h-5 text-green-600" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-                      </svg>
-                    </span>
-                    <div>
-                      <p className="text-sm font-semibold text-foreground">WhatsApp</p>
-                      <p className="text-[11px] text-foreground/50">Send to a friend or group</p>
-                    </div>
-                  </a>
-
-                  {/* Twitter / X */}
-                  <a
-                    href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`${shareText} 🛡️🔥\n\n${referralLink}`)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl border border-gray-200 bg-gray-50/50 hover:bg-gray-100/50 transition-colors text-left"
-                  >
-                    <span className="w-10 h-10 rounded-full bg-gray-900 flex items-center justify-center shrink-0">
-                      <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-                      </svg>
-                    </span>
-                    <div>
-                      <p className="text-sm font-semibold text-foreground">Twitter / X</p>
-                      <p className="text-[11px] text-foreground/50">Post about it</p>
-                    </div>
-                  </a>
-
-                  {/* SMS / iMessage */}
-                  <a
-                    href={`sms:?body=${encodeURIComponent(`Hey! ${shareText}\n\n${referralLink}`)}`}
-                    className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl border border-blue-200 bg-blue-50/50 hover:bg-blue-50 transition-colors text-left"
-                  >
-                    <span className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
-                      <svg className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                      </svg>
-                    </span>
-                    <div>
-                      <p className="text-sm font-semibold text-foreground">Messages</p>
-                      <p className="text-[11px] text-foreground/50">Send via SMS or iMessage</p>
-                    </div>
-                  </a>
+            <div
+              className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm p-0 sm:p-4"
+              onClick={() => setShowShare(false)}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="share-title"
+            >
+              <div
+                className="bg-white rounded-t-2xl sm:rounded-2xl w-full sm:max-w-md shadow-xl animate-in"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Header */}
+                <div className="px-6 pt-6 pb-4 text-center border-b border-border/60">
+                  <span className="text-3xl block mb-2" aria-hidden="true">🚀</span>
+                  <h2 id="share-title" className="text-lg font-bold text-foreground">
+                    Share your referral link
+                  </h2>
+                  <p className="text-[13px] text-muted mt-1 leading-relaxed">
+                    Anyone who applies with your link gives you a
+                    <span className="font-semibold text-foreground"> headstart</span> in early stages.
+                  </p>
                 </div>
 
-                <button
-                  onClick={() => setShowShare(false)}
-                  className="mt-5 text-sm font-medium text-foreground/60 hover:text-foreground transition-colors cursor-pointer"
-                >
-                  Maybe later
-                </button>
+                <div className="px-6 py-5 space-y-4">
+                  {/* The link — full, visible, one-tap copy */}
+                  <div>
+                    <label className="text-[11px] font-semibold uppercase tracking-wider text-muted block mb-1.5">
+                      Your link
+                    </label>
+                    <div className="flex items-stretch gap-0 border-2 border-blue/30 rounded-xl overflow-hidden bg-blue/[0.03]">
+                      <input
+                        type="text"
+                        readOnly
+                        value={referralLink}
+                        onFocus={(e) => e.currentTarget.select()}
+                        className="flex-1 bg-transparent px-3 py-3 text-sm font-mono text-foreground outline-none min-w-0"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => copy(referralLink, "link")}
+                        className="px-4 text-xs font-bold uppercase tracking-wider bg-blue text-white hover:bg-blue-dark transition-colors shrink-0"
+                      >
+                        {copied ? "Copied!" : "Copy"}
+                      </button>
+                    </div>
+                    <p className="text-[11px] text-muted mt-1.5">
+                      Tap the text to select it, or tap <span className="font-semibold">Copy</span>.
+                    </p>
+                  </div>
+
+                  {/* The code — for places where links don't work well */}
+                  {myReferralCode && (
+                    <div>
+                      <label className="text-[11px] font-semibold uppercase tracking-wider text-muted block mb-1.5">
+                        Or share the code
+                      </label>
+                      <div className="flex items-stretch gap-0 border border-border rounded-xl overflow-hidden bg-surface-hover/40">
+                        <div className="flex-1 px-3 py-3 text-base font-bold tracking-[0.15em] text-foreground font-mono">
+                          {myReferralCode}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => copy(myReferralCode, "code")}
+                          className="px-4 text-xs font-bold uppercase tracking-wider bg-foreground text-background hover:opacity-90 transition-colors shrink-0"
+                        >
+                          Copy
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Quick-share targets */}
+                  <div>
+                    <p className="text-[11px] font-semibold uppercase tracking-wider text-muted mb-2">
+                      Or share directly
+                    </p>
+                    <div className="grid grid-cols-3 gap-2">
+                      <a
+                        href={`https://wa.me/?text=${encodeURIComponent(`${shareText} 🛡️\n\n${referralLink}`)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex flex-col items-center gap-1.5 py-3 rounded-xl border border-green-200 bg-green-50/60 hover:bg-green-50 transition-colors"
+                      >
+                        <svg className="w-5 h-5 text-green-600" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+                        </svg>
+                        <span className="text-[11px] font-semibold text-foreground">WhatsApp</span>
+                      </a>
+
+                      <a
+                        href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`${shareText} 🛡️🔥\n\n${referralLink}`)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex flex-col items-center gap-1.5 py-3 rounded-xl border border-gray-200 bg-gray-50/60 hover:bg-gray-100 transition-colors"
+                      >
+                        <svg className="w-5 h-5 text-gray-900" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                        </svg>
+                        <span className="text-[11px] font-semibold text-foreground">Twitter / X</span>
+                      </a>
+
+                      <a
+                        href={`sms:?body=${encodeURIComponent(`Hey! ${shareText}\n\n${referralLink}`)}`}
+                        className="flex flex-col items-center gap-1.5 py-3 rounded-xl border border-blue-200 bg-blue-50/60 hover:bg-blue-50 transition-colors"
+                      >
+                        <svg className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                        </svg>
+                        <span className="text-[11px] font-semibold text-foreground">Messages</span>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer */}
+                <div className="px-6 pb-5 pt-3 border-t border-border/60 text-center">
+                  <button
+                    onClick={() => setShowShare(false)}
+                    className="text-sm font-medium text-muted hover:text-foreground transition-colors"
+                  >
+                    Close
+                  </button>
+                </div>
               </div>
             </div>
           );
         })()}
 
+        <Footer />
+      </>
+    );
+  }
+
+  // ── Closed / scheduled states — short-circuit before rendering the form ──
+  if (windowState && !windowState.isAcceptingApplications) {
+    return (
+      <>
+        <Navbar />
+        <main id="main-content">
+          <ApplicationClosed
+            reason={windowState.reason as "not_yet_open" | "manually_closed" | "closed_past_deadline"}
+            opensAt={windowState.opensAt}
+            note={windowState.note}
+          />
+        </main>
         <Footer />
       </>
     );

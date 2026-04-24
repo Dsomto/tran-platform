@@ -7,7 +7,7 @@ import { rateLimit, rateLimitResponse, getClientKey, RATE_LIMITS } from "@/lib/r
 // Public submit + admin list.
 export async function POST(request: NextRequest) {
   try {
-    const rl = rateLimit(getClientKey(request), RATE_LIMITS.publicForm);
+    const rl = await rateLimit(getClientKey(request), RATE_LIMITS.publicForm);
     if (!rl.ok) return rateLimitResponse(rl);
 
     const body = await request.json();

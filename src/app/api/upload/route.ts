@@ -44,7 +44,7 @@ export async function POST(request: Request): Promise<Response> {
       return new Response(null, { status: 404 });
     }
 
-    const rl = rateLimit(`upload:${session.id}:${ipFromRequest(request)}`, {
+    const rl = await rateLimit(`upload:${session.id}:${ipFromRequest(request)}`, {
       max: 10,
       windowMs: 60_000,
     });

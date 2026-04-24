@@ -589,3 +589,20 @@ model DataScholarshipApplication {
   @@index([status, createdAt])
   @@index([email])
 }
+
+// ─── SYSTEM SETTINGS (singleton) ─────────────────────────
+// A single-row config table. Keyed by `key: "singleton"` so we can always
+// upsert without juggling ids. Holds cohort-wide toggles like "applications
+// open/closed" and the scheduled open date that drives the /apply countdown.
+model SystemSetting {
+  id                       String    @id @default(auto()) @map("_id") @db.ObjectId
+  key                      String    @unique              // always "singleton"
+
+  applicationsOpen         Boolean   @default(true)       // master switch
+  applicationsOpensAt      DateTime?                      // if set+future, form is closed until then (countdown shown)
+  applicationsClosesAt     DateTime?                      // if set+past, form is closed regardless of applicationsOpen
+  applicationsClosedNote   String?                        // custom message shown when closed
+
+  updatedAt                DateTime  @updatedAt
+  updatedById              String?   @db.ObjectId
+}

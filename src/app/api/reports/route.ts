@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
     const session = await getSession();
     if (!session) return Response.json({ error: "Not authenticated" }, { status: 401 });
 
-    const rl = rateLimit(getClientKey(request, session.id), RATE_LIMITS.reportWrite);
+    const rl = await rateLimit(getClientKey(request, session.id), RATE_LIMITS.reportWrite);
     if (!rl.ok) return rateLimitResponse(rl);
 
     const intern = await prisma.intern.findUnique({ where: { userId: session.id } });

@@ -12,7 +12,7 @@ import { rateLimit, rateLimitResponse, getClientKey, RATE_LIMITS } from "@/lib/r
 // Verifies the challenge token and the TOTP code, then issues the session cookie.
 export async function POST(request: NextRequest) {
   try {
-    const rl = rateLimit(getClientKey(request), RATE_LIMITS.login);
+    const rl = await rateLimit(getClientKey(request), RATE_LIMITS.login);
     if (!rl.ok) return rateLimitResponse(rl);
 
     const { challenge, code } = await request.json().catch(() => ({}));

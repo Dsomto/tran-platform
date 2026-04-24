@@ -8,7 +8,7 @@ import { logger } from "@/lib/logger";
 
 export async function POST(request: NextRequest) {
   try {
-    const rl = rateLimit(getClientKey(request), RATE_LIMITS.login);
+    const rl = await rateLimit(getClientKey(request), RATE_LIMITS.login);
     if (!rl.ok) return rateLimitResponse(rl);
 
     const body = await request.json().catch(() => ({}));

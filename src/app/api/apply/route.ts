@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { sendApplicationConfirmation } from "@/lib/email";
 import { logger } from "@/lib/logger";
 import { Prisma } from "@/generated/prisma";
+import { getApplicationState } from "@/lib/system-settings";
 
 // Simple in-memory rate limiter: max 5 applications per IP per 15 minutes
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
@@ -51,6 +52,20 @@ export async function POST(request: Request) {
       return Response.json(
         { error: "Too many applications. Please try again later." },
         { status: 429 }
+      );
+    }
+
+    // Admin-gated window check — even if someone hits the API directly, we
+    // refuse when applications are closed or not yet open.
+    const appState = await getApplicationState();
+    if (!appState.isAcceptingApplications) {
+      return Response.json(
+        {
+          error: appState.applicationsClosedNote || "Applications are currently closed.",
+          reason: appState.reason,
+          opensAt: appState.applicationsOpensAt?.toISOString() ?? null,
+        },
+        { status: 403 }
       );
     }
 

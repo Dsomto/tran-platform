@@ -12,7 +12,7 @@ export async function POST(
     const session = await getSession();
     if (!session) return Response.json({ error: "Not authenticated" }, { status: 401 });
 
-    const rl = rateLimit(getClientKey(req, session.id), RATE_LIMITS.reportWrite);
+    const rl = await rateLimit(getClientKey(req, session.id), RATE_LIMITS.reportWrite);
     if (!rl.ok) return rateLimitResponse(rl);
 
     const { id } = await ctx.params;

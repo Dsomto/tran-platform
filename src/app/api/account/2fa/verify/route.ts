@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
     const session = await getSession();
     if (!session) return Response.json({ error: "Not authenticated" }, { status: 401 });
 
-    const rl = rateLimit(getClientKey(request, session.id), {
+    const rl = await rateLimit(getClientKey(request, session.id), {
       max: 8,
       windowMs: 60_000,
     });
