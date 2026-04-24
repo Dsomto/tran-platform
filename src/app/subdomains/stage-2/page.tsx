@@ -5,6 +5,8 @@ import { STAGE_THEMES } from "@/components/stage/themes";
 import { getDoorSession } from "@/lib/stage-login";
 import { stageUrl } from "@/lib/stage-routes";
 import { prisma } from "@/lib/db";
+import { STAGE_BRIEFS } from "@/lib/stage-briefs";
+import { MissionBrief } from "@/components/stage/MissionBrief";
 
 function statusLabel(status: string | undefined | null): { label: string; tone: "pending" | "submitted" | "graded" | "late" } {
   const s = (status ?? "").toUpperCase();
@@ -76,6 +78,22 @@ export default async function Stage2RoomPage() {
             {room.briefing}
           </p>
         </section>
+
+        <MissionBrief
+          stageSlug="stage-2"
+          brief={STAGE_BRIEFS.STAGE_2}
+          pdfHref={`/api/stage-brief/stage-2/pdf`}
+          theme={{
+            panelClass: "stage-2-panel",
+            headingClass: "stage-2-heading",
+            pillClass: "stage-2-pill",
+            accentTextClass: "text-rose-700",
+            bodyTextClass: "text-neutral-700",
+            mutedTextClass: "text-neutral-500",
+            downloadBtnClass: "bg-rose-600",
+            dividerClass: "bg-rose-100",
+          }}
+        />
 
         <section>
           <div className="flex items-end justify-between mb-4">

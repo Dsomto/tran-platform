@@ -11,7 +11,6 @@ import {
   CheckCircle2,
   AlertTriangle,
   FileText,
-  ExternalLink,
 } from "lucide-react";
 
 interface InitialReport {

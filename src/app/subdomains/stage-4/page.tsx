@@ -5,6 +5,8 @@ import { STAGE_THEMES } from "@/components/stage/themes";
 import { getDoorSession } from "@/lib/stage-login";
 import { stageUrl } from "@/lib/stage-routes";
 import { prisma } from "@/lib/db";
+import { STAGE_BRIEFS } from "@/lib/stage-briefs";
+import { MissionBrief } from "@/components/stage/MissionBrief";
 
 function statusLabel(status: string | undefined | null): { label: string; tone: "pending" | "submitted" | "graded" | "late" } {
   const s = (status ?? "").toUpperCase();
@@ -161,6 +163,22 @@ export default async function Stage4RoomPage() {
             <p className="mt-1 text-[11px] text-cyan-200/55">track selection</p>
           </div>
         </section>
+
+        <MissionBrief
+          stageSlug="stage-4"
+          brief={STAGE_BRIEFS.STAGE_4}
+          pdfHref={`/api/stage-brief/stage-4/pdf`}
+          theme={{
+            panelClass: "stage-4-panel",
+            headingClass: "stage-4-heading",
+            pillClass: "stage-4-pill",
+            accentTextClass: "text-cyan-300",
+            bodyTextClass: "text-cyan-50/85",
+            mutedTextClass: "text-cyan-200/55",
+            downloadBtnClass: "bg-cyan-500",
+            dividerClass: "bg-cyan-400/20",
+          }}
+        />
 
         {/* ── Agenda (tasks) ── */}
         <section>

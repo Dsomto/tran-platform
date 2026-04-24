@@ -3,70 +3,14 @@ import Link from "next/link";
 import { Lock } from "lucide-react";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { STAGE_BRIEFS } from "@/lib/stage-briefs";
 import { ReportEditor } from "./report-editor";
 
-const STAGE_META: Record<
-  string,
-  { label: string; subtitle: string; storyline: string; sections: string[] }
-> = {
-  STAGE_0: {
-    label: "Stage 0",
-    subtitle: "Foundations",
-    storyline:
-      "You are writing to the Sankofa Digital incident committee. Summarise what you observed across the foundation scenarios and what it implies for how their SOC should operate day-to-day.",
-    sections: [
-      "Observations from the foundation exercises",
-      "What these exercises told you about the SOC's current posture",
-      "Recommended next steps",
-    ],
-  },
-  STAGE_1: {
-    label: "Stage 1",
-    subtitle: "Applied Cryptography",
-    storyline:
-      "Addressed to Amaka Eze and the board — your analysis of the cryptographic failures that enabled The Griot to stay undetected, and the control set that would have prevented it.",
-    sections: [
-      "Cryptographic failures observed",
-      "Why modern algorithms alone were not enough",
-      "Controls Sankofa should adopt",
-    ],
-  },
-  STAGE_2: {
-    label: "Stage 2",
-    subtitle: "Web Application Security",
-    storyline:
-      "A penetration-test-style finding report addressed to Sankofa's engineering leadership — reconstruct the web attack chain, score each finding, and recommend remediation.",
-    sections: [
-      "Reconnaissance and initial entry",
-      "The exploit chain (auth bypass → XSS → SSRF)",
-      "Findings classification and severity",
-      "Remediation plan",
-    ],
-  },
-  STAGE_3: {
-    label: "Stage 3",
-    subtitle: "Incident Response",
-    storyline:
-      "A formal incident report addressed to Sankofa's CISO and legal team. Cover detection, containment, eradication, and the lessons learned.",
-    sections: [
-      "Incident timeline",
-      "Containment and eradication actions",
-      "Root cause analysis",
-      "Lessons learned and policy changes",
-    ],
-  },
-  STAGE_4: {
-    label: "Stage 4",
-    subtitle: "Governance & Risk",
-    storyline:
-      "Addressed to the Sankofa board and the regulator. Translate the technical findings into governance language and risk decisions.",
-    sections: [
-      "Risk register entries arising from this incident",
-      "Control gaps against your chosen framework",
-      "Board-level recommendations",
-    ],
-  },
-};
+type StageKey = keyof typeof STAGE_BRIEFS;
+
+function isStageKey(s: string): s is StageKey {
+  return s in STAGE_BRIEFS;
+}
 
 export default async function ReportEditorPage({
   params,
@@ -77,9 +21,7 @@ export default async function ReportEditorPage({
   const { stage: stageSlug } = await params;
   const stage = stageSlug.toUpperCase();
 
-  if (!STAGE_META[stage]) {
-    notFound();
-  }
+  if (!isStageKey(stage)) notFound();
 
   const intern = await prisma.intern.findUnique({
     where: { userId: session.id },
@@ -93,7 +35,7 @@ export default async function ReportEditorPage({
     prisma.stageWindow.findUnique({ where: { stage: stage as never } }),
   ]);
 
-  const meta = STAGE_META[stage];
+  const brief = STAGE_BRIEFS[stage];
   const now = new Date();
   const isOpen = window ? now >= window.activeFrom && now <= window.submitUntil : true;
   const isPassed = existing?.status === "PASSED";
@@ -109,10 +51,10 @@ export default async function ReportEditorPage({
             <Lock className="w-5 h-5 text-slate-600" />
           </div>
           <h1 className="text-lg font-semibold text-foreground mb-1">
-            {meta.label} is not open yet
+            {brief.label} is not open yet
           </h1>
           <p className="text-sm text-muted-foreground mb-5">
-            The programme team has not opened {meta.label} for this cohort.
+            The programme team has not opened {brief.label} for this cohort.
             You will get an email and a pinned announcement as soon as it opens.
           </p>
           <Link
@@ -129,10 +71,10 @@ export default async function ReportEditorPage({
   return (
     <ReportEditor
       stage={stage}
-      stageLabel={meta.label}
-      stageSubtitle={meta.subtitle}
-      storyline={meta.storyline}
-      sectionHints={meta.sections}
+      stageLabel={brief.label}
+      stageSubtitle={brief.subtitle}
+      storyline={brief.missionBrief[0] ?? ""}
+      sectionHints={brief.sections}
       initialReport={
         existing
           ? {

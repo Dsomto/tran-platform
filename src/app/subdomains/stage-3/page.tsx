@@ -5,6 +5,8 @@ import { STAGE_THEMES } from "@/components/stage/themes";
 import { getDoorSession } from "@/lib/stage-login";
 import { stageUrl } from "@/lib/stage-routes";
 import { prisma } from "@/lib/db";
+import { STAGE_BRIEFS } from "@/lib/stage-briefs";
+import { MissionBrief } from "@/components/stage/MissionBrief";
 
 function statusLabel(status: string | undefined | null): { label: string; tone: "pending" | "submitted" | "graded" | "late" } {
   const s = (status ?? "").toUpperCase();
@@ -120,6 +122,22 @@ export default async function Stage3RoomPage() {
             <li className="flex gap-2"><span className="text-amber-400/70">›</span> All tasks must be graded before the debrief unlocks. Partial credit is not carried forward.</li>
           </ul>
         </section>
+
+        <MissionBrief
+          stageSlug="stage-3"
+          brief={STAGE_BRIEFS.STAGE_3}
+          pdfHref={`/api/stage-brief/stage-3/pdf`}
+          theme={{
+            panelClass: "stage-3-panel",
+            headingClass: "stage-3-heading",
+            pillClass: "stage-3-pill",
+            accentTextClass: "text-amber-400",
+            bodyTextClass: "text-amber-50/85",
+            mutedTextClass: "text-amber-200/55",
+            downloadBtnClass: "bg-amber-500",
+            dividerClass: "bg-amber-500/20",
+          }}
+        />
 
         {/* ── Evidence log (tasks) ── */}
         <section>

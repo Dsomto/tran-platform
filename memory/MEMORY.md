@@ -1,0 +1,1 @@
+- [Explain before executing](feedback_explain_before_executing.md) — describe the plan in plain language before non-trivial changes; don't just run into things
