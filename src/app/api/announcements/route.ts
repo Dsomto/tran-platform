@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { logger } from "@/lib/logger";
 import { scheduleCohortBroadcast } from "@/lib/email";
+import { publicAppUrl } from "@/lib/public-url";
 import type { Prisma } from "@/generated/prisma";
 
 function escapeHtml(s: string): string {
@@ -80,7 +81,7 @@ export async function POST(request: NextRequest) {
     const recipients = interns.map((i) => i.user.email).filter(Boolean);
 
     if (recipients.length > 0) {
-      const base = process.env.PUBLIC_APP_URL?.replace(/\/$/, "") ?? "";
+      const base = publicAppUrl();
       const html = `
         <div style="font-family:'Segoe UI',sans-serif;max-width:600px;margin:0 auto;background:#F8FAFC;padding:32px 16px;">
           <div style="background:linear-gradient(135deg,#2563EB,#0891B2);padding:28px;border-radius:14px;text-align:center;color:white;">

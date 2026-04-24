@@ -70,9 +70,8 @@ export default async function AssignmentStagePage({
           initialWindow={
             stageWindow
               ? {
-                  activeFrom: stageWindow.activeFrom.toISOString(),
-                  submitUntil: stageWindow.submitUntil.toISOString(),
                   passingScore: stageWindow.passingScore,
+                  isLocked: stageWindow.isLocked,
                 }
               : null
           }

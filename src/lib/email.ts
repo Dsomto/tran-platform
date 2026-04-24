@@ -1,5 +1,6 @@
 import nodemailer from "nodemailer";
 import { logger } from "./logger";
+import { publicAppUrl } from "./public-url";
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || "smtp.zoho.com",
@@ -428,8 +429,7 @@ function wrap(title: string, body: string, ctaUrl?: string, ctaLabel?: string): 
 }
 
 function publicUrl(path: string): string {
-  const base = process.env.PUBLIC_APP_URL?.replace(/\/$/, "") ?? "";
-  return `${base}${path}`;
+  return `${publicAppUrl()}${path}`;
 }
 
 export async function sendAssignmentPublished(

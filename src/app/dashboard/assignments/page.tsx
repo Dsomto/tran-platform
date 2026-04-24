@@ -4,13 +4,15 @@ import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { Topbar } from "@/components/dashboard/topbar";
 import { formatDateTime } from "@/lib/utils";
+import { stageUrl, type StageSlug } from "@/lib/stage-routes";
 import {
   Lock,
   LockOpen,
-  ChevronRight,
   Clock,
   CheckCircle2,
   Circle,
+  DoorOpen,
+  FileText,
 } from "lucide-react";
 
 const STAGES = ["STAGE_0", "STAGE_1", "STAGE_2", "STAGE_3", "STAGE_4"] as const;
@@ -22,6 +24,14 @@ const STAGE_NAMES: Record<StageKey, string> = {
   STAGE_2: "The Attack Surface",
   STAGE_3: "Inside the Walls",
   STAGE_4: "The Debrief",
+};
+
+const STAGE_ENUM_TO_SLUG: Record<StageKey, StageSlug> = {
+  STAGE_0: "stage-0",
+  STAGE_1: "stage-1",
+  STAGE_2: "stage-2",
+  STAGE_3: "stage-3",
+  STAGE_4: "stage-4",
 };
 
 function stageRank(s: string): number {
@@ -85,6 +95,8 @@ export default async function AssignmentsPage() {
                 stage={stage}
                 stageNum={stageNum}
                 name={STAGE_NAMES[stage as StageKey]}
+                roomHref={stageUrl(STAGE_ENUM_TO_SLUG[stage as StageKey])}
+                reportHref={`/dashboard/reports/${stage}`}
                 accessible={accessible}
                 isLocked={isLocked}
                 isCurrent={isCurrent}
@@ -101,9 +113,10 @@ export default async function AssignmentsPage() {
 }
 
 function StageCard({
-  stage,
   stageNum,
   name,
+  roomHref,
+  reportHref,
   accessible,
   isLocked,
   isCurrent,
@@ -114,6 +127,8 @@ function StageCard({
   stage: string;
   stageNum: string;
   name: string;
+  roomHref: string;
+  reportHref: string;
   accessible: boolean;
   isLocked: boolean;
   isCurrent: boolean;
@@ -131,12 +146,12 @@ function StageCard({
     return null;
   })();
 
-  const body = (
+  return (
     <div
       className={`relative p-5 bg-white border rounded-xl transition-all ${
         accessible
-          ? "border-border hover:border-blue/40 hover:shadow-sm cursor-pointer"
-          : "border-border/60 bg-slate-50/60 cursor-not-allowed"
+          ? "border-border hover:border-blue/40"
+          : "border-border/60 bg-slate-50/60"
       }`}
     >
       <div className="flex items-start justify-between gap-4">
@@ -210,17 +225,33 @@ function StageCard({
           {reportStatus === "PASSED" && (
             <CheckCircle2 className="w-5 h-5 text-emerald-600" />
           )}
-          {accessible && (
-            <ChevronRight className="w-5 h-5 text-muted-foreground" />
-          )}
         </div>
       </div>
-    </div>
-  );
 
-  return accessible ? (
-    <Link href={`/dashboard/reports/${stage}`}>{body}</Link>
-  ) : (
-    <div aria-disabled="true">{body}</div>
+      {accessible && (
+        <div className="mt-4 pt-4 border-t border-border/60 flex flex-wrap items-center gap-2">
+          <Link
+            href={roomHref}
+            className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-full bg-blue text-white hover:bg-blue-dark transition-colors"
+          >
+            <DoorOpen className="w-4 h-4" />
+            Enter Stage {stageNum}
+          </Link>
+          <Link
+            href={reportHref}
+            className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-full border border-border text-foreground hover:bg-surface-hover transition-colors"
+          >
+            <FileText className="w-4 h-4" />
+            {reportStatus === "DRAFT"
+              ? "Continue draft"
+              : reportStatus === "SUBMITTED" || reportStatus === "UNDER_REVIEW"
+                ? "View submission"
+                : reportStatus === "GRADED" || reportStatus === "PASSED" || reportStatus === "FAILED"
+                  ? "View feedback"
+                  : "Submit report"}
+          </Link>
+        </div>
+      )}
+    </div>
   );
 }

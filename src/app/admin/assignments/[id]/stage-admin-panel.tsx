@@ -3,7 +3,6 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  Calendar,
   Award,
   CheckCircle2,
   XCircle,
@@ -13,7 +12,7 @@ import {
   LockOpen,
   Users,
   TrendingUp,
-  Clock,
+  Megaphone,
 } from "lucide-react";
 
 interface ReportRow {
@@ -29,9 +28,8 @@ interface ReportRow {
 }
 
 interface WindowData {
-  activeFrom: string;
-  submitUntil: string;
   passingScore: number;
+  isLocked: boolean;
 }
 
 interface Props {
@@ -41,99 +39,87 @@ interface Props {
   submissions: ReportRow[];
 }
 
-function toLocalInput(iso: string | null): string {
-  if (!iso) return "";
-  const d = new Date(iso);
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
-
-function defaultActiveFrom(): string {
-  return toLocalInput(new Date().toISOString());
-}
-
 export function StageAdminPanel({ stage, initialWindow, eligible, submissions }: Props) {
   const router = useRouter();
   const [win, setWin] = useState<WindowData | null>(initialWindow);
-  const [fromInput, setFromInput] = useState(
-    initialWindow ? toLocalInput(initialWindow.activeFrom) : defaultActiveFrom()
-  );
-  const [untilInput, setUntilInput] = useState(
-    initialWindow ? toLocalInput(initialWindow.submitUntil) : ""
-  );
-  const [passInput, setPassInput] = useState(
-    initialWindow ? String(initialWindow.passingScore) : "60"
+
+  const [opening, setOpening] = useState(false);
+  const [locking, setLocking] = useState(false);
+  const [publishing, setPublishing] = useState(false);
+
+  // Inline announce-on-open form, same UX as the list page.
+  const [announceOpen, setAnnounceOpen] = useState(false);
+  const stageNum = stage.replace("STAGE_", "");
+  const [announceTitle, setAnnounceTitle] = useState(`Stage ${stageNum} is open`);
+  const [announceMessage, setAnnounceMessage] = useState(
+    `Stage ${stageNum} is now open. Log into your dashboard to begin.`
   );
 
-  const [savingWindow, setSavingWindow] = useState(false);
-  const [closing, setClosing] = useState(false);
-  const [publishing, setPublishing] = useState(false);
+  // Publish flow — only place the passing score exists.
+  const [publishMode, setPublishMode] = useState(false);
+  const [passInput, setPassInput] = useState("70");
+
   const [err, setErr] = useState<string | null>(null);
   const [result, setResult] = useState<string | null>(null);
 
-  const stageNum = stage.replace("STAGE_", "");
-  const now = Date.now();
-  const isClosed = win ? new Date(win.submitUntil).getTime() < now : false;
+  const isLocked = win?.isLocked ?? true;
 
-  async function saveWindow(overrides?: Partial<WindowData>) {
-    setSavingWindow(true);
+  async function openStage() {
+    setOpening(true);
     setErr(null);
     setResult(null);
     try {
-      const payload: Record<string, unknown> = {
-        stage,
-        activeFrom: overrides?.activeFrom ?? new Date(fromInput).toISOString(),
-        submitUntil: overrides?.submitUntil ?? new Date(untilInput).toISOString(),
-        passingScore:
-          overrides?.passingScore ??
-          (Number.isFinite(Number(passInput)) ? Number(passInput) : 60),
-      };
-      const res = await fetch("/api/admin/stage-windows", {
+      const res = await fetch("/api/admin/stage-windows/open", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ stage, title: announceTitle, message: announceMessage }),
       });
       const j = await res.json();
       if (!res.ok) {
-        setErr(j.error || "Failed to save stage window");
-        return false;
+        setErr(j.error || "Failed to open stage");
+        return;
       }
       setWin({
-        activeFrom: new Date(j.window.activeFrom).toISOString(),
-        submitUntil: new Date(j.window.submitUntil).toISOString(),
-        passingScore: j.window.passingScore,
+        passingScore: j.window?.passingScore ?? win?.passingScore ?? 70,
+        isLocked: false,
       });
+      setAnnounceOpen(false);
+      setResult(`Opened. ${j.notifying ?? 0} participants will be emailed.`);
       router.refresh();
-      return true;
     } catch {
       setErr("Network error");
-      return false;
     } finally {
-      setSavingWindow(false);
+      setOpening(false);
     }
   }
 
-  async function saveDeadline() {
-    if (!fromInput || !untilInput) {
-      setErr("Both start and deadline dates are required");
-      return;
-    }
-    await saveWindow();
-  }
-
-  async function closeNow() {
-    if (!confirm(`Close Stage ${stageNum}? No more submissions after this moment.`)) return;
-    setClosing(true);
+  async function lockStage() {
+    if (!confirm(`Lock Stage ${stageNum}? Interns will lose access until you open it again.`)) return;
+    setLocking(true);
     setErr(null);
-    const fromISO = win ? win.activeFrom : new Date(fromInput || new Date().toISOString()).toISOString();
-    const closeAtISO = new Date().toISOString();
-    const passing = win ? win.passingScore : Number(passInput) || 60;
-    await saveWindow({
-      activeFrom: fromISO,
-      submitUntil: closeAtISO,
-      passingScore: passing,
-    });
-    setClosing(false);
+    setResult(null);
+    try {
+      const res = await fetch("/api/admin/stage-windows/lock", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ stage }),
+      });
+      const j = await res.json();
+      if (!res.ok) {
+        setErr(j.error || "Failed to lock stage");
+        return;
+      }
+      setWin({
+        passingScore: win?.passingScore ?? 70,
+        isLocked: true,
+      });
+      setResult("Locked. Interns no longer see this stage.");
+      router.refresh();
+    } catch {
+      setErr("Network error");
+    } finally {
+      setLocking(false);
+    }
   }
 
   async function publishResults() {
@@ -161,12 +147,13 @@ export function StageAdminPanel({ stage, initialWindow, eligible, submissions }:
       const j = await res.json();
       if (!res.ok) {
         setErr(j.error || "Publish failed");
-      } else {
-        setResult(
-          `Published. ${j.passed} participants passed · ${j.failed} did not. Emails queued.`
-        );
-        router.refresh();
+        return;
       }
+      setResult(
+        `Published. ${j.passed} passed · ${j.failed} did not. Emails queued.`
+      );
+      setPublishMode(false);
+      router.refresh();
     } catch {
       setErr("Network error");
     } finally {
@@ -197,27 +184,30 @@ export function StageAdminPanel({ stage, initialWindow, eligible, submissions }:
     return c;
   }, [submissions]);
 
+  const published = counts.passed + counts.failed > 0;
+
   return (
     <>
       <header className="mb-6">
         <div className="flex items-center gap-2 flex-wrap mb-1">
           <h1 className="text-2xl font-bold text-foreground">Stage {stageNum}</h1>
-          {isClosed ? (
+          {isLocked ? (
             <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200">
-              <Lock className="w-3 h-3" /> Closed
-            </span>
-          ) : win ? (
-            <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200">
-              <LockOpen className="w-3 h-3" /> Open
+              <Lock className="w-3 h-3" /> Locked
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200">
-              Not yet configured
+            <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200">
+              <LockOpen className="w-3 h-3" /> Open to interns
+            </span>
+          )}
+          {published && (
+            <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded bg-blue/10 text-blue border border-blue/30">
+              <CheckCircle2 className="w-3 h-3" /> Results published
             </span>
           )}
         </div>
         <p className="text-sm text-muted-foreground">
-          Set one deadline for the whole stage, set the passing grade, close submissions, publish results.
+          Open the stage so interns can see it, close it when you want access revoked, and publish results when grading is complete.
         </p>
       </header>
 
@@ -229,8 +219,8 @@ export function StageAdminPanel({ stage, initialWindow, eligible, submissions }:
         <Stat
           icon={Award}
           label="Published"
-          value={counts.passed + counts.failed > 0 ? `${counts.passed}/${counts.passed + counts.failed}` : "—"}
-          sub={counts.passed + counts.failed > 0 ? `${counts.passed} passed` : "Not yet published"}
+          value={published ? `${counts.passed}/${counts.passed + counts.failed}` : "—"}
+          sub={published ? `${counts.passed} passed` : "Not yet published"}
         />
       </section>
 
@@ -245,91 +235,141 @@ export function StageAdminPanel({ stage, initialWindow, eligible, submissions }:
         </div>
       )}
 
-      {/* Controls */}
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+      {/* Two controls — open/close, and publish */}
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+        {/* Open / Lock */}
         <div className="bg-white border border-border rounded-xl p-5">
           <h2 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-blue" /> Deadline
+            {isLocked ? (
+              <Lock className="w-4 h-4 text-slate-700" />
+            ) : (
+              <LockOpen className="w-4 h-4 text-emerald-700" />
+            )}
+            Access
           </h2>
-          <p className="text-xs text-muted-foreground mb-3">
-            One window for the whole stage. Submissions after the deadline are locked out.
+          <p className="text-xs text-muted-foreground mb-4">
+            {isLocked
+              ? "Locked. Interns cannot see this stage on their dashboard. Opening sends a pinned announcement + cohort email."
+              : "Open. Interns at this stage can submit reports. Locking hides it again (silent — no email)."}
           </p>
-          <label className="block text-xs text-muted-foreground mb-1">Opens at</label>
-          <input
-            type="datetime-local"
-            value={fromInput}
-            onChange={(e) => setFromInput(e.target.value)}
-            className="w-full p-2 border border-border rounded-lg text-sm mb-2"
-          />
-          <label className="block text-xs text-muted-foreground mb-1">Closes at</label>
-          <input
-            type="datetime-local"
-            value={untilInput}
-            onChange={(e) => setUntilInput(e.target.value)}
-            className="w-full p-2 border border-border rounded-lg text-sm mb-3"
-          />
-          <button
-            onClick={saveDeadline}
-            disabled={savingWindow}
-            className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg bg-foreground text-background hover:opacity-90 disabled:opacity-50"
-          >
-            {savingWindow ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-            Save window
-          </button>
+
+          {isLocked ? (
+            announceOpen ? (
+              <div className="space-y-2">
+                <input
+                  value={announceTitle}
+                  onChange={(e) => setAnnounceTitle(e.target.value)}
+                  placeholder="Announcement title"
+                  className="w-full p-2 border border-border rounded-lg text-sm bg-white"
+                />
+                <textarea
+                  value={announceMessage}
+                  onChange={(e) => setAnnounceMessage(e.target.value)}
+                  rows={3}
+                  placeholder="What should participants know?"
+                  className="w-full p-2 border border-border rounded-lg text-sm bg-white resize-y"
+                />
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={openStage}
+                    disabled={opening}
+                    className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-semibold rounded-lg bg-emerald-600 text-white hover:opacity-90 disabled:opacity-50"
+                  >
+                    {opening ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <Megaphone className="h-3.5 w-3.5" />
+                    )}
+                    Open &amp; announce
+                  </button>
+                  <button
+                    onClick={() => setAnnounceOpen(false)}
+                    disabled={opening}
+                    className="px-3 py-2 text-xs font-medium rounded-lg border border-border hover:bg-surface-hover"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => setAnnounceOpen(true)}
+                className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-semibold rounded-lg bg-emerald-600 text-white hover:opacity-90"
+              >
+                <Megaphone className="h-4 w-4" /> Open &amp; announce
+              </button>
+            )
+          ) : (
+            <button
+              onClick={lockStage}
+              disabled={locking}
+              className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-semibold rounded-lg bg-slate-700 text-white hover:opacity-90 disabled:opacity-50"
+            >
+              {locking ? <Loader2 className="h-4 w-4 animate-spin" /> : <Lock className="h-4 w-4" />}
+              Close stage
+            </button>
+          )}
         </div>
 
+        {/* Publish results — the ONLY place passing score is set */}
         <div className="bg-white border border-border rounded-xl p-5">
           <h2 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
-            {isClosed ? <Lock className="w-4 h-4 text-rose-700" /> : <LockOpen className="w-4 h-4 text-emerald-700" />}
-            Submissions
+            <Award className="w-4 h-4 text-blue" /> Publish results
           </h2>
-          <p className="text-xs text-muted-foreground mb-3">
-            {isClosed
-              ? "Closed. No new submissions accepted."
-              : win
-                ? "Open. Closes automatically at the deadline, or close early below."
-                : "Save a deadline first."}
+          <p className="text-xs text-muted-foreground mb-4">
+            Once grading is done, set the passing score and promote passers to the next stage. Emails queue to every graded participant.
           </p>
-          <button
-            onClick={closeNow}
-            disabled={closing || !win || isClosed}
-            className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg bg-rose-600 text-white hover:opacity-90 disabled:opacity-50"
-          >
-            {closing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Lock className="h-4 w-4" />}
-            Close now
-          </button>
-        </div>
 
-        <div className="bg-white border border-border rounded-xl p-5">
-          <h2 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
-            <Award className="w-4 h-4 text-blue" /> Passing grade
-          </h2>
-          <p className="text-xs text-muted-foreground mb-3">
-            After grading, set the threshold and publish. Passers get promoted + emailed.
-          </p>
-          <div className="flex gap-2 mb-2">
-            <input
-              type="number"
-              min={0}
-              max={100}
-              value={passInput}
-              onChange={(e) => setPassInput(e.target.value)}
-              className="w-20 p-2 border border-border rounded-lg text-sm"
-            />
-            <span className="self-center text-xs text-muted-foreground">/ 100</span>
-          </div>
-          <button
-            onClick={publishResults}
-            disabled={publishing || counts.graded === 0}
-            className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg bg-blue text-white hover:opacity-90 disabled:opacity-50"
-          >
-            {publishing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-            Publish results
-          </button>
-          {counts.graded === 0 && (
-            <p className="text-[11px] text-muted-foreground mt-2">
-              No graded reports yet. Graders need to score before you can publish.
-            </p>
+          {counts.graded === 0 ? (
+            <button
+              disabled
+              className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg bg-blue/10 text-blue/70 cursor-not-allowed"
+            >
+              <Send className="h-4 w-4" />
+              Nothing graded yet
+            </button>
+          ) : publishMode ? (
+            <div className="space-y-2">
+              <label className="block text-xs text-muted-foreground">Passing score</label>
+              <div className="flex gap-2">
+                <input
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={passInput}
+                  onChange={(e) => setPassInput(e.target.value)}
+                  className="w-20 p-2 border border-border rounded-lg text-sm"
+                  autoFocus
+                />
+                <span className="self-center text-xs text-muted-foreground">/ 100</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={publishResults}
+                  disabled={publishing}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-semibold rounded-lg bg-blue text-white hover:opacity-90 disabled:opacity-50"
+                >
+                  {publishing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
+                  Confirm &amp; publish
+                </button>
+                <button
+                  onClick={() => setPublishMode(false)}
+                  disabled={publishing}
+                  className="px-3 py-2 text-xs font-medium rounded-lg border border-border hover:bg-surface-hover"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              onClick={() => setPublishMode(true)}
+              disabled={published}
+              className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-semibold rounded-lg bg-blue text-white hover:opacity-90 disabled:opacity-50"
+            >
+              <Send className="h-4 w-4" />
+              {published ? "Already published" : "Publish results"}
+            </button>
           )}
         </div>
       </section>

@@ -5,12 +5,10 @@ import { useEffect, useState } from "react";
 import { Topbar } from "@/components/dashboard/topbar";
 import { Card } from "@/components/ui/card";
 import {
-  Calendar,
   CheckCircle2,
   ChevronRight,
   Lock,
   LockOpen,
-  Award,
   Users,
   Megaphone,
   Loader2,
@@ -19,10 +17,6 @@ import {
 interface StageRow {
   stage: string;
   label: string;
-  activeFrom: string | null;
-  submitUntil: string | null;
-  passingScore: number | null;
-  isClosed: boolean;
   isLocked: boolean;
   openedAt: string | null;
   atStage: number;
@@ -30,23 +24,6 @@ interface StageRow {
   graded: number;
   passed: number;
   failed: number;
-}
-
-function formatDue(iso: string | null): { text: string; overdue: boolean } {
-  if (!iso) return { text: "No deadline set", overdue: false };
-  const d = new Date(iso);
-  const now = new Date();
-  const overdue = d < now;
-  return {
-    text: d.toLocaleString("en-GB", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    }),
-    overdue,
-  };
 }
 
 export default function AssignmentsPage() {
@@ -121,7 +98,6 @@ function StageRowCard({
   row: StageRow;
   onMutate: (next: StageRow) => void;
 }) {
-  const due = formatDue(row.submitUntil);
   const published = row.passed + row.failed > 0;
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -149,9 +125,6 @@ function StageRowCard({
         ...row,
         isLocked: false,
         openedAt: j.window?.openedAt ?? new Date().toISOString(),
-        activeFrom: row.activeFrom ?? j.window?.activeFrom ?? null,
-        submitUntil: row.submitUntil ?? j.window?.submitUntil ?? null,
-        passingScore: row.passingScore ?? j.window?.passingScore ?? null,
       });
       setOpen(false);
     } catch {
@@ -195,10 +168,6 @@ function StageRowCard({
                 <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200">
                   <Lock className="w-3 h-3" /> Locked
                 </span>
-              ) : row.isClosed ? (
-                <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200">
-                  <Lock className="w-3 h-3" /> Deadline passed
-                </span>
               ) : (
                 <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200">
                   <LockOpen className="w-3 h-3" /> Open to interns
@@ -212,18 +181,6 @@ function StageRowCard({
             </div>
 
             <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-              <Metric
-                icon={Calendar}
-                label="Deadline"
-                value={due.text}
-                tone={due.overdue ? "rose" : undefined}
-              />
-              <Metric
-                icon={Award}
-                label="Passing score"
-                value={row.passingScore != null ? `${row.passingScore}/100` : "Not set"}
-                tone={row.passingScore == null ? "muted" : undefined}
-              />
               <Metric
                 icon={Users}
                 label="Interns at stage"
