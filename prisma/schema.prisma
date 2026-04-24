@@ -530,6 +530,9 @@ model StageWindow {
   activeFrom   DateTime
   submitUntil  DateTime
   passingScore Int      @default(70)            // 0-100
+  isLocked     Boolean  @default(true)          // admin-gated: interns can only work on a stage once opened
+  openedAt     DateTime?
+  openedById   String?  @db.ObjectId            // admin who opened it (for audit)
 
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt

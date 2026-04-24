@@ -12,6 +12,8 @@ import {
   LockOpen,
   Award,
   Users,
+  Megaphone,
+  Loader2,
 } from "lucide-react";
 
 interface StageRow {
@@ -21,6 +23,8 @@ interface StageRow {
   submitUntil: string | null;
   passingScore: number | null;
   isClosed: boolean;
+  isLocked: boolean;
+  openedAt: string | null;
   atStage: number;
   submitted: number;
   graded: number;
@@ -95,7 +99,13 @@ export default function AssignmentsPage() {
         ) : (
           <div className="space-y-3 max-w-4xl">
             {rows.map((r) => (
-              <StageRowCard key={r.stage} row={r} />
+              <StageRowCard
+                key={r.stage}
+                row={r}
+                onMutate={(next) =>
+                  setRows((prev) => prev.map((row) => (row.stage === next.stage ? next : row)))
+                }
+              />
             ))}
           </div>
         )}
@@ -104,24 +114,94 @@ export default function AssignmentsPage() {
   );
 }
 
-function StageRowCard({ row }: { row: StageRow }) {
+function StageRowCard({
+  row,
+  onMutate,
+}: {
+  row: StageRow;
+  onMutate: (next: StageRow) => void;
+}) {
   const due = formatDue(row.submitUntil);
   const published = row.passed + row.failed > 0;
+  const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const [title, setTitle] = useState(`Stage ${row.label.replace("Stage ", "")} is open`);
+  const [message, setMessage] = useState(
+    `Stage ${row.label.replace("Stage ", "")} is now open. Log into your dashboard to begin.`
+  );
+
+  async function openStage() {
+    setBusy(true);
+    setErr(null);
+    try {
+      const res = await fetch("/api/admin/stage-windows/open", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ stage: row.stage, title, message }),
+      });
+      const j = await res.json();
+      if (!res.ok) {
+        setErr(j.error || "Failed to open stage");
+        return;
+      }
+      onMutate({
+        ...row,
+        isLocked: false,
+        openedAt: j.window?.openedAt ?? new Date().toISOString(),
+        activeFrom: row.activeFrom ?? j.window?.activeFrom ?? null,
+        submitUntil: row.submitUntil ?? j.window?.submitUntil ?? null,
+        passingScore: row.passingScore ?? j.window?.passingScore ?? null,
+      });
+      setOpen(false);
+    } catch {
+      setErr("Network error");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function lockStage() {
+    if (!confirm(`Lock ${row.label}? Interns will lose access until you open it again.`)) return;
+    setBusy(true);
+    setErr(null);
+    try {
+      const res = await fetch("/api/admin/stage-windows/lock", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ stage: row.stage }),
+      });
+      const j = await res.json();
+      if (!res.ok) {
+        setErr(j.error || "Failed to lock stage");
+        return;
+      }
+      onMutate({ ...row, isLocked: true });
+    } catch {
+      setErr("Network error");
+    } finally {
+      setBusy(false);
+    }
+  }
 
   return (
-    <Link href={`/admin/assignments/${row.stage}`}>
-      <div className="group p-5 bg-white border border-border rounded-xl hover:border-blue/40 hover:shadow-sm transition-all">
+    <div className="group bg-white border border-border rounded-xl hover:border-blue/40 hover:shadow-sm transition-all overflow-hidden">
+      <Link href={`/admin/assignments/${row.stage}`} className="block p-5">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-3 flex-wrap">
+            <div className="flex items-center gap-2 flex-wrap">
               <h2 className="text-lg font-semibold text-foreground">{row.label}</h2>
-              {row.isClosed ? (
+              {row.isLocked ? (
                 <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200">
-                  <Lock className="w-3 h-3" /> Closed
+                  <Lock className="w-3 h-3" /> Locked
+                </span>
+              ) : row.isClosed ? (
+                <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200">
+                  <Lock className="w-3 h-3" /> Deadline passed
                 </span>
               ) : (
                 <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200">
-                  <LockOpen className="w-3 h-3" /> Open
+                  <LockOpen className="w-3 h-3" /> Open to interns
                 </span>
               )}
               {published && (
@@ -170,8 +250,71 @@ function StageRowCard({ row }: { row: StageRow }) {
 
           <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-foreground shrink-0" />
         </div>
+      </Link>
+
+      {/* Lock / Open control strip */}
+      <div className="border-t border-border bg-slate-50/60 px-5 py-3">
+        {err && (
+          <div className="mb-2 text-xs text-rose-700 bg-rose-50 border border-rose-200 rounded px-2 py-1">
+            {err}
+          </div>
+        )}
+
+        {open && row.isLocked ? (
+          <div className="space-y-2">
+            <input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Announcement title"
+              className="w-full p-2 border border-border rounded-lg text-sm bg-white"
+            />
+            <textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="What should participants know?"
+              rows={3}
+              className="w-full p-2 border border-border rounded-lg text-sm bg-white resize-y"
+            />
+            <div className="flex items-center gap-2">
+              <button
+                onClick={openStage}
+                disabled={busy}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-emerald-600 text-white hover:opacity-90 disabled:opacity-50"
+              >
+                {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Megaphone className="h-3.5 w-3.5" />}
+                Open &amp; announce
+              </button>
+              <button
+                onClick={() => setOpen(false)}
+                disabled={busy}
+                className="px-3 py-1.5 text-xs font-medium rounded-lg border border-border hover:bg-white"
+              >
+                Cancel
+              </button>
+              <span className="text-xs text-muted-foreground ml-auto">
+                Every active intern gets an email + dashboard announcement.
+              </span>
+            </div>
+          </div>
+        ) : row.isLocked ? (
+          <button
+            onClick={() => setOpen(true)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-emerald-600 text-white hover:opacity-90"
+          >
+            <Megaphone className="h-3.5 w-3.5" /> Open &amp; announce
+          </button>
+        ) : (
+          <button
+            onClick={lockStage}
+            disabled={busy}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-700 text-white hover:opacity-90 disabled:opacity-50"
+          >
+            {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Lock className="h-3.5 w-3.5" />}
+            Lock stage
+          </button>
+        )}
       </div>
-    </Link>
+    </div>
   );
 }
 

@@ -54,8 +54,11 @@ export async function GET() {
       const passed = tally.PASSED ?? 0;
       const failed = tally.FAILED ?? 0;
 
-      // An admin "close" is represented by submitUntil being in the past.
+      // `isClosed` means the deadline has passed. `isLocked` means the admin
+      // has not opened the stage at all (the master gate). Interns only see
+      // a stage once it's been opened.
       const isClosed = w ? new Date(w.submitUntil).getTime() < now : false;
+      const isLocked = w ? w.isLocked : true;
 
       return {
         stage,
@@ -64,6 +67,8 @@ export async function GET() {
         submitUntil: w?.submitUntil.toISOString() ?? null,
         passingScore: w?.passingScore ?? null,
         isClosed,
+        isLocked,
+        openedAt: w?.openedAt?.toISOString() ?? null,
         atStage: internCountByStage.get(stage) ?? 0,
         submitted,
         graded,
