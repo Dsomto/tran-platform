@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { stageUrl } from "@/lib/stage-routes";
 import { ArrowRight, FileText, ExternalLink, Fingerprint } from "lucide-react";
 import type { StageTheme } from "@/components/stage/StageShell";
 
@@ -46,7 +47,7 @@ export default function StageLandingLogin({
       if (!res.ok) {
         setErr(j.error ?? "Unable to authenticate");
       } else {
-        router.push("/");
+        router.push(stageUrl(theme.slug));
         router.refresh();
       }
     } catch (e) {

@@ -45,7 +45,7 @@ export default async function Stage4TaskPage({
     <StageShell theme={theme} internCode={session.internCode}>
       <div className="mb-6">
         <Link
-          href="/"
+          href={stageUrl("stage-4")}
           className="text-[11px] font-mono uppercase tracking-[0.2em] text-cyan-300/65 hover:text-cyan-200 transition"
         >
           ← agenda · {room.title}

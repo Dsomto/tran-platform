@@ -92,7 +92,7 @@ export default async function Stage2RoomPage() {
               return (
                 <Link
                   key={a.id}
-                  href={`/tasks/${a.order}`}
+                  href={stageUrl("stage-2", `/tasks/${a.order}`)}
                   className="stage-2-panel p-5 transition block group"
                 >
                   <div className="flex items-center justify-between">
