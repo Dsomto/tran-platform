@@ -28,6 +28,32 @@ const allHeroImages = [
     src: "/images/hero-6.avif",
     alt: "Nigerian friends pursuing careers in tech",
   },
+  // The Root Access Network programme photos — added to the rotation so the
+  // hero surfaces the real work UBI is part of, not just stock imagery.
+  {
+    src: "/images/programs/mentorship.jpg",
+    alt: "Cybersecurity mentorship session",
+  },
+  {
+    src: "/images/programs/ubuntu-bridge.jpg",
+    alt: "Ubuntu Bridge Initiative — powering interns through the training",
+  },
+  {
+    src: "/images/programs/school-tour.jpg",
+    alt: "Cybersecurity Educational School Tour in Nigerian secondary schools",
+  },
+  {
+    src: "/images/programs/workshops.jpg",
+    alt: "Community Cybersafe Workshops — hands-on training",
+  },
+  {
+    src: "/images/programs/street-evangelism.png",
+    alt: "Street Cyber Evangelism — meeting people where they are",
+  },
+  {
+    src: "/images/programs/tech-spotlight.jpg",
+    alt: "Tech Spotlight Sunday — builders and their stories",
+  },
 ];
 
 function shuffleAndPick(arr: typeof allHeroImages, count: number) {

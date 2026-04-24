@@ -2,7 +2,6 @@ import { Navbar } from "@/components/landing/navbar";
 import { Hero } from "@/components/landing/hero";
 import { Marquee } from "@/components/landing/marquee";
 import { About } from "@/components/landing/about";
-import { ProgramsGallery } from "@/components/landing/programs-gallery";
 import { Why } from "@/components/landing/why";
 import { Stages } from "@/components/landing/stages";
 import { Tracks } from "@/components/landing/tracks";
@@ -27,7 +26,6 @@ export default function Home() {
         <Hero />
         <Marquee />
         <About />
-        <ProgramsGallery />
         <Why />
         <Stages />
         <Tracks />
