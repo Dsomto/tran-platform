@@ -55,6 +55,8 @@ export async function POST(request: NextRequest) {
       return Response.json({ error: "passingScore must be 0-100" }, { status: 400 });
     }
 
+    // Saving dates / passing score must NOT touch isLocked. Only the
+    // dedicated open/lock endpoints change lock state.
     const window = await prisma.stageWindow.upsert({
       where: { stage },
       create: { stage, activeFrom: from, submitUntil: until, passingScore: Math.round(score) },

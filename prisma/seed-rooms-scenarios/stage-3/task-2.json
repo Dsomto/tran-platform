@@ -7,8 +7,7 @@
   "widget": "WRITEUP_PAD",
   "widgetConfig": {
     "placeholder": "On [time] UTC, an authorised-looking SSH login from [IP] opened a session on [host]…",
-    "minWords": 150,
-    "maxWords": 320
+    "minWords": 150
   },
   "flagSalt": null,
   "choices": null,

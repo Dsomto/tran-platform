@@ -88,6 +88,17 @@ export async function POST(
       return Response.json({ error: "You have not unlocked this stage yet" }, { status: 403 });
     }
 
+    // Admin gate — refuse if the stage hasn't been opened for the cohort yet.
+    // Missing StageWindow is treated as locked (the default post-migration).
+    const stageEnum = STAGE_SLUG_TO_ENUM[stage];
+    const window = await prisma.stageWindow.findUnique({ where: { stage: stageEnum } });
+    if (!window || window.isLocked) {
+      return Response.json(
+        { error: "This stage is not open yet. Wait for the announcement." },
+        { status: 403 }
+      );
+    }
+
     const token = signDoorToken({
       internId: user.intern.id,
       internCode,

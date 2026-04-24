@@ -129,7 +129,7 @@ export function stageEncodingHint(stage: StageSlug): { rule: string; example: st
     case "stage-3":
       return { rule: "Hex-encode your password (UTF-8 bytes as hexadecimal).", example: "73776966742d70616e746865722d3432" };
     case "stage-4":
-      return { rule: "Apply ROT13 to your password, then base64-encode the result.", example: "Fgvsg-cnagure-42 → Rmlyc3QtY2FuYWRpYW4tNDI=" };
+      return { rule: "Apply ROT13 to your password, then base64-encode the result.", example: "swift-panther-42 → fjvsg-cnagure-42 → Zmp2c2ctY25hZ3VyZS00Mg==" };
   }
 }
 

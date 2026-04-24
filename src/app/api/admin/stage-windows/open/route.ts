@@ -4,6 +4,15 @@ import { requireAdmin } from "@/lib/auth";
 import { logger } from "@/lib/logger";
 import { scheduleCohortBroadcast } from "@/lib/email";
 
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 const STAGE_KEYS = ["STAGE_0", "STAGE_1", "STAGE_2", "STAGE_3", "STAGE_4"] as const;
 type StageKey = (typeof STAGE_KEYS)[number];
 
@@ -50,12 +59,15 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    // Target `stage: null` so every intern sees the announcement on their
+    // dashboard — not just the ones already AT this stage. Matches the
+    // cohort-wide email broadcast below.
     const announcement = await prisma.announcement.create({
       data: {
         title: finalTitle,
         content: finalMessage,
         authorId: session.id,
-        stage,
+        stage: null,
         track: null,
         isPinned: true,
       },
@@ -78,8 +90,8 @@ export async function POST(request: NextRequest) {
             <p style="margin:0;font-size:12px;opacity:.9;">Ubuntu Bridge Initiative</p>
           </div>
           <div style="background:white;padding:28px;border-radius:14px;margin-top:16px;box-shadow:0 1px 3px rgba(0,0,0,.08);">
-            <h2 style="color:#0F172A;margin:0 0 12px;font-size:18px;">${finalTitle}</h2>
-            <div style="color:#334155;line-height:1.6;font-size:14px;">${finalMessage.replace(/\n/g, "<br>")}</div>
+            <h2 style="color:#0F172A;margin:0 0 12px;font-size:18px;">${escapeHtml(finalTitle)}</h2>
+            <div style="color:#334155;line-height:1.6;font-size:14px;">${escapeHtml(finalMessage).replace(/\n/g, "<br>")}</div>
             <p style="margin:24px 0 0;"><a href="${base}/dashboard" style="display:inline-block;background:#2563EB;color:white;padding:12px 24px;border-radius:10px;text-decoration:none;font-weight:600;font-size:14px;">Open dashboard</a></p>
           </div>
         </div>`;

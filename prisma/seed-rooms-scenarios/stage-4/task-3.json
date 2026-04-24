@@ -7,8 +7,7 @@
   "widget": "WRITEUP_PAD",
   "widgetConfig": {
     "placeholder": "I am selecting the [X] track.\n\nIn Stage [N], the task that clicked for me was ...",
-    "minWords": 320,
-    "maxWords": 500
+    "minWords": 320
   },
   "flagSalt": null,
   "choices": null,

@@ -5,6 +5,15 @@ import { logger } from "@/lib/logger";
 import { scheduleCohortBroadcast } from "@/lib/email";
 import type { Prisma } from "@/generated/prisma";
 
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 export async function GET(request: NextRequest) {
   try {
     const session = await getSession();
@@ -79,8 +88,8 @@ export async function POST(request: NextRequest) {
             <p style="margin:0;font-size:12px;opacity:.9;">Announcement</p>
           </div>
           <div style="background:white;padding:28px;border-radius:14px;margin-top:16px;box-shadow:0 1px 3px rgba(0,0,0,.08);">
-            <h2 style="color:#0F172A;margin:0 0 12px;font-size:18px;">${announcement.title}</h2>
-            <div style="color:#334155;line-height:1.55;font-size:14px;">${announcement.content.replace(/\n/g, "<br>")}</div>
+            <h2 style="color:#0F172A;margin:0 0 12px;font-size:18px;">${escapeHtml(announcement.title)}</h2>
+            <div style="color:#334155;line-height:1.55;font-size:14px;">${escapeHtml(announcement.content).replace(/\n/g, "<br>")}</div>
             <p style="margin:24px 0 0;"><a href="${base}/dashboard" style="display:inline-block;background:#2563EB;color:white;padding:12px 24px;border-radius:10px;text-decoration:none;font-weight:600;font-size:14px;">Open dashboard</a></p>
           </div>
         </div>`;

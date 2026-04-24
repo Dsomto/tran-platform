@@ -7,8 +7,7 @@
   "widget": "WRITEUP_PAD",
   "widgetConfig": {
     "placeholder": "1. Risk: ...\n   Likelihood: 4/5 — ...\n   Impact:     5/5 — ...\n   Control:    ...\n   Owner:      Head of Security Engineering\n\n2. ...",
-    "minWords": 300,
-    "maxWords": 650
+    "minWords": 300
   },
   "flagSalt": null,
   "choices": null,

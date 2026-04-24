@@ -7,8 +7,7 @@
   "widget": "WRITEUP_PAD",
   "widgetConfig": {
     "placeholder": "Nigeria Data Protection Commission\nNo. 10 Broad Street, Central Business District\nAbuja\n\n15 January 2024\n\nRe: Notification of Personal Data Breach — Sankofa Digital Ltd\n\nDear Commissioner, ...",
-    "minWords": 450,
-    "maxWords": 900
+    "minWords": 450
   },
   "flagSalt": null,
   "choices": null,
