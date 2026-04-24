@@ -206,7 +206,7 @@ export function Hero() {
             <div className="hidden lg:block" data-aos="fade-left" data-aos-delay="300">
               {layoutVariant === 0 && (
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="col-span-1 row-span-2 relative rounded-2xl overflow-hidden glass-card-elevated h-[420px]">
+                  <div className="col-span-1 row-span-2 relative rounded-2xl overflow-hidden glass-card-elevated h-[416px]">
                     <Image src={heroImages[0].src} alt={heroImages[0].alt} fill className="object-cover" sizes="(min-width: 1024px) 280px, 0px" priority />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
                   </div>
@@ -226,7 +226,7 @@ export function Hero() {
                     <Image src={heroImages[0].src} alt={heroImages[0].alt} fill className="object-cover" sizes="(min-width: 1024px) 280px, 0px" priority />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
                   </div>
-                  <div className="col-span-1 row-span-2 relative rounded-2xl overflow-hidden glass-card-elevated h-[420px]">
+                  <div className="col-span-1 row-span-2 relative rounded-2xl overflow-hidden glass-card-elevated h-[416px]">
                     <Image src={heroImages[1].src} alt={heroImages[1].alt} fill className="object-cover" sizes="(min-width: 1024px) 280px, 0px" priority />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
                   </div>
@@ -246,8 +246,15 @@ export function Hero() {
                     <Image src={heroImages[1].src} alt={heroImages[1].alt} fill className="object-cover" sizes="(min-width: 1024px) 280px, 0px" priority />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
                   </div>
-                  <div className="col-span-2 relative rounded-2xl overflow-hidden glass-card-elevated h-[250px]">
-                    <Image src={heroImages[2].src} alt={heroImages[2].alt} fill className="object-cover" sizes="(min-width: 1024px) 560px, 0px" priority />
+                  <div className="col-span-2 relative rounded-2xl overflow-hidden glass-card-elevated h-[200px]">
+                    <Image
+                      src={heroImages[2].src}
+                      alt={heroImages[2].alt}
+                      fill
+                      className="object-cover object-[center_30%]"
+                      sizes="(min-width: 1024px) 560px, 0px"
+                      priority
+                    />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
                   </div>
                 </div>
