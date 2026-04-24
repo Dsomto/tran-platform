@@ -58,15 +58,15 @@ export const STAGE_BRIEFS: Record<
         id: "log-triage",
         title: "Triage the Q2 auth log",
         description:
-          "Open the auth log excerpt in the resources. In a Google Doc or Sheet, list every line you consider suspicious — one row per line. For each, say why it stands out (wrong time, wrong geo, wrong user, wrong pattern). Rank them from most to least concerning.",
-        deliverable: "auth-log-triage (Google Sheet or table in a Doc)",
+          "Open the auth log excerpt in the resources. One of the connections comes from 185.220.101.9 — look that IP up on AbuseIPDB or VirusTotal and record what it is. Then in a Google Doc (or Microsoft Word) build a table listing every line you consider suspicious, one row per line. For each line say why it stands out (wrong time, wrong geo, wrong user, wrong pattern). Rank the rows from most to least concerning. Tables inside a Doc are fine — do not use Google Sheets.",
+        deliverable: "auth-log-triage (Google Doc or MS Word, with a table inside)",
       },
       {
         id: "cve-triage",
         title: "CIA-triad triage of 10 CVEs",
         description:
-          "Pick any ten recent CVEs from the NVD. For each one, state in one sentence which leg of the CIA triad is primarily violated (Confidentiality, Integrity, Availability, or a combination) and why. Build this as a table in Google Sheets.",
-        deliverable: "cve-triage (Google Sheet with: CVE ID · one-line description · primary CIA leg · reasoning)",
+          "Pick any ten recent CVEs from the NVD. For each one, state in one sentence which leg of the CIA triad is primarily violated (Confidentiality, Integrity, Availability, or a combination) and why. Build this as a table inside a Google Doc or a Microsoft Word document.",
+        deliverable: "cve-triage (Google Doc or MS Word, table with columns: CVE ID · one-line description · primary CIA leg · reasoning)",
       },
       {
         id: "encoding-decode",
@@ -158,7 +158,7 @@ export const STAGE_BRIEFS: Record<
         title: "Audit three JWTs",
         description:
           "Paste each JWT into jwt.io. For each, decode the header and payload and identify at least one red flag (alg=none, weak secret, missing exp, privileged claim, etc.).",
-        deliverable: "jwt-audit (Google Doc or Sheet with a row per token and the specific red flag)",
+        deliverable: "jwt-audit (Google Doc or MS Word, with a table — one row per token and the specific red flag)",
       },
       {
         id: "hash-vs-encryption",
@@ -172,7 +172,7 @@ export const STAGE_BRIEFS: Record<
         title: "The five cryptographic controls Sankofa should adopt",
         description:
           "Propose five concrete controls (products, policies, or configurations) Sankofa should adopt. One-sentence justification each. Assume a small team and a tight budget.",
-        deliverable: "crypto-controls (Google Doc or Sheet)",
+        deliverable: "crypto-controls (Google Doc or MS Word)",
       },
     ],
     resources: [
@@ -245,7 +245,7 @@ export const STAGE_BRIEFS: Record<
         title: "Map the five findings to OWASP Top 10 (2021)",
         description:
           "For each of the five weaknesses you identified, record: OWASP category (e.g. A03 Injection), CVSS 3.1 vector + score (use the FIRST calculator), and a one-sentence business impact.",
-        deliverable: "findings-table (Google Sheet)",
+        deliverable: "findings-table (Google Doc or MS Word, with a table inside)",
       },
       {
         id: "remediation-order",
@@ -328,21 +328,21 @@ export const STAGE_BRIEFS: Record<
         title: "The incident timeline",
         description:
           "Build the timeline from the log files. One event per row. Columns: timestamp (UTC) · event · source file · evidence (grep line or process ID). Cover initial access → persistence → lateral movement → exfil attempt → containment.",
-        deliverable: "incident-timeline (Google Sheet)",
+        deliverable: "incident-timeline (Google Doc or MS Word, with a table inside)",
       },
       {
         id: "iocs",
         title: "IOC list",
         description:
           "Extract the Indicators of Compromise (IPs, domains, file hashes, user-agent strings, persistence artefacts) and format them in a sheet. If you want to go further, format a subset as a STIX 2.1 bundle and paste the JSON.",
-        deliverable: "iocs (Google Sheet — or .json if you went STIX)",
+        deliverable: "iocs (Google Doc or MS Word, with a table inside — or .json if you went STIX)",
       },
       {
         id: "attack-mapping",
         title: "MITRE ATT&CK technique map",
         description:
           "For each event in the timeline, map the adversary behaviour to a specific ATT&CK technique ID (and sub-technique where it applies). Browse attack.mitre.org directly in the browser.",
-        deliverable: "attack-mapping (Google Sheet)",
+        deliverable: "attack-mapping (Google Doc or MS Word, with a table inside)",
       },
       {
         id: "incident-report",
@@ -405,7 +405,7 @@ export const STAGE_BRIEFS: Record<
         title: "Five-entry risk register",
         description:
           "Build a risk register with five rows. Each row: risk statement, likelihood (1–5), impact (1–5), single concrete control, accountable role. Vague controls (\"improve monitoring\") lose marks — be specific.",
-        deliverable: "risk-register (Google Sheet)",
+        deliverable: "risk-register (Google Doc or MS Word, with a table inside)",
       },
       {
         id: "ndpa-letter",
@@ -419,7 +419,7 @@ export const STAGE_BRIEFS: Record<
         title: "Map the incident to NIST CSF 2.0",
         description:
           "For each of the five core functions (Identify, Protect, Detect, Respond, Recover — plus the new Govern), name which subcategory Sankofa failed and the specific evidence that shows the failure.",
-        deliverable: "csf-mapping (Google Doc or Sheet)",
+        deliverable: "csf-mapping (Google Doc or MS Word)",
       },
       {
         id: "roadmap",

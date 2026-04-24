@@ -1,0 +1,54 @@
+=======================================================================
+SANKOFA DIGITAL — /var/log/auth.log (excerpt)
+Host: gateway-01.sankofa.internal
+Window: 2024-06-03 to 2024-06-05 (all times UTC)
+Pulled by: o.adegoke (SOC Tier 1) — "probably nothing" per ticket #SD-40812
+Re-opened by: Amaka Eze — 2024-07-11
+=======================================================================
+
+Jun  3 08:02:11 gateway-01 sshd[18234]: Accepted publickey for o.adegoke from 102.89.34.17 port 51240 ssh2: RSA SHA256:Hc...
+Jun  3 08:02:11 gateway-01 sshd[18234]: pam_unix(sshd:session): session opened for user o.adegoke by (uid=0)
+Jun  3 09:14:02 gateway-01 sshd[18401]: Accepted publickey for c.eze from 102.89.34.19 port 49011 ssh2: RSA SHA256:Ka...
+Jun  3 09:14:02 gateway-01 sshd[18401]: pam_unix(sshd:session): session opened for user c.eze by (uid=0)
+Jun  3 11:41:55 gateway-01 sshd[18612]: Failed password for root from 45.95.147.12 port 58211 ssh2
+Jun  3 11:41:58 gateway-01 sshd[18612]: Failed password for root from 45.95.147.12 port 58211 ssh2
+Jun  3 11:42:01 gateway-01 sshd[18612]: Failed password for root from 45.95.147.12 port 58211 ssh2
+Jun  3 11:42:04 gateway-01 sshd[18612]: Disconnecting: Too many authentication failures [preauth]
+Jun  3 13:28:09 gateway-01 sshd[18820]: Accepted publickey for a.eze from 102.89.34.22 port 50103 ssh2: RSA SHA256:Qm...
+Jun  3 18:02:43 gateway-01 sshd[19088]: Accepted publickey for o.adegoke from 102.89.34.17 port 51900 ssh2: RSA SHA256:Hc...
+Jun  3 18:04:21 gateway-01 sshd[19088]: pam_unix(sshd:session): session closed for user o.adegoke
+
+Jun  4 02:07:52 gateway-01 sshd[19411]: Accepted publickey for o.adegoke from 185.220.101.9 port 49183 ssh2: RSA SHA256:Hc...
+Jun  4 02:07:52 gateway-01 sshd[19411]: pam_unix(sshd:session): session opened for user o.adegoke by (uid=0)
+Jun  4 02:09:14 gateway-01 sudo: o.adegoke : TTY=pts/3 ; PWD=/home/o.adegoke ; USER=root ; COMMAND=/usr/bin/less /var/log/auth.log
+Jun  4 02:09:14 gateway-01 sudo: pam_unix(sudo:session): session opened for user root by (uid=1004)
+Jun  4 02:11:02 gateway-01 sudo: o.adegoke : TTY=pts/3 ; PWD=/home/o.adegoke ; USER=root ; COMMAND=/usr/bin/less /etc/sudoers.d/90-ops
+Jun  4 02:13:48 gateway-01 sudo: o.adegoke : TTY=pts/3 ; PWD=/home/o.adegoke ; USER=root ; COMMAND=/usr/bin/less /var/log/syslog
+Jun  4 02:18:33 gateway-01 sshd[19411]: pam_unix(sshd:session): session closed for user o.adegoke
+
+Jun  4 07:58:11 gateway-01 sshd[19602]: Accepted publickey for o.adegoke from 102.89.34.17 port 51508 ssh2: RSA SHA256:Hc...
+Jun  4 07:58:11 gateway-01 sshd[19602]: pam_unix(sshd:session): session opened for user o.adegoke by (uid=0)
+Jun  4 12:30:02 gateway-01 sshd[19799]: Accepted publickey for c.eze from 102.89.34.19 port 49744 ssh2: RSA SHA256:Ka...
+Jun  4 15:14:38 gateway-01 sshd[19944]: Failed password for admin from 45.95.147.12 port 44921 ssh2
+Jun  4 15:14:41 gateway-01 sshd[19944]: Failed password for admin from 45.95.147.12 port 44921 ssh2
+Jun  4 17:11:05 gateway-01 sshd[20081]: Accepted publickey for a.eze from 102.89.34.22 port 50455 ssh2: RSA SHA256:Qm...
+
+Jun  5 03:14:22 gateway-01 sshd[20447]: Accepted publickey for o.adegoke from 185.220.101.9 port 54212 ssh2: RSA SHA256:Hc...
+Jun  5 03:14:22 gateway-01 sshd[20447]: pam_unix(sshd:session): session opened for user o.adegoke by (uid=0)
+Jun  5 03:16:08 gateway-01 sudo: o.adegoke : TTY=pts/2 ; PWD=/home/o.adegoke ; USER=root ; COMMAND=/usr/bin/less /var/log/auth.log
+Jun  5 03:21:49 gateway-01 sshd[20447]: pam_unix(sshd:session): session closed for user o.adegoke
+
+Jun  5 09:01:03 gateway-01 sshd[20691]: Accepted publickey for o.adegoke from 102.89.34.17 port 52003 ssh2: RSA SHA256:Hc...
+Jun  5 13:45:28 gateway-01 sshd[20912]: Accepted publickey for c.eze from 102.89.34.19 port 49922 ssh2: RSA SHA256:Ka...
+Jun  5 18:02:51 gateway-01 sshd[21211]: Accepted publickey for a.eze from 102.89.34.22 port 50672 ssh2: RSA SHA256:Qm...
+
+=======================================================================
+NOTES (SOC desk — non-authoritative):
+  - 102.89.34.17  — o.adegoke's corporate laptop, static lease. Lagos office.
+  - 102.89.34.19  — c.eze's corporate laptop, same subnet.
+  - 102.89.34.22  — a.eze's corporate laptop, same subnet.
+  - 45.95.147.12  — external scanner (blocked at edge after 3 fails).
+  - 185.220.101.9 — ?
+  - o.adegoke's laptop was signed in to the Lagos office at every "day-time"
+    session. Check his calendar: he was on leave Jun 4–5.
+=======================================================================
