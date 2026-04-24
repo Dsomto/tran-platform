@@ -1,12 +1,10 @@
 "use client";
 
-import Image from "next/image";
 import { useState } from "react";
 
 const talents = [
   {
     name: "Amara K.",
-    avatar: "https://images.unsplash.com/photo-1589156229687-496a31ad1d1f?w=200&h=200&fit=crop&crop=faces",
     track: "SOC Analysis",
     emoji: "🛡️",
     color: "cyan",
@@ -14,7 +12,6 @@ const talents = [
   },
   {
     name: "Tunde O.",
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=faces",
     track: "Ethical Hacking",
     emoji: "🎯",
     color: "amber",
@@ -22,7 +19,6 @@ const talents = [
   },
   {
     name: "Zainab M.",
-    avatar: "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=200&h=200&fit=crop&crop=faces",
     track: "GRC",
     emoji: "📋",
     color: "emerald",
@@ -30,7 +26,6 @@ const talents = [
   },
   {
     name: "Emeka D.",
-    avatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&h=200&fit=crop&crop=faces",
     track: "Ethical Hacking",
     emoji: "🎯",
     color: "amber",
@@ -38,7 +33,6 @@ const talents = [
   },
   {
     name: "Fatima B.",
-    avatar: "https://images.unsplash.com/photo-1580894732444-8ecded7900cd?w=200&h=200&fit=crop&crop=faces",
     track: "SOC Analysis",
     emoji: "🛡️",
     color: "cyan",
@@ -46,7 +40,6 @@ const talents = [
   },
   {
     name: "Kola A.",
-    avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&h=200&fit=crop&crop=faces",
     track: "GRC",
     emoji: "📋",
     color: "emerald",
@@ -54,7 +47,6 @@ const talents = [
   },
   {
     name: "Ngozi I.",
-    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop&crop=faces",
     track: "SOC Analysis",
     emoji: "🛡️",
     color: "cyan",
@@ -62,7 +54,6 @@ const talents = [
   },
   {
     name: "Yusuf H.",
-    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop&crop=faces",
     track: "Ethical Hacking",
     emoji: "🎯",
     color: "amber",
@@ -70,13 +61,22 @@ const talents = [
   },
   {
     name: "Blessing O.",
-    avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&h=200&fit=crop&crop=faces",
     track: "GRC",
     emoji: "📋",
     color: "emerald",
     skills: ["PCI DSS", "Audit Planning", "Control Assessment", "GDPR", "Business Continuity"],
   },
 ];
+
+function toInitials(name: string): string {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((w) => w.replace(/[^A-Za-z]/g, "").charAt(0).toUpperCase())
+    .filter(Boolean)
+    .slice(0, 2)
+    .join("");
+}
 
 const colorMap: Record<string, { badge: string; badgeText: string; ring: string; tagBg: string; tagText: string }> = {
   cyan: {
@@ -181,14 +181,11 @@ export function TalentGallery() {
               >
                 {/* Profile header */}
                 <div className="flex items-center gap-3.5 mb-4">
-                  <div className={`relative w-14 h-14 rounded-full overflow-hidden shrink-0 ring-2 ${c.ring}`}>
-                    <Image
-                      src={person.avatar}
-                      alt={person.name}
-                      fill
-                      className="object-cover"
-                      sizes="56px"
-                    />
+                  <div
+                    className={`w-14 h-14 rounded-full shrink-0 ring-2 ${c.ring} ${c.badge} ${c.badgeText} grid place-items-center text-base font-bold tracking-wide`}
+                    aria-hidden="true"
+                  >
+                    {toInitials(person.name)}
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-foreground">{person.name}</p>

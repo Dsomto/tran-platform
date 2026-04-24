@@ -1,7 +1,5 @@
 "use client";
 
-import Image from "next/image";
-
 const testimonials = [
   {
     quote:
@@ -12,7 +10,8 @@ const testimonials = [
     color: "border-l-cyan",
     tagBg: "bg-cyan-light",
     tagText: "text-cyan-dark",
-    avatar: "https://images.unsplash.com/photo-1589156229687-496a31ad1d1f?w=120&h=120&fit=crop&crop=faces",
+    initialsBg: "bg-cyan-light",
+    initialsText: "text-cyan-dark",
   },
   {
     quote:
@@ -23,7 +22,8 @@ const testimonials = [
     color: "border-l-amber",
     tagBg: "bg-amber-light",
     tagText: "text-amber-dark",
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&h=120&fit=crop&crop=faces",
+    initialsBg: "bg-amber-light",
+    initialsText: "text-amber-dark",
   },
   {
     quote:
@@ -34,9 +34,20 @@ const testimonials = [
     color: "border-l-emerald",
     tagBg: "bg-emerald-light",
     tagText: "text-emerald-dark",
-    avatar: "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=120&h=120&fit=crop&crop=faces",
+    initialsBg: "bg-emerald-light",
+    initialsText: "text-emerald-dark",
   },
 ];
+
+function toInitials(name: string): string {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((w) => w.replace(/[^A-Za-z]/g, "").charAt(0).toUpperCase())
+    .filter(Boolean)
+    .slice(0, 2)
+    .join("");
+}
 
 export function Testimonials() {
   return (
@@ -84,14 +95,11 @@ export function Testimonials() {
               </p>
               <footer className="mt-6 pt-5 border-t border-border/40">
                 <cite className="not-italic flex items-center gap-3">
-                  <div className="relative w-10 h-10 rounded-full overflow-hidden shrink-0 ring-2 ring-white">
-                    <Image
-                      src={t.avatar}
-                      alt={t.name}
-                      fill
-                      className="object-cover"
-                      sizes="40px"
-                    />
+                  <div
+                    className={`w-10 h-10 rounded-full shrink-0 grid place-items-center text-sm font-bold tracking-wide ring-2 ring-white ${t.initialsBg} ${t.initialsText}`}
+                    aria-hidden="true"
+                  >
+                    {toInitials(t.name)}
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-foreground">{t.name}</p>
