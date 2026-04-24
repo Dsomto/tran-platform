@@ -1,25 +1,40 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { Topbar } from "@/components/dashboard/topbar";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Avatar } from "@/components/ui/avatar";
-import {
-  Trophy,
-  Target,
-  Users,
-  Star,
-  Clock,
-  BookOpen,
-  ArrowUpRight,
-  Pin,
-} from "lucide-react";
-import { formatDate, stageToNumber, trackLabel } from "@/lib/utils";
-import Link from "next/link";
 import { SlackCard } from "@/components/dashboard/slack-card";
-import { OnboardingWalkthrough } from "@/components/dashboard/onboarding-walkthrough";
+import { stageUrl, type StageSlug } from "@/lib/stage-routes";
+import { formatDate, stageToNumber, trackLabel } from "@/lib/utils";
+import {
+  ArrowUpRight,
+  Clock,
+  DoorOpen,
+  FileText,
+  Pin,
+  Star,
+  Trophy,
+  Lock,
+} from "lucide-react";
+
+type StageEnum = "STAGE_0" | "STAGE_1" | "STAGE_2" | "STAGE_3" | "STAGE_4";
+
+const STAGE_NAMES: Record<StageEnum, string> = {
+  STAGE_0: "Induction at the Gate",
+  STAGE_1: "Ciphers & Secrets",
+  STAGE_2: "The Attack Surface",
+  STAGE_3: "Inside the Walls",
+  STAGE_4: "The Debrief",
+};
+
+const STAGE_ENUM_TO_SLUG: Record<StageEnum, StageSlug> = {
+  STAGE_0: "stage-0",
+  STAGE_1: "stage-1",
+  STAGE_2: "stage-2",
+  STAGE_3: "stage-3",
+  STAGE_4: "stage-4",
+};
 
 export default async function DashboardPage() {
   const session = await getSession();
@@ -27,29 +42,13 @@ export default async function DashboardPage() {
 
   const intern = await prisma.intern.findUnique({
     where: { userId: session.id },
-    include: {
-      team: {
-        include: {
-          members: {
-            include: {
-              user: {
-                select: { firstName: true, lastName: true, avatarUrl: true },
-              },
-            },
-            orderBy: { points: "desc" },
-            take: 5,
-          },
-        },
-      },
-    },
   });
 
+  // ── Pre-intern states: application pending / not approved / not applied ──
   if (!intern) {
-    // User has no intern profile yet — check application status
     const app = await prisma.application.findUnique({
       where: { userId: session.id },
     });
-
     return (
       <>
         <Topbar
@@ -66,23 +65,23 @@ export default async function DashboardPage() {
             <h2 className="text-xl font-bold text-foreground mb-2">
               {app
                 ? app.status === "PENDING"
-                  ? "Application Under Review"
-                  : "Application Not Approved"
-                : "No Application Found"}
+                  ? "Application under review"
+                  : "Application not approved"
+                : "No application yet"}
             </h2>
             <p className="text-sm text-muted mb-6">
               {app
                 ? app.status === "PENDING"
-                  ? "Your application is being reviewed. You'll receive an email once a decision is made."
-                  : "Unfortunately your application was not approved for this cohort."
-                : "You haven't submitted an application yet."}
+                  ? "We'll email you the moment a decision is made."
+                  : "Your application was not approved for this cohort."
+                : "Submit your application to begin."}
             </p>
             {!app && (
               <Link
                 href="/apply"
-                className="inline-flex items-center gap-2 gradient-primary text-white px-6 py-3 rounded-xl font-semibold text-sm"
+                className="inline-flex items-center gap-2 bg-blue text-white px-6 py-3 rounded-xl font-semibold text-sm"
               >
-                Apply Now
+                Apply now
                 <ArrowUpRight className="w-4 h-4" />
               </Link>
             )}
@@ -92,386 +91,223 @@ export default async function DashboardPage() {
     );
   }
 
-  // Fetch data in parallel
-  const [assignments, announcements, leaderboardData] = await Promise.all([
-    prisma.assignment.findMany({
-      where: {
-        stage: intern.currentStage,
-        OR: [{ track: intern.track }, { track: null }],
-      },
-      include: {
-        submissions: {
-          where: { internId: intern.id },
-          take: 1,
-        },
-      },
-      orderBy: { dueDate: "asc" },
-      take: 5,
+  // ── Active intern dashboard ──────────────────────────────────────────────
+  const stageEnum = intern.currentStage as StageEnum;
+  const stageNum = stageToNumber(intern.currentStage);
+  const stageName = STAGE_NAMES[stageEnum] ?? `Stage ${stageNum}`;
+
+  const [stageWindow, report, topAnnouncement, rank] = await Promise.all([
+    prisma.stageWindow.findUnique({ where: { stage: stageEnum } }),
+    prisma.stageReport.findUnique({
+      where: { internId_stage: { internId: intern.id, stage: stageEnum } },
     }),
-    prisma.announcement.findMany({
+    prisma.announcement.findFirst({
       where: {
-        // Show announcements targeted to everyone, or this intern's stage, or this intern's track.
         AND: [
-          {
-            OR: [{ stage: null }, { stage: intern.currentStage }],
-          },
-          {
-            OR: [{ track: null }, { track: intern.track }],
-          },
+          { OR: [{ stage: null }, { stage: stageEnum }] },
+          { OR: [{ track: null }, { track: intern.track }] },
         ],
       },
-      include: {
-        author: {
-          select: { firstName: true, lastName: true },
-        },
-      },
+      include: { author: { select: { firstName: true, lastName: true } } },
       orderBy: [{ isPinned: "desc" }, { createdAt: "desc" }],
-      take: 4,
     }),
-    prisma.intern.findMany({
-      where: { isActive: true },
-      include: {
-        user: {
-          select: { firstName: true, lastName: true, avatarUrl: true },
-        },
-      },
-      orderBy: { points: "desc" },
-      take: 5,
-    }),
+    prisma.intern.count({
+      where: { isActive: true, points: { gt: intern.points } },
+    }).then((ahead) => ahead + 1),
   ]);
 
-  const stageNum = stageToNumber(intern.currentStage);
-  const stageProgress = ((stageNum + 1) / 10) * 100;
+  const isStageOpen = stageWindow ? !stageWindow.isLocked : false;
+  const roomHref = stageUrl(STAGE_ENUM_TO_SLUG[stageEnum]);
+  const reportHref = `/dashboard/reports/${stageEnum}`;
 
-  // Find intern's rank
-  const rank =
-    leaderboardData.findIndex((l) => l.id === intern.id) + 1 || "50+";
+  const reportStatusLabel = (() => {
+    if (!report) return { text: "Not started", tone: "muted" as const };
+    if (report.status === "PASSED") return { text: "Passed", tone: "emerald" as const };
+    if (report.status === "FAILED") return { text: "Did not pass", tone: "rose" as const };
+    if (report.status === "GRADED") return { text: "Graded", tone: "blue" as const };
+    if (report.status === "SUBMITTED" || report.status === "UNDER_REVIEW")
+      return { text: "In review", tone: "amber" as const };
+    if (report.status === "DRAFT") return { text: "Draft saved", tone: "slate" as const };
+    return { text: report.status, tone: "muted" as const };
+  })();
 
   return (
     <>
       <Topbar
-        title={`Welcome back, ${session.firstName}`}
-        subtitle={`Stage ${stageNum} — ${trackLabel(intern.track)}`}
+        title={`Hi, ${session.firstName}`}
+        subtitle={`${trackLabel(intern.track)} · Stage ${stageNum}`}
         firstName={session.firstName}
         lastName={session.lastName}
         avatarUrl={session.avatarUrl}
       />
 
-      <OnboardingWalkthrough />
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-3xl mx-auto px-6 py-8 space-y-6">
+          {/* Slack nudge — renders nothing if already joined */}
+          {!intern.slackJoined && (
+            <SlackCard
+              inviteUrl={process.env.SLACK_CHANNEL_URL ?? null}
+              joined={false}
+              joinedAt={null}
+            />
+          )}
 
-      <div className="flex-1 overflow-y-auto p-6 space-y-6">
-        <div id="slack-card">
-          <SlackCard
-            inviteUrl={process.env.SLACK_CHANNEL_URL ?? null}
-            joined={intern.slackJoined ?? false}
-            joinedAt={intern.slackJoinedAt ? intern.slackJoinedAt.toISOString() : null}
-          />
-        </div>
-
-        {/* Stats Row */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card variant="glass">
-            <CardContent className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                <Target className="w-6 h-6 text-primary" />
-              </div>
+          {/* ── Hero: your current stage ── */}
+          <section className="bg-white border border-border rounded-2xl p-6 sm:p-8">
+            <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
               <div>
-                <p className="text-2xl font-bold text-foreground">
-                  Stage {stageNum}
+                <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-blue mb-1">
+                  Your current stage
                 </p>
-                <p className="text-xs text-muted">Current Stage</p>
+                <h2 className="text-xl sm:text-2xl font-bold text-foreground">
+                  Stage {stageNum} · {stageName}
+                </h2>
               </div>
-            </CardContent>
-          </Card>
-
-          <Card variant="glass">
-            <CardContent className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
-                <Star className="w-6 h-6 text-accent" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-foreground">
-                  {intern.points}
-                </p>
-                <p className="text-xs text-muted">Total Points</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card variant="glass">
-            <CardContent className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center shrink-0">
-                <Trophy className="w-6 h-6 text-secondary" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-foreground">#{rank}</p>
-                <p className="text-xs text-muted">Leaderboard Rank</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card variant="glass">
-            <CardContent className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-warning/10 flex items-center justify-center shrink-0">
-                <Users className="w-6 h-6 text-warning" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-foreground">
-                  {intern.team?.name || "—"}
-                </p>
-                <p className="text-xs text-muted">Team</p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Stage Progress */}
-        <Card variant="glass">
-          <CardContent>
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-semibold text-foreground">
-                Stage Progress
-              </h3>
-              <Badge variant="primary">
-                Stage {stageNum} of 9
-              </Badge>
+              {isStageOpen ? (
+                <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
+                  Open
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
+                  <Lock className="w-3 h-3" /> Not open yet
+                </span>
+              )}
             </div>
-            <Progress value={stageProgress} size="lg" />
-            <div className="flex justify-between mt-2">
-              {Array.from({ length: 10 }).map((_, i) => (
+
+            {/* Slim progress bar — 5 foundation stages */}
+            <div className="flex items-center gap-1 mb-6" aria-label={`Stage ${stageNum} of 4`}>
+              {Array.from({ length: 5 }).map((_, i) => (
                 <div
                   key={i}
-                  className={`text-xs font-medium ${
-                    i <= stageNum ? "text-primary" : "text-muted/40"
+                  className={`h-1.5 flex-1 rounded-full ${
+                    i <= stageNum ? "bg-blue" : "bg-border-light"
                   }`}
-                >
-                  {i}
-                </div>
+                />
               ))}
             </div>
-          </CardContent>
-        </Card>
 
-        <div className="grid lg:grid-cols-3 gap-6">
-          {/* Active Assignments */}
-          <div className="lg:col-span-2 space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-foreground">
-                Active Assignments
-              </h3>
-              <Link
-                href="/dashboard/assignments"
-                className="text-sm text-primary hover:text-primary-dark font-medium"
-              >
-                View All →
-              </Link>
-            </div>
-            {assignments.length === 0 ? (
-              <Card variant="glass" className="text-center py-8">
-                <BookOpen className="w-10 h-10 text-muted/30 mx-auto mb-3" />
-                <p className="text-sm text-muted">
-                  No assignments for your current stage yet.
-                </p>
-              </Card>
-            ) : (
-              <div className="space-y-3">
-                {assignments.map((assignment) => {
-                  const submitted = assignment.submissions.length > 0;
-                  const isPastDue = assignment.dueDate != null && new Date() > assignment.dueDate;
-
-                  return (
-                    <Card key={assignment.id} variant="glass" hover>
-                      <CardContent className="flex items-center justify-between">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <h4 className="text-sm font-semibold text-foreground truncate">
-                              {assignment.title}
-                            </h4>
-                            {submitted ? (
-                              <Badge variant="success" size="sm">
-                                Submitted
-                              </Badge>
-                            ) : isPastDue ? (
-                              <Badge variant="danger" size="sm">
-                                Overdue
-                              </Badge>
-                            ) : (
-                              <Badge variant="warning" size="sm">
-                                Pending
-                              </Badge>
-                            )}
-                          </div>
-                          <p className="text-xs text-muted">
-                            {assignment.dueDate
-                              ? `Due: ${formatDate(assignment.dueDate)} • `
-                              : "No due date • "}
-                            {assignment.maxPoints} pts
-                          </p>
-                        </div>
-                        <Link
-                          href={`/dashboard/assignments`}
-                          className="ml-4 p-2 rounded-xl hover:bg-surface-hover transition-colors"
-                        >
-                          <ArrowUpRight className="w-4 h-4 text-muted" />
-                        </Link>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
+            {isStageOpen ? (
+              <div className="flex flex-wrap gap-3">
+                <Link
+                  href={roomHref}
+                  className="inline-flex items-center gap-1.5 px-5 py-2.5 text-sm font-semibold rounded-full bg-blue text-white hover:bg-blue-dark transition-colors"
+                >
+                  <DoorOpen className="w-4 h-4" />
+                  Enter the room
+                </Link>
+                <Link
+                  href={reportHref}
+                  className="inline-flex items-center gap-1.5 px-5 py-2.5 text-sm font-medium rounded-full border border-border text-foreground hover:bg-surface-hover transition-colors"
+                >
+                  <FileText className="w-4 h-4" />
+                  {report?.status === "DRAFT"
+                    ? "Continue draft"
+                    : report?.status === "SUBMITTED" || report?.status === "UNDER_REVIEW"
+                      ? "View submission"
+                      : report?.status === "GRADED" ||
+                          report?.status === "PASSED" ||
+                          report?.status === "FAILED"
+                        ? "View feedback"
+                        : "Submit report"}
+                </Link>
+                <span
+                  className={`self-center text-[11px] font-semibold px-2 py-0.5 rounded border ${
+                    reportStatusLabel.tone === "emerald"
+                      ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                      : reportStatusLabel.tone === "rose"
+                        ? "bg-rose-50 text-rose-800 border-rose-200"
+                        : reportStatusLabel.tone === "blue"
+                          ? "bg-blue/10 text-blue border-blue/30"
+                          : reportStatusLabel.tone === "amber"
+                            ? "bg-amber-50 text-amber-800 border-amber-200"
+                            : reportStatusLabel.tone === "slate"
+                              ? "bg-slate-100 text-slate-700 border-slate-200"
+                              : "bg-white text-muted border-border"
+                  }`}
+                >
+                  {reportStatusLabel.text}
+                </span>
               </div>
+            ) : (
+              <p className="text-sm text-muted leading-relaxed">
+                We&apos;ll send you an email the moment this stage opens. You&apos;ll find the
+                announcement pinned in your dashboard too.
+              </p>
             )}
+          </section>
 
-            {/* Announcements */}
-            <div className="flex items-center justify-between mt-8">
-              <h3 className="text-lg font-semibold text-foreground">
-                Announcements
-              </h3>
-              {announcements.length > 0 && (
+          {/* ── Two small stats ── */}
+          <section className="grid grid-cols-2 gap-4">
+            <MiniStat icon={Star} label="Points" value={String(intern.points)} tone="blue" />
+            <MiniStat icon={Trophy} label="Your rank" value={`#${rank}`} tone="amber" />
+          </section>
+
+          {/* ── Latest announcement (1 only) ── */}
+          {topAnnouncement && (
+            <section>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide">
+                  Latest announcement
+                </h3>
                 <Link
                   href="/dashboard/announcements"
-                  className="text-sm text-primary hover:text-primary-dark font-medium"
+                  className="text-xs font-medium text-blue hover:text-blue-dark"
                 >
                   See all →
                 </Link>
-              )}
-            </div>
-            {announcements.length === 0 ? (
-              <Card variant="glass" className="text-center py-8">
-                <p className="text-sm text-muted">No announcements yet.</p>
-              </Card>
-            ) : (
-              <div className="space-y-3">
-                {announcements.map((a) => (
-                  <Link
-                    key={a.id}
-                    href={`/dashboard/announcements#${a.id}`}
-                    className="block"
-                  >
-                    <Card variant="glass" className="hover:bg-white/60 transition-colors cursor-pointer">
-                      <CardContent>
-                        <div className="flex items-start gap-2 mb-2">
-                          {a.isPinned && (
-                            <Pin className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-                          )}
-                          <h4 className="text-sm font-semibold text-foreground">
-                            {a.title}
-                          </h4>
-                        </div>
-                        <p className="text-sm text-muted leading-relaxed line-clamp-2">
-                          {a.content}
-                        </p>
-                        <p className="text-xs text-muted/60 mt-2">
-                          {a.author.firstName} {a.author.lastName} &bull;{" "}
-                          {formatDate(a.createdAt)}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  </Link>
-                ))}
               </div>
-            )}
-          </div>
-
-          {/* Sidebar: Leaderboard + Team */}
-          <div className="space-y-6">
-            {/* Mini Leaderboard */}
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-foreground">
-                  Top Interns
-                </h3>
-                <Link
-                  href="/dashboard/leaderboard"
-                  className="text-sm text-primary hover:text-primary-dark font-medium"
-                >
-                  Full Board →
-                </Link>
-              </div>
-              <Card variant="glass">
-                <CardContent className="space-y-3">
-                  {leaderboardData.map((entry, i) => (
-                    <div
-                      key={entry.id}
-                      className={`flex items-center gap-3 p-2 rounded-xl ${
-                        entry.id === intern.id
-                          ? "bg-primary/5 border border-primary/10"
-                          : ""
-                      }`}
-                    >
-                      <span
-                        className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
-                          i === 0
-                            ? "bg-amber-100 text-amber-700"
-                            : i === 1
-                            ? "bg-gray-100 text-gray-600"
-                            : i === 2
-                            ? "bg-orange-100 text-orange-700"
-                            : "bg-border-light text-muted"
-                        }`}
-                      >
-                        {i + 1}
-                      </span>
-                      <Avatar
-                        firstName={entry.user.firstName}
-                        lastName={entry.user.lastName}
-                        src={entry.user.avatarUrl}
-                        size="sm"
-                      />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-foreground truncate">
-                          {entry.user.firstName} {entry.user.lastName}
-                        </p>
-                      </div>
-                      <span className="text-sm font-bold text-primary">
-                        {entry.points}
-                      </span>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Team Members */}
-            {intern.team && (
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-foreground">
-                    {intern.team.name}
-                  </h3>
-                  <Link
-                    href="/dashboard/team"
-                    className="text-sm text-primary hover:text-primary-dark font-medium"
-                  >
-                    View →
-                  </Link>
+              <Link
+                href={`/dashboard/announcements#${topAnnouncement.id}`}
+                className="block bg-white border border-border rounded-2xl p-5 hover:border-blue/40 transition-colors"
+              >
+                <div className="flex items-start gap-2 mb-1.5">
+                  {topAnnouncement.isPinned && (
+                    <Pin className="w-4 h-4 text-blue shrink-0 mt-0.5" />
+                  )}
+                  <h4 className="text-sm font-semibold text-foreground">
+                    {topAnnouncement.title}
+                  </h4>
                 </div>
-                <Card variant="glass">
-                  <CardContent className="space-y-3">
-                    {intern.team.members.map((m) => (
-                      <div key={m.id} className="flex items-center gap-3">
-                        <Avatar
-                          firstName={m.user.firstName}
-                          lastName={m.user.lastName}
-                          src={m.user.avatarUrl}
-                          size="sm"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-foreground truncate">
-                            {m.user.firstName} {m.user.lastName}
-                          </p>
-                          <p className="text-xs text-muted">
-                            {m.points} pts
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </CardContent>
-                </Card>
-              </div>
-            )}
-          </div>
+                <p className="text-sm text-muted leading-relaxed line-clamp-2">
+                  {topAnnouncement.content}
+                </p>
+                <p className="text-[11px] text-muted/70 mt-2.5">
+                  {topAnnouncement.author.firstName} {topAnnouncement.author.lastName} ·{" "}
+                  {formatDate(topAnnouncement.createdAt)}
+                </p>
+              </Link>
+            </section>
+          )}
         </div>
       </div>
     </>
+  );
+}
+
+function MiniStat({
+  icon: Icon,
+  label,
+  value,
+  tone,
+}: {
+  icon: React.ElementType;
+  label: string;
+  value: string;
+  tone: "blue" | "amber";
+}) {
+  return (
+    <div className="bg-white border border-border rounded-2xl p-5 flex items-center gap-4">
+      <div
+        className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${
+          tone === "blue" ? "bg-blue/10 text-blue" : "bg-amber-100 text-amber-700"
+        }`}
+      >
+        <Icon className="w-5 h-5" />
+      </div>
+      <div>
+        <p className="text-2xl font-bold text-foreground tabular-nums leading-none">{value}</p>
+        <p className="text-xs text-muted mt-1">{label}</p>
+      </div>
+    </div>
   );
 }

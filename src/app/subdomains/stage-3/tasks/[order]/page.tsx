@@ -4,6 +4,7 @@ import StageShell from "@/components/stage/StageShell";
 import TaskPage from "@/components/stage/TaskPage";
 import { STAGE_THEMES } from "@/components/stage/themes";
 import { getDoorSession } from "@/lib/stage-login";
+import { stageUrl } from "@/lib/stage-routes";
 import { prisma } from "@/lib/db";
 import type { WidgetKind } from "@/components/widgets/types";
 
@@ -13,7 +14,7 @@ export default async function Stage3TaskPage({
   params: Promise<{ order: string }>;
 }) {
   const session = await getDoorSession("stage-3");
-  if (!session) redirect("/login");
+  if (!session) redirect(stageUrl("stage-3", "/login"));
 
   const { order } = await params;
   const orderNum = Number(order);

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import StageShell from "@/components/stage/StageShell";
 import { STAGE_THEMES } from "@/components/stage/themes";
 import { getDoorSession } from "@/lib/stage-login";
+import { stageUrl } from "@/lib/stage-routes";
 import { prisma } from "@/lib/db";
 
 function statusLabel(status: string | undefined | null): { label: string; tone: "pending" | "submitted" | "graded" | "late" } {
@@ -15,7 +16,7 @@ function statusLabel(status: string | undefined | null): { label: string; tone: 
 
 export default async function Stage0RoomPage() {
   const session = await getDoorSession("stage-0");
-  if (!session) redirect("/login");
+  if (!session) redirect(stageUrl("stage-0", "/login"));
 
   const theme = STAGE_THEMES["stage-0"];
 
