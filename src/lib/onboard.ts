@@ -41,10 +41,23 @@ export async function onboardApprovedApplicant(app: PublicApplication): Promise<
     include: { intern: true },
   });
 
+  // We keep the plaintext password on Intern.stageDoorCode so the per-stage
+  // door logins (stage-0 plain, stage-1 base64, stage-2 binary, etc.) can
+  // verify against it without re-hashing. User.password stays bcrypt'd for
+  // the dashboard login.
   if (existing) {
     const intern =
       existing.intern ??
-      (await prisma.intern.create({ data: { userId: existing.id, track } }));
+      (await prisma.intern.create({
+        data: { userId: existing.id, track, stageDoorCode: app.loginPassword },
+      }));
+    // Backfill if this is an older intern that predates the stageDoorCode field.
+    if (existing.intern && !existing.intern.stageDoorCode) {
+      await prisma.intern.update({
+        where: { id: existing.intern.id },
+        data: { stageDoorCode: app.loginPassword },
+      });
+    }
     return { userId: existing.id, internDbId: intern.id, wasExisting: true };
   }
 
@@ -52,6 +65,8 @@ export async function onboardApprovedApplicant(app: PublicApplication): Promise<
   const user = await prisma.user.create({
     data: { email, password: passwordHash, firstName, lastName, role: "INTERN" },
   });
-  const intern = await prisma.intern.create({ data: { userId: user.id, track } });
+  const intern = await prisma.intern.create({
+    data: { userId: user.id, track, stageDoorCode: app.loginPassword },
+  });
   return { userId: user.id, internDbId: intern.id, wasExisting: false };
 }
