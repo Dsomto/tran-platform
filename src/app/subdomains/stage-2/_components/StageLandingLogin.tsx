@@ -20,7 +20,6 @@ type Props = {
 
 export default function StageLandingLogin({
   theme,
-  rule,
   example,
   tagline,
   storyline,
@@ -203,17 +202,6 @@ export default function StageLandingLogin({
                       className="w-full bg-white border border-neutral-200 rounded-lg p-3 outline-none focus:border-neutral-400 focus:ring-2 focus:ring-neutral-100 font-mono text-sm text-neutral-900 placeholder:text-neutral-400 transition"
                       required
                     />
-                    <div
-                      className="mt-2 text-xs rounded-lg p-2.5 leading-relaxed"
-                      style={{
-                        backgroundColor: `${theme.accentHex}10`,
-                        color: theme.accentHex,
-                        border: `1px solid ${theme.accentHex}25`,
-                      }}
-                    >
-                      <span className="font-semibold">Encoding: </span>
-                      {rule}
-                    </div>
                   </div>
                 </div>
 
@@ -239,8 +227,7 @@ export default function StageLandingLogin({
               </form>
 
               <p className="text-center text-xs text-neutral-500 mt-4 leading-relaxed">
-                Each stage accepts the password in a different encoding.<br />
-                Review the rule above before submitting.
+                Use the same password you sign in with on the dashboard.
               </p>
             </div>
           </div>

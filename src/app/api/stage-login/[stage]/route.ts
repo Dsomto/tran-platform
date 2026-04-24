@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/db";
 import { logger } from "@/lib/logger";
+import { verifyPassword } from "@/lib/auth";
 import {
   STAGE_SLUGS,
   STAGE_SLUG_TO_ENUM,
@@ -18,7 +19,8 @@ import {
  * Verifies that:
  *   1. Intern exists and is active.
  *   2. Submitted password decodes cleanly under the stage's encoding rule.
- *   3. Decoded plaintext matches Intern.stageDoorCode.
+ *   3. Decoded plaintext bcrypt-matches User.password — same hash the main
+ *      dashboard login checks against. One password, always in sync.
  *   4. Intern's currentStage is ≥ requested stage (can always re-enter a
  *      room they've already cleared but not jump ahead).
  *
@@ -60,12 +62,6 @@ export async function POST(
     if (!user?.intern?.isActive) {
       return Response.json({ error: "Intern not active" }, { status: 403 });
     }
-    if (!user.intern.stageDoorCode) {
-      return Response.json(
-        { error: "No stage password set for this intern. Contact admin." },
-        { status: 409 }
-      );
-    }
 
     const decoded = decodeForStage(stage, password);
     if (decoded == null) {
@@ -74,7 +70,11 @@ export async function POST(
         { status: 400 }
       );
     }
-    if (decoded !== user.intern.stageDoorCode) {
+
+    // Bcrypt-compare the decoded plaintext against the user's main password
+    // hash. One password for dashboard + every stage door, no drift possible.
+    const ok = await verifyPassword(decoded, user.password);
+    if (!ok) {
       logger.warn("stage_login_bad_password", { internCode, stage });
       return Response.json({ error: "Password does not match" }, { status: 401 });
     }

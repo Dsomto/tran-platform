@@ -20,7 +20,6 @@ type Props = {
 
 export default function StageLandingLogin({
   theme,
-  rule,
   example,
   tagline,
   storyline,
@@ -202,7 +201,7 @@ export default function StageLandingLogin({
                   </div>
                   <div>
                     <label className="text-[10.5px] uppercase tracking-[0.2em] text-amber-400/70 mb-1.5 block">
-                      STAGE PASSWORD · HEX-ENCODED
+                      STAGE PASSWORD
                     </label>
                     <input
                       value={password}
@@ -212,10 +211,6 @@ export default function StageLandingLogin({
                       required
                       autoComplete="off"
                     />
-                    <div className="mt-2 text-[11px] font-sans rounded-sm px-3 py-2 leading-relaxed bg-amber-500/8 text-amber-200/85 border border-amber-500/25">
-                      <span className="font-semibold uppercase tracking-wider text-amber-400">Rule: </span>
-                      {rule}
-                    </div>
                   </div>
                 </div>
 
@@ -240,8 +235,7 @@ export default function StageLandingLogin({
               </form>
 
               <p className="text-center text-[11px] text-amber-200/45 mt-4 leading-relaxed font-sans">
-                Each stage accepts the password in a different encoding.<br />
-                Apply the rule above before submitting.
+                Use the same password you sign in with on the dashboard.
               </p>
             </div>
           </div>

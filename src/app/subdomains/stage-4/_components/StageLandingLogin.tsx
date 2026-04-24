@@ -20,7 +20,6 @@ type Props = {
 
 export default function StageLandingLogin({
   theme,
-  rule,
   example,
   tagline,
   storyline,
@@ -214,7 +213,7 @@ export default function StageLandingLogin({
                   </div>
                   <div>
                     <label className="stage-4-kpi-label block mb-1.5">
-                      STAGE PASSWORD · ROT13 + BASE64
+                      STAGE PASSWORD
                     </label>
                     <input
                       value={password}
@@ -224,15 +223,6 @@ export default function StageLandingLogin({
                       required
                       autoComplete="off"
                     />
-                    <div
-                      className="mt-2 text-[12px] rounded-sm px-3 py-2.5 leading-relaxed bg-cyan-400/[0.06] text-cyan-100/85 border border-cyan-400/25"
-                      style={{ fontFamily: "Georgia, serif" }}
-                    >
-                      <span className="font-bold uppercase tracking-widest text-cyan-300 text-[10px] mr-1.5 font-mono">
-                        Rule:
-                      </span>
-                      {rule}
-                    </div>
                   </div>
                 </div>
 
@@ -263,9 +253,7 @@ export default function StageLandingLogin({
                 className="text-center text-[12px] text-cyan-200/55 mt-4 leading-relaxed"
                 style={{ fontFamily: "Georgia, serif" }}
               >
-                Each stage accepts the password in a different encoding.
-                <br />
-                Apply both layers before submitting.
+                Use the same password you sign in with on the dashboard.
               </p>
             </div>
           </div>
