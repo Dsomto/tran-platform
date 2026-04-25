@@ -1,4 +1,5 @@
-import { getDoorSession, STAGE_SLUGS, STAGE_SLUG_TO_ENUM, type StageSlug } from "@/lib/stage-login";
+import { STAGE_SLUGS, STAGE_SLUG_TO_ENUM, type StageSlug } from "@/lib/stage-login";
+import { getStageAccess } from "@/lib/stage-access";
 import { STAGE_BRIEFS } from "@/lib/stage-briefs";
 import { generateStageBriefPdf } from "@/lib/generate-stage-brief";
 import { logger } from "@/lib/logger";
@@ -22,9 +23,10 @@ export async function GET(
       return Response.json({ error: "Unknown stage" }, { status: 404 });
     }
 
-    const session = await getDoorSession(slug);
-    if (!session) {
-      return Response.json({ error: "Sign in to this stage first" }, { status: 401 });
+    const result = await getStageAccess(slug);
+    if (!result.ok) {
+      const status = result.reason === "no-session" ? 401 : 403;
+      return Response.json({ error: result.reason }, { status });
     }
 
     const enumKey = STAGE_SLUG_TO_ENUM[slug] as keyof typeof STAGE_BRIEFS;
@@ -35,7 +37,7 @@ export async function GET(
 
     const pdf = await generateStageBriefPdf({
       brief,
-      internCode: session.internCode,
+      internCode: result.access.internCode,
       downloadedAt: new Date(),
     });
 

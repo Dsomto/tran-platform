@@ -1,0 +1,10 @@
+timestamp_utc,severity,rule,host,user,source_ip,description
+2024-06-04T02:07:55Z,medium,unusual-geo-login,10.0.1.87,o.adegoke,185.220.101.9,SSH login from non-corporate ASN (185.220.0.0/16 — Tor exit pool)
+2024-06-04T02:13:11Z,high,suid-file-created,10.0.1.87,root,,New executable in /var/lib/mc/ outside any known package
+2024-06-04T02:14:00Z,high,cron-reload-without-package,10.0.1.87,root,,Cron reloaded but no /etc/cron.d/* changed by package manager
+2024-06-04T02:15:02Z,critical,outbound-beacon,10.0.1.87,root,185.220.101.9,Curl POST to known-bad IP — body looks like host:user identifier
+2024-06-04T02:31:55Z,high,bulk-data-bundle,10.0.1.87,o.adegoke,,tar created from /tmp/customers.csv + /tmp/transactions.csv (~30KB)
+2024-06-04T03:01:18Z,critical,exfil-suspected,10.0.1.87,o.adegoke,185.220.101.9,scp from /tmp/exfil.tgz to remote IP — unauthorised destination
+2024-06-05T03:14:25Z,medium,unusual-geo-login,10.0.1.87,o.adegoke,185.220.101.9,Repeat — same Tor exit
+2024-06-05T03:16:09Z,medium,sudo-misconfig-used,10.0.1.87,o.adegoke,,sudo less /var/log/* used; sudoers.d/90-ops grants this to one user
+2024-06-08T04:08:11Z,info,host-quarantined,10.0.1.87,,,nft input drop applied — host isolated from network by Tunde

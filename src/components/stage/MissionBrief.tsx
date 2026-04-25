@@ -1,4 +1,4 @@
-import { Download, FileText, Target, BookOpen, Wrench } from "lucide-react";
+import { Download, FileText, Target, BookOpen, Wrench, FolderOpen } from "lucide-react";
 import type { StageBrief } from "@/lib/stage-briefs";
 
 // Per-stage class slots so each stage room keeps its own visual identity
@@ -106,22 +106,52 @@ export function MissionBrief({ brief, theme, pdfHref }: Props) {
         </ol>
       </div>
 
-      {/* Resources quick-list */}
+      {/* Resources — Drive folder CTA + tools/readings list */}
       <div className="mb-7">
         <div className={`flex items-center gap-2 mb-3 text-[10.5px] font-mono uppercase tracking-[0.2em] ${theme.accentTextClass}`}>
           <BookOpen className="w-3 h-3" />
           Resources
         </div>
-        <ul className={`${theme.bodyTextClass} text-sm leading-relaxed grid sm:grid-cols-2 gap-x-6 gap-y-1.5`}>
-          {brief.resources.map((r) => (
-            <li key={r.href} className="flex items-baseline gap-2">
-              <span className={`font-mono text-[10px] uppercase tracking-wider ${theme.mutedTextClass}`}>
-                {r.kind}
-              </span>
-              <span className="flex-1">{r.label}</span>
-            </li>
-          ))}
-        </ul>
+        <a
+          href={brief.resourcesDriveUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={`flex items-center justify-between gap-3 px-4 py-3 mb-3 rounded-lg ${theme.downloadBtnClass} text-white hover:opacity-90 transition-opacity`}
+        >
+          <span className="flex items-center gap-2.5 min-w-0">
+            <FolderOpen className="w-4 h-4 shrink-0" />
+            <span className="font-semibold text-sm truncate">
+              Open the stage&apos;s Drive folder for the data files
+            </span>
+          </span>
+          <span className="font-mono text-[10px] uppercase tracking-[0.2em] opacity-80 shrink-0">
+            Open ↗
+          </span>
+        </a>
+        {brief.resources.length > 0 && (
+          <>
+            <p className={`${theme.mutedTextClass} text-[11px] mb-2`}>
+              Tools and readings you&apos;ll also need:
+            </p>
+            <ul className={`${theme.bodyTextClass} text-sm leading-relaxed grid sm:grid-cols-2 gap-x-6 gap-y-1.5`}>
+              {brief.resources.map((r) => (
+                <li key={r.href} className="flex items-baseline gap-2">
+                  <span className={`font-mono text-[10px] uppercase tracking-wider ${theme.mutedTextClass}`}>
+                    {r.kind}
+                  </span>
+                  <a
+                    href={r.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 hover:underline"
+                  >
+                    {r.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
       </div>
 
       {/* Prominent CTA: download the full polished PDF */}

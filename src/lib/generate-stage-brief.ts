@@ -170,9 +170,39 @@ export function generateStageBriefPdf(opts: Opts): Promise<Buffer> {
 
     // ── Section: Resources ───────────────────────────────
     y = drawSectionHeading(doc, "RESOURCES", leftX, y, contentWidth);
-    for (const r of brief.resources) {
-      y = ensureSpace(doc, y, 44);
-      y = drawResourceRow(doc, r.kind, r.label, r.description, r.href, leftX, y, contentWidth);
+
+    // Drive folder CTA — the primary way to get the stage's data files.
+    y = ensureSpace(doc, y, 64);
+    doc.roundedRect(leftX, y, contentWidth, 50, 6).fillColor(BRAND_BLUE).fill();
+    doc
+      .font("Helvetica-Bold")
+      .fontSize(10)
+      .fillColor(PAPER)
+      .text("OPEN YOUR STAGE'S DRIVE FOLDER", leftX + 16, y + 12, {
+        characterSpacing: 1.4,
+      });
+    doc
+      .font("Helvetica")
+      .fontSize(9)
+      .fillColor(PAPER)
+      .text(brief.resourcesDriveUrl, leftX + 16, y + 28, {
+        width: contentWidth - 32,
+        link: brief.resourcesDriveUrl,
+        underline: true,
+      });
+    y += 64;
+
+    if (brief.resources.length > 0) {
+      doc
+        .font("Helvetica-Oblique")
+        .fontSize(9)
+        .fillColor(MUTED)
+        .text("Tools and readings you'll also need:", leftX, y, { width: contentWidth });
+      y = doc.y + 8;
+      for (const r of brief.resources) {
+        y = ensureSpace(doc, y, 44);
+        y = drawResourceRow(doc, r.kind, r.label, r.description, r.href, leftX, y, contentWidth);
+      }
     }
 
     y += 14;

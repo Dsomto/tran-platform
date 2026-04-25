@@ -6,8 +6,10 @@
 // machines / phones should never be blocked. Anything that benefits from a
 // local machine also lists an alternate.
 //
-// Resource `href` values that start with `/downloads/` are local files the
-// admin should drop into /public/downloads/<stage>/ before the cohort opens.
+// Each stage has a `resourcesDriveUrl` — a Google Drive folder (or file)
+// holding the stage's data artefacts. The MissionBrief and PDF render that
+// link as the primary CTA. Tool/reading items in `resources` are external
+// public URLs (CyberChef, OWASP, NIST, etc.) the intern can hit any time.
 
 export interface PracticalTask {
   id: string;
@@ -34,7 +36,11 @@ export interface StageBrief {
   missionBrief: string[];
   /** What the intern should deliver in their folder. */
   practicalTasks: PracticalTask[];
-  /** Data files, readings, and tools. */
+  /** Google Drive folder (or shared file) holding the stage's data artefacts.
+   *  All download-kind resources live here — referenced as one prominent link
+   *  on the landing page and inside the PDF brief. */
+  resourcesDriveUrl: string;
+  /** Tools and readings — public web links the intern can hit any time. */
   resources: StageResource[];
   /** Sections the grader expects to see referenced in the executive summary. */
   sections: string[];
@@ -90,18 +96,9 @@ export const STAGE_BRIEFS: Record<
         deliverable: "ethics-stance (Google Doc)",
       },
     ],
+    resourcesDriveUrl:
+      "https://drive.google.com/drive/folders/1xtbdjXFxReUcqaHp_eEMyoFpHCQ9gYYm?usp=drive_link",
     resources: [
-      {
-        label: "Sample Q2 auth log excerpt",
-        description: "Your primary piece of evidence.",
-        href: "/downloads/stage-0/auth-log-q2.txt",
-        kind: "download",
-      },
-      {
-        label: "Four encoded strings to decode",
-        href: "/downloads/stage-0/encoded-strings.txt",
-        kind: "download",
-      },
       {
         label: "CyberChef — in-browser encoder/decoder",
         description: "No install needed. Use this for every encoding exercise.",
@@ -175,13 +172,9 @@ export const STAGE_BRIEFS: Record<
         deliverable: "crypto-controls (Google Doc or MS Word)",
       },
     ],
+    resourcesDriveUrl:
+      "https://drive.google.com/drive/folders/1-nWE7vQj-RN80m7o6UGcT7bZIZDJApgJ?usp=sharing",
     resources: [
-      {
-        label: "The Griot's staging-server bundle",
-        description: "Contains the AES ciphertext + IV + key, the classical-cipher sample, and three JWTs.",
-        href: "/downloads/stage-1/griot-artefacts.zip",
-        kind: "download",
-      },
       {
         label: "CyberChef — do every crypto exercise here",
         description: "Runs entirely in the browser. No install.",
@@ -262,23 +255,9 @@ export const STAGE_BRIEFS: Record<
         deliverable: "sankofa-pentest-report (Google Doc, 4–6 pages)",
       },
     ],
+    resourcesDriveUrl:
+      "https://drive.google.com/drive/folders/1fCAmCkT_LyPElXMJvH-zeH9XttYkVy5r?usp=sharing",
     resources: [
-      {
-        label: "Vulnerable PHP snippet (the /legacy-admin/ login handler)",
-        href: "/downloads/stage-2/legacy-admin-login.php",
-        kind: "download",
-      },
-      {
-        label: "HTTP request/response capture (plain text)",
-        description: "The attacker's full session, annotated with timestamps.",
-        href: "/downloads/stage-2/attacker-http-capture.txt",
-        kind: "download",
-      },
-      {
-        label: "Sample JWTs issued by the app",
-        href: "/downloads/stage-2/legacy-admin-tokens.txt",
-        kind: "download",
-      },
       {
         label: "OWASP Top 10 (2021)",
         href: "https://owasp.org/Top10/",
@@ -352,14 +331,9 @@ export const STAGE_BRIEFS: Record<
         deliverable: "incident-report (Google Doc, 5–7 pages)",
       },
     ],
+    resourcesDriveUrl:
+      "https://drive.google.com/drive/folders/1TEmB738rloEW6IYlLRNpW_wTg681O3n0?usp=sharing",
     resources: [
-      {
-        label: "Forensic artefact bundle (all plain text)",
-        description:
-          "Pre-parsed memory process listing, filesystem index, 72h of syslog + auth.log, SIEM export. Open in Docs or any editor.",
-        href: "/downloads/stage-3/forensic-artefacts.zip",
-        kind: "download",
-      },
       {
         label: "MITRE ATT&CK — Enterprise Matrix",
         href: "https://attack.mitre.org/matrices/enterprise/",
@@ -436,6 +410,8 @@ export const STAGE_BRIEFS: Record<
         deliverable: "track-selection (Google Doc)",
       },
     ],
+    resourcesDriveUrl:
+      "https://drive.google.com/file/d/1jnE_K-pSscbZzBDJjsMN1e3PWu81ov8N/view?usp=sharing",
     resources: [
       {
         label: "Nigeria Data Protection Act 2023 (full text)",
@@ -446,12 +422,6 @@ export const STAGE_BRIEFS: Record<
         label: "NIST Cybersecurity Framework 2.0",
         href: "https://www.nist.gov/cyberframework",
         kind: "reading",
-      },
-      {
-        label: "Sample breach notification letter (template)",
-        description: "Use as a starting point — do not copy-paste blindly.",
-        href: "/downloads/stage-4/breach-notification-template.docx",
-        kind: "download",
       },
       {
         label: "NIST SP 800-207 — Zero Trust Architecture",

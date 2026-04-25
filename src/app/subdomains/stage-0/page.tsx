@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import StageShell from "@/components/stage/StageShell";
 import { STAGE_THEMES } from "@/components/stage/themes";
-import { getDoorSession } from "@/lib/stage-login";
+import { getStageAccess } from "@/lib/stage-access";
 import { stageUrl } from "@/lib/stage-routes";
 import { prisma } from "@/lib/db";
 import { STAGE_BRIEFS } from "@/lib/stage-briefs";
@@ -17,8 +17,12 @@ function statusLabel(status: string | undefined | null): { label: string; tone: 
 }
 
 export default async function Stage0RoomPage() {
-  const session = await getDoorSession("stage-0");
-  if (!session) redirect(stageUrl("stage-0", "/login"));
+  const result = await getStageAccess("stage-0");
+  if (!result.ok) {
+    if (result.reason === "no-session") redirect("/login");
+    redirect("/dashboard");
+  }
+  const { internId, internCode } = result.access;
 
   const theme = STAGE_THEMES["stage-0"];
 
@@ -29,7 +33,7 @@ export default async function Stage0RoomPage() {
 
   if (!room) {
     return (
-      <StageShell theme={theme} internCode={session.internCode}>
+      <StageShell theme={theme} internCode={internCode}>
         <div className="stage-0-panel p-8">
           <h1 className="stage-0-heading text-2xl">Induction at the Gate</h1>
           <p className="text-neutral-600 mt-3 text-sm">
@@ -43,7 +47,7 @@ export default async function Stage0RoomPage() {
   const assignmentIds = room.assignments.map((a) => a.id);
   const submissions = assignmentIds.length
     ? await prisma.submission.findMany({
-        where: { internId: session.internId, assignmentId: { in: assignmentIds } },
+        where: { internId: internId, assignmentId: { in: assignmentIds } },
       })
     : [];
 
@@ -66,7 +70,7 @@ export default async function Stage0RoomPage() {
   const brief = STAGE_BRIEFS.STAGE_0;
 
   return (
-    <StageShell theme={theme} internCode={session.internCode}>
+    <StageShell theme={theme} internCode={internCode}>
       <div className="space-y-8">
         <section className="stage-0-panel p-8 relative overflow-hidden">
           <div className="stage-0-pill mb-3">{room.codename}</div>

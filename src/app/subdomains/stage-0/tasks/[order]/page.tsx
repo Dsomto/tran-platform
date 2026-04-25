@@ -3,7 +3,7 @@ import Link from "next/link";
 import StageShell from "@/components/stage/StageShell";
 import TaskPage from "@/components/stage/TaskPage";
 import { STAGE_THEMES } from "@/components/stage/themes";
-import { getDoorSession } from "@/lib/stage-login";
+import { getStageAccess } from "@/lib/stage-access";
 import { stageUrl } from "@/lib/stage-routes";
 import { prisma } from "@/lib/db";
 import type { WidgetKind } from "@/components/widgets/types";
@@ -13,8 +13,12 @@ export default async function Stage0TaskPage({
 }: {
   params: Promise<{ order: string }>;
 }) {
-  const session = await getDoorSession("stage-0");
-  if (!session) redirect(stageUrl("stage-0", "/login"));
+  const result = await getStageAccess("stage-0");
+  if (!result.ok) {
+    if (result.reason === "no-session") redirect("/login");
+    redirect("/dashboard");
+  }
+  const { internId, internCode } = result.access;
 
   const { order } = await params;
   const orderNum = Number(order);
@@ -31,7 +35,7 @@ export default async function Stage0TaskPage({
   if (!assignment) notFound();
 
   const submission = await prisma.submission.findFirst({
-    where: { internId: session.internId, assignmentId: assignment.id },
+    where: { internId: internId, assignmentId: assignment.id },
   });
 
   const theme = STAGE_THEMES["stage-0"];
@@ -42,7 +46,7 @@ export default async function Stage0TaskPage({
       : null;
 
   return (
-    <StageShell theme={theme} internCode={session.internCode}>
+    <StageShell theme={theme} internCode={internCode}>
       <div className="mb-6">
         <Link
           href={stageUrl("stage-0")}
@@ -62,8 +66,8 @@ export default async function Stage0TaskPage({
         widgetConfig={widgetConfig}
         maxPoints={assignment.maxPoints}
         context={{
-          internId: session.internId,
-          internCode: session.internCode,
+          internId: internId,
+          internCode: internCode,
           flagSalt: assignment.flagSalt ?? null,
           stage: "stage-0",
           accentColor: "#34d399",

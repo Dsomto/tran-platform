@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import StageShell from "@/components/stage/StageShell";
 import { STAGE_THEMES } from "@/components/stage/themes";
-import { getDoorSession } from "@/lib/stage-login";
+import { getStageAccess } from "@/lib/stage-access";
 import { stageUrl } from "@/lib/stage-routes";
 import { prisma } from "@/lib/db";
 import { STAGE_BRIEFS } from "@/lib/stage-briefs";
@@ -17,8 +17,12 @@ function statusLabel(status: string | undefined | null): { label: string; tone: 
 }
 
 export default async function Stage2RoomPage() {
-  const session = await getDoorSession("stage-2");
-  if (!session) redirect(stageUrl("stage-2", "/login"));
+  const result = await getStageAccess("stage-2");
+  if (!result.ok) {
+    if (result.reason === "no-session") redirect("/login");
+    redirect("/dashboard");
+  }
+  const { internId, internCode } = result.access;
 
   const theme = STAGE_THEMES["stage-2"];
 
@@ -29,7 +33,7 @@ export default async function Stage2RoomPage() {
 
   if (!room) {
     return (
-      <StageShell theme={theme} internCode={session.internCode}>
+      <StageShell theme={theme} internCode={internCode}>
         <div className="stage-2-panel p-8">
           <h1 className="stage-2-heading text-2xl">The Attack Surface</h1>
           <p className="text-rose-200/70 mt-3 text-sm">
@@ -43,7 +47,7 @@ export default async function Stage2RoomPage() {
   const assignmentIds = room.assignments.map((a) => a.id);
   const submissions = assignmentIds.length
     ? await prisma.submission.findMany({
-        where: { internId: session.internId, assignmentId: { in: assignmentIds } },
+        where: { internId: internId, assignmentId: { in: assignmentIds } },
       })
     : [];
 
@@ -64,7 +68,7 @@ export default async function Stage2RoomPage() {
   };
 
   return (
-    <StageShell theme={theme} internCode={session.internCode}>
+    <StageShell theme={theme} internCode={internCode}>
       <div className="space-y-8">
         <section className="stage-2-panel p-8 relative overflow-hidden">
           <div className="stage-2-radar" aria-hidden="true" />

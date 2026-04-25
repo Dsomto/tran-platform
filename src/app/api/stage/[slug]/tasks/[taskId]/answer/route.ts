@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { logger } from "@/lib/logger";
-import { STAGE_SLUGS, STAGE_SLUG_TO_ENUM, StageSlug, getDoorSession } from "@/lib/stage-login";
+import { STAGE_SLUGS, STAGE_SLUG_TO_ENUM, StageSlug } from "@/lib/stage-login";
+import { getStageAccess } from "@/lib/stage-access";
 import { autoGradeSubmission, contentFromAnswer } from "@/lib/auto-grade";
 import { awardPoints, maybeAdvanceStage } from "@/lib/advance-stage";
 
@@ -20,10 +21,12 @@ export async function POST(
     if (!STAGE_SLUGS.includes(slug as StageSlug)) {
       return Response.json({ error: "Unknown stage" }, { status: 404 });
     }
-    const session = await getDoorSession(slug as StageSlug);
-    if (!session) {
-      return Response.json({ error: "Not authenticated for this stage" }, { status: 401 });
+    const result = await getStageAccess(slug as StageSlug);
+    if (!result.ok) {
+      const status = result.reason === "no-session" ? 401 : 403;
+      return Response.json({ error: result.reason }, { status });
     }
+    const internId = result.access.internId;
 
     const { answer } = await request.json().catch(() => ({ answer: {} }));
     if (typeof answer !== "object" || answer == null) {
@@ -41,7 +44,7 @@ export async function POST(
     const grade = autoGradeSubmission(
       assignment,
       answer as Record<string, unknown>,
-      session.internId
+      internId
     );
 
     const content = contentFromAnswer(assignment.kind, answer as Record<string, unknown>);
@@ -51,9 +54,9 @@ export async function POST(
         : null;
 
     const submission = await prisma.submission.upsert({
-      where: { internId_assignmentId: { internId: session.internId, assignmentId: assignment.id } },
+      where: { internId_assignmentId: { internId: internId, assignmentId: assignment.id } },
       create: {
-        internId: session.internId,
+        internId: internId,
         assignmentId: assignment.id,
         content: content.slice(0, 20000),
         attachmentUrl,
@@ -76,13 +79,13 @@ export async function POST(
 
     if (grade.autoGraded && grade.score > 0) {
       await awardPoints(
-        session.internId,
+        internId,
         grade.score,
         `Auto-graded: ${assignment.title}`
       );
     }
 
-    const advance = grade.autoGraded ? await maybeAdvanceStage(session.internId) : null;
+    const advance = grade.autoGraded ? await maybeAdvanceStage(internId) : null;
 
     return Response.json({
       submissionId: submission.id,
