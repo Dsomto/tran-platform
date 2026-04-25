@@ -29,11 +29,27 @@ export interface StageResource {
   kind: "download" | "reading" | "tool";
 }
 
+export interface CastMember {
+  name: string;
+  role: string;
+  /** One-sentence backstory shown on the character card. */
+  bio: string;
+  /** Whether this person is on your side, an adversary, or a peer. Used for
+   *  card colour. */
+  alignment: "ally" | "peer" | "adversary" | "external";
+  /** Optional pithy tag shown beneath the role, like "your direct mentor". */
+  tag?: string;
+}
+
 export interface StageBrief {
   label: string;
   subtitle: string;
   /** Multi-paragraph narrative — the "what happened" briefing. */
   missionBrief: string[];
+  /** Characters the intern will work with / against in this stage. */
+  cast: CastMember[];
+  /** Plain-language org policies shown as a static block on the landing. */
+  termsAndPolicies: string[];
   /** What the intern should deliver in their folder. */
   practicalTasks: PracticalTask[];
   /** Google Drive folder (or shared file) holding the stage's data artefacts.
@@ -58,6 +74,57 @@ export const STAGE_BRIEFS: Record<
       "Sankofa Digital is a 600-person Nigerian fintech with a SOC bench of four. Last quarter one of their analysts — the one you are replacing — flagged a login that came from an unusual IP, wrote \"probably nothing\" in the ticket, and closed it. Amaka Eze, Head of Security, does not think it was nothing. She has asked you to read the evidence and tell her whether she should be worried.",
       "Your platform work for this stage has walked you through the basics: the CIA triad, AAA, basic Linux, hashing, encoding, how a SIEM reads logs, and the ISC2 Code of Ethics. This report is where you show you can apply them — not recite them.",
       "You are writing to the Sankofa Digital Incident Committee. Three people. None of them touch a keyboard for a living. Make the report readable in under fifteen minutes.",
+    ],
+    cast: [
+      {
+        name: "Amaka Eze",
+        role: "Head of Security",
+        tag: "Your direct mentor",
+        bio: "Ten years across SOCs in Lagos, Joburg, and London. Hates ceremony, loves evidence. Will read your report twice and ask one question that proves you didn't.",
+        alignment: "ally",
+      },
+      {
+        name: "Tunde Afolabi",
+        role: "Threat Intel Lead",
+        tag: "He hands you the artefacts",
+        bio: "Ex-military signals. Pulls the logs, runs the captures, has a side hobby tracking the Griot's infrastructure. Quiet until something doesn't add up.",
+        alignment: "ally",
+      },
+      {
+        name: "Adaeze Okonkwo",
+        role: "Chief Executive Officer",
+        tag: "Sets the tone for the company",
+        bio: "Founded Sankofa eight years ago. Believes the company's licence to operate depends on customer trust. Will personally read the Incident Committee summary.",
+        alignment: "external",
+      },
+      {
+        name: "Olu Adegoke",
+        role: "Finance Analyst",
+        tag: "His account is in the log",
+        bio: "On the finance team. His login appears in the Q2 auth log at 02:07 UTC — except he was on annual leave that week. He doesn't know yet.",
+        alignment: "peer",
+      },
+      {
+        name: "Chinwe Eze",
+        role: "SOC Tier 2 Analyst",
+        tag: "Your peer on the bench",
+        bio: "Started the same week as the analyst you are replacing. Will be the first person to read your draft. Pushy in the right way.",
+        alignment: "peer",
+      },
+      {
+        name: "The Griot",
+        role: "Unknown adversary",
+        tag: "Faceless, for now",
+        bio: "A handle that turned up in a regional threat-intel feed three months ago. Nobody knows the operator. Sankofa has been quietly mapped.",
+        alignment: "adversary",
+      },
+    ],
+    termsAndPolicies: [
+      "All access to Sankofa systems is logged. By proceeding, you accept that your activity in this stage is recorded for audit.",
+      "The Q2 auth log and any other artefact you receive are property of Sankofa Digital. Do not redistribute, screenshot to the public internet, or post to social media.",
+      "You will not use any technique you learn here against any system you do not own or have written permission to test. ISC2 Code of Ethics applies in full.",
+      "Findings stay inside the programme until the Incident Committee releases them. \"Inside the programme\" includes your peers in the cohort.",
+      "If something looks wrong, slow down and escalate. Speed without judgement is a liability.",
     ],
     practicalTasks: [
       {
@@ -132,6 +199,49 @@ export const STAGE_BRIEFS: Record<
       "Amaka's suspicion was right. The analyst you replaced closed the ticket because they could not read what they were looking at. Tunde, the threat-intel lead, has since pulled a zip off a staging server the attacker (\"The Griot\") abandoned. It contains configs, session tokens, one image, and a handful of \"notes\" files — all either encrypted, encoded, or otherwise obscured. Sloppily, in places.",
       "The board now knows Sankofa was compromised during Q2. They want to know two things. First: what was in the files. Second, and more importantly: which cryptographic decisions inside Sankofa's own stack made this kind of sloppiness survive for three months without detection.",
       "This report is addressed to Amaka and the board. Half of it is a post-mortem of The Griot's choices. Half of it is a control set Sankofa should adopt so the next Griot has no easy layer to hide behind.",
+    ],
+    cast: [
+      {
+        name: "Amaka Eze",
+        role: "Head of Security",
+        tag: "Reads your report end to end",
+        bio: "Carries this case. Wants the post-mortem clean and the controls list short. Don't pad.",
+        alignment: "ally",
+      },
+      {
+        name: "Tunde Afolabi",
+        role: "Threat Intel Lead",
+        tag: "Pulled the staging-server zip",
+        bio: "Caught the Griot's beacon three days late. Treats every hour after that as borrowed.",
+        alignment: "ally",
+      },
+      {
+        name: "Dr. Folake Bello",
+        role: "External cryptography consultant",
+        tag: "Brought in for the audit",
+        bio: "Spent eight years at the central bank's CSO office. Has seen every variant of \"we used AES so we're fine\" — and most of them were wrong.",
+        alignment: "ally",
+      },
+      {
+        name: "Bayo Ogunyemi",
+        role: "Head of Engineering",
+        tag: "Owns the systems with the bad crypto",
+        bio: "Ships fast. Does not ship safely. Will push back on every control you propose unless you make the cost of *not* doing it concrete.",
+        alignment: "peer",
+      },
+      {
+        name: "The Griot",
+        role: "Adversary",
+        tag: "Made a habit of cutting corners",
+        bio: "Reused IVs. Used HS256 with a five-character secret. Did all of it intentionally — to look amateur and stay under the model the SOC was watching for.",
+        alignment: "adversary",
+      },
+    ],
+    termsAndPolicies: [
+      "All cryptographic artefacts in this stage are simulations. They are not pulled from real Sankofa production data.",
+      "Do not paste these ciphertexts, JWTs, or keys into any third-party service that retains data. CyberChef and jwt.io run client-side and are safe.",
+      "Any control you recommend must be specific enough to procure or build. Vague guidance (\"improve crypto hygiene\") will not be accepted.",
+      "Findings are confidential to Sankofa Digital and the programme. Do not share screenshots in the cohort group.",
     ],
     practicalTasks: [
       {
@@ -218,6 +328,49 @@ export const STAGE_BRIEFS: Record<
       "You are writing a pentest-style findings report for Sankofa's Head of Engineering. The goal is not to showboat — it is to tell the team exactly what's broken, how an attacker would chain the weaknesses, and what to fix first. You have a week. The team has two.",
       "You will not run any scans against real infrastructure. Every weakness you need to analyse is in the source-code snippets, HTTP captures, and sample tokens in the resources. You read them in the browser, no install needed.",
     ],
+    cast: [
+      {
+        name: "Bayo Ogunyemi",
+        role: "Head of Engineering",
+        tag: "The person your report is for",
+        bio: "Has a backlog the size of a small library. Will only act on findings he can prioritise against business risk. Speak that language.",
+        alignment: "peer",
+      },
+      {
+        name: "Ngozi Ojukwu",
+        role: "DevSecOps Lead",
+        tag: "Will own the fixes",
+        bio: "Joined six months ago. Inherited the legacy-admin app. Wanted to kill it on day one but lost the politics. Now she has the receipts.",
+        alignment: "ally",
+      },
+      {
+        name: "Amaka Eze",
+        role: "Head of Security",
+        tag: "Co-signs the report",
+        bio: "Will read your remediation order before it goes to engineering. She has political capital — spend it on the things that actually matter.",
+        alignment: "ally",
+      },
+      {
+        name: "Tunde Afolabi",
+        role: "Threat Intel Lead",
+        tag: "Provided the HTTP capture",
+        bio: "Pulled the attacker's full session off the edge proxy. Will help you label the parts of the chain that look familiar.",
+        alignment: "ally",
+      },
+      {
+        name: "The Griot",
+        role: "Adversary",
+        tag: "Walked through five doors",
+        bio: "Found the legacy admin in three minutes, the SQLi in five, and the open redirect in seven. Knew where to look — that is its own clue.",
+        alignment: "adversary",
+      },
+    ],
+    termsAndPolicies: [
+      "You will not run scans, fuzzers, or any automated probe against any real Sankofa endpoint. The exercise is paper-based.",
+      "All code, capture, and token samples are property of Sankofa Digital and are confidential to this stage.",
+      "When you write CVSS scores, show the vector string. Numbers without vectors do not get accepted.",
+      "Remediation order should be argued by risk reduction per hour of effort, not severity alone.",
+    ],
     practicalTasks: [
       {
         id: "sqli-analysis",
@@ -291,6 +444,56 @@ export const STAGE_BRIEFS: Record<
       "The Griot did get in through /legacy-admin/. They pivoted sideways to a finance analyst's workstation (10.0.1.87) and sat there for 72 hours before Tunde noticed the beacon traffic and quarantined the box.",
       "You have been handed the forensic artefacts: the pre-parsed memory-process listing, a filesystem index, 72 hours of syslog + auth.log, and a SIEM export. Everything is plain text — open it in your editor or Google Docs, no Volatility install required.",
       "Your job is to produce three things the CISO takes to legal tomorrow: a clean incident timeline, an IOC list, and a list of MITRE ATT&CK techniques the adversary used. The timeline is the primary artefact — legal reads it first. Do not invent details. Every sentence traces to a line in the evidence.",
+    ],
+    cast: [
+      {
+        name: "Damilola \"Dami\" Akande",
+        role: "DFIR Specialist",
+        tag: "Brought in to lead the investigation",
+        bio: "Twelve years of incident response. Will check your timeline against the raw artefacts and tell you which sentences don't have evidence.",
+        alignment: "ally",
+      },
+      {
+        name: "Counsel Ifeoma Okeke",
+        role: "Internal Legal",
+        tag: "Reads the timeline first",
+        bio: "Cares about what was accessed, by whom, when, and what the company is obligated to disclose. Will quote your timeline back to you in the regulator's office.",
+        alignment: "ally",
+      },
+      {
+        name: "Olu Adegoke",
+        role: "Finance Analyst",
+        tag: "His workstation was the foothold",
+        bio: "On leave when the breach happened. Now back, embarrassed, cooperative. Available for interview if your timeline needs his side.",
+        alignment: "peer",
+      },
+      {
+        name: "Tunde Afolabi",
+        role: "Threat Intel Lead",
+        tag: "Caught the beacon",
+        bio: "Spotted the outbound traffic to 185.220.101.9 on hour 71 of the dwell. Quarantined the box at hour 72. Wrote the first line of your timeline.",
+        alignment: "ally",
+      },
+      {
+        name: "Amaka Eze",
+        role: "Head of Security",
+        tag: "Sponsors the investigation",
+        bio: "Will defend the team's work to the board. Needs the report to be defensible, not heroic.",
+        alignment: "ally",
+      },
+      {
+        name: "The Griot",
+        role: "Adversary",
+        tag: "Quiet for 30 days, then loud",
+        bio: "Left a note on the workstation: \"foothold: o.adegoke. exfil: /tmp/exfil.tgz -> 185.220.101.9. quiet for 30 days, then loud.\" Took the data and waited.",
+        alignment: "adversary",
+      },
+    ],
+    termsAndPolicies: [
+      "Forensic artefacts are evidence. Do not modify them. Work from copies; record the SHA-256 of every file you analyse.",
+      "Every claim in the timeline must cite a line in the evidence. Inventing facts is a hard fail.",
+      "Until legal releases otherwise, the names of affected individuals stay inside the investigation. Use roles in your report, not names.",
+      "The incident report goes to the CISO and Counsel. It will be discoverable in any subsequent action — write accordingly.",
     ],
     practicalTasks: [
       {
@@ -372,6 +575,56 @@ export const STAGE_BRIEFS: Record<
       "Tomorrow at 09:00 you are in front of Sankofa's board. Three members: the Chair, the CFO, and an independent director who used to chair a bank. They do not care about MITRE ATT&CK technique IDs. They care about three things: did customer PII leave the building, are we in breach of NDPA, and what does the next twelve months of security spend need to look like.",
       "This is the capstone. You are no longer a technical analyst — you are the voice the board hears. Every artefact you submit lives on the record. Every number gets quoted back at you.",
       "When the chair signs off on your package, you are no longer a candidate. You pick your specialist track — SOC, Ethical Hacking, or GRC — and the next chapter of your work is the one you chose.",
+    ],
+    cast: [
+      {
+        name: "Adaeze Okonkwo",
+        role: "Chair & CEO",
+        tag: "Reads the cover letter first",
+        bio: "Wants three sentences before she wants any number. If your executive summary buries the answer, she stops reading.",
+        alignment: "external",
+      },
+      {
+        name: "Babatunde Olawale",
+        role: "Chief Financial Officer",
+        tag: "Will price every recommendation",
+        bio: "Sees security spend as insurance. Will fund what you can quantify, will cut what you can't. Round numbers in NGN are fine — sources required.",
+        alignment: "external",
+      },
+      {
+        name: "Chief Wale Adekunle",
+        role: "Independent Director",
+        tag: "Ex-chair of a Tier 1 bank",
+        bio: "Has sat through six breach briefings in his career. Knows the difference between a contained incident and a buried one. Asks the questions you don't want.",
+        alignment: "external",
+      },
+      {
+        name: "Counsel Ifeoma Okeke",
+        role: "General Counsel",
+        tag: "Sits beside you at the table",
+        bio: "Briefs the board on regulatory exposure. Your NDPA letter and her draft go in together. Reconcile them before the meeting.",
+        alignment: "ally",
+      },
+      {
+        name: "Adaobi Nnamdi",
+        role: "Liaison, Nigeria Data Protection Commission",
+        tag: "Receives the 72-hour notification",
+        bio: "Will read the Section 40 letter twice — once for what it says, once for what it doesn't. She has seen worse, and she has seen better. Be neither.",
+        alignment: "external",
+      },
+      {
+        name: "Amaka Eze",
+        role: "Head of Security",
+        tag: "Hands you the floor",
+        bio: "Sits at the back. Will not speak unless asked. The room learns from how she reacts to your answers — make sure those reactions match what you intend.",
+        alignment: "ally",
+      },
+    ],
+    termsAndPolicies: [
+      "Every artefact you submit becomes part of the board record. Treat it like a document a court might read.",
+      "The NDPA notification letter is a regulated submission. Names, dates, and counts must be defensible against the evidence in Stages 0-3.",
+      "Track selection is binding. Once the chair signs off, the choice is in the record.",
+      "If a number you cite cannot be traced back to evidence in the platform, do not cite it.",
     ],
     practicalTasks: [
       {
