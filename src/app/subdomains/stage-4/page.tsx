@@ -26,7 +26,7 @@ export default async function Stage4LandingPage() {
       <StageLanding
         brief={brief}
         boardHref={stageUrl("stage-4", "/board")}
-        pdfHref="/api/stage-brief/stage-4/pdf"
+        pdfHref="/dashboard/brief/stage-4"
         companyName="Sankofa Digital · The Boardroom"
         welcomeLine="Tomorrow at 09:00 the board sits. Adaeze, Babatunde, Chief Wale. They want three answers: did customer PII leave, are we in breach of NDPA, what does next year of security spend look like. Counsel is at the table with you."
         theme={{

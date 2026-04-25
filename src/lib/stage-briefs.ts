@@ -29,6 +29,21 @@ export interface StageResource {
   kind: "download" | "reading" | "tool";
 }
 
+export type BulletinKind =
+  | "news"      // company / industry
+  | "meeting"   // a thing happening at a time
+  | "gossip"    // interpersonal, low stakes
+  | "notice"    // something factual the intern needs to know
+  | "alert"     // something time-sensitive
+  | "joke";     // inside-joke flavour
+
+export interface BulletinItem {
+  kind: BulletinKind;
+  text: string;
+  /** Optional small caption — meeting time, source, who pinned it. */
+  meta?: string;
+}
+
 export interface CastMember {
   name: string;
   role: string;
@@ -53,6 +68,9 @@ export interface StageBrief {
   cast: CastMember[];
   /** Plain-language org policies shown as a static block on the landing. */
   termsAndPolicies: string[];
+  /** Slack-style intranet feed — gossip, news, meetings, notices. Adds the
+   *  texture of working inside a real company. */
+  bulletin: BulletinItem[];
   /** What the intern should deliver in their folder. */
   practicalTasks: PracticalTask[];
   /** Google Drive folder (or shared file) holding the stage's data artefacts.
@@ -134,6 +152,43 @@ export const STAGE_BRIEFS: Record<
       "You will not use any technique you learn here against any system you do not own or have written permission to test. ISC2 Code of Ethics applies in full.",
       "Findings stay inside the programme until the Incident Committee releases them. \"Inside the programme\" includes your peers in the cohort.",
       "If something looks wrong, slow down and escalate. Speed without judgement is a liability.",
+    ],
+    bulletin: [
+      {
+        kind: "news",
+        text: "Sankofa just signed a 3-year processing deal with Lagos Microfinance. Press release Friday — Comms wants nothing weird in the news cycle.",
+        meta: "internal note · 2 days ago",
+      },
+      {
+        kind: "meeting",
+        text: "Daily SOC standup: 09:30 in the Crow Lobby. Attendance optional, Amaka notices.",
+        meta: "Mon–Fri",
+      },
+      {
+        kind: "notice",
+        text: "Sankofa account 1234567890 (Polaris) is petty cash only. The Operating account ends in 4523 — never confuse them. Ifeoma will personally find you.",
+        meta: "pinned by #finance-help",
+      },
+      {
+        kind: "joke",
+        text: "If Tunde says \"interesting\", he means concerning. If Amaka says \"interesting\", she means impressive. Calibrate accordingly.",
+        meta: "from the new-hire wiki",
+      },
+      {
+        kind: "gossip",
+        text: "Kofi from Engineering brought jollof to the office party. Marketing brought their own. Verdict still pending. Truce holding.",
+        meta: "#offsite-2024",
+      },
+      {
+        kind: "meeting",
+        text: "Company offsite: 22 March, Lekki. RSVP via #offsite-2024. Yes, the badge says \"intern\" and that's fine.",
+        meta: "1 month away",
+      },
+      {
+        kind: "alert",
+        text: "Q2 ticket #SD-40812 has been re-opened by Amaka. The ticket you replaced left it closed — that is the ticket you're walking into.",
+        meta: "your queue",
+      },
     ],
     practicalTasks: [
       {
@@ -256,6 +311,43 @@ export const STAGE_BRIEFS: Record<
       "Do not paste these ciphertexts, JWTs, or keys into any third-party service that retains data. CyberChef and jwt.io run client-side and are safe.",
       "Any control you recommend must be specific enough to procure or build. Vague guidance (\"improve crypto hygiene\") will not be accepted.",
       "Findings are confidential to Sankofa Digital and the programme. Do not share screenshots in the cohort group.",
+    ],
+    bulletin: [
+      {
+        kind: "news",
+        text: "Sankofa's customer-trust score dropped 4 points after the Q2 disclosure leaked on Twitter. Comms is in the war room. Adaeze pulled the Friday all-hands forward.",
+        meta: "yesterday",
+      },
+      {
+        kind: "meeting",
+        text: "Crypto controls review: Friday 14:00, Blue Room (level 6). Dr. Folake Bello presenting. Bayo \"will try to make it\".",
+        meta: "this Friday",
+      },
+      {
+        kind: "gossip",
+        text: "Bayo and Ngozi haven't spoken since the post-mortem. Standup is awkward. Bring snacks.",
+        meta: "from #soc-bench",
+      },
+      {
+        kind: "joke",
+        text: "Bayo's pinned PR comment from 2019: \"we'll fix the JWT thing later\". It's been five years. We are now in \"later\".",
+        meta: "PR #1488 · still open",
+      },
+      {
+        kind: "notice",
+        text: "Treasury reminder: any control you propose with a cost must reference the Operating account (ends 4523). Quotes go in the spend tracker, not in DMs.",
+        meta: "pinned by Babatunde",
+      },
+      {
+        kind: "alert",
+        text: "External counsel asked whether the Q2 incident triggers Section 40 NDPA notification. Counsel Ifeoma says \"not yet — but the clock starts the moment we confirm PII left.\" Don't confirm anything you can't evidence.",
+        meta: "from legal · today",
+      },
+      {
+        kind: "meeting",
+        text: "Optional: Tunde's threat-intel office hours, Wednesdays 16:00. He brings coffee. Ask any question.",
+        meta: "weekly",
+      },
     ],
     practicalTasks: [
       {
@@ -390,6 +482,43 @@ export const STAGE_BRIEFS: Record<
       "When you write CVSS scores, show the vector string. Numbers without vectors do not get accepted.",
       "Remediation order should be argued by risk reduction per hour of effort, not severity alone.",
     ],
+    bulletin: [
+      {
+        kind: "news",
+        text: "Sankofa is launching BoltCash in 6 weeks. Marketing wants the legacy admin fixed BEFORE launch. Bayo wants it fixed AFTER. Adaeze will pick a side this Friday.",
+        meta: "internal · 3 days ago",
+      },
+      {
+        kind: "gossip",
+        text: "Ngozi (DevSecOps) signed an offer at OpenSec. Starts next quarter. Bayo doesn't know yet. Don't be the one who tells him.",
+        meta: "from #insiders · today",
+      },
+      {
+        kind: "meeting",
+        text: "Sprint planning: Tuesday 09:00. Bayo will not stay if you talk legacy-admin for more than five minutes. Be efficient.",
+        meta: "this Tuesday",
+      },
+      {
+        kind: "notice",
+        text: "All e2e tests use the format e2e-XXX@sankofa.dev. Do not test against admin@sankofa.com — that account belongs to the actual admin and your test will be on his desk by Tuesday.",
+        meta: "pinned by #qa",
+      },
+      {
+        kind: "joke",
+        text: "Sankofa pentest etiquette: if you find something, write it up. If you can exploit it from your phone in a meeting, you must immediately stop and write it up. Discipline.",
+        meta: "wiki: pentester-handbook",
+      },
+      {
+        kind: "alert",
+        text: "/legacy-admin/ is publicly reachable. The web team disagrees on whether to take it down today (Ngozi: yes) or stage a soft retire (Bayo: yes). Until they decide, treat it as a live target you are not allowed to touch.",
+        meta: "from #incident-q2",
+      },
+      {
+        kind: "meeting",
+        text: "Engineering retro: Thursday 15:30. Optional, but it's where the post-mortem of /legacy-admin/ will be done. Bring your remediation order if you want it heard.",
+        meta: "this Thursday",
+      },
+    ],
     practicalTasks: [
       {
         id: "sqli-analysis",
@@ -519,6 +648,48 @@ export const STAGE_BRIEFS: Record<
       "Every claim in the timeline must cite a line in the evidence. Inventing facts is a hard fail.",
       "Until legal releases otherwise, the names of affected individuals stay inside the investigation. Use roles in your report, not names.",
       "The incident report goes to the CISO and Counsel. It will be discoverable in any subsequent action — write accordingly.",
+    ],
+    bulletin: [
+      {
+        kind: "alert",
+        text: "Workstation 10.0.1.87 is in the safe. Do NOT touch. The serial is 08-17-AHF7-22. Tunde has the access log. Counsel knows the chain of custody count.",
+        meta: "from Dami · this morning",
+      },
+      {
+        kind: "news",
+        text: "Olu Adegoke is back from leave. Confused about why his desk has a \"do not touch\" sign and why Counsel wants a 30-min sit-down.",
+        meta: "today · 09:14",
+      },
+      {
+        kind: "meeting",
+        text: "Investigation sync: 07:00 daily, Crow War Room. Coffee non-negotiable. Counsel attends every other one.",
+        meta: "Mon–Fri",
+      },
+      {
+        kind: "gossip",
+        text: "Dami brought her own keyboard. It clicks. Open-plan office is mildly hostile about it. She does not care.",
+        meta: "from #ir-team",
+      },
+      {
+        kind: "notice",
+        text: "72-hour clock for NDPA notification started at 04:12 UTC on 2024-06-08. Counsel knows the exact second. If you reference \"the clock\" in your report, that's what you mean.",
+        meta: "pinned by Counsel Ifeoma",
+      },
+      {
+        kind: "joke",
+        text: "Dami's three rules of forensics, posted above her desk: 1) Don't touch it. 2) Hash everything. 3) When in doubt, hash again.",
+        meta: "Dami's whiteboard",
+      },
+      {
+        kind: "meeting",
+        text: "Olu's voluntary interview: Wednesday 14:00, with Counsel and Dami present. Optional for the SOC bench but useful for your timeline.",
+        meta: "Wednesday",
+      },
+      {
+        kind: "alert",
+        text: "Beacon to 185.220.101.9 was last seen at 03:14 UTC. The Griot is quiet. Tunde says \"quiet does not mean gone\".",
+        meta: "from threat-intel · 1h ago",
+      },
     ],
     practicalTasks: [
       {
@@ -656,6 +827,48 @@ export const STAGE_BRIEFS: Record<
       "The NDPA notification letter is a regulated submission. Names, dates, and counts must be defensible against the evidence in Stages 0-3.",
       "Track selection is binding. Once the chair signs off, the choice is in the record.",
       "If a number you cite cannot be traced back to evidence in the platform, do not cite it.",
+    ],
+    bulletin: [
+      {
+        kind: "news",
+        text: "Sankofa's quarterly revenue printed 12% above forecast. Some board members will be in good moods. Some will not be — Chief Wale read the Q2 disclosure on the way in.",
+        meta: "from #leadership · 04:30 today",
+      },
+      {
+        kind: "meeting",
+        text: "Board sits 09:00 sharp. Pre-meeting with Counsel at 08:00 in her office. Coffee from the espresso machine on level 9 — the lobby one is still broken.",
+        meta: "tomorrow",
+      },
+      {
+        kind: "joke",
+        text: "Chief Wale Adekunle is famously polite to people he is about to dismantle. The polite questions are the dangerous ones. \"Can you walk me through that one more time?\" is not casual.",
+        meta: "wiki: how-the-board-works",
+      },
+      {
+        kind: "alert",
+        text: "Babatunde will ask \"what is the worst case?\" three separate times during your briefing. Each time, give a different defensible answer. The same answer twice is taken as evasion.",
+        meta: "Counsel's pre-brief notes",
+      },
+      {
+        kind: "notice",
+        text: "Sankofa Digital Limited · RC 1234567 · Operating account: Polaris Bank, ending 4523. Use this number for the cost figures in your roadmap. NOT 1234567890 (petty cash). NOT 0009-XX-VERIFY (test account).",
+        meta: "pinned by Treasury",
+      },
+      {
+        kind: "gossip",
+        text: "Adaobi Nnamdi (NDPC liaison) was at university with Counsel Ifeoma. They are friendly. Don't mistake friendly for lenient.",
+        meta: "from Counsel · in confidence",
+      },
+      {
+        kind: "meeting",
+        text: "Post-board debrief: 13:00, Crow War Room. Whoever is left standing.",
+        meta: "tomorrow afternoon",
+      },
+      {
+        kind: "alert",
+        text: "Cohort milestone: track selection becomes binding the moment the Chair signs off. There is no \"I changed my mind\" after this stage.",
+        meta: "Programme team",
+      },
     ],
     practicalTasks: [
       {

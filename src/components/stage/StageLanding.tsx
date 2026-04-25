@@ -11,8 +11,15 @@ import {
   CheckCircle2,
   FolderOpen,
   Quote,
+  Newspaper,
+  Calendar,
+  Coffee,
+  Pin,
+  AlertTriangle,
+  MessageCircle,
+  Megaphone,
 } from "lucide-react";
-import type { StageBrief, CastMember } from "@/lib/stage-briefs";
+import type { StageBrief, CastMember, BulletinKind } from "@/lib/stage-briefs";
 
 export interface StageLandingTheme {
   slug: string;
@@ -226,6 +233,52 @@ export function StageLanding({
         </div>
       </section>
 
+      {/* ── Company life — the bulletin board ────────────── */}
+      <section>
+        <SectionHeading icon={Megaphone} accent={theme.accentTextClass} eyebrow="Around the office">
+          What&apos;s going on this week
+        </SectionHeading>
+        <p className={`${theme.mutedTextClass} text-sm mb-5 max-w-2xl`}>
+          Things you&apos;d hear if you were on the bench. Some of it is news,
+          some of it is gossip, some of it is the kind of detail you only
+          learn by sitting next to someone for a month.
+        </p>
+        <div className="grid sm:grid-cols-2 gap-3">
+          {brief.bulletin.map((item, i) => {
+            const v = bulletinVisuals(item.kind);
+            const Icon = v.icon;
+            return (
+              <article
+                key={i}
+                className={`${theme.panelClass} p-4 sm:p-5 flex gap-3`}
+              >
+                <div
+                  className={`shrink-0 w-9 h-9 rounded-lg grid place-items-center ${v.bg} ${v.text}`}
+                  aria-hidden="true"
+                >
+                  <Icon className="w-4 h-4" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className={`text-[9.5px] font-mono uppercase tracking-[0.18em] font-bold ${v.text}`}>
+                      {v.label}
+                    </span>
+                    {item.meta && (
+                      <span className={`text-[10px] ${theme.mutedTextClass} truncate`}>
+                        · {item.meta}
+                      </span>
+                    )}
+                  </div>
+                  <p className={`${theme.bodyTextClass} text-[13.5px] leading-relaxed`}>
+                    {item.text}
+                  </p>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      </section>
+
       {/* ── What you'll deliver ──────────────────────────── */}
       <section>
         <SectionHeading icon={ClipboardList} accent={theme.accentTextClass} eyebrow="The capstone">
@@ -365,7 +418,8 @@ export function StageLanding({
           </Link>
           <a
             href={pdfHref}
-            download
+            target="_blank"
+            rel="noopener noreferrer"
             className={`inline-flex items-center gap-2 px-6 py-3.5 rounded-full text-sm font-semibold border ${theme.dividerClass} ${theme.bodyTextClass} hover:bg-white/5 transition-colors`}
           >
             <Download className="w-4 h-4" />
@@ -397,4 +451,26 @@ function SectionHeading({
       <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">{children}</h2>
     </div>
   );
+}
+
+function bulletinVisuals(kind: BulletinKind): {
+  icon: React.ElementType;
+  label: string;
+  bg: string;
+  text: string;
+} {
+  switch (kind) {
+    case "news":
+      return { icon: Newspaper, label: "News", bg: "bg-blue-500/15", text: "text-blue-300" };
+    case "meeting":
+      return { icon: Calendar, label: "Meeting", bg: "bg-violet-500/15", text: "text-violet-300" };
+    case "gossip":
+      return { icon: Coffee, label: "Around the bench", bg: "bg-amber-500/15", text: "text-amber-300" };
+    case "notice":
+      return { icon: Pin, label: "Notice", bg: "bg-emerald-500/15", text: "text-emerald-300" };
+    case "alert":
+      return { icon: AlertTriangle, label: "Heads up", bg: "bg-rose-500/15", text: "text-rose-300" };
+    case "joke":
+      return { icon: MessageCircle, label: "Inside joke", bg: "bg-cyan-500/15", text: "text-cyan-300" };
+  }
 }

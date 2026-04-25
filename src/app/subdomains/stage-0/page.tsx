@@ -27,7 +27,7 @@ export default async function Stage0LandingPage() {
       <StageLanding
         brief={brief}
         boardHref={stageUrl("stage-0", "/board")}
-        pdfHref="/api/stage-brief/stage-0/pdf"
+        pdfHref="/dashboard/brief/stage-0"
         companyName="Sankofa Digital"
         welcomeLine="You arrived at the Sankofa office at 8:47am. Reception is expecting you. Amaka has cleared the morning to walk you through the Q2 incident — and she does not want her time wasted."
         theme={{

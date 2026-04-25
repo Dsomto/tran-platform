@@ -53,12 +53,6 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "images.unsplash.com" },
     ],
   },
-  // pdfkit reads its built-in fonts from disk at runtime. Vercel's function
-  // bundler doesn't pick them up automatically — this tells it to include them
-  // for any route that generates a stage-brief PDF.
-  outputFileTracingIncludes: {
-    "/api/stage-brief/**/*": ["./node_modules/pdfkit/js/data/**/*"],
-  },
   async headers() {
     return [
       {
