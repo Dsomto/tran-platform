@@ -17,6 +17,7 @@ import {
   AlertTriangle,
   MessageCircle,
   Megaphone,
+  Sparkles,
 } from "lucide-react";
 import type { StageBrief, CastMember, BulletinKind } from "@/lib/stage-briefs";
 import { PrintBriefButton } from "./PrintBriefButton";
@@ -272,72 +273,102 @@ export function StageLanding({
         </div>
       </section>
 
-      {/* ── What you'll deliver ──────────────────────────── */}
-      <section>
-        <SectionHeading icon={ClipboardList} accent={theme.accentTextClass} eyebrow="The capstone">
-          What you&apos;ll deliver
-        </SectionHeading>
-        <p className={`${theme.mutedTextClass} text-sm mb-6 max-w-2xl`}>
-          Your work happens off-platform — in Google Docs / Microsoft Word.
-          Put every deliverable into one shared folder, paste the link on the
-          submission page when you&apos;re ready.
+      {/* ── Pull-quote divider ── voices from the office ── */}
+      {brief.cast[0]?.greeting && (
+        <PullQuote
+          theme={theme}
+          quote={brief.cast[0].greeting}
+          author={brief.cast[0].name}
+          role={brief.cast[0].role}
+        />
+      )}
+
+      {/* ── THE CAPSTONE — hero section ──────────────────── */}
+      <section
+        id="capstone"
+        className={`${theme.panelClass} p-8 sm:p-12 relative overflow-hidden`}
+        style={{
+          backgroundImage: "radial-gradient(circle at 10% 0%, rgba(255,255,255,0.04), transparent 40%), radial-gradient(circle at 90% 100%, rgba(255,255,255,0.04), transparent 40%)",
+        }}
+      >
+        <div className="flex items-center gap-2 mb-3">
+          <div className={`w-9 h-9 rounded-lg ${theme.ctaBgClass} grid place-items-center text-white shrink-0`}>
+            <Sparkles className="w-4 h-4" />
+          </div>
+          <span className={`text-[10.5px] font-mono uppercase tracking-[0.2em] ${theme.accentTextClass}`}>
+            Your capstone for {brief.label}
+          </span>
+        </div>
+
+        <h2 className={`${theme.headingClass} text-3xl sm:text-4xl mb-3 tracking-tight`}>
+          The work that actually matters.
+        </h2>
+        <p className={`${theme.bodyTextClass} text-base sm:text-lg leading-relaxed max-w-3xl mb-7`}>
+          The mission-board tasks test what you&apos;ve absorbed. The capstone
+          below is the bulk of what we&apos;ll grade. Build it off-platform in
+          Google Docs / Microsoft Word, drop everything into one shared
+          folder, then paste the link on your submission page.
         </p>
-        <div className="grid sm:grid-cols-2 gap-3">
+
+        {/* Drive folder + print — primary actions, side by side */}
+        <div className="flex flex-wrap gap-3 mb-8">
+          <a
+            href={brief.resourcesDriveUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`${theme.ctaBgClass} ${theme.ctaHoverClass} inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-bold uppercase tracking-[0.15em] text-white shadow-lg transition-opacity`}
+          >
+            <FolderOpen className="w-4 h-4" />
+            Open your data folder
+            <ArrowRight className="w-4 h-4" />
+          </a>
+          <PrintBriefButton
+            className={`inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold border ${theme.dividerClass} ${theme.bodyTextClass} hover:bg-white/5 transition-colors`}
+          />
+        </div>
+
+        {/* Numbered deliverables — bigger, more prominent */}
+        <div className="space-y-3">
+          <p className={`${theme.mutedTextClass} text-[11px] uppercase tracking-[0.18em] font-semibold mb-2`}>
+            What goes in the folder
+          </p>
           {brief.practicalTasks.map((task, idx) => (
             <article
               key={task.id}
-              className={`${theme.panelClass} p-5 flex gap-3`}
+              className={`bg-white/5 border ${theme.dividerClass} rounded-xl p-5 flex gap-4`}
             >
               <span
-                className={`shrink-0 w-7 h-7 rounded-full ${theme.ctaBgClass} text-white text-xs font-bold grid place-items-center mt-0.5`}
+                className={`shrink-0 w-9 h-9 rounded-full ${theme.ctaBgClass} text-white text-sm font-bold grid place-items-center`}
               >
                 {idx + 1}
               </span>
               <div className="min-w-0 flex-1">
-                <h3 className={`${theme.bodyTextClass} text-sm font-semibold leading-snug mb-1`}>
+                <h3 className={`${theme.bodyTextClass} text-base font-semibold leading-snug mb-1`}>
                   {task.title}
                 </h3>
-                <p className={`${theme.mutedTextClass} text-xs leading-relaxed`}>
-                  {task.deliverable}
+                <p className={`${theme.bodyTextClass} text-[13.5px] leading-relaxed mb-2 opacity-85`}>
+                  {task.description}
                 </p>
+                <span
+                  className={`inline-block text-[11px] font-mono px-2.5 py-1 rounded ${theme.ctaBgClass} text-white font-semibold`}
+                >
+                  {task.deliverable}
+                </span>
+                {task.alternate && (
+                  <p className={`${theme.mutedTextClass} text-[12px] italic mt-2`}>
+                    Alternate path: {task.alternate}
+                  </p>
+                )}
               </div>
             </article>
           ))}
         </div>
-      </section>
 
-      {/* ── Your toolbox ─────────────────────────────────── */}
-      <section>
-        <SectionHeading icon={Wrench} accent={theme.accentTextClass} eyebrow="Your toolbox">
-          What you&apos;ll have to work with
-        </SectionHeading>
-
-        <a
-          href={brief.resourcesDriveUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={`flex items-center justify-between gap-3 px-5 py-4 mb-3 rounded-xl ${theme.ctaBgClass} text-white hover:opacity-90 transition-opacity`}
-        >
-          <span className="flex items-center gap-3 min-w-0">
-            <FolderOpen className="w-5 h-5 shrink-0" />
-            <span className="min-w-0">
-              <span className="block font-semibold text-sm">
-                Open the stage&apos;s Drive folder
-              </span>
-              <span className="block text-[11px] opacity-80">
-                Logs, ciphertexts, captures — everything the cast hands you
-              </span>
-            </span>
-          </span>
-          <span className="font-mono text-[10px] uppercase tracking-[0.2em] opacity-80 shrink-0">
-            Open ↗
-          </span>
-        </a>
-
+        {/* Tools / readings, neat list under the deliverables */}
         {brief.resources.length > 0 && (
-          <div className={`${theme.panelClass} p-5`}>
-            <p className={`${theme.mutedTextClass} text-[11px] mb-3 uppercase tracking-wider font-semibold`}>
-              Tools and readings
+          <div className={`mt-7 pt-6 border-t ${theme.dividerClass}`}>
+            <p className={`${theme.mutedTextClass} text-[11px] uppercase tracking-[0.18em] font-semibold mb-3`}>
+              Tools and readings you&apos;ll lean on
             </p>
             <ul className="grid sm:grid-cols-2 gap-x-6 gap-y-2.5">
               {brief.resources.map((r) => {
@@ -359,21 +390,20 @@ export function StageLanding({
             </ul>
           </div>
         )}
-      </section>
 
-      {/* ── What you'll be graded on ─────────────────────── */}
-      <section>
-        <SectionHeading icon={CheckCircle2} accent={theme.accentTextClass} eyebrow="The bar">
-          What you&apos;ll be graded on
-        </SectionHeading>
-        <div className={`${theme.panelClass} p-7 sm:p-10`}>
-          <ul className="space-y-3">
+        {/* Grading bar */}
+        <div className={`mt-7 pt-6 border-t ${theme.dividerClass}`}>
+          <p className={`${theme.mutedTextClass} text-[11px] uppercase tracking-[0.18em] font-semibold mb-3 flex items-center gap-2`}>
+            <CheckCircle2 className="w-3 h-3" />
+            What we look for when we grade
+          </p>
+          <ul className="space-y-2">
             {brief.sections.map((s) => (
-              <li key={s} className="flex gap-3 items-start">
+              <li key={s} className="flex gap-2.5 items-start">
                 <span
                   className={`mt-2 w-1.5 h-1.5 rounded-full shrink-0 ${theme.ctaBgClass}`}
                 />
-                <span className={`${theme.bodyTextClass} text-[15px] leading-relaxed`}>
+                <span className={`${theme.bodyTextClass} text-[14px] leading-relaxed`}>
                   {s}
                 </span>
               </li>
@@ -381,6 +411,16 @@ export function StageLanding({
           </ul>
         </div>
       </section>
+
+      {/* ── Second pull-quote — different character ── */}
+      {brief.cast[1]?.greeting && (
+        <PullQuote
+          theme={theme}
+          quote={brief.cast[1].greeting}
+          author={brief.cast[1].name}
+          role={brief.cast[1].role}
+        />
+      )}
 
       {/* ── Final CTA ────────────────────────────────────── */}
       <section
@@ -437,6 +477,33 @@ function SectionHeading({
       </div>
       <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">{children}</h2>
     </div>
+  );
+}
+
+function PullQuote({
+  theme,
+  quote,
+  author,
+  role,
+}: {
+  theme: StageLandingTheme;
+  quote: string;
+  author: string;
+  role: string;
+}) {
+  return (
+    <section className="py-6 sm:py-10 max-w-3xl mx-auto text-center">
+      <Quote className={`w-6 h-6 mx-auto mb-3 ${theme.accentTextClass} opacity-60`} />
+      <blockquote
+        className={`${theme.bodyTextClass} text-2xl sm:text-3xl leading-snug font-medium`}
+        style={{ fontFamily: "Georgia, serif" }}
+      >
+        &ldquo;{quote}&rdquo;
+      </blockquote>
+      <p className={`${theme.mutedTextClass} text-xs uppercase tracking-[0.2em] mt-4 font-mono`}>
+        {author} · {role}
+      </p>
+    </section>
   );
 }
 

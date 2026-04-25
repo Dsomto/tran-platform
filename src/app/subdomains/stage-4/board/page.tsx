@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import StageShell from "@/components/stage/StageShell";
 import { STAGE_THEMES } from "@/components/stage/themes";
 import { BoardRecap } from "@/components/stage/BoardRecap";
+import { CapstoneReminder } from "@/components/stage/CapstoneReminder";
 import { getStageAccess } from "@/lib/stage-access";
 import { stageUrl } from "@/lib/stage-routes";
 import { prisma } from "@/lib/db";
@@ -90,6 +91,20 @@ export default async function Stage4BoardPage() {
             panelClass: "stage-4-panel",
             headingClass: "stage-4-heading",
             pillClass: "stage-4-pill",
+            accentTextClass: "text-cyan-300",
+            bodyTextClass: "text-cyan-50/85",
+            mutedTextClass: "text-cyan-200/55",
+            ctaBgClass: "bg-cyan-500",
+            ctaHoverClass: "hover:bg-cyan-600",
+            dividerClass: "border-cyan-400/20",
+          }}
+        />
+
+        <CapstoneReminder
+          landingHref={stageUrl("stage-4")}
+          theme={{
+            panelClass: "stage-4-panel",
+            headingClass: "stage-4-heading",
             accentTextClass: "text-cyan-300",
             bodyTextClass: "text-cyan-50/85",
             mutedTextClass: "text-cyan-200/55",

@@ -223,6 +223,13 @@ export default async function DashboardPage() {
                   Enter the room
                 </Link>
                 <Link
+                  href={`${roomHref}#capstone`}
+                  className="inline-flex items-center gap-1.5 px-5 py-2.5 text-sm font-semibold rounded-full border-2 border-blue/40 text-blue hover:bg-blue/5 transition-colors"
+                >
+                  <FileText className="w-4 h-4" />
+                  View your capstone
+                </Link>
+                <Link
                   href={reportHref}
                   className="inline-flex items-center gap-1.5 px-5 py-2.5 text-sm font-medium rounded-full border border-border text-foreground hover:bg-surface-hover transition-colors"
                 >
