@@ -113,6 +113,11 @@ export async function POST(request: NextRequest) {
     return Response.json({ report }, { status: 201 });
   } catch (error) {
     logger.error("save_report_draft_failed", error);
-    return Response.json({ error: "Internal server error" }, { status: 500 });
+    const detail =
+      error instanceof Error ? `${error.name}: ${error.message}` : "Unknown";
+    return Response.json(
+      { error: `Save failed — ${detail}` },
+      { status: 500 }
+    );
   }
 }

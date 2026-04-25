@@ -75,6 +75,13 @@ export async function POST(
     return Response.json({ report: updated });
   } catch (error) {
     logger.error("submit_report_failed", error);
-    return Response.json({ error: "Internal server error" }, { status: 500 });
+    // Surface the underlying message so the dev panel can show why — the
+    // client only renders this string when status is 500.
+    const detail =
+      error instanceof Error ? `${error.name}: ${error.message}` : "Unknown";
+    return Response.json(
+      { error: `Submit failed — ${detail}` },
+      { status: 500 }
+    );
   }
 }

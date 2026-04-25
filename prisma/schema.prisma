@@ -155,6 +155,7 @@ model User {
   announcements Announcement[]  @relation("AuthorAnnouncements")
   sentEmails    Email[]
   gradedReports StageReport[]   @relation("ReportGrader")
+  reportGrades  ReportGrade[]   @relation("GraderAssignments")
   queuedEmails  EmailQueueItem[] @relation("EmailQueueUser")
   scholarshipReviews DataScholarshipApplication[] @relation("ScholarshipReviewer")
 
@@ -513,13 +514,24 @@ model StageReport {
   status           ReportStatus  @default(DRAFT)
   version          Int           @default(1)     // bumps on each resubmit
 
-  // Grading
-  graderId         String?       @db.ObjectId
-  grader           User?         @relation("ReportGrader", fields: [graderId], references: [id])
-  claimedAt        DateTime?
-  score            Int?                          // 0-100
-  feedback         String?                       // required when graded
-  gradedAt         DateTime?
+  // Two-grader flow: each report receives up to 2 ReportGrade rows.
+  // The averaged score + concatenated feedback are written here once both
+  // graders have submitted, and the report is then marked GRADED.
+  grades             ReportGrade[]                 // 0, 1, or 2 grader rows
+  graderId           String?       @db.ObjectId   // legacy single-grader pointer (kept for back-compat reads)
+  grader             User?         @relation("ReportGrader", fields: [graderId], references: [id])
+  claimedAt          DateTime?
+  score              Int?                          // averaged 0-100, set when both graders done (or super-admin tiebreak)
+  feedback           String?                       // combined feedback shown to the intern
+  gradedAt           DateTime?
+
+  // Set true when both graders submit and their scores diverge by more than
+  // DIVERGENCE_THRESHOLD. The report stays UNDER_REVIEW and surfaces in the
+  // super-admin tiebreak queue. Reset to false once tiebreak is applied.
+  divergent          Boolean       @default(false)
+  // Graders who explicitly skipped this report for conflict-of-interest. They
+  // will not see it in their queue and cannot claim it. Stored as ObjectIds.
+  skippedByGraderIds String[]      @db.ObjectId @default([])
 
   submittedAt      DateTime?
   createdAt        DateTime      @default(now())
@@ -529,6 +541,31 @@ model StageReport {
   @@index([stage, status])
   @@index([graderId, status])
   @@index([status, submittedAt])                // claim queue: oldest SUBMITTED first
+}
+
+// ─── REPORT GRADE (one row per grader per report; max 2) ────
+// Fairness model: every report is graded independently by two graders. Once
+// both have submitted, the StageReport.score is set to the average and
+// feedback is concatenated. Neither grader can see the other's row until
+// both have submitted (enforced in the API layer, not the schema).
+model ReportGrade {
+  id          String      @id @default(auto()) @map("_id") @db.ObjectId
+  reportId    String      @db.ObjectId
+  report      StageReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  graderId    String      @db.ObjectId
+  grader      User        @relation("GraderAssignments", fields: [graderId], references: [id])
+
+  score       Int?                              // 0-100 once submitted
+  feedback    String?                           // required when score is set
+  claimedAt   DateTime    @default(now())
+  gradedAt    DateTime?
+
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@unique([reportId, graderId])               // one grader claims a report only once
+  @@index([graderId, gradedAt])
+  @@index([reportId])
 }
 
 // ─── STAGE WINDOW (per-stage status + audit) ─────

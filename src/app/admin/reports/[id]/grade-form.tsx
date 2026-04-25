@@ -10,6 +10,7 @@ interface Props {
   currentScore: number | null;
   currentFeedback: string | null;
   status: string;
+  alreadyGraded: boolean; // this grader has already submitted their grade
 }
 
 export function GradeForm({
@@ -18,6 +19,7 @@ export function GradeForm({
   currentScore,
   currentFeedback,
   status,
+  alreadyGraded,
 }: Props) {
   const router = useRouter();
   const [score, setScore] = useState<string>(currentScore != null ? String(currentScore) : "");
@@ -103,18 +105,16 @@ export function GradeForm({
     );
   }
 
-  const isRegrading = status === "GRADED";
+  const isRegrading = alreadyGraded;
 
   return (
     <section className="bg-white border border-border rounded-xl p-5">
       <h2 className="text-sm font-semibold text-foreground mb-4 uppercase tracking-wide">
-        {isRegrading ? "Update grade" : "Grade this report"}
+        {isRegrading ? "Update your grade" : "Your grade"}
       </h2>
 
       <div className="mb-4 p-3 bg-blue/5 border border-blue/20 rounded-lg text-sm text-foreground/80">
-        Record a score between 0 and 100, plus clear feedback. Pass / fail is not
-        decided here — the admin publishes stage results after all reports are
-        graded, applying a single threshold to the cohort.
+        Two graders score every report. Your score and the other grader&apos;s score get averaged into the participant&apos;s final mark, so judge independently. Pass / fail is set later, when the admin publishes stage results.
       </div>
 
       <div className="space-y-4">
@@ -161,9 +161,9 @@ export function GradeForm({
             className="inline-flex items-center gap-2 px-4 py-2 font-medium rounded-lg bg-blue text-white hover:opacity-90 disabled:opacity-50"
           >
             {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-            {isRegrading ? "Update grade" : "Save grade"}
+            {isRegrading ? "Update my grade" : "Submit my grade"}
           </button>
-          {!isRegrading && (
+          {!alreadyGraded && (
             <button
               onClick={release}
               disabled={releasing}
