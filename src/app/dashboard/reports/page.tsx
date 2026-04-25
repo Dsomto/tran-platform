@@ -61,9 +61,8 @@ export default async function ReportsPage() {
           const r = reportByStage.get(stage as never);
           const w = windowByStage.get(stage as never);
           const meta = STAGE_META[stage];
-          const now = new Date();
-          const isOpen = w ? now >= w.activeFrom && now <= w.submitUntil : false;
-          const isClosed = w ? now > w.submitUntil : false;
+          const isOpen = w?.status === "OPEN";
+          const isClosed = (w?.status ?? "CLOSED") === "CLOSED";
 
           return (
             <div
@@ -82,11 +81,6 @@ export default async function ReportsPage() {
                       <span className="text-muted-foreground">
                         Score: <strong className="text-foreground">{r.score}</strong>
                         {w && <span> / {w.passingScore} pass</span>}
-                      </span>
-                    )}
-                    {w && (
-                      <span className="text-muted-foreground text-xs">
-                        Deadline: {new Date(w.submitUntil).toLocaleString()}
                       </span>
                     )}
                   </div>

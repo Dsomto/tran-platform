@@ -473,3 +473,11 @@ body {
 .wizard-step-fade {
   animation: wizard-step-fade 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
+
+/* Stage landing print mode — fires when the intern clicks "Print or save as PDF". */
+@media print {
+  header, nav, aside { display: none !important; }
+  button { display: none !important; }
+  .animate-ping, .animate-pulse { animation: none !important; }
+  body { background: white !important; color: #0f172a !important; }
+}

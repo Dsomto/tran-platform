@@ -26,7 +26,6 @@ export default async function Stage1LandingPage() {
       <StageLanding
         brief={brief}
         boardHref={stageUrl("stage-1", "/board")}
-        pdfHref="/dashboard/brief/stage-1"
         companyName="Sankofa Digital · Chapter 2"
         welcomeLine="The board met overnight. They know the Q2 login was not nothing. Tunde has a zip on his desk — files The Griot left behind, sloppily encrypted in places. You're being asked to peel them back."
         theme={{

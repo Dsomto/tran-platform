@@ -33,29 +33,15 @@ export async function POST(
       );
     }
 
-    // Deadline check.
+    // Stage status check — admin must have it OPEN for submissions.
     const window = await prisma.stageWindow.findUnique({
       where: { stage: report.stage },
     });
-    if (window) {
-      const now = new Date();
-      if (now < window.activeFrom) {
-        return Response.json(
-          { error: "Stage submission window has not opened yet" },
-          { status: 409 }
-        );
-      }
-      if (now > window.submitUntil) {
-        // Lock the report as LATE and block.
-        await prisma.stageReport.update({
-          where: { id: report.id },
-          data: { status: "LATE" },
-        });
-        return Response.json(
-          { error: "Submission deadline has passed for this stage" },
-          { status: 409 }
-        );
-      }
+    if (!window || window.status !== "OPEN") {
+      return Response.json(
+        { error: "This stage is not currently accepting submissions" },
+        { status: 409 }
+      );
     }
 
     if (!report.executiveSummary?.trim() || !report.reportUrl?.trim()) {

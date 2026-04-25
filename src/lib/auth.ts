@@ -91,6 +91,14 @@ export async function requireAdmin(): Promise<SessionUser> {
   return session;
 }
 
+export async function requireSuperAdmin(): Promise<SessionUser> {
+  const session = await requireAuth();
+  if (session.role !== "SUPER_ADMIN") {
+    redirect("/admin");
+  }
+  return session;
+}
+
 export async function requireGrader(): Promise<SessionUser> {
   const session = await requireAuth();
   if (

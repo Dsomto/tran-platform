@@ -116,7 +116,7 @@ export default async function DashboardPage() {
     }).then((ahead) => ahead + 1),
   ]);
 
-  const isStageOpen = stageWindow ? !stageWindow.isLocked : false;
+  const isStageOpen = stageWindow?.status === "OPEN";
   const roomHref = stageUrl(STAGE_ENUM_TO_SLUG[stageEnum]);
   const reportHref = `/dashboard/reports/${stageEnum}`;
 
@@ -150,6 +150,33 @@ export default async function DashboardPage() {
               joined={false}
               joinedAt={null}
             />
+          )}
+
+          {/* ── How this works — visible until they've submitted at least one report ── */}
+          {!report && (
+            <section className="bg-blue/5 border border-blue/20 rounded-2xl p-5 sm:p-6">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-blue mb-2">
+                New here? How this works
+              </p>
+              <ol className="space-y-2 text-sm text-foreground/85 leading-relaxed">
+                <li className="flex gap-2.5">
+                  <span className="shrink-0 w-5 h-5 rounded-full bg-blue/15 text-blue text-[11px] font-bold grid place-items-center mt-0.5">1</span>
+                  <span><strong>Read the brief.</strong> Click <em>Enter the room</em> below — that opens the stage&apos;s landing page with the scenario, the cast, and the resources.</span>
+                </li>
+                <li className="flex gap-2.5">
+                  <span className="shrink-0 w-5 h-5 rounded-full bg-blue/15 text-blue text-[11px] font-bold grid place-items-center mt-0.5">2</span>
+                  <span><strong>Do the tasks.</strong> The mission board has the stage&apos;s flags, MCQs, and short writeups. Each one is graded as you submit.</span>
+                </li>
+                <li className="flex gap-2.5">
+                  <span className="shrink-0 w-5 h-5 rounded-full bg-blue/15 text-blue text-[11px] font-bold grid place-items-center mt-0.5">3</span>
+                  <span><strong>Build your capstone.</strong> Off-platform — in Google Docs / Word. Put every deliverable into one shared folder.</span>
+                </li>
+                <li className="flex gap-2.5">
+                  <span className="shrink-0 w-5 h-5 rounded-full bg-blue/15 text-blue text-[11px] font-bold grid place-items-center mt-0.5">4</span>
+                  <span><strong>Submit the folder link.</strong> On your stage&apos;s submit page, paste the Drive link and a short executive summary.</span>
+                </li>
+              </ol>
+            </section>
           )}
 
           {/* ── Hero: your current stage ── */}

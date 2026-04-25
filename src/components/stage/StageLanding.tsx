@@ -1,7 +1,6 @@
 import Link from "next/link";
 import {
   ArrowRight,
-  Download,
   Building2,
   Target,
   Users,
@@ -20,6 +19,7 @@ import {
   Megaphone,
 } from "lucide-react";
 import type { StageBrief, CastMember, BulletinKind } from "@/lib/stage-briefs";
+import { PrintBriefButton } from "./PrintBriefButton";
 
 export interface StageLandingTheme {
   slug: string;
@@ -38,7 +38,6 @@ interface Props {
   brief: StageBrief;
   theme: StageLandingTheme;
   boardHref: string;
-  pdfHref: string;
   /** Company / chapter name shown in the hero strip. */
   companyName: string;
   /** Lead paragraph on the hero. */
@@ -96,7 +95,6 @@ export function StageLanding({
   brief,
   theme,
   boardHref,
-  pdfHref,
   companyName,
   welcomeLine,
 }: Props) {
@@ -143,14 +141,9 @@ export function StageLanding({
                 Enter the mission board
                 <ArrowRight className="w-4 h-4" />
               </Link>
-              <a
-                href={pdfHref}
-                download
+              <PrintBriefButton
                 className={`inline-flex items-center gap-2 px-6 py-3.5 rounded-full text-sm font-semibold border ${theme.dividerClass} ${theme.bodyTextClass} hover:bg-white/5 transition-colors`}
-              >
-                <Download className="w-4 h-4" />
-                Download capstone brief
-              </a>
+              />
             </div>
           </div>
         </div>
@@ -416,15 +409,9 @@ export function StageLanding({
             Enter the mission board
             <ArrowRight className="w-4 h-4" />
           </Link>
-          <a
-            href={pdfHref}
-            target="_blank"
-            rel="noopener noreferrer"
+          <PrintBriefButton
             className={`inline-flex items-center gap-2 px-6 py-3.5 rounded-full text-sm font-semibold border ${theme.dividerClass} ${theme.bodyTextClass} hover:bg-white/5 transition-colors`}
-          >
-            <Download className="w-4 h-4" />
-            Download capstone brief
-          </a>
+          />
         </div>
       </section>
     </div>

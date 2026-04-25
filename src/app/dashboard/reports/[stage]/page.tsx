@@ -36,14 +36,13 @@ export default async function ReportEditorPage({
   ]);
 
   const brief = STAGE_BRIEFS[stage];
-  const now = new Date();
-  const isOpen = window ? now >= window.activeFrom && now <= window.submitUntil : true;
+  const stageStatus = window?.status ?? "CLOSED";
+  const isOpen = stageStatus === "OPEN";
   const isPassed = existing?.status === "PASSED";
 
   // Server-side gate: if the admin hasn't opened this stage, the intern
   // can't see the report editor — even if they guess the URL.
-  const isLocked = window ? window.isLocked : true;
-  if (isLocked) {
+  if (!isOpen) {
     return (
       <div className="flex-1 overflow-y-auto p-6">
         <div className="max-w-xl mx-auto mt-16 bg-white border border-border rounded-xl p-8 text-center">
@@ -93,8 +92,6 @@ export default async function ReportEditorPage({
       windowInfo={
         window
           ? {
-              activeFrom: window.activeFrom.toISOString(),
-              submitUntil: window.submitUntil.toISOString(),
               passingScore: window.passingScore,
               isOpen,
             }

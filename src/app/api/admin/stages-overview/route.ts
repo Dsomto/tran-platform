@@ -2,27 +2,21 @@ import { prisma } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth";
 import { logger } from "@/lib/logger";
 
-// Stage-level overview for /admin/assignments.
-// One row per stage: deadline, passing score, intern counts, submission funnel.
-const STAGES = [
-  "STAGE_0",
-  "STAGE_1",
-  "STAGE_2",
-  "STAGE_3",
-  "STAGE_4",
-] as const;
+// One row per stage. Status, intern access count, submission count.
+// No deadlines, no passing-score input — those have been removed from
+// the admin UI. Passing score is set at publish-results time only.
+const STAGES = ["STAGE_0", "STAGE_1", "STAGE_2", "STAGE_3", "STAGE_4"] as const;
 
 export async function GET() {
   try {
     await requireAdmin();
 
-    const [windows, internCounts, reportCounts] = await Promise.all([
+    const [windows, accessCounts, reportCounts] = await Promise.all([
       prisma.stageWindow.findMany({
         where: { stage: { in: STAGES as unknown as string[] } as never },
       }),
-      prisma.intern.groupBy({
-        by: ["currentStage"],
-        where: { isActive: true },
+      prisma.stageAccess.groupBy({
+        by: ["stage"],
         _count: { _all: true },
       }),
       prisma.stageReport.groupBy({
@@ -32,11 +26,8 @@ export async function GET() {
     ]);
 
     const windowByStage = new Map(windows.map((w) => [w.stage, w]));
-    const internCountByStage = new Map(
-      internCounts.map((r) => [r.currentStage, r._count._all])
-    );
+    const accessByStage = new Map(accessCounts.map((r) => [String(r.stage), r._count._all]));
 
-    // Build a per-stage status tally.
     const statusByStage = new Map<string, Record<string, number>>();
     for (const row of reportCounts) {
       const s = String(row.stage);
@@ -45,7 +36,6 @@ export async function GET() {
       statusByStage.set(s, tally);
     }
 
-    const now = Date.now();
     const rows = STAGES.map((stage) => {
       const w = windowByStage.get(stage as never);
       const tally = statusByStage.get(stage) ?? {};
@@ -54,22 +44,12 @@ export async function GET() {
       const passed = tally.PASSED ?? 0;
       const failed = tally.FAILED ?? 0;
 
-      // `isClosed` means the deadline has passed. `isLocked` means the admin
-      // has not opened the stage at all (the master gate). Interns only see
-      // a stage once it's been opened.
-      const isClosed = w ? new Date(w.submitUntil).getTime() < now : false;
-      const isLocked = w ? w.isLocked : true;
-
       return {
         stage,
         label: `Stage ${stage.replace("STAGE_", "")}`,
-        activeFrom: w?.activeFrom.toISOString() ?? null,
-        submitUntil: w?.submitUntil.toISOString() ?? null,
-        passingScore: w?.passingScore ?? null,
-        isClosed,
-        isLocked,
+        status: w?.status ?? "CLOSED",
         openedAt: w?.openedAt?.toISOString() ?? null,
-        atStage: internCountByStage.get(stage) ?? 0,
+        accessed: accessByStage.get(stage) ?? 0,
         submitted,
         graded,
         passed,

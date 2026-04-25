@@ -27,8 +27,6 @@ interface InitialReport {
 }
 
 interface WindowInfo {
-  activeFrom: string;
-  submitUntil: string;
   passingScore: number;
   isOpen: boolean;
 }
@@ -211,16 +209,6 @@ export function ReportEditor({
         </details>
       </section>
 
-      {windowInfo && (
-        <div className="mb-5 p-3 bg-muted/40 border border-border rounded-lg text-sm flex items-center gap-3 flex-wrap">
-          <span className="text-muted-foreground">
-            Deadline:{" "}
-            <strong className="text-foreground">
-              {new Date(windowInfo.submitUntil).toLocaleString()}
-            </strong>
-          </span>
-        </div>
-      )}
 
       {initialReport?.feedback && (
         <div className="mb-5 p-4 bg-amber-50 border border-amber-200 rounded-lg">

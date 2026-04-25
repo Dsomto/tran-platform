@@ -2,9 +2,11 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import StageShell from "@/components/stage/StageShell";
 import { STAGE_THEMES } from "@/components/stage/themes";
+import { BoardRecap } from "@/components/stage/BoardRecap";
 import { getStageAccess } from "@/lib/stage-access";
 import { stageUrl } from "@/lib/stage-routes";
 import { prisma } from "@/lib/db";
+import { STAGE_BRIEFS } from "@/lib/stage-briefs";
 
 function statusLabel(status: string | undefined | null): { label: string; tone: "pending" | "submitted" | "graded" | "late" } {
   const s = (status ?? "").toUpperCase();
@@ -68,26 +70,22 @@ export default async function Stage0BoardPage() {
   return (
     <StageShell theme={theme} internCode={internCode}>
       <div className="space-y-8">
-        <div className="flex items-center justify-between">
-          <Link
-            href={stageUrl("stage-0")}
-            className="text-xs font-mono uppercase tracking-[0.18em] text-emerald-700 hover:text-emerald-900"
-          >
-            ← back to landing
-          </Link>
-          <span className="stage-0-pill">{room.codename}</span>
-        </div>
-
-        <section className="stage-0-panel p-8 relative overflow-hidden">
-          <h1 className="stage-0-heading text-3xl md:text-4xl font-bold">{room.title}</h1>
-          <p className="mt-4 text-neutral-700 whitespace-pre-wrap leading-relaxed">
-            {room.synopsis}
-          </p>
-          <hr className="my-5 border-neutral-200" />
-          <p className="text-neutral-600 whitespace-pre-wrap leading-relaxed text-sm">
-            {room.briefing}
-          </p>
-        </section>
+        <BoardRecap
+          brief={STAGE_BRIEFS.STAGE_0}
+          landingHref={stageUrl("stage-0")}
+          submitHref="/dashboard/reports/STAGE_0"
+          theme={{
+            panelClass: "stage-0-panel",
+            headingClass: "stage-0-heading",
+            pillClass: "stage-0-pill",
+            accentTextClass: "text-emerald-700",
+            bodyTextClass: "text-neutral-700",
+            mutedTextClass: "text-neutral-500",
+            ctaBgClass: "bg-emerald-600",
+            ctaHoverClass: "hover:bg-emerald-700",
+            dividerClass: "border-neutral-200",
+          }}
+        />
 
         <section>
           <div className="flex items-end justify-between mb-4">

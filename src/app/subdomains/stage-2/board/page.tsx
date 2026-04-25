@@ -2,9 +2,11 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import StageShell from "@/components/stage/StageShell";
 import { STAGE_THEMES } from "@/components/stage/themes";
+import { BoardRecap } from "@/components/stage/BoardRecap";
 import { getStageAccess } from "@/lib/stage-access";
 import { stageUrl } from "@/lib/stage-routes";
 import { prisma } from "@/lib/db";
+import { STAGE_BRIEFS } from "@/lib/stage-briefs";
 
 function statusLabel(status: string | undefined | null): { label: string; tone: "pending" | "submitted" | "graded" | "late" } {
   const s = (status ?? "").toUpperCase();
@@ -68,27 +70,22 @@ export default async function Stage2BoardPage() {
   return (
     <StageShell theme={theme} internCode={internCode}>
       <div className="space-y-8">
-        <div className="flex items-center justify-between">
-          <Link
-            href={stageUrl("stage-2")}
-            className="text-xs font-mono uppercase tracking-[0.18em] text-rose-700 hover:text-rose-900"
-          >
-            ← back to landing
-          </Link>
-          <span className="stage-2-pill">{room.codename}</span>
-        </div>
-
-        <section className="stage-2-panel p-8 relative overflow-hidden">
-          <div className="stage-2-radar" aria-hidden="true" />
-          <h1 className="stage-2-heading text-3xl md:text-4xl font-bold">{room.title}</h1>
-          <p className="mt-4 text-rose-100/85 whitespace-pre-wrap leading-relaxed">
-            {room.synopsis}
-          </p>
-          <hr className="my-5 border-rose-400/15" />
-          <p className="text-rose-100/75 whitespace-pre-wrap leading-relaxed text-sm">
-            {room.briefing}
-          </p>
-        </section>
+        <BoardRecap
+          brief={STAGE_BRIEFS.STAGE_2}
+          landingHref={stageUrl("stage-2")}
+          submitHref="/dashboard/reports/STAGE_2"
+          theme={{
+            panelClass: "stage-2-panel",
+            headingClass: "stage-2-heading",
+            pillClass: "stage-2-pill",
+            accentTextClass: "text-rose-700",
+            bodyTextClass: "text-neutral-700",
+            mutedTextClass: "text-neutral-500",
+            ctaBgClass: "bg-rose-600",
+            ctaHoverClass: "hover:bg-rose-700",
+            dividerClass: "border-rose-100",
+          }}
+        />
 
         <section>
           <div className="flex items-end justify-between mb-4">

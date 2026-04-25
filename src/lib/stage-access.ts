@@ -17,20 +17,26 @@ export interface StageAccess {
   ndaSignedAt: string | null;
 }
 
+export type StageAccessFailure =
+  | "no-session"
+  | "no-intern"
+  | "ahead"
+  | "paused"
+  | "closed";
+
 /**
  * Verify the current user can enter this stage. Returns the access object
- * on success, or one of three failure reasons:
+ * on success, or a typed failure reason.
  *
- *   - "no-session"  → user is not logged in (redirect to /login)
- *   - "no-intern"   → user has no Intern record yet (redirect to /dashboard)
- *   - "locked"      → admin has not opened this stage (show locked state)
- *   - "ahead"       → intern's currentStage is behind this one
- *
- * Used by every /subdomains/stage-X/* page and the PDF route.
+ * On success, also UPSERTs a StageAccess row so the admin can see who has
+ * walked into each stage and when.
  */
 export async function getStageAccess(
   slug: StageSlug
-): Promise<{ ok: true; access: StageAccess } | { ok: false; reason: "no-session" | "no-intern" | "locked" | "ahead" }> {
+): Promise<
+  | { ok: true; access: StageAccess }
+  | { ok: false; reason: StageAccessFailure }
+> {
   const session = await getSession();
   if (!session) return { ok: false, reason: "no-session" };
 
@@ -47,13 +53,31 @@ export async function getStageAccess(
 
   const window = await prisma.stageWindow.findUnique({
     where: { stage: requestedEnum },
-    select: { isLocked: true },
+    select: { status: true },
   });
-  if (!window || window.isLocked) {
-    return { ok: false, reason: "locked" };
-  }
+  const status = window?.status ?? "CLOSED";
+  if (status === "CLOSED") return { ok: false, reason: "closed" };
+  if (status === "PAUSED") return { ok: false, reason: "paused" };
 
-  // We don't store the intern code on the user — derive it from PublicApplication.
+  // Track the visit. Fire-and-forget so a tracking failure can't block
+  // the page render. The unique index on (internId, stage) guarantees one
+  // row per intern per stage.
+  void prisma.stageAccess
+    .upsert({
+      where: { internId_stage: { internId: intern.id, stage: requestedEnum } },
+      create: {
+        internId: intern.id,
+        stage: requestedEnum,
+      },
+      update: {
+        lastAccessedAt: new Date(),
+        visitCount: { increment: 1 },
+      },
+    })
+    .catch(() => {
+      /* swallow — telemetry not load-bearing */
+    });
+
   const publicApp = await prisma.publicApplication.findFirst({
     where: { email: session.email.toLowerCase() },
     select: { internId: true },

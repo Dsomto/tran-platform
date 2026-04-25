@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
-import { requireAdmin } from "@/lib/auth";
+import { requireSuperAdmin } from "@/lib/auth";
 import { logger } from "@/lib/logger";
 import { certificateUrl } from "@/lib/certificate-link";
 import { recordAudit, auditMetaFromRequest } from "@/lib/audit";
@@ -26,7 +26,7 @@ function isStageKey(v: unknown): v is StageKey {
 // Used by /admin/stage-results to show what will happen if a given threshold is applied.
 export async function GET(request: NextRequest) {
   try {
-    await requireAdmin();
+    await requireSuperAdmin();
     const url = new URL(request.url);
     const stage = url.searchParams.get("stage");
     if (!isStageKey(stage)) {
@@ -115,13 +115,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Upsert the stage window so future reads see the threshold.
-    const now = new Date();
     await prisma.stageWindow.upsert({
       where: { stage },
       create: {
         stage,
-        activeFrom: now,
-        submitUntil: now,
         passingScore: Math.round(threshold),
       },
       update: { passingScore: Math.round(threshold) },

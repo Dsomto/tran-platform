@@ -80,6 +80,12 @@ enum Stage {
   STAGE_9
 }
 
+enum StageStatus {
+  OPEN     // interns can enter and submit
+  PAUSED   // intern sees the stage card on the dashboard but can't enter
+  CLOSED   // hidden from interns entirely
+}
+
 enum Track {
   SOC_ANALYSIS
   ETHICAL_HACKING
@@ -525,21 +531,41 @@ model StageReport {
   @@index([status, submittedAt])                // claim queue: oldest SUBMITTED first
 }
 
-// ─── STAGE WINDOW (timing + passing score per stage) ─────
-// Configurable by admin. Once submitUntil elapses, reports can't
-// be submitted or resubmitted for that stage.
+// ─── STAGE WINDOW (per-stage status + audit) ─────
+// Status is the single source of truth for whether interns can enter the
+// stage and submit reports. There is no separate deadline concept — admin
+// flips a stage between OPEN, PAUSED, and CLOSED.
 model StageWindow {
-  id           String   @id @default(auto()) @map("_id") @db.ObjectId
-  stage        Stage    @unique
-  activeFrom   DateTime
-  submitUntil  DateTime
-  passingScore Int      @default(70)            // 0-100
-  isLocked     Boolean  @default(true)          // admin-gated: interns can only work on a stage once opened
+  id           String      @id @default(auto()) @map("_id") @db.ObjectId
+  stage        Stage       @unique
+  status       StageStatus @default(CLOSED)
+  passingScore Int         @default(70)            // set at publish-results time
   openedAt     DateTime?
-  openedById   String?  @db.ObjectId            // admin who opened it (for audit)
+  openedById   String?     @db.ObjectId            // super admin who last opened (audit)
 
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  // Legacy columns retained for data already present on existing rows.
+  // The new admin UI does not read or write these.
+  activeFrom   DateTime?
+  submitUntil  DateTime?
+  isLocked     Boolean     @default(true)
+
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+}
+
+// ─── STAGE ACCESS (who clicked into which stage, when) ────
+// Updated on every landing-page visit by a logged-in intern. Powers the
+// "Who's entered" panel on the admin stage detail page.
+model StageAccess {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  internId        String   @db.ObjectId
+  stage           Stage
+  firstAccessedAt DateTime @default(now())
+  lastAccessedAt  DateTime @default(now())
+  visitCount      Int      @default(1)
+
+  @@unique([internId, stage])
+  @@index([stage, lastAccessedAt(sort: Desc)])
 }
 
 // ─── EMAIL QUEUE (FIFO, drained by cron at N/day) ────────

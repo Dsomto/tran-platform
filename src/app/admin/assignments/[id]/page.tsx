@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { requireAdmin } from "@/lib/auth";
-import { prisma } from "@/lib/db";
 import { ArrowLeft } from "lucide-react";
+import { requireSuperAdmin } from "@/lib/auth";
+import { prisma } from "@/lib/db";
 import { StageAdminPanel } from "./stage-admin-panel";
 
 export const dynamic = "force-dynamic";
@@ -10,26 +10,39 @@ export const dynamic = "force-dynamic";
 const STAGES = ["STAGE_0", "STAGE_1", "STAGE_2", "STAGE_3", "STAGE_4"] as const;
 type StageKey = (typeof STAGES)[number];
 
+const STAGE_NAMES: Record<StageKey, string> = {
+  STAGE_0: "Induction at the Gate",
+  STAGE_1: "Ciphers & Secrets",
+  STAGE_2: "The Attack Surface",
+  STAGE_3: "Inside the Walls",
+  STAGE_4: "The Debrief",
+};
+
 function isStageKey(v: string): v is StageKey {
   return (STAGES as readonly string[]).includes(v);
 }
 
-export default async function AssignmentStagePage({
+export default async function StageDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  await requireAdmin();
+  await requireSuperAdmin();
   const { id } = await params;
 
-  // Accept both `STAGE_0` and `stage-0` / `stage_0` forms so paths are robust.
   const normalized = id.toUpperCase().replace(/-/g, "_");
   if (!isStageKey(normalized)) notFound();
   const stage = normalized;
 
-  const [stageWindow, eligible, reports] = await Promise.all([
+  const [stageWindow, accesses, reports] = await Promise.all([
     prisma.stageWindow.findUnique({ where: { stage } }),
-    prisma.intern.count({ where: { isActive: true, currentStage: stage } }),
+    prisma.stageAccess.findMany({
+      where: { stage },
+      orderBy: { lastAccessedAt: "desc" },
+      include: {
+        // No FK relation — fetch interns separately below.
+      },
+    }),
     prisma.stageReport.findMany({
       where: { stage },
       include: {
@@ -43,6 +56,29 @@ export default async function AssignmentStagePage({
     }),
   ]);
 
+  // Resolve intern names for the access list — Prisma's MongoDB layer
+  // doesn't auto-join on StageAccess since there's no @relation declared.
+  const internIds = Array.from(new Set(accesses.map((a) => a.internId)));
+  const interns = internIds.length
+    ? await prisma.intern.findMany({
+        where: { id: { in: internIds } },
+        include: { user: { select: { firstName: true, lastName: true, email: true } } },
+      })
+    : [];
+  const internById = new Map(interns.map((i) => [i.id, i]));
+
+  const accessRows = accesses.map((a) => {
+    const intern = internById.get(a.internId);
+    return {
+      internId: a.internId,
+      name: intern ? `${intern.user.firstName} ${intern.user.lastName}`.trim() : "Unknown",
+      email: intern?.user.email ?? "—",
+      firstAccessedAt: a.firstAccessedAt.toISOString(),
+      lastAccessedAt: a.lastAccessedAt.toISOString(),
+      visitCount: a.visitCount,
+    };
+  });
+
   const submissions = reports.map((r) => ({
     id: r.id,
     internId: r.internId,
@@ -54,6 +90,9 @@ export default async function AssignmentStagePage({
     submittedAt: r.submittedAt ? r.submittedAt.toISOString() : null,
     gradedAt: r.gradedAt ? r.gradedAt.toISOString() : null,
   }));
+
+  const status = (stageWindow?.status ?? "CLOSED") as "OPEN" | "PAUSED" | "CLOSED";
+  const passingScore = stageWindow?.passingScore ?? null;
 
   return (
     <div className="min-h-screen">
@@ -67,15 +106,10 @@ export default async function AssignmentStagePage({
 
         <StageAdminPanel
           stage={stage}
-          initialWindow={
-            stageWindow
-              ? {
-                  passingScore: stageWindow.passingScore,
-                  isLocked: stageWindow.isLocked,
-                }
-              : null
-          }
-          eligible={eligible}
+          stageName={STAGE_NAMES[stage]}
+          initialStatus={status}
+          initialPassingScore={passingScore}
+          accessRows={accessRows}
           submissions={submissions}
         />
       </div>

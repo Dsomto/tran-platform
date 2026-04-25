@@ -3,7 +3,6 @@ import Link from "next/link";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { Topbar } from "@/components/dashboard/topbar";
-import { formatDateTime } from "@/lib/utils";
 import { stageUrl, type StageSlug } from "@/lib/stage-routes";
 import {
   Lock,
@@ -75,7 +74,7 @@ export default async function AssignmentsPage() {
         <div className="max-w-3xl space-y-3">
           {STAGES.map((stage) => {
             const w = windowByStage.get(stage as never);
-            const isLocked = w ? w.isLocked : true;
+            const isLocked = (w?.status ?? "CLOSED") !== "OPEN";
             const rank = stageRank(stage);
             const isAhead = rank > internRank;
             const isPast = rank < internRank;
@@ -83,11 +82,11 @@ export default async function AssignmentsPage() {
             const reportStatus = reportByStage.get(stage);
             const stageNum = stage.replace("STAGE_", "");
 
-            // Interns can enter a stage only if it's not admin-locked AND it's
+            // Interns can enter a stage only if the admin has it OPEN and it's
             // at-or-behind their current stage. Locked OR ahead = greyed out.
             const accessible = !isLocked && !isAhead;
 
-            const deadline = w?.submitUntil ? formatDateTime(w.submitUntil) : null;
+            const deadline = null;
 
             return (
               <StageCard

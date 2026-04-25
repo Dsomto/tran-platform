@@ -2,9 +2,11 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import StageShell from "@/components/stage/StageShell";
 import { STAGE_THEMES } from "@/components/stage/themes";
+import { BoardRecap } from "@/components/stage/BoardRecap";
 import { getStageAccess } from "@/lib/stage-access";
 import { stageUrl } from "@/lib/stage-routes";
 import { prisma } from "@/lib/db";
+import { STAGE_BRIEFS } from "@/lib/stage-briefs";
 
 function statusLabel(status: string | undefined | null): { label: string; tone: "pending" | "submitted" | "graded" | "late" } {
   const s = (status ?? "").toUpperCase();
@@ -74,47 +76,22 @@ export default async function Stage3BoardPage() {
   return (
     <StageShell theme={theme} internCode={internCode}>
       <div className="space-y-8">
-        <div className="flex items-center justify-between">
-          <Link
-            href={stageUrl("stage-3")}
-            className="text-xs font-mono uppercase tracking-[0.18em] text-amber-300 hover:text-amber-100"
-          >
-            ← back to landing
-          </Link>
-          <span className="stage-3-stamp">EYES-ONLY · SCIF</span>
-        </div>
-
-        <section className="stage-3-panel p-8 relative overflow-hidden">
-          <div className="stage-3-lantern" aria-hidden="true" />
-
-          <div className="flex items-center gap-3 flex-wrap mb-5">
-            <span className="stage-3-pill">CASE FILE · {room.slug.toUpperCase().replace(/-/g, "_")}</span>
-            <span className="stage-3-pill">CHAPTER 04</span>
-          </div>
-
-          <h1 className="stage-3-heading text-3xl md:text-4xl font-bold tracking-wider">
-            {room.title}
-          </h1>
-          <p className="mt-2 text-[11px] tracking-[0.2em] text-amber-300/60 uppercase">
-            {room.codename}
-          </p>
-
-          <div className="stage-3-divider">
-            <span>§ SYNOPSIS</span>
-          </div>
-
-          <p className="text-amber-50/85 whitespace-pre-wrap leading-relaxed">
-            {room.synopsis}
-          </p>
-
-          <div className="stage-3-divider">
-            <span>§ BRIEFING</span>
-          </div>
-
-          <p className="text-amber-100/75 whitespace-pre-wrap leading-relaxed text-sm">
-            {room.briefing}
-          </p>
-        </section>
+        <BoardRecap
+          brief={STAGE_BRIEFS.STAGE_3}
+          landingHref={stageUrl("stage-3")}
+          submitHref="/dashboard/reports/STAGE_3"
+          theme={{
+            panelClass: "stage-3-panel",
+            headingClass: "stage-3-heading",
+            pillClass: "stage-3-pill",
+            accentTextClass: "text-amber-400",
+            bodyTextClass: "text-amber-50/85",
+            mutedTextClass: "text-amber-200/55",
+            ctaBgClass: "bg-amber-500",
+            ctaHoverClass: "hover:bg-amber-600",
+            dividerClass: "border-amber-500/20",
+          }}
+        />
 
         <section>
           <div className="flex items-end justify-between mb-4">

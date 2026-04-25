@@ -2,9 +2,11 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import StageShell from "@/components/stage/StageShell";
 import { STAGE_THEMES } from "@/components/stage/themes";
+import { BoardRecap } from "@/components/stage/BoardRecap";
 import { getStageAccess } from "@/lib/stage-access";
 import { stageUrl } from "@/lib/stage-routes";
 import { prisma } from "@/lib/db";
+import { STAGE_BRIEFS } from "@/lib/stage-briefs";
 
 function statusLabel(status: string | undefined | null): { label: string; tone: "pending" | "submitted" | "graded" | "late" } {
   const s = (status ?? "").toUpperCase();
@@ -80,44 +82,22 @@ export default async function Stage4BoardPage() {
   return (
     <StageShell theme={theme} internCode={internCode}>
       <div className="space-y-10">
-        <div className="flex items-center justify-between">
-          <Link
-            href={stageUrl("stage-4")}
-            className="text-xs font-mono uppercase tracking-[0.18em] text-cyan-300 hover:text-cyan-100"
-          >
-            ← back to landing
-          </Link>
-          <span className="stage-4-stamp">Capstone</span>
-        </div>
-
-        <section className="stage-4-panel p-8 sm:p-10 relative overflow-hidden">
-          <div className="stage-4-compass" aria-hidden="true" />
-
-          <div className="flex items-center gap-3 flex-wrap mb-6">
-            <span className="stage-4-pill">BRIEFING · 09:00</span>
-            <span className="stage-4-pill">AUDIENCE · EXECUTIVE</span>
-            <span className="stage-4-pill">CHAPTER FINALE</span>
-          </div>
-
-          <p className="stage-4-heading-mono mb-4">
-            {room.codename}
-          </p>
-          <h1 className="stage-4-heading text-4xl md:text-5xl lg:text-6xl tracking-tight">
-            {room.title}.
-          </h1>
-
-          <div className="stage-4-rule"><span>§ AGENDA SYNOPSIS</span></div>
-
-          <p className="text-cyan-50/85 text-lg leading-relaxed whitespace-pre-wrap" style={{ fontFamily: "Georgia, serif" }}>
-            {room.synopsis}
-          </p>
-
-          <div className="stage-4-rule"><span>§ BOARDROOM BRIEFING</span></div>
-
-          <p className="text-cyan-100/80 whitespace-pre-wrap leading-relaxed">
-            {room.briefing}
-          </p>
-        </section>
+        <BoardRecap
+          brief={STAGE_BRIEFS.STAGE_4}
+          landingHref={stageUrl("stage-4")}
+          submitHref="/dashboard/reports/STAGE_4"
+          theme={{
+            panelClass: "stage-4-panel",
+            headingClass: "stage-4-heading",
+            pillClass: "stage-4-pill",
+            accentTextClass: "text-cyan-300",
+            bodyTextClass: "text-cyan-50/85",
+            mutedTextClass: "text-cyan-200/55",
+            ctaBgClass: "bg-cyan-500",
+            ctaHoverClass: "hover:bg-cyan-600",
+            dividerClass: "border-cyan-400/20",
+          }}
+        />
 
         <section className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <div className="stage-4-kpi">
