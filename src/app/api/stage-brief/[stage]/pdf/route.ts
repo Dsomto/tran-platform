@@ -3,6 +3,11 @@ import { STAGE_BRIEFS } from "@/lib/stage-briefs";
 import { generateStageBriefPdf } from "@/lib/generate-stage-brief";
 import { logger } from "@/lib/logger";
 
+// pdfkit needs Node APIs (filesystem for fonts) — never Edge.
+export const runtime = "nodejs";
+// Don't cache — every download recomputes with the current intern's stamp.
+export const dynamic = "force-dynamic";
+
 // GET /api/stage-brief/[stage]/pdf — downloadable capstone brief.
 // Gated by the stage door session; the intern can only download the brief
 // for a stage they've already unlocked and signed into.
