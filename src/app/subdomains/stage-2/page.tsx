@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import StageShell from "@/components/stage/StageShell";
 import { STAGE_THEMES } from "@/components/stage/themes";
-import { StageWizard } from "@/components/stage/StageWizard";
+import { StageLanding } from "@/components/stage/StageLanding";
 import { getStageAccess } from "@/lib/stage-access";
 import { stageUrl } from "@/lib/stage-routes";
 import { STAGE_BRIEFS } from "@/lib/stage-briefs";
@@ -12,21 +12,23 @@ export default async function Stage2LandingPage() {
     if (result.reason === "no-session") redirect("/login");
     redirect("/dashboard");
   }
-  const { internCode, fullName, ndaSignedAt } = result.access;
+  const { internCode, ndaSignedAt } = result.access;
+
+  if (!ndaSignedAt) {
+    redirect(`/dashboard/onboarding?next=${encodeURIComponent(stageUrl("stage-2"))}`);
+  }
 
   const theme = STAGE_THEMES["stage-2"];
   const brief = STAGE_BRIEFS.STAGE_2;
 
   return (
     <StageShell theme={theme} internCode={internCode}>
-      <StageWizard
+      <StageLanding
         brief={brief}
         boardHref={stageUrl("stage-2", "/board")}
         pdfHref="/api/stage-brief/stage-2/pdf"
-        internFullName={fullName}
-        ndaSignedAt={ndaSignedAt}
         companyName="Sankofa Digital · Chapter 3"
-        welcomeLine="The decrypted files point at /legacy-admin/. Bayo wants the report on his desk before next sprint planning."
+        welcomeLine="The decrypted files point at /legacy-admin/. Bayo wants the report on his desk before next sprint planning. Ngozi is already drafting the Jira tickets — she just needs you to tell her which ones to prioritise."
         theme={{
           slug: "stage-2",
           panelClass: "stage-2-panel",

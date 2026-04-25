@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import StageShell from "@/components/stage/StageShell";
 import { STAGE_THEMES } from "@/components/stage/themes";
-import { StageWizard } from "@/components/stage/StageWizard";
+import { StageLanding } from "@/components/stage/StageLanding";
 import { getStageAccess } from "@/lib/stage-access";
 import { stageUrl } from "@/lib/stage-routes";
 import { STAGE_BRIEFS } from "@/lib/stage-briefs";
@@ -12,21 +12,23 @@ export default async function Stage4LandingPage() {
     if (result.reason === "no-session") redirect("/login");
     redirect("/dashboard");
   }
-  const { internCode, fullName, ndaSignedAt } = result.access;
+  const { internCode, ndaSignedAt } = result.access;
+
+  if (!ndaSignedAt) {
+    redirect(`/dashboard/onboarding?next=${encodeURIComponent(stageUrl("stage-4"))}`);
+  }
 
   const theme = STAGE_THEMES["stage-4"];
   const brief = STAGE_BRIEFS.STAGE_4;
 
   return (
     <StageShell theme={theme} internCode={internCode}>
-      <StageWizard
+      <StageLanding
         brief={brief}
         boardHref={stageUrl("stage-4", "/board")}
         pdfHref="/api/stage-brief/stage-4/pdf"
-        internFullName={fullName}
-        ndaSignedAt={ndaSignedAt}
         companyName="Sankofa Digital · The Boardroom"
-        welcomeLine="Tomorrow at 09:00 the board sits. The chair, the CFO, an independent director who used to chair a bank. They want three answers."
+        welcomeLine="Tomorrow at 09:00 the board sits. Adaeze, Babatunde, Chief Wale. They want three answers: did customer PII leave, are we in breach of NDPA, what does next year of security spend look like. Counsel is at the table with you."
         theme={{
           slug: "stage-4",
           panelClass: "stage-4-panel",
