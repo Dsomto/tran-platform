@@ -74,7 +74,7 @@ export async function GET(request: NextRequest) {
 // re-evaluates and enqueues again (so use with care).
 export async function POST(request: NextRequest) {
   try {
-    const admin = await requireAdmin();
+    const admin = await requireSuperAdmin();
     const body = await request.json();
     const { stage, passingScore, dryRun } = body ?? {};
 
