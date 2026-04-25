@@ -201,6 +201,10 @@ model Intern {
   slackJoined     Boolean      @default(false) // self-attested: has the intern joined the Slack workspace
   slackJoinedAt   DateTime?
 
+  // ─── NDA — one-time gate at start of Stage 0 ───
+  ndaSignedAt     DateTime?
+  ndaSignedName   String?                     // typed name at sign time, for audit
+
   teamId          String?      @db.ObjectId
   team            Team?        @relation(fields: [teamId], references: [id])
 

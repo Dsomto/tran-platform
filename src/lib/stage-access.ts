@@ -11,6 +11,10 @@ export interface StageAccess {
   internCode: string;
   userId: string;
   stageSlug: StageSlug;
+  /** First + last name from the user's account — used for NDA validation. */
+  fullName: string;
+  /** ISO timestamp when this intern signed the NDA, or null. */
+  ndaSignedAt: string | null;
 }
 
 /**
@@ -32,7 +36,7 @@ export async function getStageAccess(
 
   const intern = await prisma.intern.findUnique({
     where: { userId: session.id },
-    select: { id: true, currentStage: true, isActive: true },
+    select: { id: true, currentStage: true, isActive: true, ndaSignedAt: true },
   });
   if (!intern || !intern.isActive) return { ok: false, reason: "no-intern" };
 
@@ -62,6 +66,8 @@ export async function getStageAccess(
       internCode: publicApp?.internId ?? "UBI-?",
       userId: session.id,
       stageSlug: slug,
+      fullName: `${session.firstName} ${session.lastName}`.trim(),
+      ndaSignedAt: intern.ndaSignedAt?.toISOString() ?? null,
     },
   };
 }

@@ -39,6 +39,9 @@ export interface CastMember {
   alignment: "ally" | "peer" | "adversary" | "external";
   /** Optional pithy tag shown beneath the role, like "your direct mentor". */
   tag?: string;
+  /** A one-line greeting / line of dialogue shown when the carousel lands on
+   *  this character. Quoted as if they're speaking to the intern directly. */
+  greeting?: string;
 }
 
 export interface StageBrief {
@@ -82,6 +85,7 @@ export const STAGE_BRIEFS: Record<
         tag: "Your direct mentor",
         bio: "Ten years across SOCs in Lagos, Joburg, and London. Hates ceremony, loves evidence. Will read your report twice and ask one question that proves you didn't.",
         alignment: "ally",
+        greeting: "I'll be reading your reports. Make them sharp.",
       },
       {
         name: "Tunde Afolabi",
@@ -89,6 +93,7 @@ export const STAGE_BRIEFS: Record<
         tag: "He hands you the artefacts",
         bio: "Ex-military signals. Pulls the logs, runs the captures, has a side hobby tracking the Griot's infrastructure. Quiet until something doesn't add up.",
         alignment: "ally",
+        greeting: "Whatever I pull, you read carefully. I don't pull noise.",
       },
       {
         name: "Adaeze Okonkwo",
@@ -96,6 +101,7 @@ export const STAGE_BRIEFS: Record<
         tag: "Sets the tone for the company",
         bio: "Founded Sankofa eight years ago. Believes the company's licence to operate depends on customer trust. Will personally read the Incident Committee summary.",
         alignment: "external",
+        greeting: "Welcome. Our customers' trust is the only thing we trade in.",
       },
       {
         name: "Olu Adegoke",
@@ -103,6 +109,7 @@ export const STAGE_BRIEFS: Record<
         tag: "His account is in the log",
         bio: "On the finance team. His login appears in the Q2 auth log at 02:07 UTC — except he was on annual leave that week. He doesn't know yet.",
         alignment: "peer",
+        greeting: "Hi. I'm new to all of this — what's a SOC again?",
       },
       {
         name: "Chinwe Eze",
@@ -110,6 +117,7 @@ export const STAGE_BRIEFS: Record<
         tag: "Your peer on the bench",
         bio: "Started the same week as the analyst you are replacing. Will be the first person to read your draft. Pushy in the right way.",
         alignment: "peer",
+        greeting: "Coffee's by the kettle. Don't let Amaka catch you reading docs at 11pm.",
       },
       {
         name: "The Griot",
@@ -117,6 +125,7 @@ export const STAGE_BRIEFS: Record<
         tag: "Faceless, for now",
         bio: "A handle that turned up in a regional threat-intel feed three months ago. Nobody knows the operator. Sankofa has been quietly mapped.",
         alignment: "adversary",
+        greeting: "...",
       },
     ],
     termsAndPolicies: [
@@ -207,6 +216,7 @@ export const STAGE_BRIEFS: Record<
         tag: "Reads your report end to end",
         bio: "Carries this case. Wants the post-mortem clean and the controls list short. Don't pad.",
         alignment: "ally",
+        greeting: "Five controls. Concrete. Don't give me \"improve hygiene.\"",
       },
       {
         name: "Tunde Afolabi",
@@ -214,6 +224,7 @@ export const STAGE_BRIEFS: Record<
         tag: "Pulled the staging-server zip",
         bio: "Caught the Griot's beacon three days late. Treats every hour after that as borrowed.",
         alignment: "ally",
+        greeting: "We were three days late. Don't make it five.",
       },
       {
         name: "Dr. Folake Bello",
@@ -221,6 +232,7 @@ export const STAGE_BRIEFS: Record<
         tag: "Brought in for the audit",
         bio: "Spent eight years at the central bank's CSO office. Has seen every variant of \"we used AES so we're fine\" — and most of them were wrong.",
         alignment: "ally",
+        greeting: "AES is not a control. The way you use it is.",
       },
       {
         name: "Bayo Ogunyemi",
@@ -228,6 +240,7 @@ export const STAGE_BRIEFS: Record<
         tag: "Owns the systems with the bad crypto",
         bio: "Ships fast. Does not ship safely. Will push back on every control you propose unless you make the cost of *not* doing it concrete.",
         alignment: "peer",
+        greeting: "If it's expensive and not urgent, I'll find a reason to say no.",
       },
       {
         name: "The Griot",
@@ -235,6 +248,7 @@ export const STAGE_BRIEFS: Record<
         tag: "Made a habit of cutting corners",
         bio: "Reused IVs. Used HS256 with a five-character secret. Did all of it intentionally — to look amateur and stay under the model the SOC was watching for.",
         alignment: "adversary",
+        greeting: "...",
       },
     ],
     termsAndPolicies: [
@@ -335,6 +349,7 @@ export const STAGE_BRIEFS: Record<
         tag: "The person your report is for",
         bio: "Has a backlog the size of a small library. Will only act on findings he can prioritise against business risk. Speak that language.",
         alignment: "peer",
+        greeting: "Tell me what's broken, what it costs, and what to fix first.",
       },
       {
         name: "Ngozi Ojukwu",
@@ -342,6 +357,7 @@ export const STAGE_BRIEFS: Record<
         tag: "Will own the fixes",
         bio: "Joined six months ago. Inherited the legacy-admin app. Wanted to kill it on day one but lost the politics. Now she has the receipts.",
         alignment: "ally",
+        greeting: "I told them this app was a liability. Say it again, louder.",
       },
       {
         name: "Amaka Eze",
@@ -349,6 +365,7 @@ export const STAGE_BRIEFS: Record<
         tag: "Co-signs the report",
         bio: "Will read your remediation order before it goes to engineering. She has political capital — spend it on the things that actually matter.",
         alignment: "ally",
+        greeting: "I'll defend whatever order you justify. Justify it well.",
       },
       {
         name: "Tunde Afolabi",
@@ -356,6 +373,7 @@ export const STAGE_BRIEFS: Record<
         tag: "Provided the HTTP capture",
         bio: "Pulled the attacker's full session off the edge proxy. Will help you label the parts of the chain that look familiar.",
         alignment: "ally",
+        greeting: "The capture is annotated. Read every line.",
       },
       {
         name: "The Griot",
@@ -363,6 +381,7 @@ export const STAGE_BRIEFS: Record<
         tag: "Walked through five doors",
         bio: "Found the legacy admin in three minutes, the SQLi in five, and the open redirect in seven. Knew where to look — that is its own clue.",
         alignment: "adversary",
+        greeting: "...",
       },
     ],
     termsAndPolicies: [
@@ -452,6 +471,7 @@ export const STAGE_BRIEFS: Record<
         tag: "Brought in to lead the investigation",
         bio: "Twelve years of incident response. Will check your timeline against the raw artefacts and tell you which sentences don't have evidence.",
         alignment: "ally",
+        greeting: "Every sentence in your timeline traces to a line in the evidence. Or it doesn't go in.",
       },
       {
         name: "Counsel Ifeoma Okeke",
@@ -459,6 +479,7 @@ export const STAGE_BRIEFS: Record<
         tag: "Reads the timeline first",
         bio: "Cares about what was accessed, by whom, when, and what the company is obligated to disclose. Will quote your timeline back to you in the regulator's office.",
         alignment: "ally",
+        greeting: "Anything you write here, I might have to read aloud one day. Write it like that.",
       },
       {
         name: "Olu Adegoke",
@@ -466,6 +487,7 @@ export const STAGE_BRIEFS: Record<
         tag: "His workstation was the foothold",
         bio: "On leave when the breach happened. Now back, embarrassed, cooperative. Available for interview if your timeline needs his side.",
         alignment: "peer",
+        greeting: "I wasn't even in the country. Whatever you need from me, I'll give.",
       },
       {
         name: "Tunde Afolabi",
@@ -473,6 +495,7 @@ export const STAGE_BRIEFS: Record<
         tag: "Caught the beacon",
         bio: "Spotted the outbound traffic to 185.220.101.9 on hour 71 of the dwell. Quarantined the box at hour 72. Wrote the first line of your timeline.",
         alignment: "ally",
+        greeting: "Hour 71 was the beacon. Start there.",
       },
       {
         name: "Amaka Eze",
@@ -480,6 +503,7 @@ export const STAGE_BRIEFS: Record<
         tag: "Sponsors the investigation",
         bio: "Will defend the team's work to the board. Needs the report to be defensible, not heroic.",
         alignment: "ally",
+        greeting: "Be boring. Be right. The board will believe boring.",
       },
       {
         name: "The Griot",
@@ -487,6 +511,7 @@ export const STAGE_BRIEFS: Record<
         tag: "Quiet for 30 days, then loud",
         bio: "Left a note on the workstation: \"foothold: o.adegoke. exfil: /tmp/exfil.tgz -> 185.220.101.9. quiet for 30 days, then loud.\" Took the data and waited.",
         alignment: "adversary",
+        greeting: "...",
       },
     ],
     termsAndPolicies: [
@@ -583,6 +608,7 @@ export const STAGE_BRIEFS: Record<
         tag: "Reads the cover letter first",
         bio: "Wants three sentences before she wants any number. If your executive summary buries the answer, she stops reading.",
         alignment: "external",
+        greeting: "First three sentences. Tell me what happened, what it costs, what we do.",
       },
       {
         name: "Babatunde Olawale",
@@ -590,6 +616,7 @@ export const STAGE_BRIEFS: Record<
         tag: "Will price every recommendation",
         bio: "Sees security spend as insurance. Will fund what you can quantify, will cut what you can't. Round numbers in NGN are fine — sources required.",
         alignment: "external",
+        greeting: "Show me the number. Show me the source. I'll fund it.",
       },
       {
         name: "Chief Wale Adekunle",
@@ -597,6 +624,7 @@ export const STAGE_BRIEFS: Record<
         tag: "Ex-chair of a Tier 1 bank",
         bio: "Has sat through six breach briefings in his career. Knows the difference between a contained incident and a buried one. Asks the questions you don't want.",
         alignment: "external",
+        greeting: "I've heard this story before. Tell it differently.",
       },
       {
         name: "Counsel Ifeoma Okeke",
@@ -604,6 +632,7 @@ export const STAGE_BRIEFS: Record<
         tag: "Sits beside you at the table",
         bio: "Briefs the board on regulatory exposure. Your NDPA letter and her draft go in together. Reconcile them before the meeting.",
         alignment: "ally",
+        greeting: "We submit one letter. Reconcile your draft with mine before nine.",
       },
       {
         name: "Adaobi Nnamdi",
@@ -611,6 +640,7 @@ export const STAGE_BRIEFS: Record<
         tag: "Receives the 72-hour notification",
         bio: "Will read the Section 40 letter twice — once for what it says, once for what it doesn't. She has seen worse, and she has seen better. Be neither.",
         alignment: "external",
+        greeting: "Be plain. Be specific. We'll get along.",
       },
       {
         name: "Amaka Eze",
@@ -618,6 +648,7 @@ export const STAGE_BRIEFS: Record<
         tag: "Hands you the floor",
         bio: "Sits at the back. Will not speak unless asked. The room learns from how she reacts to your answers — make sure those reactions match what you intend.",
         alignment: "ally",
+        greeting: "Take the floor. I'm not rescuing you.",
       },
     ],
     termsAndPolicies: [

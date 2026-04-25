@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import StageShell from "@/components/stage/StageShell";
 import { STAGE_THEMES } from "@/components/stage/themes";
-import { StageLanding } from "@/components/stage/StageLanding";
+import { StageWizard } from "@/components/stage/StageWizard";
 import { getStageAccess } from "@/lib/stage-access";
 import { stageUrl } from "@/lib/stage-routes";
 import { STAGE_BRIEFS } from "@/lib/stage-briefs";
@@ -12,17 +12,21 @@ export default async function Stage0LandingPage() {
     if (result.reason === "no-session") redirect("/login");
     redirect("/dashboard");
   }
-  const { internCode } = result.access;
+  const { internCode, fullName, ndaSignedAt } = result.access;
 
   const theme = STAGE_THEMES["stage-0"];
   const brief = STAGE_BRIEFS.STAGE_0;
 
   return (
     <StageShell theme={theme} internCode={internCode}>
-      <StageLanding
+      <StageWizard
         brief={brief}
         boardHref={stageUrl("stage-0", "/board")}
         pdfHref="/api/stage-brief/stage-0/pdf"
+        internFullName={fullName}
+        ndaSignedAt={ndaSignedAt}
+        companyName="Sankofa Digital"
+        welcomeLine="You arrived at the Sankofa office at 8:47am. Reception is expecting you. Amaka has cleared the morning to walk you through the Q2 incident."
         theme={{
           slug: "stage-0",
           panelClass: "stage-0-panel",

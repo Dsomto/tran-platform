@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import StageShell from "@/components/stage/StageShell";
 import { STAGE_THEMES } from "@/components/stage/themes";
-import { StageLanding } from "@/components/stage/StageLanding";
+import { StageWizard } from "@/components/stage/StageWizard";
 import { getStageAccess } from "@/lib/stage-access";
 import { stageUrl } from "@/lib/stage-routes";
 import { STAGE_BRIEFS } from "@/lib/stage-briefs";
@@ -12,17 +12,21 @@ export default async function Stage4LandingPage() {
     if (result.reason === "no-session") redirect("/login");
     redirect("/dashboard");
   }
-  const { internCode } = result.access;
+  const { internCode, fullName, ndaSignedAt } = result.access;
 
   const theme = STAGE_THEMES["stage-4"];
   const brief = STAGE_BRIEFS.STAGE_4;
 
   return (
     <StageShell theme={theme} internCode={internCode}>
-      <StageLanding
+      <StageWizard
         brief={brief}
         boardHref={stageUrl("stage-4", "/board")}
         pdfHref="/api/stage-brief/stage-4/pdf"
+        internFullName={fullName}
+        ndaSignedAt={ndaSignedAt}
+        companyName="Sankofa Digital · The Boardroom"
+        welcomeLine="Tomorrow at 09:00 the board sits. The chair, the CFO, an independent director who used to chair a bank. They want three answers."
         theme={{
           slug: "stage-4",
           panelClass: "stage-4-panel",
