@@ -36,12 +36,10 @@ export default async function StageDetailPage({
 
   const [stageWindow, accesses, reports] = await Promise.all([
     prisma.stageWindow.findUnique({ where: { stage } }),
+    // No FK relation on StageAccess — fetch interns separately below.
     prisma.stageAccess.findMany({
       where: { stage },
       orderBy: { lastAccessedAt: "desc" },
-      include: {
-        // No FK relation — fetch interns separately below.
-      },
     }),
     prisma.stageReport.findMany({
       where: { stage },
