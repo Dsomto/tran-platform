@@ -74,13 +74,10 @@ export async function POST(
 
     return Response.json({ report: updated });
   } catch (error) {
+    // Log details server-side; never leak Prisma error names to the user.
     logger.error("submit_report_failed", error);
-    // Surface the underlying message so the dev panel can show why — the
-    // client only renders this string when status is 500.
-    const detail =
-      error instanceof Error ? `${error.name}: ${error.message}` : "Unknown";
     return Response.json(
-      { error: `Submit failed — ${detail}` },
+      { error: "Could not submit your report. Please try again." },
       { status: 500 }
     );
   }

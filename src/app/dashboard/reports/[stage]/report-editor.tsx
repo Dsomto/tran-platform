@@ -66,6 +66,10 @@ export function ReportEditor({
   dirtyRef.current = dirty;
 
   const execWordCount = execSummary.trim().split(/\s+/).filter(Boolean).length;
+  const execCharCount = execSummary.length;
+  const EXEC_MAX_CHARS = 5000;
+  const charsApproachingLimit = execCharCount >= 4500;
+  const charsOverLimit = execCharCount > EXEC_MAX_CHARS;
 
   async function saveDraft(silent = false): Promise<boolean> {
     if (locked) return false;
@@ -106,10 +110,18 @@ export function ReportEditor({
       setError("Your executive summary is too short. Write at least a few sentences.");
       return;
     }
+    if (execSummary.length > EXEC_MAX_CHARS) {
+      setError(`Your executive summary is over the ${EXEC_MAX_CHARS}-character limit. Trim it before submitting.`);
+      return;
+    }
     if (!isValidUrl(reportUrl)) {
       setError("Paste a valid link to your report folder (Google Drive, Dropbox, etc.).");
       return;
     }
+    const ok = window.confirm(
+      "Submit this report for grading? Two reviewers will read it. You can resubmit later if needed, but you cannot edit it while it is being reviewed."
+    );
+    if (!ok) return;
     setSubmitting(true);
     setError(null);
     const savedOk = await saveDraft(true);
@@ -135,8 +147,16 @@ export function ReportEditor({
   }
 
   useEffect(() => {
-    const t = setInterval(() => {
-      if (dirtyRef.current && !locked) saveDraft(true);
+    // Autosave fires every 30s when dirty. We pass silent=true to avoid
+    // noisy errors mid-typing, but if a save fails we still surface it so
+    // the user is not lulled by a stale "Saved" timestamp.
+    const t = setInterval(async () => {
+      if (dirtyRef.current && !locked) {
+        const ok = await saveDraft(true);
+        if (!ok) {
+          setError("Auto-save failed. Click Save draft to retry — your text is still here.");
+        }
+      }
     }, 30_000);
     return () => clearInterval(t);
   }, [locked]);
@@ -270,7 +290,19 @@ export function ReportEditor({
           <label className="block text-sm font-semibold text-foreground mb-2">
             Executive summary *{" "}
             <span className="text-muted-foreground font-normal">
-              ({execWordCount} words)
+              ({execWordCount} words ·{" "}
+              <span
+                className={
+                  charsOverLimit
+                    ? "text-rose-700 font-semibold"
+                    : charsApproachingLimit
+                    ? "text-amber-700 font-semibold"
+                    : ""
+                }
+              >
+                {execCharCount} / {EXEC_MAX_CHARS} chars
+              </span>
+              )
             </span>
           </label>
           <p className="text-xs text-muted-foreground mb-2">
@@ -286,8 +318,17 @@ export function ReportEditor({
             }}
             disabled={locked}
             placeholder="Summarise your findings for a board-level reader…"
-            className="w-full min-h-[220px] p-3 border border-border rounded-lg bg-white text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-blue/30 disabled:bg-muted/30"
+            className={`w-full min-h-[220px] p-3 border rounded-lg bg-white text-sm leading-relaxed focus:outline-none focus:ring-2 disabled:bg-muted/30 ${
+              charsOverLimit
+                ? "border-rose-400 focus:ring-rose-200"
+                : "border-border focus:ring-blue/30"
+            }`}
           />
+          {charsOverLimit && (
+            <p className="mt-1 text-xs text-rose-700">
+              Over the {EXEC_MAX_CHARS}-character limit. Trim {execCharCount - EXEC_MAX_CHARS} character{execCharCount - EXEC_MAX_CHARS === 1 ? "" : "s"} before submitting.
+            </p>
+          )}
         </section>
 
         <section>
@@ -318,10 +359,22 @@ export function ReportEditor({
           </div>
         )}
 
-        {lastSavedAt && !dirty && !error && (
+        {saving && (
+          <div className="flex items-center gap-1.5 text-xs text-blue">
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            Saving…
+          </div>
+        )}
+        {!saving && lastSavedAt && !dirty && !error && (
           <div className="flex items-center gap-1.5 text-xs text-emerald-700">
             <CheckCircle2 className="h-3.5 w-3.5" />
             Saved at {lastSavedAt.toLocaleTimeString()}
+          </div>
+        )}
+        {!saving && dirty && lastSavedAt && (
+          <div className="flex items-center gap-1.5 text-xs text-amber-700">
+            <AlertTriangle className="h-3.5 w-3.5" />
+            Unsaved changes — auto-saves every 30s. Click Save draft to save now.
           </div>
         )}
 

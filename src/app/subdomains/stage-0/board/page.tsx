@@ -6,7 +6,7 @@ import { BoardRecap } from "@/components/stage/BoardRecap";
 import { CapstoneReminder } from "@/components/stage/CapstoneReminder";
 import { getStageAccess } from "@/lib/stage-access";
 import { stageUrl } from "@/lib/stage-routes";
-import { prisma } from "@/lib/db";
+import { getBoardData } from "@/lib/stage-board";
 import { STAGE_BRIEFS } from "@/lib/stage-briefs";
 
 function statusLabel(status: string | undefined | null): { label: string; tone: "pending" | "submitted" | "graded" | "late" } {
@@ -27,10 +27,10 @@ export default async function Stage0BoardPage() {
 
   const theme = STAGE_THEMES["stage-0"];
 
-  const room = await prisma.room.findUnique({
-    where: { slug: "induction-at-the-gate" },
-    include: { assignments: { orderBy: { order: "asc" } } },
-  });
+  const { room, subByAssignment, allGraded } = await getBoardData(
+    internId,
+    "induction-at-the-gate"
+  );
 
   if (!room) {
     return (
@@ -44,22 +44,6 @@ export default async function Stage0BoardPage() {
       </StageShell>
     );
   }
-
-  const assignmentIds = room.assignments.map((a) => a.id);
-  const submissions = assignmentIds.length
-    ? await prisma.submission.findMany({
-        where: { internId: internId, assignmentId: { in: assignmentIds } },
-      })
-    : [];
-
-  const subByAssignment = new Map(submissions.map((s) => [s.assignmentId, s]));
-
-  const allGraded =
-    room.assignments.length > 0 &&
-    room.assignments.every((a) => {
-      const sub = subByAssignment.get(a.id);
-      return sub && (sub.status === "GRADED");
-    });
 
   const toneStyles: Record<string, { bg: string; color: string; border: string }> = {
     pending: { bg: "#f5f5f5", color: "#737373", border: "#e5e5e5" },

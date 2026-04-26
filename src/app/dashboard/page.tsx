@@ -96,7 +96,7 @@ export default async function DashboardPage() {
   const stageNum = stageToNumber(intern.currentStage);
   const stageName = STAGE_NAMES[stageEnum] ?? `Stage ${stageNum}`;
 
-  const [stageWindow, report, topAnnouncement, rank] = await Promise.all([
+  const [stageWindow, report, topAnnouncement, rank, passedCount] = await Promise.all([
     prisma.stageWindow.findUnique({ where: { stage: stageEnum } }),
     prisma.stageReport.findUnique({
       where: { internId_stage: { internId: intern.id, stage: stageEnum } },
@@ -114,6 +114,9 @@ export default async function DashboardPage() {
     prisma.intern.count({
       where: { isActive: true, points: { gt: intern.points } },
     }).then((ahead) => ahead + 1),
+    prisma.stageReport.count({
+      where: { internId: intern.id, status: "PASSED" },
+    }),
   ]);
 
   const isStageOpen = stageWindow?.status === "OPEN";
@@ -152,8 +155,11 @@ export default async function DashboardPage() {
             />
           )}
 
-          {/* ── How this works — visible until they've submitted at least one report ── */}
-          {!report && (
+          {/* "How this works" stays visible until they've passed at least one
+              stage. New interns mid-stage need this even after their first
+              report goes in — disappearing it as soon as a draft exists is
+              what caused the "where do I put the capstone?" confusion. */}
+          {passedCount === 0 && (
             <section className="bg-blue/5 border border-blue/20 rounded-2xl p-5 sm:p-6">
               <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-blue mb-2">
                 New here? How this works
@@ -201,8 +207,11 @@ export default async function DashboardPage() {
               )}
             </div>
 
-            {/* Slim progress bar — 5 foundation stages */}
-            <div className="flex items-center gap-1 mb-6" aria-label={`Stage ${stageNum} of 4`}>
+            {/* Slim progress bar — 5 foundation stages (0-4) */}
+            <div
+              className="flex items-center gap-1 mb-2"
+              aria-label={`On stage ${stageNum} of 4 (${stageNum + 1} of 5 chapters)`}
+            >
               {Array.from({ length: 5 }).map((_, i) => (
                 <div
                   key={i}
@@ -212,6 +221,9 @@ export default async function DashboardPage() {
                 />
               ))}
             </div>
+            <p className="text-[11px] font-mono text-muted-foreground mb-6">
+              Chapter {stageNum + 1} of 5
+            </p>
 
             {isStageOpen ? (
               <div className="flex flex-wrap gap-3">
@@ -224,9 +236,9 @@ export default async function DashboardPage() {
                 </Link>
                 <Link
                   href={`${roomHref}#capstone`}
-                  className="inline-flex items-center gap-1.5 px-5 py-2.5 text-sm font-semibold rounded-full border-2 border-blue/40 text-blue hover:bg-blue/5 transition-colors"
+                  className="inline-flex items-center gap-1.5 px-5 py-2.5 text-sm font-semibold rounded-full bg-indigo-600 text-white hover:bg-indigo-700 transition-colors shadow-sm"
                 >
-                  <FileText className="w-4 h-4" />
+                  <Trophy className="w-4 h-4" />
                   View your capstone
                 </Link>
                 <Link

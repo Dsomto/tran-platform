@@ -36,8 +36,18 @@ function extractStageFromPath(pathname: string): { stage: string; rest: string }
   return { stage, rest: rest || "" };
 }
 
+// Forward the original pathname so server layouts can read it via headers().
+// Used by DashboardLayout to detect when we're already on /dashboard/onboarding
+// and avoid an NDA redirect loop.
+function withPathnameHeader(request: NextRequest, pathname: string) {
+  const h = new Headers(request.headers);
+  h.set("x-pathname", pathname);
+  return h;
+}
+
 export function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
+  const requestHeaders = withPathnameHeader(request, pathname);
 
   // Never rewrite API routes, Next internals, static assets.
   if (
@@ -48,7 +58,7 @@ export function proxy(request: NextRequest) {
     pathname === "/robots.txt" ||
     pathname === "/sitemap.xml"
   ) {
-    return NextResponse.next();
+    return NextResponse.next({ request: { headers: requestHeaders } });
   }
 
   // Path-token routing (production on any single domain).
@@ -57,7 +67,7 @@ export function proxy(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = `/subdomains/${fromPath.stage}${fromPath.rest}`;
     url.search = search;
-    return NextResponse.rewrite(url);
+    return NextResponse.rewrite(url, { request: { headers: requestHeaders } });
   }
 
   // Subdomain routing fallback (local dev on stage-N.localhost:3000).
@@ -67,10 +77,10 @@ export function proxy(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = `/subdomains/${stage}${pathname === "/" ? "" : pathname}`;
     url.search = search;
-    return NextResponse.rewrite(url);
+    return NextResponse.rewrite(url, { request: { headers: requestHeaders } });
   }
 
-  return NextResponse.next();
+  return NextResponse.next({ request: { headers: requestHeaders } });
 }
 
 export const config = {

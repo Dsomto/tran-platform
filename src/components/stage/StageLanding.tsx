@@ -152,7 +152,7 @@ export function StageLanding({
 
       {/* ── About this stage ─────────────────────────────── */}
       <section>
-        <SectionHeading icon={Target} accent={theme.accentTextClass} eyebrow="About this chapter">
+        <SectionHeading icon={Target} accent={theme.accentTextClass} headingClass={theme.headingClass} eyebrow="About this chapter">
           What you walked into
         </SectionHeading>
         <div className={`${theme.panelClass} p-7 sm:p-10 space-y-4`}>
@@ -166,7 +166,7 @@ export function StageLanding({
 
       {/* ── Meet your coworkers ──────────────────────────── */}
       <section>
-        <SectionHeading icon={Users} accent={theme.accentTextClass} eyebrow="The cast">
+        <SectionHeading icon={Users} accent={theme.accentTextClass} headingClass={theme.headingClass} eyebrow="The cast">
           Meet your coworkers
         </SectionHeading>
         <p className={`${theme.mutedTextClass} text-sm mb-6 max-w-2xl`}>
@@ -229,7 +229,7 @@ export function StageLanding({
 
       {/* ── Company life — the bulletin board ────────────── */}
       <section>
-        <SectionHeading icon={Megaphone} accent={theme.accentTextClass} eyebrow="Around the office">
+        <SectionHeading icon={Megaphone} accent={theme.accentTextClass} headingClass={theme.headingClass} eyebrow="Around the office">
           What&apos;s going on this week
         </SectionHeading>
         <p className={`${theme.mutedTextClass} text-sm mb-5 max-w-2xl`}>
@@ -273,17 +273,7 @@ export function StageLanding({
         </div>
       </section>
 
-      {/* ── Pull-quote divider ── voices from the office ── */}
-      {brief.cast[0]?.greeting && (
-        <PullQuote
-          theme={theme}
-          quote={brief.cast[0].greeting}
-          author={brief.cast[0].name}
-          role={brief.cast[0].role}
-        />
-      )}
-
-      {/* ── THE CAPSTONE — hero section ──────────────────── */}
+      {/* ── THE CAPSTONE — emotional peak before the cooldown pull-quotes ── */}
       <section
         id="capstone"
         className={`${theme.panelClass} p-8 sm:p-12 relative overflow-hidden`}
@@ -412,7 +402,15 @@ export function StageLanding({
         </div>
       </section>
 
-      {/* ── Second pull-quote — different character ── */}
+      {/* ── Cooldown — two pull-quotes from different voices in the office ── */}
+      {brief.cast[0]?.greeting && (
+        <PullQuote
+          theme={theme}
+          quote={brief.cast[0].greeting}
+          author={brief.cast[0].name}
+          role={brief.cast[0].role}
+        />
+      )}
       {brief.cast[1]?.greeting && (
         <PullQuote
           theme={theme}
@@ -422,38 +420,19 @@ export function StageLanding({
         />
       )}
 
-      {/* ── Final CTA ────────────────────────────────────── */}
-      <section
-        className={`${theme.panelClass} p-10 sm:p-14 text-center relative overflow-hidden`}
-      >
-        <div className="flex justify-center mb-5">
-          <div className={`w-14 h-14 rounded-full ${theme.ctaBgClass} grid place-items-center text-white animate-pulse`}>
-            <ArrowRight className="w-6 h-6" />
-          </div>
-        </div>
-        <p className={`text-[10.5px] font-mono uppercase tracking-[0.3em] mb-3 ${theme.accentTextClass}`}>
-          Briefing complete
-        </p>
-        <h2 className={`${theme.headingClass} text-3xl sm:text-4xl mb-4`}>
-          Ready when you are.
-        </h2>
-        <p className={`${theme.bodyTextClass} text-base sm:text-lg leading-relaxed max-w-xl mx-auto mb-8`}>
-          The mission board is where {brief.label}&rsquo;s tasks live. Every
-          task is graded on its own — finish them in any order.
-        </p>
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-          <Link
-            href={boardHref}
-            className={`${theme.ctaBgClass} ${theme.ctaHoverClass} inline-flex items-center gap-2 px-8 py-4 rounded-full text-sm font-bold uppercase tracking-[0.15em] text-white shadow-xl transition-opacity`}
-          >
-            Enter the mission board
-            <ArrowRight className="w-4 h-4" />
-          </Link>
-          <PrintBriefButton
-            className={`inline-flex items-center gap-2 px-6 py-3.5 rounded-full text-sm font-semibold border ${theme.dividerClass} ${theme.bodyTextClass} hover:bg-white/5 transition-colors`}
-          />
-        </div>
-      </section>
+      {/* End strip — one quiet CTA back to the board, no repeated copy. The
+          hero, the capstone, and the bulletin already gave the user three
+          earlier entry points; this is just a soft landing at the bottom of
+          the scroll. */}
+      <div className="flex justify-center pt-2">
+        <Link
+          href={boardHref}
+          className={`${theme.ctaBgClass} ${theme.ctaHoverClass} inline-flex items-center gap-2 px-7 py-3 rounded-full text-sm font-bold uppercase tracking-[0.15em] text-white shadow-lg transition-opacity`}
+        >
+          Enter the mission board
+          <ArrowRight className="w-4 h-4" />
+        </Link>
+      </div>
     </div>
   );
 }
@@ -463,11 +442,13 @@ function SectionHeading({
   eyebrow,
   children,
   accent,
+  headingClass,
 }: {
   icon: React.ElementType;
   eyebrow: string;
   children: React.ReactNode;
   accent: string;
+  headingClass: string;
 }) {
   return (
     <div className="mb-5">
@@ -475,7 +456,7 @@ function SectionHeading({
         <Icon className="w-3 h-3" />
         {eyebrow}
       </div>
-      <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">{children}</h2>
+      <h2 className={`${headingClass} text-2xl sm:text-3xl tracking-tight`}>{children}</h2>
     </div>
   );
 }

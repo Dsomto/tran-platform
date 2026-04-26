@@ -86,7 +86,7 @@ export function GraderQueue({
   }
 
   async function skip(id: string) {
-    if (!confirm("Skip this report for conflict of interest? Another grader will pick it up.")) {
+    if (!confirm("Skip this report permanently? You will not see it again — another grader will pick it up. Use this only if you have a conflict of interest with this intern.")) {
       return;
     }
     setSkippingId(id);

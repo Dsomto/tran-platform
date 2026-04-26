@@ -7,7 +7,7 @@ export const metadata = {
 
 export default function Stage0Layout({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-screen bg-[#fafafa] text-[#111111] relative">
+    <div className="min-h-screen bg-[#f0fdf4] text-[#0c2f1d] relative">
       <div className="stage-0-rain" aria-hidden="true" />
       <div className="relative z-10">{children}</div>
     </div>

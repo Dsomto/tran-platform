@@ -61,6 +61,9 @@ export function GradeForm({
   }
 
   async function release() {
+    if (!confirm("Release this report back to the queue? Another grader can then claim your slot.")) {
+      return;
+    }
     setReleasing(true);
     setError(null);
     try {
@@ -100,7 +103,9 @@ export function GradeForm({
   if (!canGrade) {
     return (
       <section className="bg-amber-50 border border-amber-200 rounded-xl p-5 text-sm text-amber-900">
-        This report is not claimed to you. Return to the queue to claim it.
+        {alreadyGraded
+          ? "You have already submitted your grade for this report. The other reviewer's score and the final average will appear once they finish."
+          : "You can't grade this report right now. If you haven't claimed it, return to the queue. If it's flagged divergent, a super admin will resolve it."}
       </section>
     );
   }
@@ -135,6 +140,9 @@ export function GradeForm({
         <div>
           <label className="block text-sm font-medium text-foreground mb-1">
             Feedback to the participant
+            <span className="ml-2 text-xs font-normal text-muted-foreground">
+              ({feedback.length} chars · minimum 20)
+            </span>
           </label>
           <p className="text-xs text-muted-foreground mb-2">
             Be specific. What was strong? What was weak? Participants see this

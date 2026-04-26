@@ -76,15 +76,20 @@ export default async function ReportsPage() {
                     <span className="text-muted-foreground font-normal"> — {meta.subtitle}</span>
                   </h2>
                   <div className="mt-2 flex items-center gap-2 text-sm flex-wrap">
-                    <StatusPill status={r?.status ?? "NONE"} />
-                    {r?.score != null && (
+                    <StatusPill status={r?.status ?? "NONE"} divergent={r?.divergent ?? false} />
+                    {r?.score != null && !r?.divergent && (
                       <span className="text-muted-foreground">
                         Score: <strong className="text-foreground">{r.score}</strong>
                         {w && <span> / {w.passingScore} pass</span>}
                       </span>
                     )}
                   </div>
-                  {r?.feedback && (
+                  {r?.divergent && (
+                    <p className="mt-2 text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded px-2 py-1.5 max-w-xl">
+                      Your two reviewers disagreed on this report. The programme team is reviewing — you&apos;ll get a final score once they&apos;re done.
+                    </p>
+                  )}
+                  {r?.feedback && !r?.divergent && (
                     <details className="mt-3 text-sm">
                       <summary className="cursor-pointer text-blue font-medium">
                         Grader feedback
@@ -129,13 +134,23 @@ export default async function ReportsPage() {
   );
 }
 
-function StatusPill({ status }: { status: string }) {
+function StatusPill({ status, divergent }: { status: string; divergent: boolean }) {
+  // Divergent reports stay in UNDER_REVIEW until a super admin tiebreaks. The
+  // intern needs a distinct label so they don't read it as silent inactivity.
+  if (divergent) {
+    return (
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200">
+        <AlertTriangle className="h-3.5 w-3.5" />
+        Awaiting admin review
+      </span>
+    );
+  }
   const config: Record<string, { label: string; color: string; icon: React.ElementType }> = {
     NONE: { label: "Not started", color: "bg-muted text-muted-foreground", icon: Clock },
     DRAFT: { label: "Draft", color: "bg-amber-50 text-amber-700 border border-amber-200", icon: Clock },
     SUBMITTED: { label: "Submitted — awaiting review", color: "bg-blue/10 text-blue border border-blue/30", icon: Clock },
     UNDER_REVIEW: { label: "Under review", color: "bg-blue/10 text-blue border border-blue/30", icon: Clock },
-    GRADED: { label: "Graded — awaiting cohort publish", color: "bg-purple-50 text-purple-700 border border-purple-200", icon: Clock },
+    GRADED: { label: "Graded — awaiting cohort publish", color: "bg-purple-50 text-purple-700 border border-purple-200", icon: CheckCircle2 },
     PASSED: { label: "Passed", color: "bg-emerald-50 text-emerald-700 border border-emerald-200", icon: CheckCircle2 },
     FAILED: { label: "Not passed", color: "bg-rose-50 text-rose-700 border border-rose-200", icon: XCircle },
     LATE: { label: "Late", color: "bg-slate-100 text-slate-700 border border-slate-200", icon: AlertTriangle },

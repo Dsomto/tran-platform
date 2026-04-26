@@ -112,11 +112,10 @@ export async function POST(request: NextRequest) {
 
     return Response.json({ report }, { status: 201 });
   } catch (error) {
+    // Log details server-side; never leak Prisma error names to the user.
     logger.error("save_report_draft_failed", error);
-    const detail =
-      error instanceof Error ? `${error.name}: ${error.message}` : "Unknown";
     return Response.json(
-      { error: `Save failed — ${detail}` },
+      { error: "Could not save your draft. Please try again — your changes are still in the form." },
       { status: 500 }
     );
   }

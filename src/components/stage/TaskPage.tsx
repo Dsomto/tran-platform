@@ -6,6 +6,26 @@ import TaskWidget from "@/components/widgets/TaskWidget";
 import type { WidgetKind, TaskContext } from "@/components/widgets/types";
 import type { StageTheme } from "./StageShell";
 
+// Translate raw enum values from the API into the friendly labels we use
+// elsewhere in the product. PENDING_REVIEW used to leak through verbatim.
+function humanStatus(s: string | null | undefined): string {
+  switch ((s ?? "").toUpperCase()) {
+    case "GRADED":
+      return "Graded";
+    case "LATE":
+      return "Late";
+    case "SUBMITTED":
+    case "PENDING_REVIEW":
+      return "Submitted";
+    case "PASSED":
+      return "Passed";
+    case "FAILED":
+      return "Not passed";
+    default:
+      return s ?? "Pending";
+  }
+}
+
 export type TaskPageProps = {
   theme: StageTheme;
   taskId: string;
@@ -164,7 +184,7 @@ export default function TaskPageClient(props: TaskPageProps) {
           <div className="rounded-lg p-3" style={{ backgroundColor: `${accent}18`, color: accent, border: `1px solid ${accent}33` }}>
             <div className="text-xs uppercase tracking-wider opacity-70">Result</div>
             <div className="font-semibold mt-1">
-              {result.status}
+              {humanStatus(result.status)}
               {result.score != null && ` — ${result.score}/${props.maxPoints}`}
             </div>
             {result.feedback && <div className="text-sm opacity-80 mt-1">{result.feedback}</div>}
