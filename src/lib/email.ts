@@ -2,19 +2,53 @@ import nodemailer from "nodemailer";
 import { logger } from "./logger";
 import { publicAppUrl } from "./public-url";
 
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || "smtp.zoho.com",
-  port: parseInt(process.env.SMTP_PORT || "587"),
-  secure: false,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-  // Reuse TCP connection for fanouts; Zoho allows several emails per connection.
-  pool: true,
-  maxConnections: 3,
-  maxMessages: 100,
-});
+// Build a fresh SMTP transporter on every send. We previously kept a pooled
+// singleton at module level, but that pattern fails badly on Vercel:
+//   - If the lambda cold-starts before env is fully populated, the singleton
+//     captures undefined credentials and every subsequent send silently fails.
+//   - Pooled connections also go stale across the lambda freeze/thaw cycle.
+// The diagnostic endpoint at /api/debug/smtp-test creates a fresh transport
+// per call and consistently delivers — so we mirror that pattern here. The
+// extra ~200ms per send is negligible at our volume.
+function newTransporter() {
+  const host = process.env.SMTP_HOST;
+  const port = parseInt(process.env.SMTP_PORT || "587");
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASS;
+  if (!host || !user || !pass) {
+    // Throw so the caller's catch + logger surfaces the misconfiguration
+    // instead of nodemailer hanging on a half-built connection.
+    throw new Error(
+      `SMTP env not configured (host=${host ? "set" : "missing"}, user=${user ? "set" : "missing"}, pass=${pass ? "set" : "missing"})`
+    );
+  }
+  return nodemailer.createTransport({
+    host,
+    port,
+    secure: false,
+    auth: { user, pass },
+  });
+}
+
+// Tag every send with a single console.log line so the function logs always
+// show what was attempted, even if the structured logger pipeline is buffered.
+async function sendOne(
+  label: string,
+  options: nodemailer.SendMailOptions
+): Promise<void> {
+  const t = newTransporter();
+  console.log(`[email:${label}] sending to=${options.to}`);
+  try {
+    const info = await t.sendMail(options);
+    console.log(`[email:${label}] sent to=${options.to} response=${info.response}`);
+  } catch (err) {
+    const msg = err instanceof Error ? `${err.name}: ${err.message}` : String(err);
+    console.error(`[email:${label}] failed to=${options.to} err=${msg}`);
+    throw err;
+  } finally {
+    t.close();
+  }
+}
 
 const FROM = `"Ubuntu Bridge Initiative" <${process.env.SMTP_USER}>`;
 
@@ -24,7 +58,7 @@ export async function sendApplicationConfirmation(
 ): Promise<void> {
   const firstName = fullName.split(" ")[0];
 
-  await transporter.sendMail({
+  await sendOne("send", {
     from: `"Ubuntu Bridge Initiative" <${process.env.SMTP_USER}>`,
     to,
     subject: "We've Received Your Application — UBI",
@@ -64,7 +98,7 @@ export async function sendWelcomeEmail(
   to: string,
   firstName: string
 ): Promise<void> {
-  await transporter.sendMail({
+  await sendOne("send", {
     from: `"Ubuntu Bridge Initiative" <${process.env.SMTP_USER}>`,
     to,
     subject: "Welcome to UBI — Your Cybersecurity Journey Begins!",
@@ -98,7 +132,7 @@ export async function sendRejectionEmail(
   to: string,
   firstName: string
 ): Promise<void> {
-  await transporter.sendMail({
+  await sendOne("send", {
     from: `"Ubuntu Bridge Initiative" <${process.env.SMTP_USER}>`,
     to,
     subject: "UBI Application Update",
@@ -146,7 +180,7 @@ export async function sendPublicAcceptanceEmail(
       ]
     : [];
 
-  await transporter.sendMail({
+  await sendOne("send", {
     from: `"Ubuntu Bridge Initiative" <${process.env.SMTP_USER}>`,
     to,
     subject: "You're In! Welcome to UBI Cohort 1",
@@ -293,7 +327,7 @@ export async function sendPublicRejectionEmail(
 ): Promise<void> {
   const firstName = fullName.split(" ")[0];
 
-  await transporter.sendMail({
+  await sendOne("send", {
     from: `"Ubuntu Bridge Initiative" <${process.env.SMTP_USER}>`,
     to,
     subject: "UBI Application Update",
@@ -438,7 +472,7 @@ export async function sendAssignmentPublished(
   assignment: { title: string; dueDate: Date; maxPoints: number }
 ): Promise<void> {
   const due = assignment.dueDate.toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" });
-  await transporter.sendMail({
+  await sendOne("send", {
     from: FROM,
     to,
     subject: `New assignment: ${assignment.title}`,
@@ -461,7 +495,7 @@ export async function sendSubmissionReceipt(
     status === "LATE"
       ? `<p style="color:#B45309;"><strong>Note:</strong> this submission is past the due date and is marked LATE.</p>`
       : "";
-  await transporter.sendMail({
+  await sendOne("send", {
     from: FROM,
     to,
     subject: `Submission received — ${assignmentTitle}`,
@@ -485,7 +519,7 @@ export async function sendGradeNotification(
   const fb = feedback
     ? `<div style="margin-top:12px;padding:12px;background:#F1F5F9;border-radius:10px;"><strong>Feedback:</strong><br>${feedback}</div>`
     : "";
-  await transporter.sendMail({
+  await sendOne("send", {
     from: FROM,
     to,
     subject: `Graded: ${assignmentTitle} — ${score}/${maxPoints}`,
@@ -538,7 +572,7 @@ export async function sendStageDoorCode(
         </tr>`
     )
     .join("");
-  await transporter.sendMail({
+  await sendOne("send", {
     from: FROM,
     to,
     subject: "Your stage-door password — TRAN foundation rooms",
@@ -575,7 +609,7 @@ export async function sendStageAdvanced(
   earned: number,
   maxPoints: number
 ): Promise<void> {
-  await transporter.sendMail({
+  await sendOne("send", {
     from: FROM,
     to,
     subject: `Advanced to ${toStage.replace("STAGE_", "Stage ")} — TRAN`,
@@ -594,7 +628,7 @@ export async function sendEliminationEmail(
   earned: number,
   maxPoints: number
 ): Promise<void> {
-  await transporter.sendMail({
+  await sendOne("send", {
     from: FROM,
     to,
     subject: "TRAN capstone outcome",
@@ -640,7 +674,7 @@ export async function sendCohortBroadcast(
   for (let i = 0; i < unique.length; i += BCC_CHUNK_SIZE) {
     const batch = unique.slice(i, i + BCC_CHUNK_SIZE);
     try {
-      await transporter.sendMail({
+      await sendOne("send", {
         from: FROM,
         to: FROM, // Sender acts as visible recipient; real recipients are BCC'd.
         bcc: batch,
