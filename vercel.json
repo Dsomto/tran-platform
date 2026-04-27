@@ -2,8 +2,9 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "crons": [
     {
-      "path": "/api/cron/email-drain?limit=300",
-      "schedule": "0 9 * * *"
+      "//": "Drain hourly with a per-run cap that fits inside the IONOS hourly send limit. Synchronous app-generated emails (apply confirmations etc.) also count against that cap, so leave headroom: cap is 50/hr on day 0, 100/hr after day 7, 400/hr after day 14, 500/hr after day 30. Bump ?limit= as the mailbox ages.",
+      "path": "/api/cron/email-drain?limit=40",
+      "schedule": "0 * * * *"
     }
   ],
   "buildCommand": "prisma generate && next build"

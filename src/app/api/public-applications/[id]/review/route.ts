@@ -71,28 +71,29 @@ export async function POST(
         logger.error("onboarding_failed", err, { applicationId: id, email: application.email });
       }
 
-      // Send email in background (with PDF attachment)
-      (async () => {
-        let pdfBuffer: Buffer | undefined;
-        try {
-          const { generateAcceptancePDF } = await import("@/lib/generate-letter");
-          pdfBuffer = await generateAcceptancePDF(application.fullName, application.trackInterest);
-        } catch (err) {
-          logger.error("acceptance_pdf_generation_failed", err, { applicationId: id });
-        }
-        try {
-          await sendPublicAcceptanceEmail(
-            application.email,
-            application.fullName,
-            application.trackInterest,
-            internId,
-            tempPassword,
-            pdfBuffer
-          );
-        } catch (err) {
-          logger.error("acceptance_email_failed", err, { email: application.email, internId });
-        }
-      })();
+      // Send the email synchronously. We used to start it in a background
+      // IIFE, but Vercel freezes the lambda after the response and the SMTP
+      // send dies mid-flight. Awaiting adds ~1-2s to the response but
+      // guarantees the applicant actually gets their welcome.
+      let pdfBuffer: Buffer | undefined;
+      try {
+        const { generateAcceptancePDF } = await import("@/lib/generate-letter");
+        pdfBuffer = await generateAcceptancePDF(application.fullName, application.trackInterest);
+      } catch (err) {
+        logger.error("acceptance_pdf_generation_failed", err, { applicationId: id });
+      }
+      try {
+        await sendPublicAcceptanceEmail(
+          application.email,
+          application.fullName,
+          application.trackInterest,
+          internId,
+          tempPassword,
+          pdfBuffer
+        );
+      } catch (err) {
+        logger.error("acceptance_email_failed", err, { email: application.email, internId });
+      }
 
       return Response.json({ success: true, application: updated });
     }
@@ -103,9 +104,11 @@ export async function POST(
       data: { status: "rejected" },
     });
 
-    sendPublicRejectionEmail(application.email, application.fullName).catch((err) =>
-      logger.error("rejection_email_failed", err, { email: application.email })
-    );
+    try {
+      await sendPublicRejectionEmail(application.email, application.fullName);
+    } catch (err) {
+      logger.error("rejection_email_failed", err, { email: application.email });
+    }
 
     return Response.json({ success: true, application: updated });
   } catch (error) {

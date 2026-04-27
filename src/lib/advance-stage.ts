@@ -132,12 +132,16 @@ export async function maybeAdvanceStage(internId: string): Promise<AdvanceResult
       },
     });
     logger.info("intern_eliminated", { internId, earned, required });
-    sendEliminationEmail(
-      intern.user.email,
-      intern.user.firstName,
-      earned,
-      room.totalPoints
-    ).catch((e) => logger.error("elimination_email_failed", e, { internId }));
+    try {
+      await sendEliminationEmail(
+        intern.user.email,
+        intern.user.firstName,
+        earned,
+        room.totalPoints
+      );
+    } catch (e) {
+      logger.error("elimination_email_failed", e, { internId });
+    }
     return {
       advanced: false,
       fromStage: currentStage,
@@ -195,14 +199,18 @@ export async function maybeAdvanceStage(internId: string): Promise<AdvanceResult
     earned,
     finalist,
   });
-  sendStageAdvanced(
-    intern.user.email,
-    intern.user.firstName,
-    currentStage,
-    nextStage,
-    earned,
-    room.totalPoints
-  ).catch((e) => logger.error("stage_advanced_email_failed", e, { internId }));
+  try {
+    await sendStageAdvanced(
+      intern.user.email,
+      intern.user.firstName,
+      currentStage,
+      nextStage,
+      earned,
+      room.totalPoints
+    );
+  } catch (e) {
+    logger.error("stage_advanced_email_failed", e, { internId });
+  }
 
   return {
     advanced: true,

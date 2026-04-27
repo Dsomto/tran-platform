@@ -64,15 +64,20 @@ export async function POST(
         },
       });
 
-      // Send welcome email (non-blocking)
-      sendWelcomeEmail(application.user.email, application.user.firstName).catch(
-        (err) => console.error("Failed to send welcome email:", err)
-      );
+      // Send synchronously — Vercel freezes the lambda after the response,
+      // killing fire-and-forget SMTP sends. ~1-2s wait is worth a guaranteed
+      // delivery for the most consequential email in the flow.
+      try {
+        await sendWelcomeEmail(application.user.email, application.user.firstName);
+      } catch (err) {
+        console.error("Failed to send welcome email:", err);
+      }
     } else {
-      // Send rejection email (non-blocking)
-      sendRejectionEmail(application.user.email, application.user.firstName).catch(
-        (err) => console.error("Failed to send rejection email:", err)
-      );
+      try {
+        await sendRejectionEmail(application.user.email, application.user.firstName);
+      } catch (err) {
+        console.error("Failed to send rejection email:", err);
+      }
     }
 
     return Response.json({ application: updated });
