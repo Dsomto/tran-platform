@@ -129,10 +129,15 @@ export async function POST(request: Request) {
       throw err;
     }
 
-    // Send confirmation email (don't block response on email failure)
-    sendApplicationConfirmation(normalizedEmail, fullName.trim()).catch((err) =>
-      logger.error("send_application_confirmation_failed", err, { email: normalizedEmail })
-    );
+    // Send the confirmation email synchronously. We used to fire-and-forget,
+    // but on Vercel the lambda freezes after the response, killing the SMTP
+    // send mid-flight. Better to wait the extra ~1s than to silently drop
+    // the email. A failed send is logged but does not fail the application.
+    try {
+      await sendApplicationConfirmation(normalizedEmail, fullName.trim());
+    } catch (err) {
+      logger.error("send_application_confirmation_failed", err, { email: normalizedEmail });
+    }
 
     return Response.json({ success: true }, { status: 201 });
   } catch (error) {
