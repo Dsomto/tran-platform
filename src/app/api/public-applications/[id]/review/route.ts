@@ -71,17 +71,23 @@ export async function POST(
         logger.error("onboarding_failed", err, { applicationId: id, email: application.email });
       }
 
-      // Send the email synchronously. We used to start it in a background
-      // IIFE, but Vercel freezes the lambda after the response and the SMTP
-      // send dies mid-flight. Awaiting adds ~1-2s to the response but
-      // guarantees the applicant actually gets their welcome.
+      // Send the email synchronously and surface failure to the admin. The
+      // welcome email carries the temp password — silently dropping it on
+      // SMTP failure would lock the applicant out, so we tell the admin.
+      logger.info("acceptance_flow_start", { applicationId: id, email: application.email, internId });
+
       let pdfBuffer: Buffer | undefined;
+      let pdfError: string | null = null;
       try {
         const { generateAcceptancePDF } = await import("@/lib/generate-letter");
         pdfBuffer = await generateAcceptancePDF(application.fullName, application.trackInterest);
+        logger.info("acceptance_pdf_ok", { applicationId: id, bytes: pdfBuffer.length });
       } catch (err) {
-        logger.error("acceptance_pdf_generation_failed", err, { applicationId: id });
+        pdfError = err instanceof Error ? `${err.name}: ${err.message}` : String(err);
+        logger.error("acceptance_pdf_generation_failed", err, { applicationId: id, pdfError });
       }
+
+      let emailError: string | null = null;
       try {
         await sendPublicAcceptanceEmail(
           application.email,
@@ -91,11 +97,19 @@ export async function POST(
           tempPassword,
           pdfBuffer
         );
+        logger.info("acceptance_email_ok", { applicationId: id, email: application.email });
       } catch (err) {
-        logger.error("acceptance_email_failed", err, { email: application.email, internId });
+        emailError = err instanceof Error ? `${err.name}: ${err.message}` : String(err);
+        logger.error("acceptance_email_failed", err, { email: application.email, internId, emailError });
       }
 
-      return Response.json({ success: true, application: updated });
+      return Response.json({
+        success: true,
+        application: updated,
+        emailSent: emailError === null,
+        emailError,
+        pdfError,
+      });
     }
 
     // Rejected

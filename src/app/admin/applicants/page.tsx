@@ -141,11 +141,21 @@ export default function ApplicantsPage() {
   async function handleReview(id: string, action: "approved" | "rejected") {
     setIsReviewing(true);
     try {
-      await fetch(`/api/public-applications/${id}/review`, {
+      const res = await fetch(`/api/public-applications/${id}/review`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action }),
       });
+      const data = await res.json().catch(() => ({}));
+      // Surface email-send failure to the admin. The welcome email carries the
+      // applicant's temp password — if it didn't go out, the admin needs to
+      // know so they can manually re-send (or fix SMTP) before the applicant
+      // is locked out without credentials.
+      if (action === "approved" && data?.emailSent === false) {
+        alert(
+          `Application approved, but the welcome email FAILED to send.\n\nReason: ${data.emailError || "unknown"}\n\nThe applicant has been created in the system but does not have their login credentials. Re-send manually or check Vercel logs for "acceptance_email_failed".`
+        );
+      }
       setSelected(null);
       setSelectedIds(new Set());
       fetchApps();
