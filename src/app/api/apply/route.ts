@@ -105,8 +105,24 @@ export async function POST(request: Request) {
         err instanceof Prisma.PrismaClientKnownRequestError &&
         err.code === "P2002"
       ) {
+        // Identify the actual colliding field so the error message doesn't
+        // misleadingly blame email when a different unique index fired (e.g.
+        // a stale index on a removed field that hasn't been db-pushed yet).
+        const target = err.meta?.target;
+        const targetStr = Array.isArray(target) ? target.join(",") : String(target ?? "");
+        if (targetStr.toLowerCase().includes("email")) {
+          return Response.json(
+            { error: "An application with this email already exists." },
+            { status: 409 }
+          );
+        }
+        logger.error("application_unique_violation_unexpected", err, { target: targetStr });
         return Response.json(
-          { error: "An application with this email already exists." },
+          {
+            error:
+              "Could not save your application — a database constraint blocked it. The team has been notified.",
+            collision: targetStr,
+          },
           { status: 409 }
         );
       }
