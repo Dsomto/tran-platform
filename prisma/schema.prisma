@@ -452,13 +452,18 @@ model PublicApplication {
   status          String   @default("pending")
   stage           Int      @default(-1)     // -1 = not started, 0-9 = active stages, 10 = finalist
   stageStatus     String   @default("none") // none | active | advanced | eliminated
-  internId        String?  @unique          // e.g. UBI-2025-0001
+  // Uniqueness for internId is enforced by the atomic counter in
+  // src/lib/intern-id.ts — collisions are impossible by construction. We
+  // dropped the unique INDEX because Mongo treats every pre-approval doc as
+  // having internId=null and the index can't accept multiple nulls reliably.
+  internId        String?                   // e.g. UBI-2025-0001 (assigned at approval)
   loginPassword   String?                   // plain text stored temporarily for email, hashed on first login
   createdAt       DateTime @default(now())
 
   @@index([createdAt(sort: Desc)])
   @@index([stage, stageStatus])
   @@index([status])
+  @@index([internId])
 }
 
 // ─── COUNTER (atomic sequences, e.g. intern IDs) ──────────

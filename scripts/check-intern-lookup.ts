@@ -14,9 +14,6 @@ async function main() {
   });
   console.log("All records:", JSON.stringify(all, null, 2));
 
-  const byUnique = await prisma.publicApplication.findUnique({ where: { internId: code } });
-  console.log("findUnique by internId:", byUnique ? "FOUND" : "NULL");
-
   const byFirst = await prisma.publicApplication.findFirst({ where: { internId: code } });
   console.log("findFirst by internId:", byFirst ? "FOUND" : "NULL");
 

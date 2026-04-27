@@ -134,7 +134,10 @@ export async function login(
 
   let user = null;
   if (isInternId) {
-    const app = await prisma.publicApplication.findUnique({
+    // findFirst (not findUnique) because we dropped the unique index on
+    // internId; the atomic counter in lib/intern-id.ts still guarantees
+    // each issued ID is allocated only once.
+    const app = await prisma.publicApplication.findFirst({
       where: { internId: normalized.toUpperCase() },
     });
     if (app) {

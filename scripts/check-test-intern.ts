@@ -28,7 +28,7 @@ async function main() {
     } : null,
   } : "NOT FOUND");
 
-  const byInternId = await prisma.publicApplication.findUnique({
+  const byInternId = await prisma.publicApplication.findFirst({
     where: { internId: "UBI-2026-0001" },
   });
   console.log("Lookup by internId UBI-2026-0001:", byInternId ? "FOUND" : "NOT FOUND");
