@@ -35,13 +35,15 @@ export async function GET(request: NextRequest) {
 
     const reports = await prisma.stageReport.findMany({
       where: { stage },
-      select: { id: true, status: true, score: true },
+      select: { id: true, status: true, score: true, divergent: true },
     });
 
     const byStatus: Record<string, number> = {};
     const scores: number[] = [];
+    let divergentCount = 0;
     for (const r of reports) {
       byStatus[r.status] = (byStatus[r.status] ?? 0) + 1;
+      if (r.divergent) divergentCount++;
       if (r.status === "GRADED" && typeof r.score === "number") scores.push(r.score);
     }
     scores.sort((a, b) => a - b);
@@ -49,6 +51,10 @@ export async function GET(request: NextRequest) {
     const summary = {
       total: reports.length,
       byStatus,
+      // Reports stuck waiting for super-admin tiebreak. Surfaced separately so
+      // the admin notices them before publishing — publishing while divergent
+      // reports exist would silently exclude those interns from the result email.
+      divergentPending: divergentCount,
       graded: scores.length,
       min: scores[0] ?? null,
       max: scores[scores.length - 1] ?? null,
@@ -84,6 +90,22 @@ export async function POST(request: NextRequest) {
     const threshold = Number(passingScore);
     if (!Number.isFinite(threshold) || threshold < 0 || threshold > 100) {
       return Response.json({ error: "passingScore must be 0-100" }, { status: 400 });
+    }
+
+    // Block publishing if any reports for this stage are still waiting on a
+    // super-admin tiebreak — otherwise those interns silently miss the
+    // results email and stay stuck on UNDER_REVIEW.
+    const divergentPending = await prisma.stageReport.count({
+      where: { stage, divergent: true },
+    });
+    if (divergentPending > 0) {
+      return Response.json(
+        {
+          error: `${divergentPending} report${divergentPending === 1 ? "" : "s"} for this stage still need a tiebreak. Resolve those before publishing.`,
+          divergentPending,
+        },
+        { status: 409 }
+      );
     }
 
     const graded = await prisma.stageReport.findMany({

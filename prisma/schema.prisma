@@ -449,9 +449,6 @@ model PublicApplication {
   dedication      String
   goals           String
   referralSource  String?
-  referralCode    String   @unique
-  referredBy      String?
-  referralCount   Int      @default(0)
   status          String   @default("pending")
   stage           Int      @default(-1)     // -1 = not started, 0-9 = active stages, 10 = finalist
   stageStatus     String   @default("none") // none | active | advanced | eliminated

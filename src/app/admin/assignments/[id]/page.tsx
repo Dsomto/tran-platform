@@ -87,6 +87,7 @@ export default async function StageDetailPage({
     feedback: r.feedback,
     submittedAt: r.submittedAt ? r.submittedAt.toISOString() : null,
     gradedAt: r.gradedAt ? r.gradedAt.toISOString() : null,
+    divergent: r.divergent,
   }));
 
   const status = (stageWindow?.status ?? "CLOSED") as "OPEN" | "PAUSED" | "CLOSED";

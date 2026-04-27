@@ -36,7 +36,6 @@ async function main() {
       trackInterest: "ETHICAL_HACKING",
       dedication: "20 hrs/week",
       goals: "Test the stage rooms end-to-end.",
-      referralCode: "TEST-REF-001",
       status: "approved",
       stage: 4,
       stageStatus: "active",

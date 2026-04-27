@@ -7,12 +7,6 @@ async function main() {
     having: { email: { _count: { gt: 1 } } },
   });
 
-  const dupReferral = await prisma.publicApplication.groupBy({
-    by: ["referralCode"],
-    _count: { referralCode: true },
-    having: { referralCode: { _count: { gt: 1 } } },
-  });
-
   const rows = await prisma.publicApplication.findMany({
     where: { internId: { not: null } },
     select: { internId: true },
@@ -32,11 +26,9 @@ async function main() {
     JSON.stringify(
       {
         duplicateEmails: dupEmails.length,
-        duplicateReferralCodes: dupReferral.length,
         totalIssuedInternIds: rows.length,
         maxInternIdByYear: maxByYear,
         dupEmailsSample: dupEmails.slice(0, 5),
-        dupReferralSample: dupReferral.slice(0, 5),
       },
       null,
       2

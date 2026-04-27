@@ -18,7 +18,6 @@ import {
   UserCheck,
   UserX,
   Download,
-  Link2,
   Mail,
   Globe,
   Target,
@@ -44,9 +43,6 @@ interface PublicApp {
   dedication: string;
   goals: string;
   referralSource: string | null;
-  referralCode: string;
-  referredBy: string | null;
-  referralCount: number;
   status: string;
   stage: number;
   stageStatus: string;
@@ -249,11 +245,11 @@ export default function ApplicantsPage() {
       p++;
     }
 
-    const headers = ["Name", "Email", "Country", "Age Range", "Gender", "Status", "Track", "Dedication", "Experience", "Goals", "Referral Code", "Referred By", "Referrals", "Applied"];
+    const headers = ["Name", "Email", "Country", "Age Range", "Gender", "Status", "Track", "Dedication", "Experience", "Goals", "Applied"];
     const rows = allApps.map((a) => [
       a.fullName, a.email, a.country, a.ageRange, a.gender || "", a.currentStatus,
       getTrackLabel(a.trackInterest), a.dedication, `"${a.experience.replace(/"/g, '""')}"`,
-      `"${a.goals.replace(/"/g, '""')}"`, a.referralCode, a.referredBy || "", a.referralCount,
+      `"${a.goals.replace(/"/g, '""')}"`,
       formatDate(a.createdAt),
     ]);
 
@@ -477,30 +473,13 @@ export default function ApplicantsPage() {
                   </div>
                 </div>
 
-                {/* Referral info */}
-                <div className="flex flex-wrap gap-3 mb-6">
-                  <div className="flex items-center gap-1.5 bg-blue/5 px-3 py-1.5 rounded-lg">
-                    <Link2 className="w-3.5 h-3.5 text-blue" />
-                    <span className="text-xs font-medium text-blue">Code: {selected.referralCode}</span>
-                  </div>
-                  {selected.referredBy && (
-                    <div className="flex items-center gap-1.5 bg-primary/5 px-3 py-1.5 rounded-lg">
-                      <Users className="w-3.5 h-3.5 text-primary" />
-                      <span className="text-xs font-medium text-primary">Referred by: {selected.referredBy}</span>
-                    </div>
-                  )}
-                  {selected.referralCount > 0 && (
-                    <div className="flex items-center gap-1.5 bg-accent/5 px-3 py-1.5 rounded-lg">
-                      <UserCheck className="w-3.5 h-3.5 text-accent" />
-                      <span className="text-xs font-medium text-accent">{selected.referralCount} referral{selected.referralCount !== 1 ? "s" : ""}</span>
-                    </div>
-                  )}
-                  {selected.referralSource && (
+                {selected.referralSource && (
+                  <div className="flex flex-wrap gap-3 mb-6">
                     <div className="flex items-center gap-1.5 bg-border-light px-3 py-1.5 rounded-lg">
                       <span className="text-xs text-muted">Source: {selected.referralSource}</span>
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
 
                 <p className="text-xs text-muted mb-6">
                   Applied {formatDate(selected.createdAt)}
@@ -646,11 +625,6 @@ export default function ApplicantsPage() {
                         <p className="text-sm font-semibold text-foreground truncate">
                           {app.fullName}
                         </p>
-                        {app.referralCount > 0 && (
-                          <span className="text-[10px] font-medium text-accent bg-accent/10 px-1.5 py-0.5 rounded-full">
-                            {app.referralCount} referral{app.referralCount !== 1 ? "s" : ""}
-                          </span>
-                        )}
                       </div>
                       <p className="text-xs text-muted truncate">{app.email}</p>
                       <div className="flex items-center gap-2 mt-1 flex-wrap">

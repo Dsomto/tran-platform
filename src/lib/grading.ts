@@ -14,15 +14,15 @@ export const MAX_ACTIVE_CLAIMS_PER_GRADER = 5;
 export const STALE_CLAIM_HOURS = 72;
 
 // Format the two graders' feedback into one block the intern reads. We label
-// the reviewers as A and B (alphabetical, not by claim order) to keep peer
-// identity opaque, and to keep the intern's attention on the substance rather
-// than guessing who said what.
+// the reviewers A and B in the order the caller provides — typically that's
+// claim order from the database (oldest grade row first). We deliberately do
+// NOT sort by score: doing so would leak which reviewer was harsher, which
+// undermines the anonymity of the two-grader process.
 export function combineFeedback(parts: { score: number; feedback: string }[]): string {
   if (parts.length === 0) return "";
   if (parts.length === 1) return parts[0].feedback;
-  const sorted = [...parts].sort((a, b) => a.score - b.score); // lower score first
   const labels = ["Reviewer A", "Reviewer B"];
-  return sorted
+  return parts
     .map((p, i) => `— ${labels[i]} —\n${p.feedback.trim()}`)
     .join("\n\n");
 }

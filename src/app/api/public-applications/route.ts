@@ -24,7 +24,6 @@ export async function GET(request: Request) {
       { fullName: { contains: search, mode: "insensitive" } },
       { email: { contains: search, mode: "insensitive" } },
       { country: { contains: search, mode: "insensitive" } },
-      { referralCode: { contains: search, mode: "insensitive" } },
     ];
   }
 

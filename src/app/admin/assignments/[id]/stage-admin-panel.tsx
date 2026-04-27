@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -37,6 +38,7 @@ interface ReportRow {
   feedback: string | null;
   submittedAt: string | null;
   gradedAt: string | null;
+  divergent: boolean;
 }
 
 interface Props {
@@ -526,8 +528,17 @@ function PublishResults({
   const maxBucket = Math.max(1, ...buckets.map((b) => b.count));
   const passing = graded.filter((s) => (s.score ?? 0) >= threshold).length;
   const failing = graded.length - passing;
+  // Reports stuck on a divergent reviewer split — must be tiebroken before
+  // publish, otherwise they silently miss the results email.
+  const divergentPending = submissions.filter((s) => s.divergent).length;
 
   async function publish() {
+    if (divergentPending > 0) {
+      setErr(
+        `${divergentPending} report${divergentPending === 1 ? "" : "s"} for this stage need a super-admin tiebreak first. Resolve those on /admin/reports before publishing.`
+      );
+      return;
+    }
     if (!confirm(`Publish Stage ${stageNum} results with passing score ${threshold}?\n\n${passing} pass · ${failing} below threshold. This is one-way.`)) return;
     setBusy(true);
     setErr(null);
@@ -618,6 +629,14 @@ function PublishResults({
         </div>
       </div>
 
+      {divergentPending > 0 && !published && (
+        <div className="mb-3 p-3 bg-amber-50 border border-amber-300 rounded-lg text-sm text-amber-900">
+          <strong>{divergentPending} report{divergentPending === 1 ? "" : "s"} need a tiebreak.</strong>
+          {" "}Two reviewers disagreed by more than 15 points. Resolve these on
+          {" "}<Link href="/admin/reports" className="underline font-medium">/admin/reports</Link>
+          {" "}before publishing — divergent reports are excluded from the publish run.
+        </div>
+      )}
       {err && (
         <div className="mb-3 p-3 bg-rose-50 border border-rose-200 rounded-lg text-sm text-rose-800">
           {err}
@@ -631,11 +650,15 @@ function PublishResults({
 
       <button
         onClick={publish}
-        disabled={busy || published || graded.length === 0}
+        disabled={busy || published || graded.length === 0 || divergentPending > 0}
         className="inline-flex items-center gap-1.5 px-5 py-2 text-sm font-semibold rounded-lg bg-blue text-white hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
-        {published ? "Already published" : `Publish at ${threshold}/100`}
+        {published
+          ? "Already published"
+          : divergentPending > 0
+          ? `Resolve ${divergentPending} tiebreak${divergentPending === 1 ? "" : "s"} first`
+          : `Publish at ${threshold}/100`}
       </button>
     </div>
   );

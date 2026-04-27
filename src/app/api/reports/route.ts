@@ -43,6 +43,7 @@ export async function GET() {
         submittedAt: true,
         gradedAt: true,
         updatedAt: true,
+        divergent: true,
       },
     });
 

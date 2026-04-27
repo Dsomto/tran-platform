@@ -34,15 +34,6 @@ setInterval(() => {
   }
 }, 30 * 60 * 1000);
 
-function generateReferralCode(): string {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  let code = "UBI-";
-  for (let i = 0; i < 6; i++) {
-    code += chars[Math.floor(Math.random() * chars.length)];
-  }
-  return code;
-}
-
 export async function POST(request: Request) {
   try {
     // Rate limit by IP
@@ -73,7 +64,7 @@ export async function POST(request: Request) {
     const {
       fullName, email, country, ageRange, gender,
       currentStatus, experience, trackInterest,
-      dedication, goals, referralSource, ref,
+      dedication, goals, referralSource,
     } = body;
 
     // Validate required fields
@@ -92,66 +83,34 @@ export async function POST(request: Request) {
       );
     }
 
-    // Attempt create; rely on DB unique constraints (email, referralCode)
-    // to prevent races. Retry on referralCode collision, fail fast on email.
     const normalizedEmail = email.toLowerCase().trim();
-    let application;
-    let lastError: unknown;
-    for (let attempt = 0; attempt < 5; attempt++) {
-      const referralCode = generateReferralCode();
-      try {
-        application = await prisma.publicApplication.create({
-          data: {
-            fullName: fullName.trim(),
-            email: normalizedEmail,
-            country: country.trim(),
-            ageRange,
-            gender: gender || null,
-            currentStatus,
-            experience: experience.trim(),
-            trackInterest,
-            dedication,
-            goals: goals.trim(),
-            referralSource: referralSource?.trim() || null,
-            referralCode,
-            referredBy: ref?.trim() || null,
-          },
-        });
-        break;
-      } catch (err) {
-        lastError = err;
-        if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
-          const target = (err.meta?.target as string[] | string | undefined) ?? "";
-          const targetStr = Array.isArray(target) ? target.join(",") : String(target);
-          if (targetStr.includes("email")) {
-            return Response.json(
-              { error: "An application with this email already exists." },
-              { status: 409 }
-            );
-          }
-          // referralCode collision — retry with a new code
-          continue;
-        }
-        throw err;
-      }
-    }
-
-    if (!application) {
-      logger.error("Failed to allocate unique referral code", lastError);
-      return Response.json(
-        { error: "Could not generate a unique referral code. Please try again." },
-        { status: 500 }
-      );
-    }
-
-    // If referred by someone, increment their referral count
-    if (ref?.trim()) {
-      await prisma.publicApplication.updateMany({
-        where: { referralCode: ref.trim() },
-        data: { referralCount: { increment: 1 } },
-      }).catch(() => {
-        // Silently ignore if referrer code doesn't exist
+    try {
+      await prisma.publicApplication.create({
+        data: {
+          fullName: fullName.trim(),
+          email: normalizedEmail,
+          country: country.trim(),
+          ageRange,
+          gender: gender || null,
+          currentStatus,
+          experience: experience.trim(),
+          trackInterest,
+          dedication,
+          goals: goals.trim(),
+          referralSource: referralSource?.trim() || null,
+        },
       });
+    } catch (err) {
+      if (
+        err instanceof Prisma.PrismaClientKnownRequestError &&
+        err.code === "P2002"
+      ) {
+        return Response.json(
+          { error: "An application with this email already exists." },
+          { status: 409 }
+        );
+      }
+      throw err;
     }
 
     // Send confirmation email (don't block response on email failure)
@@ -159,10 +118,7 @@ export async function POST(request: Request) {
       logger.error("send_application_confirmation_failed", err, { email: normalizedEmail })
     );
 
-    return Response.json(
-      { success: true, referralCode: application.referralCode },
-      { status: 201 }
-    );
+    return Response.json({ success: true }, { status: 201 });
   } catch (error) {
     logger.error("application_submission_failed", error);
     return Response.json(
