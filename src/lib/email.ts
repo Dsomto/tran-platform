@@ -1,6 +1,7 @@
 import nodemailer from "nodemailer";
 import { logger } from "./logger";
 import { publicAppUrl } from "./public-url";
+import { signLetter } from "./letter-sig";
 
 // Build a fresh SMTP transporter on every send. We previously kept a pooled
 // singleton at module level, but that pattern fails badly on Vercel:
@@ -116,7 +117,7 @@ export async function sendWelcomeEmail(
           <p style="color: #64748B; line-height: 1.6; margin: 0 0 24px;">
             You start at <strong>Stage 0</strong>. Log in to your dashboard to see your first assignments and meet your team.
           </p>
-          <a href="${process.env.NEXTAUTH_URL}/dashboard" style="display: inline-block; background: linear-gradient(135deg, #2563EB, #0891B2); color: white; padding: 14px 32px; border-radius: 12px; text-decoration: none; font-weight: 600; font-size: 16px;">
+          <a href="${publicAppUrl()}/dashboard" style="display: inline-block; background: linear-gradient(135deg, #2563EB, #0891B2); color: white; padding: 14px 32px; border-radius: 12px; text-decoration: none; font-weight: 600; font-size: 16px;">
             Go to Dashboard
           </a>
         </div>
@@ -167,8 +168,12 @@ export async function sendPublicAcceptanceEmail(
   pdfBuffer?: Buffer
 ): Promise<void> {
   const firstName = fullName.split(" ")[0];
-  const baseUrl = process.env.NEXTAUTH_URL || "https://ubinitiative.org";
-  const letterUrl = `${baseUrl}/letter/acceptance?name=${encodeURIComponent(fullName)}&track=${encodeURIComponent(trackInterest)}`;
+  // Use publicAppUrl() so the link points at the production custom domain,
+  // never the per-deploy Vercel preview URL that NEXTAUTH_URL can resolve to.
+  // Signed with HMAC so a stranger can't craft ?name=AnyOne&track=Whatever
+  // and produce a forgery that looks identical to a real acceptance letter.
+  const sig = signLetter(fullName, trackInterest);
+  const letterUrl = `${publicAppUrl()}/letter/acceptance?name=${encodeURIComponent(fullName)}&track=${encodeURIComponent(trackInterest)}&sig=${sig}`;
 
   const attachments = pdfBuffer
     ? [
