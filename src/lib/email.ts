@@ -62,34 +62,82 @@ export async function sendApplicationConfirmation(
   await sendOne("send", {
     from: `"Somto from Ubuntu Bridge Initiative" <noreply@ubuntubridgeinitiatives.org>`,
     to,
-    subject: "We've Received Your Application — UBI",
+    subject: "We've received your application — UBI",
     html: `
-      <div style="font-family: 'Segoe UI', sans-serif; max-width: 600px; margin: 0 auto; background: #F8FAFC; padding: 40px 20px;">
-        <div style="background: linear-gradient(135deg, #2563EB, #0891B2); padding: 40px; border-radius: 16px; text-align: center; color: white;">
-          <h1 style="margin: 0 0 8px; font-size: 28px; font-weight: 700;">🛡️ UBI</h1>
-          <p style="margin: 0; font-size: 14px; opacity: 0.9;">Ubuntu Bridge Initiative</p>
-        </div>
-        <div style="background: white; padding: 40px; border-radius: 16px; margin-top: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-          <h2 style="color: #0F172A; margin: 0 0 16px;">Congratulations, ${firstName}! 🎉</h2>
-          <p style="color: #64748B; line-height: 1.8; margin: 0 0 16px;">
-            Your application to the <strong style="color: #2563EB;">UBI Cybersecurity Internship Programme</strong> has been received successfully.
-          </p>
-          <p style="color: #64748B; line-height: 1.8; margin: 0 0 16px;">
-            We're currently reviewing all applications. If you pass the screening stage, we will send you an email with your next steps — so <strong>keep an eye on your inbox</strong>.
-          </p>
-          <div style="background: #F0F9FF; border-left: 4px solid #2563EB; padding: 16px 20px; border-radius: 0 8px 8px 0; margin: 24px 0;">
-            <p style="color: #1E40AF; margin: 0; font-size: 14px; line-height: 1.6;">
-              <strong>What happens next?</strong><br/>
-              Our team reviews every application individually. If selected, you'll receive an onboarding email with instructions to get started at Stage 0.
+      <div style="font-family: -apple-system, 'Segoe UI', Roboto, sans-serif; background: #F1F5F9; padding: 40px 20px;">
+        <div style="max-width: 600px; margin: 0 auto;">
+
+          <!-- Header -->
+          <div style="background: linear-gradient(135deg, #0F172A 0%, #1E293B 60%, #0891B2 100%); padding: 48px 32px; border-radius: 18px 18px 0 0; text-align: center; color: white;">
+            <div style="display: inline-block; padding: 6px 14px; border: 1.5px solid rgba(255,255,255,0.3); border-radius: 999px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 18px;">Ubuntu Bridge Initiative</div>
+            <h1 style="margin: 0; font-size: 28px; font-weight: 800; letter-spacing: -0.5px;">UBI</h1>
+            <p style="margin: 6px 0 0; font-size: 13px; opacity: 0.7; letter-spacing: 1px;">CYBERSECURITY INTERNSHIP PROGRAMME</p>
+          </div>
+
+          <!-- Card -->
+          <div style="background: white; padding: 40px 36px; border-radius: 0 0 18px 18px; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);">
+
+            <p style="color: #2563EB; font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; margin: 0 0 8px;">Application received</p>
+            <h2 style="color: #0F172A; margin: 0 0 20px; font-size: 26px; font-weight: 700; letter-spacing: -0.5px; line-height: 1.25;">You're on the list, ${firstName}.</h2>
+
+            <p style="color: #475569; line-height: 1.75; margin: 0 0 20px; font-size: 15px;">
+              Thanks for applying to the UBI Cybersecurity Internship Programme. Your application is in the queue and our team will review it carefully.
+            </p>
+
+            <!-- Timeline -->
+            <div style="margin: 32px 0; padding: 24px; background: #F8FAFC; border-radius: 12px; border: 1px solid #E2E8F0;">
+              <p style="color: #0F172A; margin: 0 0 16px; font-size: 13px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;">What happens now</p>
+              <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                  <td style="vertical-align: top; padding: 10px 0; width: 36px;">
+                    <div style="width: 28px; height: 28px; border-radius: 50%; background: #2563EB; color: white; text-align: center; line-height: 28px; font-weight: 700; font-size: 13px;">1</div>
+                  </td>
+                  <td style="vertical-align: top; padding: 10px 0;">
+                    <p style="color: #0F172A; margin: 0 0 2px; font-size: 14px; font-weight: 600;">We review every application individually</p>
+                    <p style="color: #64748B; margin: 0; font-size: 13px; line-height: 1.6;">This usually takes a few days. We read every word.</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="vertical-align: top; padding: 10px 0;">
+                    <div style="width: 28px; height: 28px; border-radius: 50%; background: #0891B2; color: white; text-align: center; line-height: 28px; font-weight: 700; font-size: 13px;">2</div>
+                  </td>
+                  <td style="vertical-align: top; padding: 10px 0;">
+                    <p style="color: #0F172A; margin: 0 0 2px; font-size: 14px; font-weight: 600;">If you make it through</p>
+                    <p style="color: #64748B; margin: 0; font-size: 13px; line-height: 1.6;">You'll receive a welcome email with your login credentials and orientation details.</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="vertical-align: top; padding: 10px 0;">
+                    <div style="width: 28px; height: 28px; border-radius: 50%; background: #64748B; color: white; text-align: center; line-height: 28px; font-weight: 700; font-size: 13px;">3</div>
+                  </td>
+                  <td style="vertical-align: top; padding: 10px 0;">
+                    <p style="color: #0F172A; margin: 0 0 2px; font-size: 14px; font-weight: 600;">Either way, stay close</p>
+                    <p style="color: #64748B; margin: 0; font-size: 13px; line-height: 1.6;">We periodically send free workshop invitations and certification vouchers to everyone who applied.</p>
+                  </td>
+                </tr>
+              </table>
+            </div>
+
+            <p style="color: #475569; line-height: 1.75; margin: 0 0 24px; font-size: 15px;">
+              In the meantime, stay sharp. Read, build, break things in safe environments. The work you do before you're admitted shows up later.
+            </p>
+
+            <p style="color: #334155; line-height: 1.7; margin: 28px 0 4px; font-size: 15px;">
+              Talk soon,
+            </p>
+            <p style="color: #0F172A; line-height: 1.5; margin: 0; font-size: 15px; font-weight: 600;">
+              Somto Okoma
+            </p>
+            <p style="color: #64748B; line-height: 1.5; margin: 0; font-size: 13px;">
+              Head of Programme, Ubuntu Bridge Initiative
             </p>
           </div>
-          <p style="color: #64748B; line-height: 1.8; margin: 16px 0 0;">
-            In the meantime, stay sharp and keep learning. We look forward to potentially having you on board.
+
+          <!-- Footer -->
+          <p style="text-align: center; color: #94A3B8; font-size: 11px; margin: 24px 0 0; letter-spacing: 0.3px;">
+            Ubuntu Bridge Initiative &middot; Building the next generation of cybersecurity professionals
           </p>
         </div>
-        <p style="text-align: center; color: #94A3B8; font-size: 12px; margin-top: 24px;">
-          &copy; 2026 UBI — Ubuntu Bridge Initiative. Building the next generation of cybersecurity professionals.
-        </p>
       </div>
     `,
   });
@@ -178,89 +226,125 @@ export function renderPublicAcceptanceEmail(opts: {
   return {
     subject: "Welcome to UBI — your access to Cohort 1",
     html: `
-      <div style="font-family: 'Segoe UI', sans-serif; max-width: 600px; margin: 0 auto; background: #F8FAFC; padding: 40px 20px;">
-        <div style="background: linear-gradient(135deg, #2563EB, #0891B2); padding: 32px; border-radius: 16px; text-align: center; color: white;">
-          <h1 style="margin: 0 0 8px; font-size: 24px; font-weight: 700;">UBI</h1>
-          <p style="margin: 0; font-size: 13px; opacity: 0.9;">Ubuntu Bridge Initiative</p>
+      <div style="font-family: -apple-system, 'Segoe UI', Roboto, sans-serif; background: #F1F5F9; padding: 40px 20px;">
+        <div style="max-width: 600px; margin: 0 auto;">
+
+          <!-- Header -->
+          <div style="background: linear-gradient(135deg, #0F172A 0%, #1E293B 60%, #2563EB 100%); padding: 48px 32px; border-radius: 18px 18px 0 0; text-align: center; color: white;">
+            <div style="display: inline-block; padding: 6px 14px; border: 1.5px solid rgba(255,255,255,0.3); border-radius: 999px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 18px;">Cohort 1 · ${trackInterest}</div>
+            <h1 style="margin: 0; font-size: 32px; font-weight: 800; letter-spacing: -0.8px;">You're in.</h1>
+            <p style="margin: 8px 0 0; font-size: 14px; opacity: 0.75;">Welcome to the Ubuntu Bridge Initiative.</p>
+          </div>
+
+          <!-- Card -->
+          <div style="background: white; padding: 40px 36px; border-radius: 0 0 18px 18px; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);">
+
+            <p style="color: #475569; line-height: 1.75; margin: 0 0 18px; font-size: 15px;">
+              Hi ${firstName},
+            </p>
+
+            <p style="color: #334155; line-height: 1.75; margin: 0 0 18px; font-size: 15px;">
+              I'm Somto, and I lead the programme here. Your application made it through review — you're officially part of <strong>UBI Cohort 1</strong> on the <strong>${trackInterest}</strong> track.
+            </p>
+
+            <p style="color: #334155; line-height: 1.75; margin: 0 0 18px; font-size: 15px;">
+              We're putting in the work to make sure you come out of this programme job-ready. Here's what that looks like.
+            </p>
+
+            <!-- "You pay nothing" highlight -->
+            <div style="margin: 28px 0; padding: 22px 24px; background: linear-gradient(135deg, #ECFDF5, #F0FDF4); border-left: 4px solid #10B981; border-radius: 10px;">
+              <p style="color: #065F46; margin: 0 0 6px; font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;">Free, ever</p>
+              <p style="color: #064E3B; margin: 0; font-size: 14px; line-height: 1.7;">
+                No tuition. No application fee. <strong>Free certification vouchers</strong> for the industry exams you sit along the way — we cover them. No data bill if you qualify for the scholarship. Your only cost is the time and effort you put in.
+              </p>
+            </div>
+
+            <!-- Programme structure -->
+            <h3 style="color: #0F172A; margin: 28px 0 10px; font-size: 17px; font-weight: 700;">10 stages. Elimination-based.</h3>
+            <p style="color: #475569; line-height: 1.75; margin: 0 0 14px; font-size: 14px;">
+              Each stage tests what you've absorbed and decides whether you advance. Only the participants doing the work move forward. It's competitive by design — the credential we're building has to mean something to the recruiters who hire you.
+            </p>
+
+            <!-- Milestones -->
+            <h3 style="color: #0F172A; margin: 28px 0 10px; font-size: 17px; font-weight: 700;">What you unlock as you progress</h3>
+            <table style="width: 100%; border-collapse: collapse; margin: 12px 0 8px;">
+              <tr>
+                <td style="vertical-align: top; padding: 12px 0; width: 4px;">
+                  <div style="width: 4px; height: 100%; background: #10B981; border-radius: 2px;"></div>
+                </td>
+                <td style="vertical-align: top; padding: 12px 0 12px 16px;">
+                  <p style="color: #065F46; margin: 0 0 4px; font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;">Stage 5</p>
+                  <p style="color: #0F172A; margin: 0 0 4px; font-size: 15px; font-weight: 600;">Alumni Network access</p>
+                  <p style="color: #64748B; margin: 0; font-size: 13px; line-height: 1.7;">Structured job-readiness programmes, exclusive workshops, and direct connections with cybersecurity professionals.</p>
+                </td>
+              </tr>
+              <tr>
+                <td style="vertical-align: top; padding: 12px 0; width: 4px;">
+                  <div style="width: 4px; height: 100%; background: #F59E0B; border-radius: 2px;"></div>
+                </td>
+                <td style="vertical-align: top; padding: 12px 0 12px 16px;">
+                  <p style="color: #92400E; margin: 0 0 4px; font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;">Finalists</p>
+                  <p style="color: #0F172A; margin: 0 0 4px; font-size: 15px; font-weight: 600;">Top tier benefits</p>
+                  <p style="color: #64748B; margin: 0; font-size: 13px; line-height: 1.7;">1-on-1 mentorship from senior practitioners, hardware (laptops where needed), and priority placement on our Hire page. Finalists get chosen first for jobs in our network.</p>
+                </td>
+              </tr>
+            </table>
+
+            ${internId && tempPassword ? `
+            <!-- Login credentials -->
+            <div style="margin: 28px 0; padding: 24px; background: #0F172A; border-radius: 14px;">
+              <p style="color: #38BDF8; margin: 0 0 14px; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;">Your login</p>
+              <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                  <td style="padding: 8px 0; color: #94A3B8; font-size: 13px;">Intern ID</td>
+                  <td style="padding: 8px 0; color: #F1F5F9; font-size: 14px; font-family: 'SF Mono', Monaco, Menlo, monospace; text-align: right; font-weight: 600;">${internId}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; border-top: 1px solid rgba(255,255,255,0.08); color: #94A3B8; font-size: 13px;">Temp password</td>
+                  <td style="padding: 8px 0; border-top: 1px solid rgba(255,255,255,0.08); color: #F1F5F9; font-size: 14px; font-family: 'SF Mono', Monaco, Menlo, monospace; text-align: right; font-weight: 600;">${tempPassword}</td>
+                </tr>
+              </table>
+              <p style="margin: 18px 0 0; text-align: center;">
+                <a href="${loginUrl}" style="display: inline-block; background: #2563EB; color: white; padding: 12px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; letter-spacing: 0.3px;">
+                  Log in to your dashboard
+                </a>
+              </p>
+              <p style="color: #64748B; margin: 16px 0 0; font-size: 12px; line-height: 1.6; text-align: center;">
+                You'll be asked to set a new password on first login. Please don't share these credentials.
+              </p>
+            </div>
+            ` : ""}
+
+            <!-- What's next -->
+            <h3 style="color: #0F172A; margin: 28px 0 10px; font-size: 17px; font-weight: 700;">What's next</h3>
+            <p style="color: #475569; line-height: 1.75; margin: 0 0 14px; font-size: 14px;">
+              The orientation date and the programme start date will be communicated separately — keep an eye on your inbox. Stage 0 is already accessible from your dashboard so you can start orienting yourself.
+            </p>
+
+            <p style="color: #475569; line-height: 1.75; margin: 28px 0 14px; font-size: 14px;">
+              Your formal acceptance letter is here:
+              <br/>
+              <a href="${letterUrl}" style="color: #2563EB; word-break: break-all;">${letterUrl}</a>
+            </p>
+
+            <hr style="border: none; border-top: 1px solid #E2E8F0; margin: 32px 0 24px;" />
+
+            <p style="color: #334155; line-height: 1.7; margin: 0 0 4px; font-size: 15px;">
+              Welcome aboard. Looking forward to seeing what you build.
+            </p>
+            <p style="color: #0F172A; line-height: 1.5; margin: 16px 0 0; font-size: 15px; font-weight: 600;">
+              — Somto Okoma
+            </p>
+            <p style="color: #64748B; line-height: 1.5; margin: 0; font-size: 13px;">
+              Head of Programme, Ubuntu Bridge Initiative
+            </p>
+          </div>
+
+          <!-- Footer -->
+          <p style="text-align: center; color: #94A3B8; font-size: 11px; margin: 24px 0 0; letter-spacing: 0.3px;">
+            Ubuntu Bridge Initiative &middot; Building the next generation of cybersecurity professionals
+          </p>
         </div>
-
-        <div style="background: white; padding: 32px; border-radius: 16px; margin-top: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-
-          <h2 style="color: #0F172A; margin: 0 0 16px;">Hi ${firstName},</h2>
-
-          <p style="color: #334155; line-height: 1.7; margin: 0 0 16px;">
-            I'm Somto, and I lead the programme at Ubuntu Bridge Initiative. I'm writing to tell you something simple: <strong>you're in.</strong> Your application made it through review and you're officially part of UBI Cohort 1 on the <strong>${trackInterest}</strong> track.
-          </p>
-
-          <p style="color: #334155; line-height: 1.7; margin: 0 0 16px;">
-            We are putting in the work to make sure you come out of this programme job-ready. Here's what that means in practice.
-          </p>
-
-          <h3 style="color: #0F172A; font-size: 16px; margin: 24px 0 8px;">You pay nothing</h3>
-          <p style="color: #334155; line-height: 1.7; margin: 0 0 8px;">
-            No tuition. No application fee. <strong>Free certification vouchers</strong> for the industry exams you sit along the way — we cover them. No data bill if you qualify for the scholarship. Your only cost is the time and effort you put in.
-          </p>
-
-          <h3 style="color: #0F172A; font-size: 16px; margin: 24px 0 8px;">The programme is 10 stages, elimination-based</h3>
-          <p style="color: #334155; line-height: 1.7; margin: 0 0 8px;">
-            Each stage tests what you have absorbed and decides whether you advance. Only the participants doing the work move forward. It's competitive by design — the credential we are building has to mean something to the recruiters who hire you.
-          </p>
-
-          <h3 style="color: #0F172A; font-size: 16px; margin: 24px 0 8px;">What you unlock as you progress</h3>
-          <ul style="color: #334155; line-height: 1.7; margin: 0 0 8px; padding-left: 20px;">
-            <li><strong>Stage 5 — Alumni Network access.</strong> Structured job-readiness programmes, exclusive workshops, and direct connections with cybersecurity professionals.</li>
-            <li><strong>Finalists — top tier benefits.</strong> 1-on-1 mentorship from senior practitioners, hardware (laptops where needed), and priority placement on our Hire page. Finalists get chosen first for jobs in our network.</li>
-          </ul>
-
-          ${internId && tempPassword ? `
-          <h3 style="color: #0F172A; font-size: 16px; margin: 24px 0 8px;">Your login</h3>
-          <p style="color: #334155; line-height: 1.7; margin: 0 0 8px;">
-            Log in right now at <a href="${loginUrl}" style="color: #2563EB;">${loginUrl}</a> using:
-          </p>
-          <p style="color: #334155; line-height: 1.9; margin: 0 0 8px; padding-left: 16px;">
-            Intern ID: <strong>${internId}</strong><br/>
-            Temporary password: <strong>${tempPassword}</strong>
-          </p>
-          <p style="color: #334155; line-height: 1.7; margin: 0 0 16px; font-size: 13px;">
-            You'll be asked to set a new password the first time you log in. Please don't share these credentials with anyone.
-          </p>
-          ` : ""}
-
-          <h3 style="color: #0F172A; font-size: 16px; margin: 24px 0 8px;">What's next</h3>
-          <p style="color: #334155; line-height: 1.7; margin: 0 0 8px;">
-            The orientation date and the programme start date will be communicated separately — keep an eye on your inbox. Stage 0 is already accessible from your dashboard so you can start orienting yourself.
-          </p>
-
-          ${process.env.SLACK_CHANNEL_URL ? `
-          <h3 style="color: #0F172A; font-size: 16px; margin: 24px 0 8px;">Join the cohort on Slack</h3>
-          <p style="color: #334155; line-height: 1.7; margin: 0 0 8px;">
-            Mentor office-hours, announcements, and help from other participants all live in our Slack workspace. We expect everyone in there from day one.
-          </p>
-          <p style="margin: 12px 0 16px;">
-            <a href="${process.env.SLACK_CHANNEL_URL}" style="display: inline-block; background: #4A154B; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px;">
-              Join the Slack channel
-            </a>
-          </p>
-          ` : ""}
-
-          <p style="color: #334155; line-height: 1.7; margin: 24px 0 8px;">
-            Your formal acceptance letter is here:
-            <a href="${letterUrl}" style="color: #2563EB;">${letterUrl}</a>
-          </p>
-
-          <p style="color: #334155; line-height: 1.7; margin: 24px 0 4px;">
-            Welcome aboard. Looking forward to seeing what you build.
-          </p>
-          <p style="color: #334155; line-height: 1.7; margin: 0;">
-            — Somto Okoma<br/>
-            <span style="color: #64748B; font-size: 13px;">Head of Programme, Ubuntu Bridge Initiative</span>
-          </p>
-
-        </div>
-
-        <p style="text-align: center; color: #94A3B8; font-size: 12px; margin-top: 24px;">
-          Ubuntu Bridge Initiative
-        </p>
       </div>
     `,
   };
@@ -301,75 +385,67 @@ export async function sendPublicRejectionEmail(
   await sendOne("send", {
     from: `"Somto from Ubuntu Bridge Initiative" <noreply@ubuntubridgeinitiatives.org>`,
     to,
-    subject: "UBI Application Update",
+    subject: "UBI application update — and what's next",
     html: `
-      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; background: #0B1120;">
+      <div style="font-family: -apple-system, 'Segoe UI', Roboto, sans-serif; background: #F1F5F9; padding: 40px 20px;">
+        <div style="max-width: 600px; margin: 0 auto;">
 
-        <!-- Header -->
-        <div style="padding: 48px 40px 32px; text-align: center;">
-          <div style="display: inline-block; border: 2px solid #2563EB; border-radius: 12px; padding: 8px 12px; margin-bottom: 24px;">
-            <span style="color: #2563EB; font-size: 20px; font-weight: 800; letter-spacing: 2px;">UBI</span>
+          <!-- Header -->
+          <div style="background: linear-gradient(135deg, #0F172A 0%, #1E293B 60%, #475569 100%); padding: 48px 32px; border-radius: 18px 18px 0 0; text-align: center; color: white;">
+            <div style="display: inline-block; padding: 6px 14px; border: 1.5px solid rgba(255,255,255,0.3); border-radius: 999px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 18px;">Ubuntu Bridge Initiative</div>
+            <h1 style="margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -0.5px;">Thank you for applying.</h1>
+            <p style="margin: 8px 0 0; font-size: 13px; opacity: 0.7;">An update on your Cohort 1 application</p>
           </div>
-          <div style="width: 48px; height: 3px; background: linear-gradient(90deg, #2563EB, #0891B2); margin: 0 auto; border-radius: 2px;"></div>
-        </div>
 
-        <!-- Main Card -->
-        <div style="background: #111827; margin: 0 20px; border-radius: 16px; border: 1px solid #1E293B; overflow: hidden;">
-          <div style="padding: 32px;">
-            <h2 style="color: #F1F5F9; margin: 0 0 20px; font-size: 20px; font-weight: 700;">Hi ${firstName},</h2>
+          <!-- Card -->
+          <div style="background: white; padding: 40px 36px; border-radius: 0 0 18px 18px; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);">
 
-            <p style="color: #94A3B8; line-height: 1.8; margin: 0 0 16px; font-size: 15px;">
-              Thank you for applying to the <span style="color: #F1F5F9; font-weight: 600;">UBI Cybersecurity Internship Programme</span>. We genuinely appreciate the time and effort you put into your application.
+            <p style="color: #475569; line-height: 1.75; margin: 0 0 18px; font-size: 15px;">
+              Hi ${firstName},
             </p>
 
-            <p style="color: #94A3B8; line-height: 1.8; margin: 0 0 16px; font-size: 15px;">
-              We received an overwhelming number of applications for Cohort 1 and the selection was extremely competitive. After careful review, we are unable to offer you a spot in this cohort.
+            <p style="color: #334155; line-height: 1.75; margin: 0 0 18px; font-size: 15px;">
+              Thank you for applying to the UBI Cybersecurity Internship Programme. After careful review, I'm sorry to share that <strong>you didn't make it through this round</strong>.
             </p>
 
-            <p style="color: #94A3B8; line-height: 1.8; margin: 0 0 24px; font-size: 15px;">
-              This does not reflect your potential. Many strong candidates applied and we had to make difficult choices. We strongly encourage you to <span style="color: #F1F5F9; font-weight: 600;">keep building your skills</span> and apply again when we open applications for the next cohort.
+            <p style="color: #334155; line-height: 1.75; margin: 0 0 18px; font-size: 15px;">
+              This is not a judgment of your potential. We received an enormous number of applications and could only accept a fraction of them. The line we drew is narrow and somewhat arbitrary at the edges — strong candidates we believed in were on the wrong side of it. You may be one of them.
             </p>
 
-            <!-- Resources -->
-            <div style="background: #0F172A; border-radius: 10px; padding: 20px; border: 1px solid #1E293B; margin-bottom: 24px;">
-              <p style="color: #64748B; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; margin: 0 0 12px; font-weight: 600;">Keep sharpening your skills</p>
-              <table style="width: 100%; border-collapse: collapse;">
-                <tr>
-                  <td style="padding: 6px 0;">
-                    <span style="color: #2563EB; font-size: 14px; font-weight: 600;">TryHackMe</span>
-                    <span style="color: #475569; font-size: 13px;"> — Guided learning paths</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding: 6px 0; border-top: 1px solid #1E293B;">
-                    <span style="color: #10B981; font-size: 14px; font-weight: 600;">Hack The Box</span>
-                    <span style="color: #475569; font-size: 13px;"> — Hands-on challenges</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding: 6px 0; border-top: 1px solid #1E293B;">
-                    <span style="color: #F59E0B; font-size: 14px; font-weight: 600;">CyberDefenders</span>
-                    <span style="color: #475569; font-size: 13px;"> — Blue team labs</span>
-                  </td>
-                </tr>
-              </table>
+            <!-- Apply again callout -->
+            <div style="margin: 28px 0; padding: 22px 24px; background: linear-gradient(135deg, #EFF6FF, #DBEAFE); border-left: 4px solid #2563EB; border-radius: 10px;">
+              <p style="color: #1E40AF; margin: 0 0 6px; font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;">Try again next cohort</p>
+              <p style="color: #1E3A8A; margin: 0; font-size: 14px; line-height: 1.7;">
+                Many of our strongest interns are people who were rejected the first time and came back sharper. Please apply again when applications open for the next cohort. We'd love to see you back.
+              </p>
             </div>
 
-            <p style="color: #94A3B8; line-height: 1.8; margin: 0; font-size: 15px;">
-              We are rooting for you, ${firstName}. The cybersecurity field is growing fast and there will be more opportunities. Keep going.
+            <!-- Stay close callout (workshops + vouchers) -->
+            <div style="margin: 28px 0; padding: 22px 24px; background: linear-gradient(135deg, #ECFDF5, #F0FDF4); border-left: 4px solid #10B981; border-radius: 10px;">
+              <p style="color: #065F46; margin: 0 0 6px; font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;">Stay close — keep this inbox open</p>
+              <p style="color: #064E3B; margin: 0; font-size: 14px; line-height: 1.7;">
+                Over the coming weeks we'll be sending you <strong>invitations to free cybersecurity workshops</strong> and <strong>certification vouchers</strong> you can use to keep building. Look out for them.
+              </p>
+            </div>
+
+            <p style="color: #334155; line-height: 1.75; margin: 24px 0 18px; font-size: 15px;">
+              In the meantime: read, build, break things in safe environments. The skills compound. The next time you apply, the work you've been doing in between will show up clearly in your application — and we'll be ready to see it.
             </p>
 
-            <p style="color: #64748B; margin: 24px 0 0; font-size: 14px;">
-              &mdash; The UBI Team
+            <p style="color: #334155; line-height: 1.75; margin: 24px 0 4px; font-size: 15px;">
+              Wishing you the best, ${firstName}.
+            </p>
+            <p style="color: #0F172A; line-height: 1.5; margin: 16px 0 0; font-size: 15px; font-weight: 600;">
+              — Somto Okoma
+            </p>
+            <p style="color: #64748B; line-height: 1.5; margin: 0; font-size: 13px;">
+              Head of Programme, Ubuntu Bridge Initiative
             </p>
           </div>
-        </div>
 
-        <!-- Footer -->
-        <div style="padding: 32px 40px; text-align: center;">
-          <p style="color: #475569; font-size: 12px; margin: 0; line-height: 1.6;">
-            Ubuntu Bridge Initiative &bull; Remote<br/>
-            &copy; 2025 UBI. All rights reserved.
+          <!-- Footer -->
+          <p style="text-align: center; color: #94A3B8; font-size: 11px; margin: 24px 0 0; letter-spacing: 0.3px;">
+            Ubuntu Bridge Initiative &middot; Building the next generation of cybersecurity professionals
           </p>
         </div>
       </div>
