@@ -176,40 +176,88 @@ export function renderPublicAcceptanceEmail(opts: {
   const loginUrl = `${publicAppUrl()}/login`;
 
   return {
-    subject: "Your UBI application has been accepted",
+    subject: "Welcome to UBI — your access to Cohort 1",
     html: `
       <div style="font-family: 'Segoe UI', sans-serif; max-width: 600px; margin: 0 auto; background: #F8FAFC; padding: 40px 20px;">
         <div style="background: linear-gradient(135deg, #2563EB, #0891B2); padding: 32px; border-radius: 16px; text-align: center; color: white;">
           <h1 style="margin: 0 0 8px; font-size: 24px; font-weight: 700;">UBI</h1>
           <p style="margin: 0; font-size: 13px; opacity: 0.9;">Ubuntu Bridge Initiative</p>
         </div>
+
         <div style="background: white; padding: 32px; border-radius: 16px; margin-top: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+
           <h2 style="color: #0F172A; margin: 0 0 16px;">Hi ${firstName},</h2>
+
           <p style="color: #334155; line-height: 1.7; margin: 0 0 16px;">
-            Your application to the UBI Cybersecurity Internship Programme has been accepted. Welcome to Cohort 1 on the ${trackInterest} track.
+            I'm Somto, and I lead the programme at Ubuntu Bridge Initiative. I'm writing to tell you something simple: <strong>you're in.</strong> Your application made it through review and you're officially part of UBI Cohort 1 on the <strong>${trackInterest}</strong> track.
           </p>
-          ${internId && tempPassword ? `
+
           <p style="color: #334155; line-height: 1.7; margin: 0 0 16px;">
-            You can log in at <a href="${loginUrl}" style="color: #2563EB;">${loginUrl}</a> using your intern ID <strong>${internId}</strong> and the temporary password <strong>${tempPassword}</strong>. You will be asked to change the password on first login. Please do not share it.
+            We are putting in the work to make sure you come out of this programme job-ready. Here's what that means in practice.
+          </p>
+
+          <h3 style="color: #0F172A; font-size: 16px; margin: 24px 0 8px;">You pay nothing</h3>
+          <p style="color: #334155; line-height: 1.7; margin: 0 0 8px;">
+            No tuition. No application fee. <strong>Free certification vouchers</strong> for the industry exams you sit along the way — we cover them. No data bill if you qualify for the scholarship. Your only cost is the time and effort you put in.
+          </p>
+
+          <h3 style="color: #0F172A; font-size: 16px; margin: 24px 0 8px;">The programme is 10 stages, elimination-based</h3>
+          <p style="color: #334155; line-height: 1.7; margin: 0 0 8px;">
+            Each stage tests what you have absorbed and decides whether you advance. Only the participants doing the work move forward. It's competitive by design — the credential we are building has to mean something to the recruiters who hire you.
+          </p>
+
+          <h3 style="color: #0F172A; font-size: 16px; margin: 24px 0 8px;">What you unlock as you progress</h3>
+          <ul style="color: #334155; line-height: 1.7; margin: 0 0 8px; padding-left: 20px;">
+            <li><strong>Stage 5 — Alumni Network access.</strong> Structured job-readiness programmes, exclusive workshops, and direct connections with cybersecurity professionals.</li>
+            <li><strong>Finalists — top tier benefits.</strong> 1-on-1 mentorship from senior practitioners, hardware (laptops where needed), and priority placement on our Hire page. Finalists get chosen first for jobs in our network.</li>
+          </ul>
+
+          ${internId && tempPassword ? `
+          <h3 style="color: #0F172A; font-size: 16px; margin: 24px 0 8px;">Your login</h3>
+          <p style="color: #334155; line-height: 1.7; margin: 0 0 8px;">
+            Log in right now at <a href="${loginUrl}" style="color: #2563EB;">${loginUrl}</a> using:
+          </p>
+          <p style="color: #334155; line-height: 1.9; margin: 0 0 8px; padding-left: 16px;">
+            Intern ID: <strong>${internId}</strong><br/>
+            Temporary password: <strong>${tempPassword}</strong>
+          </p>
+          <p style="color: #334155; line-height: 1.7; margin: 0 0 16px; font-size: 13px;">
+            You'll be asked to set a new password the first time you log in. Please don't share these credentials with anyone.
           </p>
           ` : ""}
-          <p style="color: #334155; line-height: 1.7; margin: 0 0 16px;">
-            The orientation date and the programme start date will be communicated separately. Please keep an eye on your inbox.
+
+          <h3 style="color: #0F172A; font-size: 16px; margin: 24px 0 8px;">What's next</h3>
+          <p style="color: #334155; line-height: 1.7; margin: 0 0 8px;">
+            The orientation date and the programme start date will be communicated separately — keep an eye on your inbox. Stage 0 is already accessible from your dashboard so you can start orienting yourself.
           </p>
-          <p style="color: #334155; line-height: 1.7; margin: 0 0 16px;">
-            You can read your acceptance letter here:
+
+          ${process.env.SLACK_CHANNEL_URL ? `
+          <h3 style="color: #0F172A; font-size: 16px; margin: 24px 0 8px;">Join the cohort on Slack</h3>
+          <p style="color: #334155; line-height: 1.7; margin: 0 0 8px;">
+            Mentor office-hours, announcements, and help from other participants all live in our Slack workspace. We expect everyone in there from day one.
+          </p>
+          <p style="margin: 12px 0 16px;">
+            <a href="${process.env.SLACK_CHANNEL_URL}" style="display: inline-block; background: #4A154B; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px;">
+              Join the Slack channel
+            </a>
+          </p>
+          ` : ""}
+
+          <p style="color: #334155; line-height: 1.7; margin: 24px 0 8px;">
+            Your formal acceptance letter is here:
             <a href="${letterUrl}" style="color: #2563EB;">${letterUrl}</a>
           </p>
-          ${process.env.SLACK_CHANNEL_URL ? `
-          <p style="color: #334155; line-height: 1.7; margin: 0 0 16px;">
-            Our cohort coordinates on Slack. Join here when you can: <a href="${process.env.SLACK_CHANNEL_URL}" style="color: #2563EB;">${process.env.SLACK_CHANNEL_URL}</a>
+
+          <p style="color: #334155; line-height: 1.7; margin: 24px 0 4px;">
+            Welcome aboard. Looking forward to seeing what you build.
           </p>
-          ` : ""}
-          <p style="color: #334155; line-height: 1.7; margin: 24px 0 0;">
-            Looking forward to working with you.<br/>
-            — The UBI Team
+          <p style="color: #334155; line-height: 1.7; margin: 0;">
+            — Somto Okoma<br/>
+            <span style="color: #64748B; font-size: 13px;">Head of Programme, Ubuntu Bridge Initiative</span>
           </p>
+
         </div>
+
         <p style="text-align: center; color: #94A3B8; font-size: 12px; margin-top: 24px;">
           Ubuntu Bridge Initiative
         </p>
