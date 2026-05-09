@@ -158,6 +158,7 @@ model User {
   reportGrades  ReportGrade[]   @relation("GraderAssignments")
   queuedEmails  EmailQueueItem[] @relation("EmailQueueUser")
   scholarshipReviews DataScholarshipApplication[] @relation("ScholarshipReviewer")
+  passwordResets PasswordResetToken[] @relation("PasswordResets")
 
   @@index([role])
 }
@@ -674,4 +675,23 @@ model SystemSetting {
 
   updatedAt                DateTime  @updatedAt
   updatedById              String?   @db.ObjectId
+}
+
+// ─── PASSWORD RESET TOKEN ────────────────────────────────
+// One-time tokens issued when a user clicks "Forgot password". The actual
+// secret is stored hashed (sha256) — only the email contains the plaintext
+// version. Token expires after 1 hour and is single-use (consumedAt set
+// when the user successfully resets).
+model PasswordResetToken {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+  user        User     @relation("PasswordResets", fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash   String                                    // sha256 of the random token sent in email
+  expiresAt   DateTime
+  consumedAt  DateTime?                                 // null until used
+  requestIp   String?                                   // audit: where the request came from
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
 }

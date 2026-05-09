@@ -205,6 +205,53 @@ export async function sendRejectionEmail(
   });
 }
 
+// ─── PASSWORD RESET ──────────────────────────────────────
+
+export async function sendPasswordResetEmail(opts: {
+  to: string;
+  firstName: string;
+  resetUrl: string;
+}): Promise<void> {
+  const { to, firstName, resetUrl } = opts;
+  await sendOne("send", {
+    from: `"Somto from Ubuntu Bridge Initiative" <noreply@ubuntubridgeinitiatives.org>`,
+    to,
+    subject: "Reset your UBI password",
+    html: `
+      <div style="font-family: -apple-system, 'Segoe UI', Roboto, sans-serif; background: #F1F5F9; padding: 40px 20px;">
+        <div style="max-width: 600px; margin: 0 auto;">
+          <div style="background: linear-gradient(135deg, #0F172A 0%, #1E293B 60%, #2563EB 100%); padding: 40px 32px; border-radius: 18px 18px 0 0; text-align: center; color: white;">
+            <h1 style="margin: 0; font-size: 22px; font-weight: 700;">Reset your password</h1>
+          </div>
+          <div style="background: white; padding: 36px 32px; border-radius: 0 0 18px 18px; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);">
+            <p style="color: #475569; line-height: 1.7; margin: 0 0 16px; font-size: 15px;">Hi ${firstName},</p>
+            <p style="color: #334155; line-height: 1.7; margin: 0 0 16px; font-size: 15px;">
+              Someone (hopefully you) asked to reset the password on your UBI account. Click the button below to set a new password. The link expires in 1 hour.
+            </p>
+            <p style="text-align: center; margin: 28px 0;">
+              <a href="${resetUrl}" style="display: inline-block; background: #2563EB; color: white; padding: 12px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px;">
+                Reset password
+              </a>
+            </p>
+            <p style="color: #64748B; line-height: 1.7; margin: 0 0 12px; font-size: 13px;">
+              If the button doesn't work, paste this link in your browser:
+            </p>
+            <p style="color: #2563EB; line-height: 1.5; margin: 0 0 16px; font-size: 12px; word-break: break-all;">
+              ${resetUrl}
+            </p>
+            <p style="color: #64748B; line-height: 1.7; margin: 24px 0 0; font-size: 13px;">
+              If you didn't request this, you can safely ignore this email — your password won't change unless someone clicks the link and sets a new one.
+            </p>
+          </div>
+          <p style="text-align: center; color: #94A3B8; font-size: 11px; margin: 24px 0 0;">
+            Ubuntu Bridge Initiative
+          </p>
+        </div>
+      </div>
+    `,
+  });
+}
+
 // ─── PUBLIC APPLICATION EMAILS ───────────────────────────
 
 // Render the acceptance email body. Returns subject + html so the same content
