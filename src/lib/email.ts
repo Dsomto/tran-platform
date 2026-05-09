@@ -51,7 +51,7 @@ async function sendOne(
   }
 }
 
-const FROM = `"Somto from Ubuntu Bridge Initiative" <${process.env.SMTP_USER}>`;
+const FROM = `"Somto from Ubuntu Bridge Initiative" <noreply@ubuntubridgeinitiatives.org>`;
 
 export async function sendApplicationConfirmation(
   to: string,
@@ -60,7 +60,7 @@ export async function sendApplicationConfirmation(
   const firstName = fullName.split(" ")[0];
 
   await sendOne("send", {
-    from: `"Somto from Ubuntu Bridge Initiative" <${process.env.SMTP_USER}>`,
+    from: `"Somto from Ubuntu Bridge Initiative" <noreply@ubuntubridgeinitiatives.org>`,
     to,
     subject: "We've Received Your Application — UBI",
     html: `
@@ -100,7 +100,7 @@ export async function sendWelcomeEmail(
   firstName: string
 ): Promise<void> {
   await sendOne("send", {
-    from: `"Somto from Ubuntu Bridge Initiative" <${process.env.SMTP_USER}>`,
+    from: `"Somto from Ubuntu Bridge Initiative" <noreply@ubuntubridgeinitiatives.org>`,
     to,
     subject: "Welcome to UBI — Your Cybersecurity Journey Begins!",
     html: `
@@ -134,7 +134,7 @@ export async function sendRejectionEmail(
   firstName: string
 ): Promise<void> {
   await sendOne("send", {
-    from: `"Somto from Ubuntu Bridge Initiative" <${process.env.SMTP_USER}>`,
+    from: `"Somto from Ubuntu Bridge Initiative" <noreply@ubuntubridgeinitiatives.org>`,
     to,
     subject: "UBI Application Update",
     html: `
@@ -237,7 +237,7 @@ export async function sendPublicAcceptanceEmail(
     tempPassword,
   });
   await sendOne("send", {
-    from: `"Somto from Ubuntu Bridge Initiative" <${process.env.SMTP_USER}>`,
+    from: `"Somto from Ubuntu Bridge Initiative" <noreply@ubuntubridgeinitiatives.org>`,
     to,
     subject,
     html,
@@ -251,7 +251,7 @@ export async function sendPublicRejectionEmail(
   const firstName = fullName.split(" ")[0];
 
   await sendOne("send", {
-    from: `"Somto from Ubuntu Bridge Initiative" <${process.env.SMTP_USER}>`,
+    from: `"Somto from Ubuntu Bridge Initiative" <noreply@ubuntubridgeinitiatives.org>`,
     to,
     subject: "UBI Application Update",
     html: `
