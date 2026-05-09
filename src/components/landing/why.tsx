@@ -14,7 +14,7 @@ const reasons = [
   {
     emoji: "🌍",
     title: "Nothing to pay, ever",
-    desc: "No tuition. No exam fees if we accept you and you reach Stage 5 — we cover it. No weekly data bill if you qualify for the scholarship. The only thing you bring is effort.",
+    desc: "No tuition. As you progress, we give you vouchers for industry certifications. No weekly data bill if you qualify for the scholarship. The only thing you bring is effort.",
   },
   {
     emoji: "🧪",

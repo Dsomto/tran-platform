@@ -29,7 +29,7 @@ const STAGE_LABELS: Record<number, string> = {
   2: "Stage 2 — Core Skills",
   3: "Stage 3 — Intermediate",
   4: "Stage 4 — Advanced Basics",
-  5: "Stage 5 — Alumni Eligible",
+  5: "Stage 5 — Specialization",
   6: "Stage 6 — Specialization",
   7: "Stage 7 — Deep Dive",
   8: "Stage 8 — Expert Level",
@@ -346,7 +346,7 @@ export default function BoardPage() {
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-foreground">Achieve</p>
-                    <p className="text-xs text-muted mt-1">Reach Stage 5 for alumni access. Finalists get mentorship, hardware, and priority hiring.</p>
+                    <p className="text-xs text-muted mt-1">Clear Stage 0 to join the Alumni Network. Finalists get mentorship, hardware, and priority hiring.</p>
                   </div>
                 </div>
               </div>

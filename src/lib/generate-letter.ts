@@ -123,7 +123,7 @@ export function generateAcceptancePDF(
     y = doc.y + 8;
 
     const gains = [
-      `• Stage 5 — Alumni Community Access: If you successfully progress to Stage 5, you earn a place in the UBI Alumni Network. Our alumni community offers structured programmes designed to make you job-ready, access to exclusive workshops, and direct connections with industry professionals.`,
+      `• After Stage 0 — Alumni Community Access: Once you clear Stage 0, you earn a place in the UBI Alumni Network. Our alumni community offers structured programmes designed to make you job-ready, access to exclusive workshops, and direct connections with industry professionals.`,
       `• Finalists — Top Tier Benefits: Participants who make it to the final stage will receive: 1-on-1 mentorship from senior cybersecurity professionals, hardware devices (laptops) to support your career, and priority placement on our Hire page — finalists are prioritised first for job opportunities.`,
     ];
     for (const item of gains) {

@@ -108,7 +108,7 @@ export function LetterContent({ name, track }: { name: string; track: string }) 
 
               <ul className="list-disc pl-6 space-y-2 my-4">
                 <li>
-                  <strong>Stage 5 — Alumni Community Access:</strong> If you successfully progress to Stage 5, you earn a place in the <strong>UBI Alumni Network</strong>. Our alumni community offers structured programmes designed to make you job-ready, access to exclusive workshops, and direct connections with industry professionals working in cybersecurity globally.
+                  <strong>After Stage 0 — Alumni Community Access:</strong> Once you clear Stage 0, you earn a place in the <strong>UBI Alumni Network</strong>. Our alumni community offers structured programmes designed to make you job-ready, access to exclusive workshops, and direct connections with industry professionals working in cybersecurity globally.
                 </li>
                 <li>
                   <strong>Finalists — Top Tier Benefits:</strong> Participants who make it to the final stage will receive:

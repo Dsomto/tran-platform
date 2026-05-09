@@ -255,7 +255,7 @@ export function renderPublicAcceptanceEmail(opts: {
             <div style="margin: 28px 0; padding: 22px 24px; background: linear-gradient(135deg, #ECFDF5, #F0FDF4); border-left: 4px solid #10B981; border-radius: 10px;">
               <p style="color: #065F46; margin: 0 0 6px; font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;">Free, ever</p>
               <p style="color: #064E3B; margin: 0; font-size: 14px; line-height: 1.7;">
-                No tuition. No application fee. <strong>Free certification vouchers</strong> for the industry exams you sit along the way — we cover them. No data bill if you qualify for the scholarship. Your only cost is the time and effort you put in.
+                No tuition. No application fee. We give you <strong>vouchers for industry certifications</strong> as you progress. No data bill if you qualify for the scholarship. Your only cost is the time and effort you put in.
               </p>
             </div>
 
@@ -273,9 +273,9 @@ export function renderPublicAcceptanceEmail(opts: {
                   <div style="width: 4px; height: 100%; background: #10B981; border-radius: 2px;"></div>
                 </td>
                 <td style="vertical-align: top; padding: 12px 0 12px 16px;">
-                  <p style="color: #065F46; margin: 0 0 4px; font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;">Stage 5</p>
+                  <p style="color: #065F46; margin: 0 0 4px; font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;">After Stage 0</p>
                   <p style="color: #0F172A; margin: 0 0 4px; font-size: 15px; font-weight: 600;">Alumni Network access</p>
-                  <p style="color: #64748B; margin: 0; font-size: 13px; line-height: 1.7;">Structured job-readiness programmes, exclusive workshops, and direct connections with cybersecurity professionals.</p>
+                  <p style="color: #64748B; margin: 0; font-size: 13px; line-height: 1.7;">Once you clear Stage 0, you're in the UBI Alumni Network: structured job-readiness programmes, exclusive workshops, and direct connections with cybersecurity professionals.</p>
                 </td>
               </tr>
               <tr>
