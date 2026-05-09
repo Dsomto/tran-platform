@@ -1,6 +1,10 @@
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth";
-import { sendPublicAcceptanceEmail, sendPublicRejectionEmail } from "@/lib/email";
+import {
+  sendPublicAcceptanceEmail,
+  sendPublicRejectionEmail,
+  renderPublicAcceptanceEmail,
+} from "@/lib/email";
 import { logger } from "@/lib/logger";
 import { nextInternId } from "@/lib/intern-id";
 import { onboardApprovedApplicant } from "@/lib/onboard";
@@ -65,15 +69,17 @@ export async function POST(
       });
 
       // Create the backing User + Intern so the applicant can log in.
+      let userId: string | null = null;
       try {
-        await onboardApprovedApplicant(updated);
+        const onboarded = await onboardApprovedApplicant(updated);
+        userId = onboarded.userId;
       } catch (err) {
         logger.error("onboarding_failed", err, { applicationId: id, email: application.email });
       }
 
-      // Send the welcome email synchronously via Resend. We're on Resend now,
-      // not IONOS, so the connection-drop class of failures we hit before
-      // doesn't apply — single attempt is reliable.
+      // Send the welcome email synchronously. If the send fails, we persist
+      // a FAILED EmailQueueItem row so the admin can see the failure at
+      // /admin/emails and retry — instead of the email being lost in the logs.
       logger.info("acceptance_flow_start", { applicationId: id, email: application.email, internId });
 
       let emailError: string | null = null;
@@ -89,6 +95,34 @@ export async function POST(
       } catch (err) {
         emailError = err instanceof Error ? `${err.name}: ${err.message}` : String(err);
         logger.error("acceptance_email_failed", err, { email: application.email, internId, emailError });
+
+        // Persist the failure so it shows up in the admin email queue viewer
+        // for retry. Stores the rendered body verbatim — retry just resends.
+        if (userId) {
+          try {
+            const { subject, html } = renderPublicAcceptanceEmail({
+              fullName: application.fullName,
+              trackInterest: application.trackInterest,
+              internId,
+              tempPassword,
+            });
+            await prisma.emailQueueItem.create({
+              data: {
+                userId,
+                kind: "GENERAL",
+                toEmail: application.email,
+                subject,
+                body: html,
+                status: "FAILED",
+                attempts: 1,
+                failReason: emailError.slice(0, 500),
+                context: { type: "acceptance", applicationId: id, internId },
+              },
+            });
+          } catch (persistErr) {
+            logger.error("acceptance_email_persist_failed", persistErr, { applicationId: id });
+          }
+        }
       }
 
       return Response.json({

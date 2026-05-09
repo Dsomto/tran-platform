@@ -22,6 +22,7 @@ import {
   Heart,
   Activity,
   Shield,
+  Mail,
 } from "lucide-react";
 import { LogoMark } from "@/components/logo";
 import { useState } from "react";
@@ -59,6 +60,7 @@ const adminLinks = [
   { href: "/admin/scholarships", label: "Scholarships", icon: Heart },
   { href: "/admin/announcements", label: "Announcements", icon: Megaphone },
   { href: "/admin/leaderboard", label: "Leaderboard", icon: BarChart3 },
+  { href: "/admin/emails", label: "Email Queue", icon: Mail },
 ];
 
 export function Sidebar({ role, userName }: SidebarProps) {
