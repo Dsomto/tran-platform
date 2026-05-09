@@ -50,7 +50,7 @@ export function LetterContent({ name, track }: { name: string; track: string }) 
                 </div>
               </div>
               <div className="text-right text-[11px] text-gray-600 leading-relaxed">
-                <p>Lagos, Nigeria</p>
+                <p>Remote</p>
                 <p>info@ubinitiative.org</p>
               </div>
             </div>
@@ -108,7 +108,7 @@ export function LetterContent({ name, track }: { name: string; track: string }) 
 
               <ul className="list-disc pl-6 space-y-2 my-4">
                 <li>
-                  <strong>Stage 5 — Alumni Community Access:</strong> If you successfully progress to Stage 5, you earn a place in the <strong>UBI Alumni Network</strong>. Our alumni community offers structured programmes designed to make you job-ready, access to exclusive workshops, and direct connections with industry professionals working in cybersecurity across Africa and globally.
+                  <strong>Stage 5 — Alumni Community Access:</strong> If you successfully progress to Stage 5, you earn a place in the <strong>UBI Alumni Network</strong>. Our alumni community offers structured programmes designed to make you job-ready, access to exclusive workshops, and direct connections with industry professionals working in cybersecurity globally.
                 </li>
                 <li>
                   <strong>Finalists — Top Tier Benefits:</strong> Participants who make it to the final stage will receive:

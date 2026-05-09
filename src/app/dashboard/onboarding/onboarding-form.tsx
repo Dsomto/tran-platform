@@ -104,7 +104,7 @@ export function OnboardingForm({ fullName, nextHref }: Props) {
           </p>
           <p>
             <strong>8. Governing law.</strong> This agreement is governed by
-            the laws of the Federal Republic of Nigeria.
+            the laws of the applicable jurisdiction in which Sankofa operates.
           </p>
           <p className="text-muted text-xs italic">
             Sankofa Digital Limited is a fictional organisation used for the

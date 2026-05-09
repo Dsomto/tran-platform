@@ -68,7 +68,7 @@ export function About() {
             <div className="relative rounded-2xl overflow-hidden glass-card-elevated glass-shine h-[280px]">
               <Image
                 src="/images/hero-3.jpg"
-                alt="Young African professionals building careers"
+                alt="Young professionals building careers"
                 fill
                 className="object-cover"
                 sizes="(min-width: 1024px) 500px, 0px"

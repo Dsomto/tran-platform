@@ -9,7 +9,7 @@ const reasons = [
   {
     emoji: "🛡️",
     title: "Employers want proof, not paper",
-    desc: "Recruiters across Africa keep telling us the same thing: they receive a hundred certificates and no evidence anyone can actually do the work. What you produce here is evidence.",
+    desc: "Recruiters keep telling us the same thing: they receive a hundred certificates and no evidence anyone can actually do the work. What you produce here is evidence.",
   },
   {
     emoji: "🌍",
@@ -81,9 +81,9 @@ export function Why() {
             Why this exists
           </h2>
           <p className="mt-4 text-base text-muted leading-relaxed">
-            Cybersecurity is one of the few fields in Africa where demand massively
-            outstrips supply — and the paths in are mostly paywalled. UBI is the path
-            we wished we had.
+            Cybersecurity is one of the few fields where demand massively outstrips
+            supply — and the paths in are mostly paywalled. UBI is the path we wished
+            we had.
           </p>
         </div>
 

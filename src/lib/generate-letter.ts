@@ -40,7 +40,7 @@ export function generateAcceptancePDF(
       .fontSize(9)
       .font("Helvetica")
       .fillColor("#6B7280")
-      .text("Lagos, Nigeria", 72, 72, { align: "right" })
+      .text("Remote", 72, 72, { align: "right" })
       .text("info@ubinitiative.org", { align: "right" });
 
     // Line under letterhead

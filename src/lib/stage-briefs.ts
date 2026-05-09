@@ -92,7 +92,7 @@ export const STAGE_BRIEFS: Record<
     label: "Stage 0",
     subtitle: "Foundations — Induction at the Gate",
     missionBrief: [
-      "Sankofa Digital is a 600-person Nigerian fintech with a SOC bench of four. Last quarter one of their analysts — the one you are replacing — flagged a login that came from an unusual IP, wrote \"probably nothing\" in the ticket, and closed it. Amaka Eze, Head of Security, does not think it was nothing. She has asked you to read the evidence and tell her whether she should be worried.",
+      "Sankofa Digital is a 600-person fintech with a SOC bench of four. Last quarter one of their analysts — the one you are replacing — flagged a login that came from an unusual IP, wrote \"probably nothing\" in the ticket, and closed it. Amaka Eze, Head of Security, does not think it was nothing. She has asked you to read the evidence and tell her whether she should be worried.",
       "Your platform work for this stage has walked you through the basics: the CIA triad, AAA, basic Linux, hashing, encoding, how a SIEM reads logs, and the ISC2 Code of Ethics. This report is where you show you can apply them — not recite them.",
       "You are writing to the Sankofa Digital Incident Committee. Three people. None of them touch a keyboard for a living. Make the report readable in under fifteen minutes.",
     ],

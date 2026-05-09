@@ -41,9 +41,9 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: "https://ubuntubridgeinitiatives.org",
     siteName: "Ubuntu Bridge Initiative",
-    title: "UBI — Free Cybersecurity Internship in Africa",
+    title: "UBI — Free Cybersecurity Internship",
     description:
-      "Break into cybersecurity without paying for it. A free, selective internship for young Africans. Five foundation stages plus specialist tracks.",
+      "Break into cybersecurity without paying for it. A free, selective internship for emerging talent. Five foundation stages plus specialist tracks.",
     images: [
       {
         url: "/apple-touch-icon.svg",
@@ -55,9 +55,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary",
-    title: "UBI — Free Cybersecurity Internship in Africa",
+    title: "UBI — Free Cybersecurity Internship",
     description:
-      "Break into cybersecurity without paying for it. Free, selective internship for young Africans.",
+      "Break into cybersecurity without paying for it. Free, selective internship for emerging talent.",
     images: ["/apple-touch-icon.svg"],
   },
   robots: {

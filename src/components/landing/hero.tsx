@@ -14,19 +14,19 @@ const allHeroImages = [
   },
   {
     src: "/images/hero-2.jpg",
-    alt: "Nigerian youth passionate about tech and change",
+    alt: "Young people passionate about tech and change",
   },
   {
     src: "/images/hero-4.jpg",
-    alt: "Young Nigerians ready to break into cybersecurity",
+    alt: "Young learners ready to break into cybersecurity",
   },
   {
     src: "/images/hero-5.avif",
-    alt: "Group of African tech enthusiasts together",
+    alt: "Group of tech enthusiasts together",
   },
   {
     src: "/images/hero-6.avif",
-    alt: "Nigerian friends pursuing careers in tech",
+    alt: "Friends pursuing careers in tech",
   },
   // The Root Access Network programme photos — added to the rotation so the
   // hero surfaces the real work UBI is part of, not just stock imagery.
@@ -40,7 +40,7 @@ const allHeroImages = [
   },
   {
     src: "/images/programs/school-tour.jpg",
-    alt: "Cybersecurity Educational School Tour in Nigerian secondary schools",
+    alt: "Cybersecurity Educational School Tour in secondary schools",
   },
   {
     src: "/images/programs/workshops.jpg",
@@ -171,9 +171,9 @@ export function Hero() {
               </h1>
 
               <p data-aos="fade-up" data-aos-delay="200" className="mt-6 text-base sm:text-lg text-muted leading-relaxed max-w-xl">
-                A free, selective internship for young Africans who are ready to do the
-                work. Five foundation stages, then one specialist track. Real breaches
-                to investigate — not videos to watch. You pay nothing. Ever.
+                A free, selective internship for emerging talent who are ready to do
+                the work. Five foundation stages, then one specialist track. Real
+                breaches to investigate — not videos to watch. You pay nothing. Ever.
               </p>
 
               <div data-aos="fade-up" data-aos-delay="300" className="mt-10 flex flex-wrap gap-3">

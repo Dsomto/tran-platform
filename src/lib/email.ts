@@ -254,7 +254,7 @@ export async function sendPublicAcceptanceEmail(
             <div style="margin-bottom: 16px; padding: 16px; background: #0F172A; border-radius: 10px; border-left: 3px solid #10B981;">
               <p style="color: #10B981; font-size: 12px; font-weight: 700; margin: 0 0 4px; text-transform: uppercase; letter-spacing: 0.5px;">Stage 5 — Alumni Network</p>
               <p style="color: #94A3B8; font-size: 13px; line-height: 1.6; margin: 0;">
-                Job-readiness programmes, exclusive workshops, and direct connections with industry professionals across Africa.
+                Job-readiness programmes, exclusive workshops, and direct connections with industry professionals globally.
               </p>
             </div>
 
@@ -317,7 +317,7 @@ export async function sendPublicAcceptanceEmail(
         <!-- Footer -->
         <div style="padding: 32px 40px; text-align: center;">
           <p style="color: #475569; font-size: 12px; margin: 0; line-height: 1.6;">
-            Ubuntu Bridge Initiative &bull; Lagos, Nigeria<br/>
+            Ubuntu Bridge Initiative &bull; Remote<br/>
             &copy; 2025 UBI. All rights reserved.
           </p>
         </div>
@@ -402,7 +402,7 @@ export async function sendPublicRejectionEmail(
         <!-- Footer -->
         <div style="padding: 32px 40px; text-align: center;">
           <p style="color: #475569; font-size: 12px; margin: 0; line-height: 1.6;">
-            Ubuntu Bridge Initiative &bull; Lagos, Nigeria<br/>
+            Ubuntu Bridge Initiative &bull; Remote<br/>
             &copy; 2025 UBI. All rights reserved.
           </p>
         </div>
