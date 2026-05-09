@@ -38,7 +38,7 @@ const securityHeaders = [
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' data: https://fonts.gstatic.com",
       "img-src 'self' data: blob: https://images.unsplash.com",
-      "connect-src 'self' https://vercel.live wss://ws-us3.pusher.com",
+      "connect-src 'self' https://vercel.live wss://ws-us3.pusher.com https://*.ingest.sentry.io https://*.sentry.io",
       "form-action 'self'",
       "frame-src 'none'",
       "worker-src 'self' blob:",
@@ -63,4 +63,16 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+// Sentry only wraps when SENTRY_DSN is set in env. Without that, withSentryConfig
+// is essentially a passthrough — no source-map upload, no instrumentation cost.
+import { withSentryConfig } from "@sentry/nextjs";
+
+export default process.env.SENTRY_DSN
+  ? withSentryConfig(nextConfig, {
+      silent: true,
+      org: process.env.SENTRY_ORG,
+      project: process.env.SENTRY_PROJECT,
+      // Hide source maps from public URLs (don't ship .map files alongside JS).
+      sourcemaps: { disable: false, deleteSourcemapsAfterUpload: true },
+    })
+  : nextConfig;
