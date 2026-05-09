@@ -73,6 +73,11 @@ export default function ApplicantsPage() {
   const [selected, setSelected] = useState<PublicApp | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isReviewing, setIsReviewing] = useState(false);
+  const [bulkProgress, setBulkProgress] = useState<{
+    done: number;
+    total: number;
+    emailFailures: number;
+  } | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [counts, setCounts] = useState({ pending: 0, approved: 0, rejected: 0 });
   const [user, setUser] = useState({
@@ -168,22 +173,69 @@ export default function ApplicantsPage() {
 
   async function handleBulkReview(action: "approved" | "rejected") {
     if (selectedIds.size === 0) return;
+    const ids = Array.from(selectedIds);
+
+    // Process in batches of 5 instead of all-at-once. 500 concurrent
+    // POSTs would (a) blow past Resend's per-second send limits triggering
+    // rate-limit failures, and (b) overwhelm Vercel's lambda concurrency.
+    // Batches of 5 let us approve a cohort of 500 in ~3-4 minutes with
+    // predictable email throughput.
+    const BATCH_SIZE = 5;
     setIsReviewing(true);
+    setBulkProgress({ done: 0, total: ids.length, emailFailures: 0 });
+
+    let emailFailures = 0;
+
     try {
-      await Promise.all(
-        Array.from(selectedIds).map((id) =>
-          fetch(`/api/public-applications/${id}/review`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ action }),
+      for (let i = 0; i < ids.length; i += BATCH_SIZE) {
+        const batch = ids.slice(i, i + BATCH_SIZE);
+        const results = await Promise.allSettled(
+          batch.map(async (id) => {
+            const res = await fetch(`/api/public-applications/${id}/review`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ action }),
+            });
+            const data = await res.json().catch(() => ({}));
+            // For approvals, count rows where the welcome email failed
+            // (the User+Intern were still created — only the email send
+            // landed on /admin/emails as a FAILED row).
+            if (action === "approved" && data?.emailSent === false) {
+              return { ok: true, emailFailed: true } as const;
+            }
+            return { ok: res.ok, emailFailed: false } as const;
           })
-        )
-      );
+        );
+        for (const r of results) {
+          if (r.status === "fulfilled" && r.value.emailFailed) emailFailures++;
+        }
+        setBulkProgress({
+          done: Math.min(i + BATCH_SIZE, ids.length),
+          total: ids.length,
+          emailFailures,
+        });
+      }
+
       setSelectedIds(new Set());
-      fetchApps();
-      fetchCounts();
+      await Promise.all([fetchApps(), fetchCounts()]);
+
+      // End-of-bulk summary with deep-link to retry failures.
+      if (action === "approved" && emailFailures > 0) {
+        if (
+          confirm(
+            `Approved ${ids.length - emailFailures} of ${ids.length} cleanly.\n\n${emailFailures} welcome email${emailFailures === 1 ? "" : "s"} failed to send.\n\nOpen the email queue to retry them now?`
+          )
+        ) {
+          window.location.href = "/admin/emails";
+        }
+      } else if (action === "approved") {
+        alert(`Approved all ${ids.length} applicant${ids.length === 1 ? "" : "s"}. Welcome emails delivered.`);
+      } else {
+        alert(`Rejected all ${ids.length} applicant${ids.length === 1 ? "" : "s"}.`);
+      }
     } finally {
       setIsReviewing(false);
+      setBulkProgress(null);
     }
   }
 
@@ -379,6 +431,35 @@ export default function ApplicantsPage() {
             </Button>
           </div>
         </div>
+
+        {/* Bulk-action progress bar — shown only while a bulk approve/reject
+            is running so the admin sees "Approving N of M…" rather than a
+            frozen page. */}
+        {bulkProgress && (
+          <div className="mb-4 p-4 bg-blue/5 border border-blue/30 rounded-xl">
+            <div className="flex items-center justify-between text-sm font-medium text-foreground mb-2">
+              <span>
+                Processing {bulkProgress.done} of {bulkProgress.total}…
+              </span>
+              {bulkProgress.emailFailures > 0 && (
+                <span className="text-rose-700 text-xs">
+                  {bulkProgress.emailFailures} email{bulkProgress.emailFailures === 1 ? "" : "s"} failed (will surface on /admin/emails)
+                </span>
+              )}
+            </div>
+            <div className="h-2 bg-border-light rounded-full overflow-hidden">
+              <div
+                className="h-full bg-blue transition-all"
+                style={{
+                  width: `${(bulkProgress.done / Math.max(1, bulkProgress.total)) * 100}%`,
+                }}
+              />
+            </div>
+            <p className="text-[11px] text-muted mt-2">
+              Processed in batches of 5 to stay under email-provider rate limits. Don&apos;t close this tab.
+            </p>
+          </div>
+        )}
 
         {/* Application Detail Modal */}
         {selected && (
