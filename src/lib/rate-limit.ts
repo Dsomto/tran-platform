@@ -139,8 +139,13 @@ export function rateLimitResponse(result: RateLimitResult): Response {
 
 export const RATE_LIMITS = {
   publicForm: { max: 5, windowMs: 60_000 },
+  // Apply form: 5 attempts per 15 minutes per IP. Stricter than the
+  // generic publicForm because each apply hits the DB, sends an email,
+  // and creates a record we'll need to clean up if it's spam.
+  apply: { max: 5, windowMs: 15 * 60_000 },
   login: { max: 10, windowMs: 5 * 60_000 },
   reportWrite: { max: 30, windowMs: 60_000 },
   flagSubmit: { max: 20, windowMs: 60_000 },
   graderAction: { max: 60, windowMs: 60_000 },
+  passwordReset: { max: 5, windowMs: 60 * 60_000 }, // 5 / hour / IP
 } as const;

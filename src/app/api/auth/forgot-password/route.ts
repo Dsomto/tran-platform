@@ -4,6 +4,7 @@ import { logger } from "@/lib/logger";
 import { generateResetToken, PASSWORD_RESET_TTL_MS } from "@/lib/password-reset";
 import { sendPasswordResetEmail } from "@/lib/email";
 import { publicAppUrl } from "@/lib/public-url";
+import { rateLimit, rateLimitResponse, getClientKey, RATE_LIMITS } from "@/lib/rate-limit";
 
 // Forgot-password request. Always returns the same OK shape to avoid
 // leaking whether a given email is registered. If the email exists, we
@@ -11,6 +12,12 @@ import { publicAppUrl } from "@/lib/public-url";
 // drop it.
 export async function POST(request: NextRequest) {
   try {
+    // Rate limit by IP — 5/hour. Without this, an attacker can spam the
+    // endpoint to flood mailboxes (we can't tell apart real "I forgot"
+    // requests from "send 1000 fake reset emails").
+    const rl = await rateLimit(getClientKey(request), RATE_LIMITS.passwordReset);
+    if (!rl.ok) return rateLimitResponse(rl);
+
     const body = await request.json();
     const email = typeof body?.email === "string" ? body.email.toLowerCase().trim() : "";
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {

@@ -1,50 +1,18 @@
+import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { sendApplicationConfirmation } from "@/lib/email";
 import { logger } from "@/lib/logger";
 import { Prisma } from "@/generated/prisma";
 import { getApplicationState } from "@/lib/system-settings";
+import { rateLimit, rateLimitResponse, getClientKey, RATE_LIMITS } from "@/lib/rate-limit";
 
-// Simple in-memory rate limiter: max 5 applications per IP per 15 minutes
-const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
-const RATE_LIMIT_WINDOW = 15 * 60 * 1000; // 15 minutes
-const RATE_LIMIT_MAX = 5;
-
-function checkRateLimit(ip: string): boolean {
-  const now = Date.now();
-  const entry = rateLimitMap.get(ip);
-
-  if (!entry || now > entry.resetAt) {
-    rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW });
-    return true;
-  }
-
-  if (entry.count >= RATE_LIMIT_MAX) {
-    return false;
-  }
-
-  entry.count++;
-  return true;
-}
-
-// Clean up stale entries every 30 minutes
-setInterval(() => {
-  const now = Date.now();
-  for (const [key, val] of rateLimitMap) {
-    if (now > val.resetAt) rateLimitMap.delete(key);
-  }
-}, 30 * 60 * 1000);
-
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    // Rate limit by IP
-    const forwarded = request.headers.get("x-forwarded-for");
-    const ip = forwarded?.split(",")[0]?.trim() || "unknown";
-    if (!checkRateLimit(ip)) {
-      return Response.json(
-        { error: "Too many applications. Please try again later." },
-        { status: 429 }
-      );
-    }
+    // Upstash-backed rate limit (falls back to in-memory if Redis env not set).
+    // Replaces the previous module-level Map which lost its state on every
+    // Vercel cold start, allowing easy bypass.
+    const rl = await rateLimit(getClientKey(request), RATE_LIMITS.apply);
+    if (!rl.ok) return rateLimitResponse(rl);
 
     // Admin-gated window check — even if someone hits the API directly, we
     // refuse when applications are closed or not yet open.
