@@ -15,20 +15,18 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://ubuntubridgeinitiatives.org"),
   title: {
-    default: "UBI — Free Cybersecurity Internship in Africa | Ubuntu Bridge Initiative",
+    default: "UBI — Free Cybersecurity Internship | Ubuntu Bridge Initiative",
     template: "%s · UBI",
   },
   description:
-    "A free, selective cybersecurity internship for young Africans. Five foundation stages, three specialist tracks — SOC, Ethical Hacking, and GRC. Real breaches, no tuition, no hidden fees.",
+    "A free, selective cybersecurity internship for emerging talent. Five foundation stages, three specialist tracks — SOC, Ethical Hacking, and GRC. Real breaches, no tuition, no hidden fees.",
   keywords: [
     "cybersecurity internship",
     "free cybersecurity training",
-    "cybersecurity Africa",
     "SOC analyst training",
     "ethical hacking bootcamp",
     "GRC compliance training",
     "penetration testing",
-    "Nigeria cybersecurity",
     "Ubuntu Bridge Initiative",
     "UBI",
   ],
