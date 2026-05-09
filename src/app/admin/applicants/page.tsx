@@ -525,6 +525,27 @@ export default function ApplicantsPage() {
                         />
                       ))}
                     </div>
+                    {/* Resend welcome email — for when the original landed in spam
+                        or got lost. Reuses the existing stored credentials. */}
+                    <button
+                      onClick={async () => {
+                        if (!confirm(`Resend the welcome email (with login credentials) to ${selected.email}?`)) return;
+                        try {
+                          const res = await fetch(`/api/public-applications/${selected.id}/resend-welcome`, { method: "POST" });
+                          const data = await res.json();
+                          if (!res.ok || data.emailSent === false) {
+                            alert(`Resend FAILED.\n\nReason: ${data.emailError || data.error || "unknown"}\n\nCheck Vercel logs for [email:send] lines.`);
+                          } else {
+                            alert(`Welcome email re-sent to ${data.sentTo}.\n\nIf they still don't see it, ask them to check spam/junk and search for "from:noreply@ubuntubridgeinitiatives.org".`);
+                          }
+                        } catch {
+                          alert("Network error trying to resend.");
+                        }
+                      }}
+                      className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium rounded-lg border border-border hover:bg-muted/50"
+                    >
+                      Resend welcome email
+                    </button>
                   </div>
                 )}
 

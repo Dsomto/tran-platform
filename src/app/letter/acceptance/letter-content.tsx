@@ -89,10 +89,10 @@ export function LetterContent({ name, track }: { name: string; track: string }) 
 
               <ul className="list-disc pl-6 space-y-2 my-4">
                 <li>
-                  <strong>Orientation:</strong> Friday, 30th May 2025 — A mandatory virtual session where you will meet the team, understand the programme structure, receive your onboarding materials, and get set up for Stage 0.
+                  <strong>Orientation:</strong> Date will be communicated separately — A mandatory virtual session where you will meet the team, understand the programme structure, receive your onboarding materials, and get set up for Stage 0.
                 </li>
                 <li>
-                  <strong>Programme Start Date:</strong> Sunday, 1st June 2025 — The official start of the 10-stage programme.
+                  <strong>Programme Start Date:</strong> Date will be communicated separately — The official start of the 10-stage programme.
                 </li>
                 <li>
                   <strong>Track:</strong> {track}
@@ -124,7 +124,7 @@ export function LetterContent({ name, track }: { name: string; track: string }) 
 
               <ol className="list-decimal pl-6 space-y-2 my-4">
                 <li>
-                  Attendance at the <strong>orientation on 30th May</strong> is mandatory. Failure to attend may result in forfeiture of your spot.
+                  Attendance at the <strong>orientation</strong> is mandatory. Failure to attend may result in forfeiture of your spot.
                 </li>
                 <li>
                   The programme is elimination-based. You must meet the performance requirements at each stage to advance. There are no exceptions.

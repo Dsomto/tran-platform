@@ -98,8 +98,8 @@ export function generateAcceptancePDF(
     doc.font("Helvetica").fillColor("#374151");
 
     const details = [
-      `• Orientation: Friday, 30th May 2025 — A mandatory virtual session where you will meet the team, understand the programme structure, and get set up for Stage 0.`,
-      `• Programme Start Date: Sunday, 1st June 2025 — The official start of the 10-stage programme.`,
+      `• Orientation: Date will be communicated separately — A mandatory virtual session where you will meet the team, understand the programme structure, and get set up for Stage 0.`,
+      `• Programme Start Date: Date will be communicated separately — The official start of the 10-stage programme.`,
       `• Track: ${trackInterest}`,
       `• Format: Fully remote, self-paced within weekly deadlines. Performance-based progression through 10 stages.`,
     ];

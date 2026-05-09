@@ -223,7 +223,7 @@ export async function sendPublicAcceptanceEmail(
                 </td>
                 <td style="padding: 12px 0;">
                   <p style="color: #64748B; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 2px;">Orientation</p>
-                  <p style="color: #F1F5F9; font-size: 15px; font-weight: 600; margin: 0;">Friday, 30th May 2025</p>
+                  <p style="color: #F1F5F9; font-size: 15px; font-weight: 600; margin: 0;">Date will be communicated separately</p>
                 </td>
               </tr>
               <tr>
@@ -232,7 +232,7 @@ export async function sendPublicAcceptanceEmail(
                 </td>
                 <td style="padding: 12px 0; border-top: 1px solid #1E293B;">
                   <p style="color: #64748B; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 2px;">Programme Starts</p>
-                  <p style="color: #F1F5F9; font-size: 15px; font-weight: 600; margin: 0;">Sunday, 1st June 2025</p>
+                  <p style="color: #F1F5F9; font-size: 15px; font-weight: 600; margin: 0;">Date will be communicated separately</p>
                 </td>
               </tr>
               <tr>
