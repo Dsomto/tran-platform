@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/db";
-import { createToken, SESSION_MAX_AGE_SECONDS } from "@/lib/auth";
+import { createTokenForUser, SESSION_MAX_AGE_SECONDS } from "@/lib/auth";
 import type { SessionUser } from "@/lib/auth";
 import { verifyChallenge } from "@/lib/login-challenge";
 import { verifyTotp } from "@/lib/totp";
@@ -45,7 +45,10 @@ export async function POST(request: NextRequest) {
       role: user.role,
       avatarUrl: user.avatarUrl,
     };
-    const token = createToken(sessionUser);
+    // Use the user-id-aware variant so the issued token carries the current
+    // tokenVersion claim — required for revocation to bite the next time
+    // getSession() runs.
+    const token = await createTokenForUser(user.id);
 
     await prisma.user.update({
       where: { id: user.id },

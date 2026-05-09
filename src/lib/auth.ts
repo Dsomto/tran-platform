@@ -31,13 +31,45 @@ export async function verifyPassword(
 // page load; idle users lose access after an hour.
 export const SESSION_MAX_AGE_SECONDS = 60 * 60;
 
+// Token payload carries `v` (token version). On every getSession we look up
+// the user's current tokenVersion from the DB; if it doesn't match, the
+// cookie is stale (e.g. user reset their password / disabled 2FA / was
+// promoted-then-demoted) and we treat the session as ended. This is what
+// gives password-reset and 2FA-disable their actual effect — without it,
+// bumping tokenVersion in the DB doesn't invalidate any active cookies.
+type SessionTokenPayload = SessionUser & { v: number };
+
+export async function createTokenForUser(userId: string): Promise<string> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true, email: true, firstName: true, lastName: true,
+      role: true, avatarUrl: true, tokenVersion: true,
+    },
+  });
+  if (!user) throw new Error("User not found");
+  const payload: SessionTokenPayload = {
+    id: user.id,
+    email: user.email,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    role: user.role,
+    avatarUrl: user.avatarUrl,
+    v: user.tokenVersion,
+  };
+  return jwt.sign(payload, jwtSecret(), { expiresIn: SESSION_MAX_AGE_SECONDS });
+}
+
+// Backward-compat: existing call sites pass a SessionUser. We sign without
+// the v claim — those tokens fail the version check on the next getSession,
+// which is the correct behaviour after a redeploy.
 export function createToken(user: SessionUser): string {
   return jwt.sign(user, jwtSecret(), { expiresIn: SESSION_MAX_AGE_SECONDS });
 }
 
-export function verifyToken(token: string): SessionUser | null {
+export function verifyToken(token: string): SessionTokenPayload | null {
   try {
-    return jwt.verify(token, jwtSecret()) as SessionUser;
+    return jwt.verify(token, jwtSecret()) as SessionTokenPayload;
   } catch {
     return null;
   }
@@ -47,23 +79,54 @@ export async function getSession(): Promise<SessionUser | null> {
   const cookieStore = await cookies();
   const token = cookieStore.get("session-token")?.value;
   if (!token) return null;
-  const user = verifyToken(token);
-  if (!user) return null;
-  // Sliding window: if the token is mid-life (>30 min old), re-issue a fresh one
-  // so the user's session extends as long as they are actively using the site.
-  // Idle users still expire at the hour boundary because no refresh happens.
-  await refreshSessionIfStale(token, user);
+  const decoded = verifyToken(token);
+  if (!decoded) return null;
+
+  // Enforce token version. If the DB tokenVersion is ahead of the cookie's
+  // `v` claim, this session has been revoked (password reset / 2FA disable
+  // / forced re-login). Reject it.
+  const current = await prisma.user.findUnique({
+    where: { id: decoded.id },
+    select: { tokenVersion: true },
+  });
+  if (!current) return null;
+  // Tokens issued before this change have no `v` field; we treat them as
+  // version 0. After the first password reset / token bump for that user,
+  // those tokens stop working, which is the intended behaviour.
+  const tokenV = typeof decoded.v === "number" ? decoded.v : 0;
+  if (tokenV !== current.tokenVersion) return null;
+
+  const user: SessionUser = {
+    id: decoded.id,
+    email: decoded.email,
+    firstName: decoded.firstName,
+    lastName: decoded.lastName,
+    role: decoded.role,
+    avatarUrl: decoded.avatarUrl,
+  };
+
+  // Sliding window: if the token is mid-life (>30 min old), re-issue a fresh
+  // one so the user's session extends as long as they are actively using the
+  // site. Idle users still expire at the hour boundary.
+  await refreshSessionIfStale(token, user, current.tokenVersion);
   return user;
 }
 
-async function refreshSessionIfStale(token: string, user: SessionUser): Promise<void> {
+async function refreshSessionIfStale(
+  token: string,
+  user: SessionUser,
+  tokenVersion: number
+): Promise<void> {
   try {
     const decoded = jwt.decode(token) as { iat?: number; exp?: number } | null;
     if (!decoded?.iat || !decoded?.exp) return;
     const ageSeconds = Math.floor(Date.now() / 1000) - decoded.iat;
     // Only refresh if more than half the token's life has elapsed.
     if (ageSeconds < SESSION_MAX_AGE_SECONDS / 2) return;
-    const fresh = createToken(user);
+    // Re-sign with current tokenVersion baked in so the refreshed cookie
+    // remains valid across future revocation checks.
+    const payload: SessionTokenPayload = { ...user, v: tokenVersion };
+    const fresh = jwt.sign(payload, jwtSecret(), { expiresIn: SESSION_MAX_AGE_SECONDS });
     const cookieStore = await cookies();
     cookieStore.set("session-token", fresh, {
       httpOnly: true,
@@ -196,6 +259,9 @@ export async function login(
     avatarUrl: user.avatarUrl,
   };
 
-  const token = createToken(sessionUser);
+  // Sign with the user's current tokenVersion baked in so getSession()'s
+  // revocation check passes until the next bump.
+  const payload: SessionTokenPayload = { ...sessionUser, v: user.tokenVersion };
+  const token = jwt.sign(payload, jwtSecret(), { expiresIn: SESSION_MAX_AGE_SECONDS });
   return { ok: true, user: sessionUser, token };
 }
