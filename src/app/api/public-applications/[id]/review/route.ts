@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth";
-import { sendPublicAcceptanceEmail, sendPublicRejectionEmail } from "@/lib/email";
+import { renderPublicAcceptanceEmail, sendPublicRejectionEmail } from "@/lib/email";
 import { logger } from "@/lib/logger";
 import { nextInternId } from "@/lib/intern-id";
 import { onboardApprovedApplicant } from "@/lib/onboard";
@@ -65,50 +65,57 @@ export async function POST(
       });
 
       // Create the backing User + Intern so the applicant can log in.
+      let userId: string | null = null;
       try {
-        await onboardApprovedApplicant(updated);
+        const onboarded = await onboardApprovedApplicant(updated);
+        userId = onboarded.userId;
       } catch (err) {
         logger.error("onboarding_failed", err, { applicationId: id, email: application.email });
       }
 
-      // Send the email synchronously and surface failure to the admin. The
-      // welcome email carries the temp password — silently dropping it on
-      // SMTP failure would lock the applicant out, so we tell the admin.
+      // Enqueue the welcome email instead of sending synchronously. The cron
+      // at /api/cron/email-drain (hourly) picks it up with up to 3 retries —
+      // resilient to the IONOS "Connection closed unexpectedly" TCP drops
+      // we were seeing under day-0 rate limiting + Vercel function timeouts.
       logger.info("acceptance_flow_start", { applicationId: id, email: application.email, internId });
 
-      let pdfBuffer: Buffer | undefined;
-      let pdfError: string | null = null;
+      let queuedAt: string | null = null;
+      let queueError: string | null = null;
       try {
-        const { generateAcceptancePDF } = await import("@/lib/generate-letter");
-        pdfBuffer = await generateAcceptancePDF(application.fullName, application.trackInterest);
-        logger.info("acceptance_pdf_ok", { applicationId: id, bytes: pdfBuffer.length });
-      } catch (err) {
-        pdfError = err instanceof Error ? `${err.name}: ${err.message}` : String(err);
-        logger.error("acceptance_pdf_generation_failed", err, { applicationId: id, pdfError });
-      }
-
-      let emailError: string | null = null;
-      try {
-        await sendPublicAcceptanceEmail(
-          application.email,
-          application.fullName,
-          application.trackInterest,
+        if (!userId) throw new Error("No user record — onboarding must have failed");
+        const { subject, html } = renderPublicAcceptanceEmail({
+          fullName: application.fullName,
+          trackInterest: application.trackInterest,
           internId,
           tempPassword,
-          pdfBuffer
-        );
-        logger.info("acceptance_email_ok", { applicationId: id, email: application.email });
+        });
+        const item = await prisma.emailQueueItem.create({
+          data: {
+            userId,
+            kind: "GENERAL",
+            toEmail: application.email,
+            subject,
+            body: html,
+            context: {
+              type: "acceptance",
+              applicationId: id,
+              internId,
+            },
+          },
+        });
+        queuedAt = item.enqueuedAt.toISOString();
+        logger.info("acceptance_email_queued", { applicationId: id, queueItemId: item.id });
       } catch (err) {
-        emailError = err instanceof Error ? `${err.name}: ${err.message}` : String(err);
-        logger.error("acceptance_email_failed", err, { email: application.email, internId, emailError });
+        queueError = err instanceof Error ? `${err.name}: ${err.message}` : String(err);
+        logger.error("acceptance_email_queue_failed", err, { applicationId: id, queueError });
       }
 
       return Response.json({
         success: true,
         application: updated,
-        emailSent: emailError === null,
-        emailError,
-        pdfError,
+        emailQueued: queueError === null,
+        queueError,
+        queuedAt,
       });
     }
 

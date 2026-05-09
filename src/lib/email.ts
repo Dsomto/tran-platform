@@ -159,36 +159,23 @@ export async function sendRejectionEmail(
 
 // ─── PUBLIC APPLICATION EMAILS ───────────────────────────
 
-export async function sendPublicAcceptanceEmail(
-  to: string,
-  fullName: string,
-  trackInterest: string,
-  internId?: string,
-  tempPassword?: string,
-  pdfBuffer?: Buffer
-): Promise<void> {
+// Render the acceptance email body. Returns subject + html so the same content
+// can be delivered via direct send OR by enqueueing in EmailQueueItem (for
+// retry on transient SMTP failures). Kept as a separate function so route
+// handlers can queue without forcing a synchronous send.
+export function renderPublicAcceptanceEmail(opts: {
+  fullName: string;
+  trackInterest: string;
+  internId?: string;
+  tempPassword?: string;
+}): { subject: string; html: string } {
+  const { fullName, trackInterest, internId, tempPassword } = opts;
   const firstName = fullName.split(" ")[0];
-  // Use publicAppUrl() so the link points at the production custom domain,
-  // never the per-deploy Vercel preview URL that NEXTAUTH_URL can resolve to.
-  // Signed with HMAC so a stranger can't craft ?name=AnyOne&track=Whatever
-  // and produce a forgery that looks identical to a real acceptance letter.
   const sig = signLetter(fullName, trackInterest);
   const letterUrl = `${publicAppUrl()}/letter/acceptance?name=${encodeURIComponent(fullName)}&track=${encodeURIComponent(trackInterest)}&sig=${sig}`;
   const loginUrl = `${publicAppUrl()}/login`;
 
-  // Deliverability rewrite: this email used to land in spam reliably because
-  // it carried (a) a PDF attachment from a 7-day-old domain, (b) embedded
-  // login credentials in a styled "credentials box" that looks identical to
-  // the phishing patterns spam filters train on, and (c) a heavy dark-themed
-  // marketing layout. We dropped the attachment (the dynamic letter URL
-  // replaces it), simplified the subject, and now present the credentials
-  // as plain inline prose. The pdfBuffer arg is accepted but ignored — kept
-  // for backward compatibility with existing callers.
-  void pdfBuffer;
-
-  await sendOne("send", {
-    from: `"Ubuntu Bridge Initiative" <${process.env.SMTP_USER}>`,
-    to,
+  return {
     subject: "Your UBI application has been accepted",
     html: `
       <div style="font-family: 'Segoe UI', sans-serif; max-width: 600px; margin: 0 auto; background: #F8FAFC; padding: 40px 20px;">
@@ -228,6 +215,32 @@ export async function sendPublicAcceptanceEmail(
         </p>
       </div>
     `,
+  };
+}
+
+// Direct synchronous send. Now mostly used by the diagnostic endpoint;
+// production code paths should prefer the queue (renderPublicAcceptanceEmail
+// + emailQueueItem.create) so transient SMTP failures retry automatically.
+export async function sendPublicAcceptanceEmail(
+  to: string,
+  fullName: string,
+  trackInterest: string,
+  internId?: string,
+  tempPassword?: string,
+  // Kept for backward-compat with old call sites; the email no longer attaches.
+  _pdfBuffer?: Buffer
+): Promise<void> {
+  const { subject, html } = renderPublicAcceptanceEmail({
+    fullName,
+    trackInterest,
+    internId,
+    tempPassword,
+  });
+  await sendOne("send", {
+    from: `"Ubuntu Bridge Initiative" <${process.env.SMTP_USER}>`,
+    to,
+    subject,
+    html,
   });
 }
 

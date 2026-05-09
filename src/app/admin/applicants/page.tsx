@@ -147,13 +147,12 @@ export default function ApplicantsPage() {
         body: JSON.stringify({ action }),
       });
       const data = await res.json().catch(() => ({}));
-      // Surface email-send failure to the admin. The welcome email carries the
-      // applicant's temp password — if it didn't go out, the admin needs to
-      // know so they can manually re-send (or fix SMTP) before the applicant
-      // is locked out without credentials.
-      if (action === "approved" && data?.emailSent === false) {
+      // The welcome email is now queued, not sent synchronously — the cron
+      // drain delivers within the hour with up to 3 retries. If the queue
+      // insert itself failed (very rare), tell the admin so they can re-run.
+      if (action === "approved" && data?.emailQueued === false) {
         alert(
-          `Application approved, but the welcome email FAILED to send.\n\nReason: ${data.emailError || "unknown"}\n\nThe applicant has been created in the system but does not have their login credentials. Re-send manually or check Vercel logs for "acceptance_email_failed".`
+          `Application approved, but the welcome email FAILED to queue.\n\nReason: ${data.queueError || "unknown"}\n\nUse the Resend button to retry, or check Vercel logs for "acceptance_email_queue_failed".`
         );
       }
       setSelected(null);
@@ -529,14 +528,14 @@ export default function ApplicantsPage() {
                         or got lost. Reuses the existing stored credentials. */}
                     <button
                       onClick={async () => {
-                        if (!confirm(`Resend the welcome email (with login credentials) to ${selected.email}?`)) return;
+                        if (!confirm(`Re-queue the welcome email (with login credentials) to ${selected.email}?`)) return;
                         try {
                           const res = await fetch(`/api/public-applications/${selected.id}/resend-welcome`, { method: "POST" });
                           const data = await res.json();
-                          if (!res.ok || data.emailSent === false) {
-                            alert(`Resend FAILED.\n\nReason: ${data.emailError || data.error || "unknown"}\n\nCheck Vercel logs for [email:send] lines.`);
+                          if (!res.ok || data.queued === false) {
+                            alert(`Resend FAILED.\n\nReason: ${data.error || "unknown"}\n\nCheck Vercel logs.`);
                           } else {
-                            alert(`Welcome email re-sent to ${data.sentTo}.\n\nIf they still don't see it, ask them to check spam/junk and search for "from:noreply@ubuntubridgeinitiatives.org".`);
+                            alert(`Queued for delivery to ${data.sentTo}.\n\nThe email cron will deliver it within the hour, retrying up to 3 times if SMTP hiccups. If they still don't see it after an hour, ask them to check spam/junk.`);
                           }
                         } catch {
                           alert("Network error trying to resend.");
