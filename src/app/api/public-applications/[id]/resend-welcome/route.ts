@@ -1,16 +1,11 @@
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth";
-import { renderPublicAcceptanceEmail } from "@/lib/email";
+import { sendPublicAcceptanceEmail } from "@/lib/email";
 import { logger } from "@/lib/logger";
 
 // Manual resend of the welcome email for an already-approved applicant.
-// Used when the original send failed silently (spam folder, transient SMTP
-// error, mistyped email subsequently corrected). Reuses the password we
-// already issued and stored on PublicApplication.loginPassword — does NOT
-// generate a new one, so the applicant's existing credential remains valid.
-//
-// Enqueues into EmailQueueItem rather than sending synchronously so a
-// transient IONOS connection drop gets retried by the cron drain (3 attempts).
+// Synchronous send — Resend is reliable enough that single attempts deliver.
+// Reuses the password we already issued (PublicApplication.loginPassword).
 export async function POST(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -42,47 +37,25 @@ export async function POST(
       );
     }
 
-    // Find the User row for this applicant — required for EmailQueueItem.userId.
-    const user = await prisma.user.findUnique({
-      where: { email: application.email.toLowerCase() },
-      select: { id: true },
-    });
-    if (!user) {
-      return Response.json(
-        { error: "No User record exists for this applicant. Re-approving will create one." },
-        { status: 400 }
+    let emailError: string | null = null;
+    try {
+      await sendPublicAcceptanceEmail(
+        application.email,
+        application.fullName,
+        application.trackInterest,
+        application.internId,
+        application.loginPassword
       );
+    } catch (err) {
+      emailError = err instanceof Error ? `${err.name}: ${err.message}` : String(err);
+      logger.error("acceptance_email_failed", err, { email: application.email, internId: application.internId, emailError });
     }
 
-    const { subject, html } = renderPublicAcceptanceEmail({
-      fullName: application.fullName,
-      trackInterest: application.trackInterest,
-      internId: application.internId,
-      tempPassword: application.loginPassword,
-    });
-
-    const item = await prisma.emailQueueItem.create({
-      data: {
-        userId: user.id,
-        kind: "GENERAL",
-        toEmail: application.email,
-        subject,
-        body: html,
-        context: {
-          type: "acceptance_resend",
-          applicationId: id,
-          internId: application.internId,
-        },
-      },
-    });
-
-    logger.info("acceptance_email_resent_queued", { applicationId: id, queueItemId: item.id });
-
     return Response.json({
-      ok: true,
-      queued: true,
+      ok: emailError === null,
+      emailSent: emailError === null,
+      emailError,
       sentTo: application.email,
-      note: "Queued for delivery — the cron drain will pick it up within the hour.",
     });
   } catch (error) {
     logger.error("resend_welcome_failed", error);

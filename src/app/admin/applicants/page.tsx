@@ -147,12 +147,12 @@ export default function ApplicantsPage() {
         body: JSON.stringify({ action }),
       });
       const data = await res.json().catch(() => ({}));
-      // The welcome email is now queued, not sent synchronously — the cron
-      // drain delivers within the hour with up to 3 retries. If the queue
-      // insert itself failed (very rare), tell the admin so they can re-run.
-      if (action === "approved" && data?.emailQueued === false) {
+      // Welcome email is sent synchronously via Resend. If it fails, surface
+      // to the admin so they know to use the Resend button — silently dropping
+      // would lock the applicant out without their credentials.
+      if (action === "approved" && data?.emailSent === false) {
         alert(
-          `Application approved, but the welcome email FAILED to queue.\n\nReason: ${data.queueError || "unknown"}\n\nUse the Resend button to retry, or check Vercel logs for "acceptance_email_queue_failed".`
+          `Application approved, but the welcome email FAILED to send.\n\nReason: ${data.emailError || "unknown"}\n\nUse the Resend button to retry, or check Vercel logs for "acceptance_email_failed".`
         );
       }
       setSelected(null);
@@ -528,14 +528,14 @@ export default function ApplicantsPage() {
                         or got lost. Reuses the existing stored credentials. */}
                     <button
                       onClick={async () => {
-                        if (!confirm(`Re-queue the welcome email (with login credentials) to ${selected.email}?`)) return;
+                        if (!confirm(`Resend the welcome email (with login credentials) to ${selected.email}?`)) return;
                         try {
                           const res = await fetch(`/api/public-applications/${selected.id}/resend-welcome`, { method: "POST" });
                           const data = await res.json();
-                          if (!res.ok || data.queued === false) {
-                            alert(`Resend FAILED.\n\nReason: ${data.error || "unknown"}\n\nCheck Vercel logs.`);
+                          if (!res.ok || data.emailSent === false) {
+                            alert(`Resend FAILED.\n\nReason: ${data.emailError || data.error || "unknown"}\n\nCheck Vercel logs for [email:send] lines.`);
                           } else {
-                            alert(`Queued for delivery to ${data.sentTo}.\n\nThe email cron will deliver it within the hour, retrying up to 3 times if SMTP hiccups. If they still don't see it after an hour, ask them to check spam/junk.`);
+                            alert(`Welcome email re-sent to ${data.sentTo}.\n\nIf they still don't see it, ask them to check spam/junk and the Resend dashboard at https://resend.com/emails for delivery status.`);
                           }
                         } catch {
                           alert("Network error trying to resend.");

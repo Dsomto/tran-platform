@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth";
-import { renderPublicAcceptanceEmail, sendPublicRejectionEmail } from "@/lib/email";
+import { sendPublicAcceptanceEmail, sendPublicRejectionEmail } from "@/lib/email";
 import { logger } from "@/lib/logger";
 import { nextInternId } from "@/lib/intern-id";
 import { onboardApprovedApplicant } from "@/lib/onboard";
@@ -65,57 +65,37 @@ export async function POST(
       });
 
       // Create the backing User + Intern so the applicant can log in.
-      let userId: string | null = null;
       try {
-        const onboarded = await onboardApprovedApplicant(updated);
-        userId = onboarded.userId;
+        await onboardApprovedApplicant(updated);
       } catch (err) {
         logger.error("onboarding_failed", err, { applicationId: id, email: application.email });
       }
 
-      // Enqueue the welcome email instead of sending synchronously. The cron
-      // at /api/cron/email-drain (hourly) picks it up with up to 3 retries —
-      // resilient to the IONOS "Connection closed unexpectedly" TCP drops
-      // we were seeing under day-0 rate limiting + Vercel function timeouts.
+      // Send the welcome email synchronously via Resend. We're on Resend now,
+      // not IONOS, so the connection-drop class of failures we hit before
+      // doesn't apply — single attempt is reliable.
       logger.info("acceptance_flow_start", { applicationId: id, email: application.email, internId });
 
-      let queuedAt: string | null = null;
-      let queueError: string | null = null;
+      let emailError: string | null = null;
       try {
-        if (!userId) throw new Error("No user record — onboarding must have failed");
-        const { subject, html } = renderPublicAcceptanceEmail({
-          fullName: application.fullName,
-          trackInterest: application.trackInterest,
+        await sendPublicAcceptanceEmail(
+          application.email,
+          application.fullName,
+          application.trackInterest,
           internId,
-          tempPassword,
-        });
-        const item = await prisma.emailQueueItem.create({
-          data: {
-            userId,
-            kind: "GENERAL",
-            toEmail: application.email,
-            subject,
-            body: html,
-            context: {
-              type: "acceptance",
-              applicationId: id,
-              internId,
-            },
-          },
-        });
-        queuedAt = item.enqueuedAt.toISOString();
-        logger.info("acceptance_email_queued", { applicationId: id, queueItemId: item.id });
+          tempPassword
+        );
+        logger.info("acceptance_email_ok", { applicationId: id, email: application.email });
       } catch (err) {
-        queueError = err instanceof Error ? `${err.name}: ${err.message}` : String(err);
-        logger.error("acceptance_email_queue_failed", err, { applicationId: id, queueError });
+        emailError = err instanceof Error ? `${err.name}: ${err.message}` : String(err);
+        logger.error("acceptance_email_failed", err, { email: application.email, internId, emailError });
       }
 
       return Response.json({
         success: true,
         application: updated,
-        emailQueued: queueError === null,
-        queueError,
-        queuedAt,
+        emailSent: emailError === null,
+        emailError,
       });
     }
 
