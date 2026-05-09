@@ -70,3 +70,24 @@ git commit --allow-empty -m "chore: redeploy to pick up new env" && git push ori
 **Upstash (Redis)** — Database → Details → Reset password (the REST token). Update `UPSTASH_REDIS_REST_TOKEN` in Vercel env, redeploy.
 
 **Sentry** — Settings → Auth Tokens / Client Keys → revoke old → create new → update `SENTRY_DSN` env, redeploy.
+
+## Known production caveats
+
+These are noted here so anyone running the system knows they exist.
+
+### `/api/upload` writes to local filesystem
+
+`src/app/api/upload/route.ts` saves to `public/uploads`. On Vercel
+serverless, that directory is **per-lambda ephemeral storage** — files
+written there don't survive a cold start, don't replicate across
+regions, and aren't shared between concurrent invocations.
+
+**Where this matters today:** the `DiagramUpload` task widget in stage
+rooms uses this endpoint. A diagram uploaded by one intern may not be
+retrievable later. The report-submission flow does **not** use this —
+reports are link-based (Google Drive URL) so they're unaffected.
+
+**Fix path when you need durable uploads:** swap the local-disk write
+for **Vercel Blob** (https://vercel.com/docs/vercel-blob, ~30 minutes
+to wire) or **Cloudflare R2** / **AWS S3** (an hour, more setup).
+Until then, treat any feature using `/api/upload` as best-effort.
