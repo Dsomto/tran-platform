@@ -60,12 +60,28 @@ export async function POST(
       );
     }
 
+    // Concurrency-safe claim: create the grade row, then immediately recount
+    // and roll back if the count is now >2. This isn't a serializable
+    // transaction (Mongo doesn't expose those for free), but it closes the
+    // window where three graders racing past the earlier count check could
+    // all create rows. Worst case under contention: one grader's create gets
+    // rolled back and they see a friendly "no longer claimable" error.
+    let createdId: string | null = null;
     try {
-      await prisma.reportGrade.create({
+      const created = await prisma.reportGrade.create({
         data: { reportId: report.id, graderId: session!.id },
       });
+      createdId = created.id;
     } catch {
       return Response.json({ error: "Report is no longer claimable" }, { status: 409 });
+    }
+    const finalCount = await prisma.reportGrade.count({ where: { reportId: report.id } });
+    if (finalCount > 2 && createdId) {
+      await prisma.reportGrade.delete({ where: { id: createdId } }).catch(() => undefined);
+      return Response.json(
+        { error: "Another grader claimed the last slot first." },
+        { status: 409 }
+      );
     }
 
     await prisma.stageReport.update({

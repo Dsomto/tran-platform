@@ -626,11 +626,19 @@ model EmailQueueItem {
   sentAt      DateTime?
   failReason  String?
 
+  // Lease used by /api/cron/email-drain to claim a row before sending,
+  // so two overlapping drain runs don't double-send. Set when a drain
+  // picks this row up; cleared on success/failure. A row whose
+  // lockedAt is older than ~5 minutes is considered abandoned (the
+  // drain crashed mid-flight) and another drain can re-claim.
+  lockedAt    DateTime?
+
   enqueuedAt  DateTime         @default(now())
 
   @@index([status, enqueuedAt])                // FIFO drain
   @@index([userId])
   @@index([kind, status])
+  @@index([status, lockedAt])
 }
 
 // ─── DATA SCHOLARSHIP APPLICATION ────────────────────────

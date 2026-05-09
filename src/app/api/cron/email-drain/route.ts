@@ -3,9 +3,19 @@ import { prisma } from "@/lib/db";
 import { logger } from "@/lib/logger";
 import nodemailer from "nodemailer";
 
-// FIFO drain of queued emails. Defaults to 300/run (Zoho soft cap).
-// Run daily via Vercel cron (GET) or any external scheduler (POST).
-// Auth: Bearer CRON_SECRET in Authorization header.
+// FIFO drain of queued emails with a lease to prevent double-send.
+//
+// Lease protocol:
+//   1. updateMany: flip up to N rows from PENDING to PENDING (no status change)
+//      while stamping lockedAt = now. Only rows whose lockedAt is null or
+//      older than the stale threshold are touched. Other concurrent drains
+//      (manual triggers + scheduled cron) won't grab the same rows.
+//   2. findMany of rows with our exact lockedAt timestamp — those are ours.
+//   3. Send each, mark SENT or FAILED.
+//   4. If we crash before step 3 completes, the lockedAt timestamp ages out
+//      after STALE_LEASE_MS and the next drain can re-claim those rows.
+const STALE_LEASE_MS = 5 * 60 * 1000;
+
 async function handleDrain(request: NextRequest): Promise<Response> {
   try {
     const secret = process.env.CRON_SECRET;
@@ -23,14 +33,39 @@ async function handleDrain(request: NextRequest): Promise<Response> {
       Math.max(1, parseInt(url.searchParams.get("limit") || "300") || 300)
     );
 
-    const pending = await prisma.emailQueueItem.findMany({
-      where: { status: "PENDING" },
+    // Lease step: stamp lockedAt on up to `batch` PENDING rows. updateMany
+    // is atomic per-document on Mongo — two concurrent drains won't both
+    // win the same row because the second drain's where clause excludes
+    // rows whose lockedAt is fresh.
+    const leaseAt = new Date();
+    const staleCutoff = new Date(Date.now() - STALE_LEASE_MS);
+    const candidates = await prisma.emailQueueItem.findMany({
+      where: {
+        status: "PENDING",
+        OR: [{ lockedAt: null }, { lockedAt: { lt: staleCutoff } }],
+      },
       orderBy: { enqueuedAt: "asc" },
       take: batch,
+      select: { id: true },
+    });
+    if (!candidates.length) {
+      return Response.json({ drained: 0, remaining: 0 });
+    }
+    await prisma.emailQueueItem.updateMany({
+      where: { id: { in: candidates.map((c) => c.id) } },
+      data: { lockedAt: leaseAt },
+    });
+
+    // Re-fetch with full bodies for sending. Filter to rows whose lockedAt
+    // is exactly leaseAt — anyone whose lockedAt got overwritten by a faster
+    // concurrent drain is no longer ours, and we skip them.
+    const pending = await prisma.emailQueueItem.findMany({
+      where: { id: { in: candidates.map((c) => c.id) }, lockedAt: leaseAt },
     });
 
     if (!pending.length) {
-      return Response.json({ drained: 0, remaining: 0 });
+      const remaining = await prisma.emailQueueItem.count({ where: { status: "PENDING" } });
+      return Response.json({ drained: 0, remaining, note: "No rows survived lease step" });
     }
 
     const transporter = nodemailer.createTransport({
@@ -58,20 +93,25 @@ async function handleDrain(request: NextRequest): Promise<Response> {
         });
         await prisma.emailQueueItem.update({
           where: { id: item.id },
-          data: { status: "SENT", sentAt: new Date(), attempts: item.attempts + 1 },
+          data: {
+            status: "SENT",
+            sentAt: new Date(),
+            attempts: item.attempts + 1,
+            lockedAt: null,
+          },
         });
         sent++;
       } catch (err) {
         failed++;
         const msg = err instanceof Error ? err.message : String(err);
         const nextAttempts = item.attempts + 1;
-        // Mark permanently FAILED after 3 attempts; otherwise leave PENDING.
         await prisma.emailQueueItem.update({
           where: { id: item.id },
           data: {
             status: nextAttempts >= 3 ? "FAILED" : "PENDING",
             attempts: nextAttempts,
             failReason: msg.slice(0, 500),
+            lockedAt: null,
           },
         });
         logger.error("email_drain_item_failed", err, { itemId: item.id, attempts: nextAttempts });
