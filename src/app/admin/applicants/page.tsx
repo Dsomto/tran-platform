@@ -43,6 +43,7 @@ interface PublicApp {
   dedication: string;
   goals: string;
   referralSource: string | null;
+  whyPickYou: string | null;
   status: string;
   stage: number;
   stageStatus: string;
@@ -306,11 +307,12 @@ export default function ApplicantsPage() {
       p++;
     }
 
-    const headers = ["Name", "Email", "Country", "Age Range", "Gender", "Status", "Track", "Dedication", "Experience", "Goals", "Applied"];
+    const headers = ["Name", "Email", "Country", "Age Range", "Gender", "Status", "Track", "Dedication", "Experience", "Goals", "Why Pick Them", "Applied"];
     const rows = allApps.map((a) => [
       a.fullName, a.email, a.country, a.ageRange, a.gender || "", a.currentStatus,
       getTrackLabel(a.trackInterest), a.dedication, `"${a.experience.replace(/"/g, '""')}"`,
       `"${a.goals.replace(/"/g, '""')}"`,
+      `"${(a.whyPickYou || "").replace(/"/g, '""')}"`,
       formatDate(a.createdAt),
     ]);
 
@@ -562,6 +564,23 @@ export default function ApplicantsPage() {
                     <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">{selected.goals}</p>
                   </div>
                 </div>
+
+                {/* Why pick you — the differentiator answer */}
+                {selected.whyPickYou && (
+                  <div className="mb-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Target className="w-4 h-4 text-muted" />
+                      <p className="text-xs font-semibold text-muted uppercase tracking-wider">
+                        Why we should pick them
+                      </p>
+                    </div>
+                    <div className="bg-surface-hover rounded-xl p-4">
+                      <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
+                        {selected.whyPickYou}
+                      </p>
+                    </div>
+                  </div>
+                )}
 
                 {selected.referralSource && (
                   <div className="flex flex-wrap gap-3 mb-6">

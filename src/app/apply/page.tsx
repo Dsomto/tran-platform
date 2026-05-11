@@ -141,6 +141,7 @@ function ApplyPage() {
       trackInterest: fd.get("trackInterest") as string,
       dedication: fd.get("dedication") as string,
       goals: fd.get("goals") as string,
+      whyPickYou: fd.get("whyPickYou") as string,
       referralSource: fd.get("referralSource") as string,
     };
 
@@ -416,6 +417,24 @@ function ApplyPage() {
                       required
                       rows={4}
                       placeholder="Tell us what you're hoping to learn, achieve, or build through UBI..."
+                      className={`${inputClass} resize-none`}
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="whyPickYou" className={labelClass}>
+                      We&apos;ll receive thousands of applications. Why should we pick you? <span className="text-red-400">*</span>
+                    </label>
+                    <p className="text-[11px] text-muted mt-0.5 mb-2">
+                      Take your time here. Be honest, be specific. Tell us what makes you the right person for this cohort — what you&apos;ve done, what you&apos;ll do, why you over the next applicant.
+                    </p>
+                    <textarea
+                      id="whyPickYou"
+                      name="whyPickYou"
+                      required
+                      rows={6}
+                      maxLength={2000}
+                      placeholder="The hundred details only you can tell us. Skip the generic — show us the work."
                       className={`${inputClass} resize-none`}
                     />
                   </div>

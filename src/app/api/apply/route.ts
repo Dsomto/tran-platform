@@ -32,13 +32,19 @@ export async function POST(request: NextRequest) {
     const {
       fullName, email, country, ageRange, gender,
       currentStatus, experience, trackInterest,
-      dedication, goals, referralSource,
+      dedication, goals, whyPickYou, referralSource,
     } = body;
 
     // Validate required fields
-    if (!fullName || !email || !country || !ageRange || !currentStatus || !experience || !trackInterest || !dedication || !goals) {
+    if (!fullName || !email || !country || !ageRange || !currentStatus || !experience || !trackInterest || !dedication || !goals || !whyPickYou) {
       return Response.json(
         { error: "Please fill in all required fields." },
+        { status: 400 }
+      );
+    }
+    if (typeof whyPickYou === "string" && whyPickYou.length > 2000) {
+      return Response.json(
+        { error: "Keep the 'why should we pick you' answer under 2000 characters." },
         { status: 400 }
       );
     }
@@ -65,6 +71,7 @@ export async function POST(request: NextRequest) {
           trackInterest,
           dedication,
           goals: goals.trim(),
+          whyPickYou: whyPickYou.trim(),
           referralSource: referralSource?.trim() || null,
         },
       });

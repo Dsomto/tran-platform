@@ -449,6 +449,10 @@ model PublicApplication {
   trackInterest   String
   dedication      String
   goals           String
+  // Long-form differentiator answer to "we'll receive thousands of
+  // applications, why should we pick you?". Optional to allow legacy rows
+  // that pre-date this field to load without migration drama.
+  whyPickYou      String?
   referralSource  String?
   status          String   @default("pending")
   stage           Int      @default(-1)     // -1 = not started, 0-9 = active stages, 10 = finalist
