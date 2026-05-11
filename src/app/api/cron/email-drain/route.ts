@@ -131,3 +131,9 @@ async function handleDrain(request: NextRequest): Promise<Response> {
 // Vercel Cron sends GET with Bearer auth; external schedulers may POST.
 export const GET = handleDrain;
 export const POST = handleDrain;
+
+// On Vercel Pro: explicit 5-minute budget for a single drain run. A typical
+// drain of 100 emails (the configured limit) finishes in 10–20s, but during
+// a Resend outage we may sit on long retries. 300s gives the cron room to
+// finish gracefully instead of getting killed mid-batch.
+export const maxDuration = 300;

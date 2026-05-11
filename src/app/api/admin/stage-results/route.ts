@@ -361,3 +361,9 @@ function renderResultEmail(opts: {
     </div>
   `;
 }
+
+// On Vercel Pro: 5-minute budget. Publishing a cohort of 500 interns fans
+// out N email queue inserts + N intern updates + N stage-history rows, all
+// in sequence. Easily fits in 300s; the explicit budget stops a long publish
+// from hitting the default and getting killed.
+export const maxDuration = 300;

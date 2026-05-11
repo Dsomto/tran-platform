@@ -60,3 +60,6 @@ export async function POST(request: Request) {
   const advanced = results.reduce((sum, r) => sum + r.count, 0);
   return Response.json({ success: true, updated: advanced });
 }
+
+// Bulk stage advance: explicit timeout budget for large cohorts.
+export const maxDuration = 120;

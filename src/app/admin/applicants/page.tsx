@@ -176,12 +176,11 @@ export default function ApplicantsPage() {
     if (selectedIds.size === 0) return;
     const ids = Array.from(selectedIds);
 
-    // Process in batches of 5 instead of all-at-once. 500 concurrent
-    // POSTs would (a) blow past Resend's per-second send limits triggering
-    // rate-limit failures, and (b) overwhelm Vercel's lambda concurrency.
-    // Batches of 5 let us approve a cohort of 500 in ~3-4 minutes with
-    // predictable email throughput.
-    const BATCH_SIZE = 5;
+    // Process in batches of 20 instead of all-at-once. 500 concurrent POSTs
+    // would still blow past Resend's per-second limits, but on Vercel Pro
+    // we have plenty of lambda headroom and longer timeouts — 20 at a time
+    // approves a cohort of 500 in ~1 minute with predictable email throughput.
+    const BATCH_SIZE = 20;
     setIsReviewing(true);
     setBulkProgress({ done: 0, total: ids.length, emailFailures: 0 });
 
