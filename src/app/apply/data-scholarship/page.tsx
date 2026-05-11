@@ -7,9 +7,15 @@ import { Footer } from "@/components/landing/footer";
 import { Loader2, CheckCircle2, Heart, Wifi } from "lucide-react";
 
 const countries = [
-  "Nigeria", "Ghana", "Kenya", "South Africa", "Cameroon", "Egypt",
-  "Tanzania", "Uganda", "Rwanda", "Ethiopia", "Senegal", "Côte d'Ivoire",
-  "Zambia", "Zimbabwe", "Sierra Leone", "Liberia", "Other",
+  "Argentina", "Australia", "Bangladesh", "Belgium", "Brazil", "Cameroon",
+  "Canada", "Chile", "China", "Colombia", "Côte d'Ivoire", "Egypt",
+  "Ethiopia", "France", "Germany", "Ghana", "India", "Indonesia",
+  "Ireland", "Italy", "Japan", "Kenya", "Malaysia", "Mexico",
+  "Morocco", "Netherlands", "New Zealand", "Nigeria", "Pakistan", "Philippines",
+  "Poland", "Portugal", "Rwanda", "Saudi Arabia", "Senegal", "Singapore",
+  "South Africa", "South Korea", "Spain", "Sweden", "Switzerland", "Tanzania",
+  "Turkey", "Uganda", "Ukraine", "United Arab Emirates", "United Kingdom",
+  "United States", "Vietnam", "Other",
 ];
 
 const inputClass =

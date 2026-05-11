@@ -101,7 +101,7 @@ export const STAGE_BRIEFS: Record<
         name: "Amaka Eze",
         role: "Head of Security",
         tag: "Your direct mentor",
-        bio: "Ten years across SOCs in Lagos, Joburg, and London. Hates ceremony, loves evidence. Will read your report twice and ask one question that proves you didn't.",
+        bio: "Ten years across SOCs on three continents. Hates ceremony, loves evidence. Will read your report twice and ask one question that proves you didn't.",
         alignment: "ally",
         greeting: "I'll be reading your reports. Make them sharp.",
       },
@@ -156,7 +156,7 @@ export const STAGE_BRIEFS: Record<
     bulletin: [
       {
         kind: "news",
-        text: "Sankofa just signed a 3-year processing deal with Lagos Microfinance. Press release Friday — Comms wants nothing weird in the news cycle.",
+        text: "Sankofa just signed a 3-year processing deal with a major microfinance partner. Press release Friday — Comms wants nothing weird in the news cycle.",
         meta: "internal note · 2 days ago",
       },
       {
@@ -340,7 +340,7 @@ export const STAGE_BRIEFS: Record<
       },
       {
         kind: "alert",
-        text: "External counsel asked whether the Q2 incident triggers Section 40 NDPA notification. Counsel Ifeoma says \"not yet — but the clock starts the moment we confirm PII left.\" Don't confirm anything you can't evidence.",
+        text: "External counsel asked whether the Q2 incident triggers Article 33 GDPR notification. Counsel Ifeoma says \"not yet — but the clock starts the moment we confirm PII left.\" Don't confirm anything you can't evidence.",
         meta: "from legal · today",
       },
       {
@@ -672,7 +672,7 @@ export const STAGE_BRIEFS: Record<
       },
       {
         kind: "notice",
-        text: "72-hour clock for NDPA notification started at 04:12 UTC on 2024-06-08. Counsel knows the exact second. If you reference \"the clock\" in your report, that's what you mean.",
+        text: "72-hour clock for GDPR notification started at 04:12 UTC on 2024-06-08. Counsel knows the exact second. If you reference \"the clock\" in your report, that's what you mean.",
         meta: "pinned by Counsel Ifeoma",
       },
       {
@@ -768,7 +768,7 @@ export const STAGE_BRIEFS: Record<
     label: "Stage 4",
     subtitle: "Governance & Risk — The Debrief",
     missionBrief: [
-      "Tomorrow at 09:00 you are in front of Sankofa's board. Three members: the Chair, the CFO, and an independent director who used to chair a bank. They do not care about MITRE ATT&CK technique IDs. They care about three things: did customer PII leave the building, are we in breach of NDPA, and what does the next twelve months of security spend need to look like.",
+      "Tomorrow at 09:00 you are in front of Sankofa's board. Three members: the Chair, the CFO, and an independent director who used to chair a bank. They do not care about MITRE ATT&CK technique IDs. They care about three things: did customer PII leave the building, are we in breach of GDPR, and what does the next twelve months of security spend need to look like.",
       "This is the capstone. You are no longer a technical analyst — you are the voice the board hears. Every artefact you submit lives on the record. Every number gets quoted back at you.",
       "When the chair signs off on your package, you are no longer a candidate. You pick your specialist track — SOC, Ethical Hacking, or GRC — and the next chapter of your work is the one you chose.",
     ],
@@ -785,7 +785,7 @@ export const STAGE_BRIEFS: Record<
         name: "Babatunde Olawale",
         role: "Chief Financial Officer",
         tag: "Will price every recommendation",
-        bio: "Sees security spend as insurance. Will fund what you can quantify, will cut what you can't. Round numbers in NGN are fine — sources required.",
+        bio: "Sees security spend as insurance. Will fund what you can quantify, will cut what you can't. Round numbers in USD are fine — sources required.",
         alignment: "external",
         greeting: "Show me the number. Show me the source. I'll fund it.",
       },
@@ -801,13 +801,13 @@ export const STAGE_BRIEFS: Record<
         name: "Counsel Ifeoma Okeke",
         role: "General Counsel",
         tag: "Sits beside you at the table",
-        bio: "Briefs the board on regulatory exposure. Your NDPA letter and her draft go in together. Reconcile them before the meeting.",
+        bio: "Briefs the board on regulatory exposure. Your GDPR notification letter and her draft go in together. Reconcile them before the meeting.",
         alignment: "ally",
         greeting: "We submit one letter. Reconcile your draft with mine before nine.",
       },
       {
         name: "Adaobi Nnamdi",
-        role: "Liaison, Nigeria Data Protection Commission",
+        role: "Liaison, Data Protection Authority",
         tag: "Receives the 72-hour notification",
         bio: "Will read the Section 40 letter twice — once for what it says, once for what it doesn't. She has seen worse, and she has seen better. Be neither.",
         alignment: "external",
@@ -824,7 +824,7 @@ export const STAGE_BRIEFS: Record<
     ],
     termsAndPolicies: [
       "Every artefact you submit becomes part of the board record. Treat it like a document a court might read.",
-      "The NDPA notification letter is a regulated submission. Names, dates, and counts must be defensible against the evidence in Stages 0-3.",
+      "The GDPR Article 33 notification letter is a regulated submission. Names, dates, and counts must be defensible against the evidence in Stages 0-3.",
       "Track selection is binding. Once the chair signs off, the choice is in the record.",
       "If a number you cite cannot be traced back to evidence in the platform, do not cite it.",
     ],
@@ -856,7 +856,7 @@ export const STAGE_BRIEFS: Record<
       },
       {
         kind: "gossip",
-        text: "Adaobi Nnamdi (NDPC liaison) was at university with Counsel Ifeoma. They are friendly. Don't mistake friendly for lenient.",
+        text: "Adaobi Nnamdi (DPA liaison) was at university with Counsel Ifeoma. They are friendly. Don't mistake friendly for lenient.",
         meta: "from Counsel · in confidence",
       },
       {
@@ -879,11 +879,11 @@ export const STAGE_BRIEFS: Record<
         deliverable: "risk-register (Google Doc or MS Word, with a table inside)",
       },
       {
-        id: "ndpa-letter",
-        title: "NDPA 72-hour breach notification letter",
+        id: "gdpr-notification-letter",
+        title: "GDPR 72-hour breach notification letter",
         description:
-          "Draft the Section 40 notification to the Nigeria Data Protection Commission. State the controller + DPO, category + approximate volume of affected subjects, nature of breach, consequences, containment, remediation roadmap. Use the template in the resources as your starting point.",
-        deliverable: "ndpa-notification-letter (Google Doc)",
+          "Draft the Article 33 notification to the supervisory authority under GDPR. State the controller + DPO, category + approximate volume of affected subjects, nature of breach, consequences, containment, remediation roadmap. Use the template in the resources as your starting point.",
+        deliverable: "gdpr-notification-letter (Google Doc)",
       },
       {
         id: "nist-mapping",
@@ -896,7 +896,7 @@ export const STAGE_BRIEFS: Record<
         id: "roadmap",
         title: "12-month remediation roadmap",
         description:
-          "Build a quarter-by-quarter roadmap (Q1–Q4) with the controls you would implement, rough cost ranges in NGN, and the owner by role. Prioritise by risk reduction per naira.",
+          "Build a quarter-by-quarter roadmap (Q1–Q4) with the controls you would implement, rough cost ranges in USD, and the owner by role. Prioritise by risk reduction per dollar.",
         deliverable: "remediation-roadmap (Google Doc, 1–2 pages)",
       },
       {
@@ -911,8 +911,8 @@ export const STAGE_BRIEFS: Record<
       "https://drive.google.com/file/d/1jnE_K-pSscbZzBDJjsMN1e3PWu81ov8N/view?usp=sharing",
     resources: [
       {
-        label: "Nigeria Data Protection Act 2023 (full text)",
-        href: "https://ndpc.gov.ng/",
+        label: "General Data Protection Regulation (GDPR) (full text)",
+        href: "https://gdpr-info.eu/",
         kind: "reading",
       },
       {
@@ -935,7 +935,7 @@ export const STAGE_BRIEFS: Record<
       "One-paragraph situation summary — what the board reads first",
       "Risk register entries arising from the incident",
       "Control gaps against NIST CSF 2.0",
-      "Regulatory position (NDPA) and proposed notification",
+      "Regulatory position (GDPR) and proposed notification",
       "12-month remediation roadmap",
       "Your track-selection rationale",
     ],

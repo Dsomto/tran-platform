@@ -11,10 +11,20 @@ import "aos/dist/aos.css";
 
 const ageRanges = ["16 – 19", "20 – 24", "25 – 30", "31 – 35", "36+"];
 
+// Curated worldwide list. Includes the most populous and the most common
+// cybersecurity-talent-origin countries from every continent so the dropdown
+// fits any applicant without scrolling through 200+ ISO names. "Other"
+// catches anything else — admin can still see it as free-text.
 const countries = [
-  "Nigeria", "Ghana", "Kenya", "South Africa", "Cameroon", "Egypt",
-  "Tanzania", "Uganda", "Rwanda", "Ethiopia", "Senegal", "Côte d'Ivoire",
-  "United Kingdom", "United States", "Canada", "India", "Other",
+  "Argentina", "Australia", "Bangladesh", "Belgium", "Brazil", "Cameroon",
+  "Canada", "Chile", "China", "Colombia", "Côte d'Ivoire", "Egypt",
+  "Ethiopia", "France", "Germany", "Ghana", "India", "Indonesia",
+  "Ireland", "Italy", "Japan", "Kenya", "Malaysia", "Mexico",
+  "Morocco", "Netherlands", "New Zealand", "Nigeria", "Pakistan", "Philippines",
+  "Poland", "Portugal", "Rwanda", "Saudi Arabia", "Senegal", "Singapore",
+  "South Africa", "South Korea", "Spain", "Sweden", "Switzerland", "Tanzania",
+  "Turkey", "Uganda", "Ukraine", "United Arab Emirates", "United Kingdom",
+  "United States", "Vietnam", "Other",
 ];
 
 const statusOptions = [
