@@ -77,10 +77,12 @@ export default function ApplicantsPage() {
   const [bulkProgress, setBulkProgress] = useState<{
     done: number;
     total: number;
-    emailFailures: number;
   } | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [counts, setCounts] = useState({ pending: 0, approved: 0, rejected: 0 });
+  // How many approved / rejected applicants still owe a decision email.
+  const [pendingEmails, setPendingEmails] = useState({ welcomePending: 0, rejectionPending: 0 });
+  const [sendingBatch, setSendingBatch] = useState(false);
   const [user, setUser] = useState({
     firstName: "",
     lastName: "",
@@ -105,7 +107,49 @@ export default function ApplicantsPage() {
       approved: a.pagination?.total || 0,
       rejected: r.pagination?.total || 0,
     });
+    // Pull the decision-email backlog so the toolbar can show
+    // "Send N pending welcome emails" with a live count.
+    try {
+      const pe = await fetch("/api/admin/applicants/send-pending").then((x) => x.json());
+      setPendingEmails({
+        welcomePending: pe.welcomePending || 0,
+        rejectionPending: pe.rejectionPending || 0,
+      });
+    } catch {
+      /* non-fatal — leave counts as-is */
+    }
   }, []);
+
+  async function sendPendingBatch(type: "welcome" | "rejection") {
+    const count = type === "welcome" ? pendingEmails.welcomePending : pendingEmails.rejectionPending;
+    if (count === 0) return;
+    const label = type === "welcome" ? "welcome" : "decline";
+    if (!confirm(`Send ${count} pending ${label} email${count === 1 ? "" : "s"} now? This goes out to every ${type === "welcome" ? "approved" : "rejected"} applicant who hasn't been emailed yet.`)) {
+      return;
+    }
+    setSendingBatch(true);
+    try {
+      const res = await fetch("/api/admin/applicants/send-pending", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(`Batch send failed: ${data.error || "unknown"}`);
+      } else {
+        alert(
+          `Done. ${data.sent} sent, ${data.failed} failed (of ${data.total}).` +
+            (data.failed > 0 ? `\n\nFailed ones are on /admin/emails — they'll retry on the next batch too.` : "")
+        );
+        fetchCounts();
+      }
+    } catch {
+      alert("Network error during batch send.");
+    } finally {
+      setSendingBatch(false);
+    }
+  }
 
   const fetchApps = useCallback(async () => {
     setIsLoading(true);
@@ -147,20 +191,13 @@ export default function ApplicantsPage() {
   async function handleReview(id: string, action: "approved" | "rejected") {
     setIsReviewing(true);
     try {
-      const res = await fetch(`/api/public-applications/${id}/review`, {
+      // Decision only — no email goes out here. The applicant lands in the
+      // approved/rejected pool; emails are sent later in a batch.
+      await fetch(`/api/public-applications/${id}/review`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action }),
       });
-      const data = await res.json().catch(() => ({}));
-      // Welcome email is sent synchronously via Resend. If it fails, surface
-      // to the admin so they know to use the Resend button — silently dropping
-      // would lock the applicant out without their credentials.
-      if (action === "approved" && data?.emailSent === false) {
-        alert(
-          `Application approved, but the welcome email FAILED to send.\n\nReason: ${data.emailError || "unknown"}\n\nUse the Resend button to retry, or check Vercel logs for "acceptance_email_failed".`
-        );
-      }
       setSelected(null);
       setSelectedIds(new Set());
       fetchApps();
@@ -176,62 +213,39 @@ export default function ApplicantsPage() {
     if (selectedIds.size === 0) return;
     const ids = Array.from(selectedIds);
 
-    // Process in batches of 20 instead of all-at-once. 500 concurrent POSTs
-    // would still blow past Resend's per-second limits, but on Vercel Pro
-    // we have plenty of lambda headroom and longer timeouts — 20 at a time
-    // approves a cohort of 500 in ~1 minute with predictable email throughput.
+    // Process in batches of 20. Each /review is decision-only (no email),
+    // so this is fast — a cohort of 500 records in well under a minute.
     const BATCH_SIZE = 20;
     setIsReviewing(true);
-    setBulkProgress({ done: 0, total: ids.length, emailFailures: 0 });
-
-    let emailFailures = 0;
+    setBulkProgress({ done: 0, total: ids.length });
 
     try {
       for (let i = 0; i < ids.length; i += BATCH_SIZE) {
         const batch = ids.slice(i, i + BATCH_SIZE);
-        const results = await Promise.allSettled(
-          batch.map(async (id) => {
-            const res = await fetch(`/api/public-applications/${id}/review`, {
+        await Promise.allSettled(
+          batch.map((id) =>
+            fetch(`/api/public-applications/${id}/review`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ action }),
-            });
-            const data = await res.json().catch(() => ({}));
-            // For approvals, count rows where the welcome email failed
-            // (the User+Intern were still created — only the email send
-            // landed on /admin/emails as a FAILED row).
-            if (action === "approved" && data?.emailSent === false) {
-              return { ok: true, emailFailed: true } as const;
-            }
-            return { ok: res.ok, emailFailed: false } as const;
-          })
+            })
+          )
         );
-        for (const r of results) {
-          if (r.status === "fulfilled" && r.value.emailFailed) emailFailures++;
-        }
-        setBulkProgress({
-          done: Math.min(i + BATCH_SIZE, ids.length),
-          total: ids.length,
-          emailFailures,
-        });
+        setBulkProgress({ done: Math.min(i + BATCH_SIZE, ids.length), total: ids.length });
       }
 
       setSelectedIds(new Set());
       await Promise.all([fetchApps(), fetchCounts()]);
 
-      // End-of-bulk summary with deep-link to retry failures.
-      if (action === "approved" && emailFailures > 0) {
-        if (
-          confirm(
-            `Approved ${ids.length - emailFailures} of ${ids.length} cleanly.\n\n${emailFailures} welcome email${emailFailures === 1 ? "" : "s"} failed to send.\n\nOpen the email queue to retry them now?`
-          )
-        ) {
-          window.location.href = "/admin/emails";
-        }
-      } else if (action === "approved") {
-        alert(`Approved all ${ids.length} applicant${ids.length === 1 ? "" : "s"}. Welcome emails delivered.`);
+      // No emails went out — tell the admin where to trigger the batch send.
+      if (action === "approved") {
+        alert(
+          `Approved ${ids.length} applicant${ids.length === 1 ? "" : "s"}.\n\nNo emails sent yet. Go to the Approved tab and click "Send welcome emails" when you're ready to notify them all at once.`
+        );
       } else {
-        alert(`Rejected all ${ids.length} applicant${ids.length === 1 ? "" : "s"}.`);
+        alert(
+          `Rejected ${ids.length} applicant${ids.length === 1 ? "" : "s"}.\n\nNo emails sent yet. Go to the Rejected tab and click "Send decline emails" when you're ready.`
+        );
       }
     } finally {
       setIsReviewing(false);
@@ -426,6 +440,30 @@ export default function ApplicantsPage() {
                 </Button>
               </>
             )}
+            {/* Batch decision-email senders. Approving / rejecting only
+                records the decision now — these buttons fan the emails out
+                when the admin is ready. Shown on the relevant tab only. */}
+            {filter === "approved" && pendingEmails.welcomePending > 0 && (
+              <Button
+                size="sm"
+                onClick={() => sendPendingBatch("welcome")}
+                isLoading={sendingBatch}
+              >
+                <Mail className="w-4 h-4 mr-1" />
+                Send {pendingEmails.welcomePending} welcome email{pendingEmails.welcomePending === 1 ? "" : "s"}
+              </Button>
+            )}
+            {filter === "rejected" && pendingEmails.rejectionPending > 0 && (
+              <Button
+                variant="danger"
+                size="sm"
+                onClick={() => sendPendingBatch("rejection")}
+                isLoading={sendingBatch}
+              >
+                <Mail className="w-4 h-4 mr-1" />
+                Send {pendingEmails.rejectionPending} decline email{pendingEmails.rejectionPending === 1 ? "" : "s"}
+              </Button>
+            )}
             <Button variant="outline" size="sm" onClick={handleExportCSV}>
               <Download className="w-4 h-4 mr-1" />
               Export CSV
@@ -438,15 +476,8 @@ export default function ApplicantsPage() {
             frozen page. */}
         {bulkProgress && (
           <div className="mb-4 p-4 bg-blue/5 border border-blue/30 rounded-xl">
-            <div className="flex items-center justify-between text-sm font-medium text-foreground mb-2">
-              <span>
-                Processing {bulkProgress.done} of {bulkProgress.total}…
-              </span>
-              {bulkProgress.emailFailures > 0 && (
-                <span className="text-rose-700 text-xs">
-                  {bulkProgress.emailFailures} email{bulkProgress.emailFailures === 1 ? "" : "s"} failed (will surface on /admin/emails)
-                </span>
-              )}
+            <div className="text-sm font-medium text-foreground mb-2">
+              Processing {bulkProgress.done} of {bulkProgress.total}…
             </div>
             <div className="h-2 bg-border-light rounded-full overflow-hidden">
               <div
@@ -457,7 +488,7 @@ export default function ApplicantsPage() {
               />
             </div>
             <p className="text-[11px] text-muted mt-2">
-              Processed in batches of 5 to stay under email-provider rate limits. Don&apos;t close this tab.
+              Recording decisions only — no emails are sent yet. Don&apos;t close this tab.
             </p>
           </div>
         )}

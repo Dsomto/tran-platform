@@ -1,10 +1,5 @@
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth";
-import {
-  sendPublicAcceptanceEmail,
-  sendPublicRejectionEmail,
-  renderPublicAcceptanceEmail,
-} from "@/lib/email";
 import { logger } from "@/lib/logger";
 import { nextInternId } from "@/lib/intern-id";
 import { onboardApprovedApplicant } from "@/lib/onboard";
@@ -69,83 +64,27 @@ export async function POST(
       });
 
       // Create the backing User + Intern so the applicant can log in.
-      let userId: string | null = null;
       try {
-        const onboarded = await onboardApprovedApplicant(updated);
-        userId = onboarded.userId;
+        await onboardApprovedApplicant(updated);
       } catch (err) {
         logger.error("onboarding_failed", err, { applicationId: id, email: application.email });
       }
 
-      // Send the welcome email synchronously. If the send fails, we persist
-      // a FAILED EmailQueueItem row so the admin can see the failure at
-      // /admin/emails and retry — instead of the email being lost in the logs.
-      logger.info("acceptance_flow_start", { applicationId: id, email: application.email, internId });
-
-      let emailError: string | null = null;
-      try {
-        await sendPublicAcceptanceEmail(
-          application.email,
-          application.fullName,
-          application.trackInterest,
-          internId,
-          tempPassword
-        );
-        logger.info("acceptance_email_ok", { applicationId: id, email: application.email });
-      } catch (err) {
-        emailError = err instanceof Error ? `${err.name}: ${err.message}` : String(err);
-        logger.error("acceptance_email_failed", err, { email: application.email, internId, emailError });
-
-        // Persist the failure so it shows up in the admin email queue viewer
-        // for retry. Stores the rendered body verbatim — retry just resends.
-        if (userId) {
-          try {
-            const { subject, html } = renderPublicAcceptanceEmail({
-              fullName: application.fullName,
-              trackInterest: application.trackInterest,
-              internId,
-              tempPassword,
-            });
-            await prisma.emailQueueItem.create({
-              data: {
-                userId,
-                kind: "GENERAL",
-                toEmail: application.email,
-                subject,
-                body: html,
-                status: "FAILED",
-                attempts: 1,
-                failReason: emailError.slice(0, 500),
-                context: { type: "acceptance", applicationId: id, internId },
-              },
-            });
-          } catch (persistErr) {
-            logger.error("acceptance_email_persist_failed", persistErr, { applicationId: id });
-          }
-        }
-      }
-
-      return Response.json({
-        success: true,
-        application: updated,
-        emailSent: emailError === null,
-        emailError,
-      });
+      // Decision-only: we do NOT send the welcome email here. The applicant
+      // goes onto the "approved, email pending" list. Admin fans out all
+      // pending welcome emails in one batch via
+      // /api/admin/applicants/send-pending?type=welcome when ready.
+      return Response.json({ success: true, application: updated, emailPending: true });
     }
 
-    // Rejected
+    // Rejected — decision-only, same as approve. Rejection emails are sent
+    // as a batch later via /api/admin/applicants/send-pending?type=rejection.
     const updated = await prisma.publicApplication.update({
       where: { id },
       data: { status: "rejected" },
     });
 
-    try {
-      await sendPublicRejectionEmail(application.email, application.fullName);
-    } catch (err) {
-      logger.error("rejection_email_failed", err, { email: application.email });
-    }
-
-    return Response.json({ success: true, application: updated });
+    return Response.json({ success: true, application: updated, emailPending: true });
   } catch (error) {
     logger.error("review_failed", error);
     return Response.json(

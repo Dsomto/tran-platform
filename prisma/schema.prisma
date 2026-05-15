@@ -454,6 +454,14 @@ model PublicApplication {
   // that pre-date this field to load without migration drama.
   whyPickYou      String?
   referralSource  String?
+
+  // Decision-vs-notification separation. Approving / rejecting an applicant
+  // ONLY sets status — the welcome / rejection email is not sent inline.
+  // Admin later clicks "Send N pending welcome emails" / "Send N pending
+  // decline emails" to fan them out. These two timestamps are how we know
+  // which applicants in the approved/rejected pool still owe an email.
+  welcomeEmailSentAt   DateTime?
+  rejectionEmailSentAt DateTime?
   status          String   @default("pending")
   stage           Int      @default(-1)     // -1 = not started, 0-9 = active stages, 10 = finalist
   stageStatus     String   @default("none") // none | active | advanced | eliminated
