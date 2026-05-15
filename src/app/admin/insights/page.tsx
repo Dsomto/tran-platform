@@ -28,6 +28,7 @@ export default async function AdminInsightsPage() {
     pendingApps,
     approvedApps,
     rejectedApps,
+    queuedApprovedApps,
     totalInterns,
     activeInterns,
     finalists,
@@ -56,6 +57,7 @@ export default async function AdminInsightsPage() {
     prisma.publicApplication.count({ where: { status: "pending" } }),
     prisma.publicApplication.count({ where: { status: "approved" } }),
     prisma.publicApplication.count({ where: { status: "rejected" } }),
+    prisma.publicApplication.count({ where: { status: "queued_approved" } }),
     prisma.intern.count(),
     prisma.intern.count({ where: { isActive: true } }),
     prisma.intern.count({ where: { finalist: true } }),
@@ -90,10 +92,15 @@ export default async function AdminInsightsPage() {
     }),
   ]);
 
-  const reviewed = approvedApps + rejectedApps;
+  // "Approved (decided)" is everyone given a yes — interns already onboarded
+  // (status "approved") plus those still parked in the pending list awaiting
+  // their welcome email (status "queued_approved"). The latter are NOT counted
+  // as approved interns, only as a decided-but-uncommitted decision.
+  const approvedDecided = approvedApps + queuedApprovedApps;
+  const reviewed = approvedDecided + rejectedApps;
   const screeningRate =
     totalApplications > 0
-      ? Math.round((approvedApps / Math.max(1, reviewed)) * 100)
+      ? Math.round((approvedDecided / Math.max(1, reviewed)) * 100)
       : 0;
   const dropOffStage0 =
     activeInterns > 0
@@ -142,8 +149,9 @@ export default async function AdminInsightsPage() {
   // The funnel from raw applications down to finalists.
   const funnel = [
     { label: "Applications received", count: totalApplications },
-    { label: "Reviewed (approved or rejected)", count: reviewed },
-    { label: "Approved", count: approvedApps },
+    { label: "Reviewed", count: reviewed },
+    { label: "Approved (decided)", count: approvedDecided },
+    { label: "Interns onboarded", count: approvedApps },
     { label: "Active interns", count: activeInterns },
     { label: "Finalists", count: finalists },
   ];
@@ -163,7 +171,8 @@ export default async function AdminInsightsPage() {
       title: "Application status",
       rows: [
         ["Pending review", pendingApps],
-        ["Approved", approvedApps],
+        ["Awaiting welcome email", queuedApprovedApps],
+        ["Approved (interns onboarded)", approvedApps],
         ["Rejected", rejectedApps],
         ["Screening pass rate (%)", screeningRate],
         ["Approved last 7 days", recentlyApproved],
@@ -228,9 +237,10 @@ export default async function AdminInsightsPage() {
 
       {/* Status breakdown */}
       <Section title="Application status">
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <Stat icon={Clock} label="Pending review" value={pendingApps} color="text-amber-600" />
-          <Stat icon={UserCheck} label="Approved" value={approvedApps} color="text-emerald-600" />
+          <Stat icon={Mail} label="Awaiting welcome email" value={queuedApprovedApps} color="text-blue" />
+          <Stat icon={UserCheck} label="Approved (interns)" value={approvedApps} color="text-emerald-600" />
           <Stat icon={UserX} label="Rejected" value={rejectedApps} color="text-rose-600" />
         </div>
         <div className="mt-3 p-3 bg-muted/30 border border-border rounded-lg text-sm text-muted-foreground">

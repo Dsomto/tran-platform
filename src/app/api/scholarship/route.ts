@@ -32,12 +32,32 @@ export async function POST(request: NextRequest) {
     if (typeof reason !== "string" || reason.trim().length < 20) errs.push("reason");
     if (reason && reason.length > 3000) errs.push("reason_too_long");
     if (dataSituation && dataSituation.length > 3000) errs.push("dataSituation_too_long");
-    if (internCode && (typeof internCode !== "string" || !/^UBI-\d{4}-\d+$/i.test(internCode))) {
+    // UBI Intern ID is required — scholarships are tracked to it.
+    if (typeof internCode !== "string" || !/^UBI-\d{4}-\d+$/i.test(internCode.trim())) {
       errs.push("internCode");
     }
 
     if (errs.length) {
       return Response.json({ error: "Invalid input", fields: errs }, { status: 400 });
+    }
+
+    // The ID must belong to a real enrolled intern. A UBI ID is only assigned
+    // once an applicant is fully onboarded, so this both rejects typos and
+    // blocks scholarship requests from people not actually in the programme.
+    const internCodeUpper = internCode.trim().toUpperCase();
+    const enrolled = await prisma.publicApplication.findFirst({
+      where: { internId: internCodeUpper },
+      select: { id: true },
+    });
+    if (!enrolled) {
+      return Response.json(
+        {
+          error:
+            "That UBI Intern ID was not found. Use the exact ID from your acceptance email.",
+          fields: ["internCode"],
+        },
+        { status: 400 }
+      );
     }
 
     const app = await prisma.dataScholarshipApplication.create({
@@ -46,7 +66,7 @@ export async function POST(request: NextRequest) {
         email: email.trim().toLowerCase(),
         phone: phone.trim(),
         country: country.trim(),
-        internCode: internCode ? internCode.trim().toUpperCase() : null,
+        internCode: internCodeUpper,
         currentStage: currentStage ? String(currentStage).slice(0, 120) : null,
         dataSituation: dataSituation.trim(),
         reason: reason.trim(),

@@ -1,17 +1,6 @@
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { logger } from "@/lib/logger";
-import { nextInternId } from "@/lib/intern-id";
-import { onboardApprovedApplicant } from "@/lib/onboard";
-
-function generatePassword(): string {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
-  let pw = "";
-  for (let i = 0; i < 10; i++) {
-    pw += chars[Math.floor(Math.random() * chars.length)];
-  }
-  return pw;
-}
 
 export async function POST(
   request: Request,
@@ -48,61 +37,21 @@ export async function POST(
       );
     }
 
-    if (action === "approved") {
-      const internId = await nextInternId();
-      const tempPassword = generatePassword();
-
-      const updated = await prisma.publicApplication.update({
-        where: { id },
-        data: {
-          status: "approved",
-          stage: 0,
-          stageStatus: "active",
-          internId,
-          loginPassword: tempPassword,
-        },
-      });
-
-      // Create the backing User + Intern so the applicant can log in.
-      // If this fails the applicant would be "approved" with no usable
-      // account — and a later batch welcome email would ship dead login
-      // credentials. So we revert the approval and surface the error instead
-      // of returning a misleading success.
-      try {
-        await onboardApprovedApplicant(updated);
-      } catch (err) {
-        logger.error("onboarding_failed", err, { applicationId: id, email: application.email });
-        await prisma.publicApplication.update({
-          where: { id },
-          data: {
-            status: "pending",
-            stage: -1,
-            stageStatus: "none",
-            internId: null,
-            loginPassword: null,
-          },
-        });
-        return Response.json(
-          {
-            error:
-              "Account setup failed — the applicant was reverted to pending, not approved. Please retry the approval.",
-          },
-          { status: 500 }
-        );
-      }
-
-      // Decision-only: we do NOT send the welcome email here. The applicant
-      // goes onto the "approved, email pending" list. Admin fans out all
-      // pending welcome emails in one batch via
-      // /api/admin/applicants/send-pending?type=welcome when ready.
-      return Response.json({ success: true, application: updated, emailPending: true });
-    }
-
-    // Rejected — decision-only, same as approve. Rejection emails are sent
-    // as a batch later via /api/admin/applicants/send-pending?type=rejection.
+    // Decision only — nothing is committed here.
+    //
+    // Approving does NOT create an intern account or assign a UBI ID. The
+    // applicant is parked in the "queued_approved" pending list. The intern
+    // account is minted later, when the welcome email is actually sent
+    // (see /api/admin/applicants/send-pending → enqueueWelcome). That is the
+    // single commit point — until then the applicant is neither an "approved"
+    // applicant nor an intern, just a pending decision.
+    //
+    // Rejecting likewise only records the decision; the decline email goes out
+    // in a batch from the same place.
+    const status = action === "approved" ? "queued_approved" : "rejected";
     const updated = await prisma.publicApplication.update({
       where: { id },
-      data: { status: "rejected" },
+      data: { status },
     });
 
     return Response.json({ success: true, application: updated, emailPending: true });

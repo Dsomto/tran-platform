@@ -4,26 +4,30 @@ import { getSession } from "@/lib/auth";
 import { logger } from "@/lib/logger";
 import { renderPublicAcceptanceEmail, renderPublicRejectionEmail } from "@/lib/email";
 import { Prisma } from "@/generated/prisma";
+import { nextInternId } from "@/lib/intern-id";
+import { onboardApprovedApplicant } from "@/lib/onboard";
 
-// Batch the decision emails. Approving / rejecting an applicant only records
-// the decision — no email goes out then. This endpoint hands the emails for a
-// decision pool to the delivery queue.
+// Batch the decision emails — and, for the welcome pool, COMMIT the decision.
+//
+// Approving an applicant only parks them in the "queued_approved" pending
+// list; rejecting sets status "rejected". Neither sends an email or creates an
+// account on its own. This endpoint hands those pools to the delivery queue:
+//
+//  - welcome  → for each queued_approved applicant: mint a UBI ID + password,
+//               flip status to "approved", create the backing User + Intern,
+//               then enqueue the welcome email. THIS is where someone actually
+//               becomes an intern.
+//  - rejection → enqueue the decline email for each rejected applicant.
 //
 // IMPORTANT — this does NOT send email. It ENQUEUES EmailQueueItem rows
 // (status PENDING). The /api/cron/email-drain cron then sends them gradually,
-// lease-protected, with retries. Enqueuing thousands of rows is a couple of
-// fast DB writes, so this can never time out the way a synchronous fan-out of
-// 5,000 SMTP sends would.
+// lease-protected, with retries.
 //
-// POST body: { type: "welcome" | "rejection" }
+// POST body: { type: "welcome" | "rejection", applicationId?: string }
 //
-// De-dupe: a successful enqueue stamps welcomeEmailSentAt / rejectionEmailSentAt
-// on the PublicApplication. The claim is done with an atomic updateMany on the
-// still-null rows, so two admins clicking at the same moment each claim a
-// disjoint set — nobody is enqueued twice. (The field name says "SentAt"; with
-// the queue it means "handed to the delivery queue at" — the cron delivers
-// within minutes, and any permanent failure is visible + retryable in
-// /admin/emails.)
+// De-dupe: the welcome pool is claimed by the atomic status flip
+// (queued_approved → approved) — a concurrent run can't commit the same
+// applicant twice. The rejection pool stamps rejectionEmailSentAt.
 //
 // GET — returns how many emails are still pending in each pool, for the admin
 // UI button counts.
@@ -32,16 +36,21 @@ const CHUNK = 200;
 
 // MongoDB stores an optional field that was never written as ABSENT, not null.
 // Prisma's `{ field: null }` filter matches an explicit null but NOT an absent
-// field — so an applicant approved before this column existed (or never
-// re-saved since) is invisible to a plain null check, and never appears in the
-// Decision Emails list. Match "absent OR explicitly null" so every un-emailed
-// applicant is found regardless of how their document was created.
-const welcomeUnsent: Prisma.PublicApplicationWhereInput = {
-  OR: [{ welcomeEmailSentAt: null }, { welcomeEmailSentAt: { isSet: false } }],
-};
+// field. The rejected pool is keyed off rejectionEmailSentAt, so match
+// "absent OR explicitly null" to catch every rejected applicant still owing a
+// decline email, regardless of how their document was created.
 const rejectionUnsent: Prisma.PublicApplicationWhereInput = {
   OR: [{ rejectionEmailSentAt: null }, { rejectionEmailSentAt: { isSet: false } }],
 };
+
+// Temporary login password — stored in plain text on the application just long
+// enough to render the welcome email, then hashed on first login.
+function generatePassword(): string {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
+  let pw = "";
+  for (let i = 0; i < 10; i++) pw += chars[Math.floor(Math.random() * chars.length)];
+  return pw;
+}
 
 export async function GET(request: NextRequest) {
   const session = await getSession();
@@ -74,7 +83,7 @@ export async function GET(request: NextRequest) {
   if (list === "welcome" || list === "rejection") {
     const where: Prisma.PublicApplicationWhereInput =
       list === "welcome"
-        ? { status: "approved", ...welcomeUnsent }
+        ? { status: "queued_approved" }
         : { status: "rejected", ...rejectionUnsent };
     const [applicants, total] = await Promise.all([
       prisma.publicApplication.findMany({
@@ -91,7 +100,7 @@ export async function GET(request: NextRequest) {
   // default — pending counts for the button badges.
   const [welcomePending, rejectionPending] = await Promise.all([
     prisma.publicApplication.count({
-      where: { status: "approved", ...welcomeUnsent },
+      where: { status: "queued_approved" },
     }),
     prisma.publicApplication.count({
       where: { status: "rejected", ...rejectionUnsent },
@@ -129,73 +138,93 @@ export async function POST(request: NextRequest) {
 
 async function enqueueWelcome(onlyId?: string): Promise<Response> {
   const pool = await prisma.publicApplication.findMany({
-    where: { status: "approved", ...welcomeUnsent, ...(onlyId ? { id: onlyId } : {}) },
-    select: {
-      id: true,
-      email: true,
-      fullName: true,
-      trackInterest: true,
-      internId: true,
-      loginPassword: true,
-    },
+    where: { status: "queued_approved", ...(onlyId ? { id: onlyId } : {}) },
+    select: { id: true, email: true, fullName: true, trackInterest: true },
   });
   if (pool.length === 0) {
     return Response.json({ type: "welcome", total: 0, queued: 0, skipped: 0 });
   }
 
-  // Onboarding-incomplete rows have no usable credentials. Never email a dead
-  // login — leave them un-stamped and report them as skipped so an admin can
-  // re-approve them.
-  const ready = pool.filter((a) => a.internId && a.loginPassword);
-  let skipped = pool.length - ready.length;
-  if (ready.length === 0) {
-    return Response.json({ type: "welcome", total: pool.length, queued: 0, skipped });
-  }
-
-  // Atomic claim: stamp the still-null rows. A concurrent run's `null` filter
-  // then excludes everything we just stamped.
+  // Sending the welcome email is the COMMIT point — this is where an approved
+  // applicant actually becomes an intern. For each one: mint a UBI ID and a
+  // temporary password, flip status queued_approved -> approved (the flip is
+  // the atomic claim, so a concurrent run can't double-commit), then create
+  // the backing User + Intern. If onboarding fails, roll the applicant back to
+  // the pending list and skip them rather than ship dead login credentials.
   const claimAt = new Date();
-  await prisma.publicApplication.updateMany({
-    where: { id: { in: ready.map((a) => a.id) }, ...welcomeUnsent },
-    data: { welcomeEmailSentAt: claimAt },
-  });
-  const claimed = await prisma.publicApplication.findMany({
-    where: { id: { in: ready.map((a) => a.id) }, welcomeEmailSentAt: claimAt },
-    select: { id: true },
-  });
-  const claimedIds = new Set(claimed.map((r) => r.id));
-  const mine = ready.filter((a) => claimedIds.has(a.id));
-  if (mine.length === 0) {
+  const committed: {
+    id: string;
+    email: string;
+    fullName: string;
+    trackInterest: string;
+    internId: string;
+    loginPassword: string;
+  }[] = [];
+  let skipped = 0;
+
+  for (const a of pool) {
+    const internId = await nextInternId();
+    const loginPassword = generatePassword();
+    const claim = await prisma.publicApplication.updateMany({
+      where: { id: a.id, status: "queued_approved" },
+      data: {
+        status: "approved",
+        stage: 0,
+        stageStatus: "active",
+        internId,
+        loginPassword,
+        welcomeEmailSentAt: claimAt,
+      },
+    });
+    // count 0 -> another run already committed this applicant; skip silently.
+    if (claim.count === 0) continue;
+
+    try {
+      await onboardApprovedApplicant({
+        email: a.email,
+        fullName: a.fullName,
+        trackInterest: a.trackInterest,
+        loginPassword,
+      });
+    } catch (err) {
+      logger.error("welcome_onboard_failed", err, { applicationId: a.id, email: a.email });
+      await prisma.publicApplication.update({
+        where: { id: a.id },
+        data: {
+          status: "queued_approved",
+          stage: -1,
+          stageStatus: "none",
+          internId: null,
+          loginPassword: null,
+          welcomeEmailSentAt: null,
+        },
+      });
+      skipped++;
+      continue;
+    }
+    committed.push({ ...a, internId, loginPassword });
+  }
+
+  if (committed.length === 0) {
     return Response.json({ type: "welcome", total: pool.length, queued: 0, skipped });
   }
 
-  // Welcome emails need a User to attach the queue row to. An approved
-  // applicant should always have one; if not, onboarding is inconsistent —
-  // release the claim and skip rather than enqueue an orphan.
+  // Attach each welcome email to the User just created for the intern.
   const users = await prisma.user.findMany({
-    where: { email: { in: mine.map((a) => a.email.toLowerCase()) } },
+    where: { email: { in: committed.map((a) => a.email.toLowerCase()) } },
     select: { id: true, email: true },
   });
   const userByEmail = new Map(users.map((u) => [u.email, u.id]));
-  const orphans = mine.filter((a) => !userByEmail.has(a.email.toLowerCase()));
-  const sendable = mine.filter((a) => userByEmail.has(a.email.toLowerCase()));
-  if (orphans.length) {
-    await prisma.publicApplication.updateMany({
-      where: { id: { in: orphans.map((a) => a.id) }, welcomeEmailSentAt: claimAt },
-      data: { welcomeEmailSentAt: null },
-    });
-    skipped += orphans.length;
-  }
 
-  const rows: Prisma.EmailQueueItemCreateManyInput[] = sendable.map((a) => {
+  const rows: Prisma.EmailQueueItemCreateManyInput[] = committed.map((a) => {
     const { subject, html } = renderPublicAcceptanceEmail({
       fullName: a.fullName,
       trackInterest: a.trackInterest,
-      internId: a.internId ?? undefined,
-      tempPassword: a.loginPassword ?? undefined,
+      internId: a.internId,
+      tempPassword: a.loginPassword,
     });
     return {
-      userId: userByEmail.get(a.email.toLowerCase()),
+      userId: userByEmail.get(a.email.toLowerCase()) ?? null,
       kind: "GENERAL",
       toEmail: a.email,
       subject,
@@ -205,7 +234,7 @@ async function enqueueWelcome(onlyId?: string): Promise<Response> {
     };
   });
 
-  const queued = await enqueueChunked(rows, sendable.map((a) => a.id), "welcome");
+  const queued = await enqueueChunked(rows, committed.map((a) => a.id), "welcome");
   return Response.json({ type: "welcome", total: pool.length, queued, skipped });
 }
 

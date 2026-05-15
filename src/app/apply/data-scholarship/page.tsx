@@ -181,13 +181,9 @@ export default function DataScholarshipPage() {
               </div>
 
               <div>
-                <label className={labelClass}>
-                  Intern code{" "}
-                  <span className="text-muted-foreground font-normal">
-                    (if already enrolled)
-                  </span>
-                </label>
+                <label className={labelClass}>UBI Intern ID *</label>
                 <input
+                  required
                   type="text"
                   value={form.internCode}
                   onChange={(e) => update("internCode", e.target.value.toUpperCase())}
@@ -195,6 +191,10 @@ export default function DataScholarshipPage() {
                   placeholder="UBI-2026-0001"
                   pattern="^UBI-\\d{4}-\\d+$"
                 />
+                <p className="mt-1.5 text-xs text-muted-foreground">
+                  The ID from your acceptance email. Data scholarships are tracked
+                  to your UBI ID, so this is required.
+                </p>
               </div>
 
               <div className="md:col-span-2">

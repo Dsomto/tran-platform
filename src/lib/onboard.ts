@@ -1,6 +1,16 @@
 import { prisma } from "./db";
 import { hashPassword } from "./auth";
-import { Track, type PublicApplication } from "@/generated/prisma";
+import { Track } from "@/generated/prisma";
+
+// The fields onboarding actually needs. A full PublicApplication satisfies
+// this, so existing callers still type-check — but the welcome-email commit
+// path can also pass a freshly-built object without loading the whole row.
+type OnboardInput = {
+  email: string;
+  fullName: string;
+  trackInterest: string;
+  loginPassword: string | null;
+};
 
 function mapTrack(trackInterest: string): Track {
   const s = trackInterest.toLowerCase();
@@ -23,7 +33,7 @@ function splitName(fullName: string): { firstName: string; lastName: string } {
  * a $transaction array, so we serialize — user creation is guarded by
  * findUnique first, so a retry after a partial failure still converges.
  */
-export async function onboardApprovedApplicant(app: PublicApplication): Promise<{
+export async function onboardApprovedApplicant(app: OnboardInput): Promise<{
   userId: string;
   internDbId: string;
   wasExisting: boolean;
