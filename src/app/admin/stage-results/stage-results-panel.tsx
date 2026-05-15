@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { BarChart3, Loader2, Send, CheckCircle2 } from "lucide-react";
+import { BarChart3, Loader2, Send, CheckCircle2, RotateCcw } from "lucide-react";
 
 interface Summary {
   total: number;
@@ -31,6 +31,8 @@ export function StageResultsPanel() {
   const [publishing, setPublishing] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [resetting, setResetting] = useState(false);
+  const [moveInternsBack, setMoveInternsBack] = useState(true);
 
   async function loadSummary(s: string) {
     setLoading(true);
@@ -110,6 +112,42 @@ export function StageResultsPanel() {
       setError("Network error");
     } finally {
       setPublishing(false);
+    }
+  }
+
+  async function resetResults() {
+    const msg =
+      `Reset Stage ${stage.replace("STAGE_", "")} published results?\n\n` +
+      "All PASSED/FAILED reports go back to GRADED, and result emails for this stage still waiting to send are deleted.\n\n" +
+      (moveInternsBack
+        ? "Promoted interns WILL be moved back to this stage."
+        : "Promoted interns will stay where they are.") +
+      "\n\nYou can then publish this stage again.";
+    if (!confirm(msg)) return;
+    setResetting(true);
+    setError(null);
+    setResult(null);
+    try {
+      const res = await fetch("/api/admin/stage-results", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "reset", stage, moveInternsBack }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Reset failed");
+      } else {
+        setResult(
+          `Reset done. ${data.reportsReverted} report${data.reportsReverted === 1 ? "" : "s"} back to GRADED, ` +
+            `${data.internsMovedBack} intern${data.internsMovedBack === 1 ? "" : "s"} moved back, ` +
+            `${data.emailsCancelled} unsent email${data.emailsCancelled === 1 ? "" : "s"} removed. You can publish again.`
+        );
+        await loadSummary(stage);
+      }
+    } catch {
+      setError("Network error");
+    } finally {
+      setResetting(false);
     }
   }
 
@@ -247,6 +285,45 @@ export function StageResultsPanel() {
               </div>
             )}
           </section>
+
+          {(summary.byStatus.PASSED ?? 0) + (summary.byStatus.FAILED ?? 0) > 0 && (
+            <section className="mt-6 bg-white border border-rose-200 rounded-xl p-5">
+              <h2 className="text-sm font-semibold text-rose-800 mb-2 uppercase tracking-wide">
+                Reset published results
+              </h2>
+              <p className="text-sm text-muted-foreground mb-4">
+                This stage has published results. Resetting reverts every PASSED / FAILED
+                report back to GRADED so you can publish again, and deletes result emails for
+                this stage that haven&apos;t sent yet. Already-sent emails are not affected.
+              </p>
+              <label className="flex items-start gap-2 mb-4 text-sm text-foreground">
+                <input
+                  type="checkbox"
+                  checked={moveInternsBack}
+                  onChange={(e) => setMoveInternsBack(e.target.checked)}
+                  className="mt-0.5"
+                />
+                <span>
+                  Also move promoted interns back to this stage.{" "}
+                  <span className="text-muted-foreground">
+                    Leave unchecked to keep interns where they are — only their reports reset.
+                  </span>
+                </span>
+              </label>
+              <button
+                onClick={resetResults}
+                disabled={resetting}
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border border-rose-300 text-rose-800 hover:bg-rose-50 disabled:opacity-50"
+              >
+                {resetting ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <RotateCcw className="h-4 w-4" />
+                )}
+                Reset published results
+              </button>
+            </section>
+          )}
         </>
       )}
     </div>

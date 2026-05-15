@@ -82,6 +82,12 @@ export async function POST(request: NextRequest) {
   try {
     const admin = await requireSuperAdmin();
     const body = await request.json();
+
+    // Reset: undo a publish so the stage can be re-published.
+    if (body?.action === "reset") {
+      return await handleReset(request, admin, body);
+    }
+
     const { stage, passingScore, dryRun } = body ?? {};
 
     if (!isStageKey(stage)) {
@@ -263,6 +269,101 @@ export async function POST(request: NextRequest) {
     logger.error("publish_stage_results_failed", error);
     return Response.json({ error: "Internal server error" }, { status: 500 });
   }
+}
+
+// Reset a published stage so it can be published again.
+//
+// Always: reverts this stage's PASSED / FAILED reports back to GRADED, and
+// deletes result emails for this stage that are still PENDING in the queue
+// (so a re-publish doesn't double-email anyone — already-sent emails stand).
+//
+// moveInternsBack=true also regresses interns the publish promoted: anyone
+// still sitting at the next stage with a PASSED report here is moved back,
+// and the publish's stage-history rows are removed. Interns who already
+// progressed beyond the next stage are left untouched.
+async function handleReset(
+  request: NextRequest,
+  admin: Awaited<ReturnType<typeof requireSuperAdmin>>,
+  body: { stage?: unknown; moveInternsBack?: unknown }
+): Promise<Response> {
+  const stage = body.stage;
+  if (!isStageKey(stage)) {
+    return Response.json({ error: "Invalid stage" }, { status: 400 });
+  }
+  const moveInternsBack = body.moveInternsBack === true;
+
+  const published = await prisma.stageReport.findMany({
+    where: { stage, status: { in: ["PASSED", "FAILED"] } },
+    select: { id: true, status: true, internId: true },
+  });
+  if (published.length === 0) {
+    return Response.json(
+      { error: "Nothing to reset — this stage has no published results." },
+      { status: 409 }
+    );
+  }
+
+  // 1. Revert report statuses so the stage can be re-published.
+  await prisma.stageReport.updateMany({
+    where: { stage, status: { in: ["PASSED", "FAILED"] } },
+    data: { status: "GRADED" },
+  });
+
+  // 2. Drop result emails for this stage still waiting to send.
+  const stageNum = stage.replace("STAGE_", "");
+  const cancelled = await prisma.emailQueueItem.deleteMany({
+    where: {
+      kind: { in: ["STAGE_PASSED", "STAGE_FAILED"] },
+      status: "PENDING",
+      subject: { startsWith: `Stage ${stageNum} ` },
+    },
+  });
+
+  // 3. Optionally move promoted interns back to this stage.
+  let internsMovedBack = 0;
+  if (moveInternsBack) {
+    const nextStage = `STAGE_${Number(stageNum) + 1}`;
+    if (isStageKey(nextStage)) {
+      const passedInternIds = published
+        .filter((r) => r.status === "PASSED")
+        .map((r) => r.internId);
+      const moved = await prisma.intern.updateMany({
+        where: { id: { in: passedInternIds }, currentStage: nextStage },
+        data: { currentStage: stage },
+      });
+      internsMovedBack = moved.count;
+      await prisma.stageHistory.deleteMany({
+        where: {
+          internId: { in: passedInternIds },
+          fromStage: stage,
+          toStage: nextStage,
+          promotedBy: "stage-publish",
+        },
+      });
+    }
+  }
+
+  await recordAudit({
+    actor: admin,
+    action: "stage-results.reset",
+    targetType: "STAGE_RESULTS",
+    targetId: stage,
+    details: {
+      stage,
+      reportsReverted: published.length,
+      internsMovedBack,
+      emailsCancelled: cancelled.count,
+      moveInternsBack,
+    },
+    ...auditMetaFromRequest(request),
+  });
+
+  return Response.json({
+    reset: true,
+    reportsReverted: published.length,
+    internsMovedBack,
+    emailsCancelled: cancelled.count,
+  });
 }
 
 function bucketHistogram(scores: number[]): { bucket: string; count: number }[] {
