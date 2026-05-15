@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth";
+import { syncApplicantStages } from "@/lib/applicant-stage";
 
 export async function POST(
   request: Request,
@@ -40,6 +41,12 @@ export async function POST(
       where: { id },
       data: { stageStatus: "eliminated" },
     });
+    // Mirror onto the backing Intern (isActive -> false) and queue the
+    // elimination email. Never throws.
+    await syncApplicantStages(
+      [{ id, email: application.email, fullName: application.fullName, stage: application.stage }],
+      "eliminate"
+    );
     return Response.json({ success: true, application: updated });
   }
 
@@ -59,6 +66,13 @@ export async function POST(
       stageStatus: nextStage === 10 ? "advanced" : "active",
     },
   });
+
+  // Mirror onto the backing Intern (currentStage / finalist) and queue the
+  // stage-passed email. Never throws.
+  await syncApplicantStages(
+    [{ id, email: application.email, fullName: application.fullName, stage: nextStage }],
+    "advance"
+  );
 
   return Response.json({ success: true, application: updated });
 }

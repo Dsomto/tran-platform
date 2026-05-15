@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth";
+import { syncApplicantStages } from "@/lib/applicant-stage";
 
 export async function POST(request: Request) {
   const session = await getSession();
@@ -21,17 +22,25 @@ export async function POST(request: Request) {
   }
 
   if (action === "eliminate") {
-    const result = await prisma.publicApplication.updateMany({
+    // Snapshot who is actually being eliminated (active only) before the
+    // updateMany, so we can mirror the change onto their Intern rows + queue
+    // the elimination emails.
+    const affected = await prisma.publicApplication.findMany({
       where: { id: { in: ids }, stageStatus: "active" },
+      select: { id: true, email: true, fullName: true, stage: true },
+    });
+    const result = await prisma.publicApplication.updateMany({
+      where: { id: { in: affected.map((a) => a.id) }, stageStatus: "active" },
       data: { stageStatus: "eliminated" },
     });
+    await syncApplicantStages(affected, "eliminate");
     return Response.json({ success: true, updated: result.count });
   }
 
   // Advance: group by current stage so each updateMany is a single DB op.
   const applicants = await prisma.publicApplication.findMany({
     where: { id: { in: ids }, stageStatus: "active", stage: { lt: 10 } },
-    select: { id: true, stage: true },
+    select: { id: true, email: true, fullName: true, stage: true },
   });
 
   const byStage = new Map<number, string[]>();
@@ -58,6 +67,19 @@ export async function POST(request: Request) {
   );
 
   const advanced = results.reduce((sum, r) => sum + r.count, 0);
+
+  // Mirror the advance onto the backing Intern rows + queue the stage-passed
+  // emails. `stage + 1` is the new stage each applicant just moved to.
+  await syncApplicantStages(
+    applicants.map((a) => ({
+      id: a.id,
+      email: a.email,
+      fullName: a.fullName,
+      stage: a.stage + 1,
+    })),
+    "advance"
+  );
+
   return Response.json({ success: true, updated: advanced });
 }
 

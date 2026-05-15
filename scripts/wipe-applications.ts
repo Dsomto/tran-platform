@@ -3,15 +3,47 @@ import { prisma } from "../src/lib/db";
 // Wipe every applicant-side record so the apply flow can be re-tested from
 // zero. Keeps admin/super-admin/grader accounts and all configuration intact.
 //
-// Run:  CONFIRM_WIPE=YES npx tsx scripts/wipe-applications.ts
+// LOCAL / TEST DATABASES ONLY. This is destructive and irreversible. The site
+// is live with real applications, so this script refuses to run unless it can
+// see it is NOT pointed at production.
 //
-// Refuses without the env flag, on purpose — running this against the wrong
-// database is unrecoverable.
+// Run (local):       CONFIRM_WIPE=YES npx tsx scripts/wipe-applications.ts
+// Run (non-local):   CONFIRM_WIPE=YES WIPE_ALLOW_PRODUCTION=YES npx tsx scripts/wipe-applications.ts
+//
+// The second flag is deliberately awkward — there is no safe accidental path
+// to wiping a production database.
 async function main() {
+  // Hard stop: this is a developer tool, never something a deploy runs.
+  if (process.env.VERCEL) {
+    console.error(
+      "Refusing to run: this script must never execute on Vercel infrastructure.\n" +
+        "It is a local development / test tool only."
+    );
+    process.exit(1);
+  }
+
   if (process.env.CONFIRM_WIPE !== "YES") {
     console.error(
       "Refusing to run without CONFIRM_WIPE=YES. Set it explicitly:\n" +
         "  CONFIRM_WIPE=YES npx tsx scripts/wipe-applications.ts"
+    );
+    process.exit(1);
+  }
+
+  // Production guard: a DATABASE_URL that is not obviously a local database
+  // (or NODE_ENV=production) requires a second, explicit acknowledgement.
+  const dbUrl = process.env.DATABASE_URL || "";
+  const looksLocal = /localhost|127\.0\.0\.1|0\.0\.0\.0/.test(dbUrl);
+  const isProdLike = process.env.NODE_ENV === "production" || !looksLocal;
+  if (isProdLike && process.env.WIPE_ALLOW_PRODUCTION !== "YES") {
+    console.error(
+      "Refusing to run: DATABASE_URL does not look like a local database" +
+        (process.env.NODE_ENV === "production" ? " (and NODE_ENV=production)" : "") +
+        ".\n" +
+        "This wipes ALL applicant, intern and application data — it cannot be undone.\n" +
+        "If you are CERTAIN this is a throwaway database, re-run with BOTH flags:\n" +
+        "  CONFIRM_WIPE=YES WIPE_ALLOW_PRODUCTION=YES npx tsx scripts/wipe-applications.ts\n" +
+        `Target DB: ${dbUrl.replace(/\/\/[^@]*@/, "//***:***@") || "(DATABASE_URL unset)"}`
     );
     process.exit(1);
   }

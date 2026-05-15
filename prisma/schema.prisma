@@ -624,8 +624,11 @@ model StageAccess {
 // Handles Resend rate caps. Cron drains in createdAt ASC order.
 model EmailQueueItem {
   id          String           @id @default(auto()) @map("_id") @db.ObjectId
-  userId      String           @db.ObjectId
-  user        User             @relation("EmailQueueUser", fields: [userId], references: [id], onDelete: Cascade)
+  // Optional: a rejected public applicant is emailed before (or without) ever
+  // getting a User account, so a queued rejection email has no userId to point
+  // at. Welcome / intern emails still set it.
+  userId      String?          @db.ObjectId
+  user        User?            @relation("EmailQueueUser", fields: [userId], references: [id], onDelete: Cascade)
 
   kind        EmailKind
   toEmail     String

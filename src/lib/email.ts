@@ -423,15 +423,14 @@ export async function sendPublicAcceptanceEmail(
   });
 }
 
-export async function sendPublicRejectionEmail(
-  to: string,
-  fullName: string
-): Promise<void> {
-  const firstName = fullName.split(" ")[0];
-
-  await sendOne("send", {
-    from: `"Somto from Ubuntu Bridge Initiative" <noreply@ubuntubridgeinitiatives.org>`,
-    to,
+// Render the rejection email body. Returns subject + html so the same content
+// can be delivered directly OR enqueued in EmailQueueItem for retry — mirrors
+// renderPublicAcceptanceEmail.
+export function renderPublicRejectionEmail(opts: {
+  fullName: string;
+}): { subject: string; html: string } {
+  const firstName = opts.fullName.split(" ")[0];
+  return {
     subject: "UBI application update — and what's next",
     html: `
       <div style="font-family: -apple-system, 'Segoe UI', Roboto, sans-serif; background: #F1F5F9; padding: 40px 20px;">
@@ -497,6 +496,19 @@ export async function sendPublicRejectionEmail(
         </div>
       </div>
     `,
+  };
+}
+
+export async function sendPublicRejectionEmail(
+  to: string,
+  fullName: string
+): Promise<void> {
+  const { subject, html } = renderPublicRejectionEmail({ fullName });
+  await sendOne("send", {
+    from: `"Somto from Ubuntu Bridge Initiative" <noreply@ubuntubridgeinitiatives.org>`,
+    to,
+    subject,
+    html,
   });
 }
 
@@ -731,6 +743,45 @@ export async function sendEliminationEmail(
       `<p>You scored <strong>${earned}/${maxPoints}</strong> on the capstone room. Unfortunately that falls below the 50% threshold, and we're unable to advance you into the specialisation track for this cohort.</p><p>Your progress so far is still yours — keep the notes, keep the writeups, keep sharpening. We'd love to see you in the next intake.</p>`
     ),
   });
+}
+
+// ─── PUBLIC-APPLICATION STAGE PROGRESSION EMAILS ─────────
+// Used when an admin manually advances / eliminates an applicant from the
+// /admin/applicants screen. Unlike sendStageAdvanced (driven by graded room
+// scores) these carry no points — the admin's decision is the signal.
+// Returns subject + html so callers enqueue into EmailQueueItem.
+
+export function renderStagePassedEmail(opts: {
+  fullName: string;
+  newStage: number; // 1-10; 10 = finalist
+}): { subject: string; html: string } {
+  const firstName = opts.fullName.split(" ")[0];
+  const finalist = opts.newStage >= 10;
+  const label = finalist ? "the Finalist round" : `Stage ${opts.newStage}`;
+  return {
+    subject: finalist
+      ? "You're a UBI Finalist"
+      : `You've advanced to Stage ${opts.newStage} — UBI`,
+    html: wrap(
+      finalist ? `You're a Finalist, ${firstName}` : `Onward to Stage ${opts.newStage}, ${firstName}`,
+      `<p>Congratulations — you've cleared the previous stage and advanced to <strong>${label}</strong>. Log in to your dashboard to continue.</p>`,
+      publicUrl("/dashboard"),
+      "Open dashboard"
+    ),
+  };
+}
+
+export function renderStageEliminatedEmail(opts: {
+  fullName: string;
+}): { subject: string; html: string } {
+  const firstName = opts.fullName.split(" ")[0];
+  return {
+    subject: "UBI programme — an update on your progress",
+    html: wrap(
+      `Hi ${firstName},`,
+      `<p>After reviewing your progress, we're unable to advance you to the next stage of the UBI programme for this cohort.</p><p>The work you've done so far is still yours — keep your notes and writeups, keep sharpening, and we'd be glad to see you apply again next intake.</p>`
+    ),
+  };
 }
 
 export async function sendAnnouncementBroadcast(

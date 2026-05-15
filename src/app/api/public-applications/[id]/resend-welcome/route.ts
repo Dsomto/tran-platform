@@ -46,6 +46,12 @@ export async function POST(
         application.internId,
         application.loginPassword
       );
+      // Mark the welcome email as delivered so the "Send pending welcome
+      // emails" batch never re-queues this applicant later.
+      await prisma.publicApplication.update({
+        where: { id },
+        data: { welcomeEmailSentAt: new Date() },
+      });
     } catch (err) {
       emailError = err instanceof Error ? `${err.name}: ${err.message}` : String(err);
       logger.error("acceptance_email_failed", err, { email: application.email, internId: application.internId, emailError });

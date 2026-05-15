@@ -124,7 +124,7 @@ export default function ApplicantsPage() {
     const count = type === "welcome" ? pendingEmails.welcomePending : pendingEmails.rejectionPending;
     if (count === 0) return;
     const label = type === "welcome" ? "welcome" : "decline";
-    if (!confirm(`Send ${count} pending ${label} email${count === 1 ? "" : "s"} now? This goes out to every ${type === "welcome" ? "approved" : "rejected"} applicant who hasn't been emailed yet.`)) {
+    if (!confirm(`Queue ${count} pending ${label} email${count === 1 ? "" : "s"} for delivery? This covers every ${type === "welcome" ? "approved" : "rejected"} applicant who hasn't been emailed yet. They send in the background — no need to keep this tab open.`)) {
       return;
     }
     setSendingBatch(true);
@@ -136,16 +136,20 @@ export default function ApplicantsPage() {
       });
       const data = await res.json();
       if (!res.ok) {
-        alert(`Batch send failed: ${data.error || "unknown"}`);
+        alert(`Couldn't queue emails: ${data.error || "unknown"}`);
       } else {
+        const skippedNote =
+          data.skipped > 0
+            ? `\n\n${data.skipped} skipped — onboarding incomplete for those applicants, re-approve them.`
+            : "";
         alert(
-          `Done. ${data.sent} sent, ${data.failed} failed (of ${data.total}).` +
-            (data.failed > 0 ? `\n\nFailed ones are on /admin/emails — they'll retry on the next batch too.` : "")
+          `${data.queued} ${label} email${data.queued === 1 ? "" : "s"} queued for delivery.\n\n` +
+            `They send in the background over the next while. Track delivery and retry any failures on the Email Queue page (/admin/emails).${skippedNote}`
         );
         fetchCounts();
       }
     } catch {
-      alert("Network error during batch send.");
+      alert("Network error while queueing emails.");
     } finally {
       setSendingBatch(false);
     }
@@ -321,12 +325,15 @@ export default function ApplicantsPage() {
     }
 
     const headers = ["Name", "Email", "Country", "Age Range", "Gender", "Status", "Track", "Dedication", "Experience", "Goals", "Why Pick Them", "Applied"];
+    // Quote and escape EVERY cell — names, countries and free-text fields can
+    // all contain commas, quotes or newlines that would otherwise corrupt the
+    // CSV column layout.
+    const esc = (v: string) => `"${String(v ?? "").replace(/"/g, '""')}"`;
     const rows = allApps.map((a) => [
-      a.fullName, a.email, a.country, a.ageRange, a.gender || "", a.currentStatus,
-      getTrackLabel(a.trackInterest), a.dedication, `"${a.experience.replace(/"/g, '""')}"`,
-      `"${a.goals.replace(/"/g, '""')}"`,
-      `"${(a.whyPickYou || "").replace(/"/g, '""')}"`,
-      formatDate(a.createdAt),
+      esc(a.fullName), esc(a.email), esc(a.country), esc(a.ageRange),
+      esc(a.gender || ""), esc(a.currentStatus), esc(getTrackLabel(a.trackInterest)),
+      esc(a.dedication), esc(a.experience), esc(a.goals),
+      esc(a.whyPickYou || ""), esc(formatDate(a.createdAt)),
     ]);
 
     const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
@@ -742,8 +749,8 @@ export default function ApplicantsPage() {
                 />
                 <span className="text-xs text-muted">
                   {selectedIds.size > 0
-                    ? `${selectedIds.size} of ${total} selected`
-                    : `Select all`}
+                    ? `${selectedIds.size} selected on this page`
+                    : `Select all on this page`}
                 </span>
               </div>
             )}

@@ -64,10 +64,31 @@ export async function POST(
       });
 
       // Create the backing User + Intern so the applicant can log in.
+      // If this fails the applicant would be "approved" with no usable
+      // account — and a later batch welcome email would ship dead login
+      // credentials. So we revert the approval and surface the error instead
+      // of returning a misleading success.
       try {
         await onboardApprovedApplicant(updated);
       } catch (err) {
         logger.error("onboarding_failed", err, { applicationId: id, email: application.email });
+        await prisma.publicApplication.update({
+          where: { id },
+          data: {
+            status: "pending",
+            stage: -1,
+            stageStatus: "none",
+            internId: null,
+            loginPassword: null,
+          },
+        });
+        return Response.json(
+          {
+            error:
+              "Account setup failed — the applicant was reverted to pending, not approved. Please retry the approval.",
+          },
+          { status: 500 }
+        );
       }
 
       // Decision-only: we do NOT send the welcome email here. The applicant

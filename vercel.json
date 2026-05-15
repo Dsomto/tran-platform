@@ -2,8 +2,8 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "crons": [
     {
-      "path": "/api/cron/email-drain?limit=100",
-      "schedule": "*/15 * * * *"
+      "path": "/api/cron/email-drain?limit=300",
+      "schedule": "*/5 * * * *"
     }
   ],
   "buildCommand": "prisma generate && next build"
