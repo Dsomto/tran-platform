@@ -32,7 +32,9 @@ export function StageResultsPanel() {
   const [result, setResult] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [resetting, setResetting] = useState(false);
-  const [moveInternsBack, setMoveInternsBack] = useState(true);
+  // Default: "unlock only" — reset reverts reports to GRADED so the stage can
+  // be re-published, but interns already advanced stay where they are.
+  const [moveInternsBack, setMoveInternsBack] = useState(false);
 
   async function loadSummary(s: string) {
     setLoading(true);

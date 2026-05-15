@@ -55,6 +55,7 @@ const adminLinks = [
   { href: "/admin", label: "Overview", icon: LayoutDashboard },
   { href: "/admin/applicants", label: "Applicants", icon: UserCheck },
   { href: "/admin/mailing", label: "Decision Emails", icon: Send },
+  { href: "/admin/broadcast", label: "Send Email", icon: Mail },
   { href: "/admin/interns", label: "Interns", icon: Users },
   { href: "/admin/teams", label: "Teams", icon: Award },
   { href: "/admin/assignments", label: "Assignments", icon: BookOpen },

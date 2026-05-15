@@ -30,6 +30,19 @@ import { Prisma } from "@/generated/prisma";
 
 const CHUNK = 200;
 
+// MongoDB stores an optional field that was never written as ABSENT, not null.
+// Prisma's `{ field: null }` filter matches an explicit null but NOT an absent
+// field — so an applicant approved before this column existed (or never
+// re-saved since) is invisible to a plain null check, and never appears in the
+// Decision Emails list. Match "absent OR explicitly null" so every un-emailed
+// applicant is found regardless of how their document was created.
+const welcomeUnsent: Prisma.PublicApplicationWhereInput = {
+  OR: [{ welcomeEmailSentAt: null }, { welcomeEmailSentAt: { isSet: false } }],
+};
+const rejectionUnsent: Prisma.PublicApplicationWhereInput = {
+  OR: [{ rejectionEmailSentAt: null }, { rejectionEmailSentAt: { isSet: false } }],
+};
+
 export async function GET(request: NextRequest) {
   const session = await getSession();
   if (!session || (session.role !== "ADMIN" && session.role !== "SUPER_ADMIN")) {
@@ -61,8 +74,8 @@ export async function GET(request: NextRequest) {
   if (list === "welcome" || list === "rejection") {
     const where: Prisma.PublicApplicationWhereInput =
       list === "welcome"
-        ? { status: "approved", welcomeEmailSentAt: null }
-        : { status: "rejected", rejectionEmailSentAt: null };
+        ? { status: "approved", ...welcomeUnsent }
+        : { status: "rejected", ...rejectionUnsent };
     const [applicants, total] = await Promise.all([
       prisma.publicApplication.findMany({
         where,
@@ -78,10 +91,10 @@ export async function GET(request: NextRequest) {
   // default — pending counts for the button badges.
   const [welcomePending, rejectionPending] = await Promise.all([
     prisma.publicApplication.count({
-      where: { status: "approved", welcomeEmailSentAt: null },
+      where: { status: "approved", ...welcomeUnsent },
     }),
     prisma.publicApplication.count({
-      where: { status: "rejected", rejectionEmailSentAt: null },
+      where: { status: "rejected", ...rejectionUnsent },
     }),
   ]);
   return Response.json({ welcomePending, rejectionPending });
@@ -116,7 +129,7 @@ export async function POST(request: NextRequest) {
 
 async function enqueueWelcome(onlyId?: string): Promise<Response> {
   const pool = await prisma.publicApplication.findMany({
-    where: { status: "approved", welcomeEmailSentAt: null, ...(onlyId ? { id: onlyId } : {}) },
+    where: { status: "approved", ...welcomeUnsent, ...(onlyId ? { id: onlyId } : {}) },
     select: {
       id: true,
       email: true,
@@ -143,7 +156,7 @@ async function enqueueWelcome(onlyId?: string): Promise<Response> {
   // then excludes everything we just stamped.
   const claimAt = new Date();
   await prisma.publicApplication.updateMany({
-    where: { id: { in: ready.map((a) => a.id) }, welcomeEmailSentAt: null },
+    where: { id: { in: ready.map((a) => a.id) }, ...welcomeUnsent },
     data: { welcomeEmailSentAt: claimAt },
   });
   const claimed = await prisma.publicApplication.findMany({
@@ -198,7 +211,7 @@ async function enqueueWelcome(onlyId?: string): Promise<Response> {
 
 async function enqueueRejection(onlyId?: string): Promise<Response> {
   const pool = await prisma.publicApplication.findMany({
-    where: { status: "rejected", rejectionEmailSentAt: null, ...(onlyId ? { id: onlyId } : {}) },
+    where: { status: "rejected", ...rejectionUnsent, ...(onlyId ? { id: onlyId } : {}) },
     select: { id: true, email: true, fullName: true },
   });
   if (pool.length === 0) {
@@ -207,7 +220,7 @@ async function enqueueRejection(onlyId?: string): Promise<Response> {
 
   const claimAt = new Date();
   await prisma.publicApplication.updateMany({
-    where: { id: { in: pool.map((a) => a.id) }, rejectionEmailSentAt: null },
+    where: { id: { in: pool.map((a) => a.id) }, ...rejectionUnsent },
     data: { rejectionEmailSentAt: claimAt },
   });
   const claimed = await prisma.publicApplication.findMany({

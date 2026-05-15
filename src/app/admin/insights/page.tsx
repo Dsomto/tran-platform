@@ -1,6 +1,7 @@
 import { requireSuperAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { TrendingUp, Users, UserCheck, UserX, Mail, Clock, FileText, Award } from "lucide-react";
+import { TrendingUp, Users, UserCheck, UserX, Mail, Clock, FileText, Award, Target } from "lucide-react";
+import { InsightsDownload, type ExportSection } from "./insights-download";
 
 // Admin analytics dashboard. Server-rendered so all the queries hit Mongo
 // directly and we don't ship counts to the client. Every figure here comes
@@ -9,9 +10,15 @@ import { TrendingUp, Users, UserCheck, UserX, Mail, Clock, FileText, Award } fro
 export default async function AdminInsightsPage() {
   await requireSuperAdmin();
 
-  const startToday = startOfDay(new Date());
-  const startWeek = new Date(Date.now() - 7 * 86_400_000);
-  const startMonth = new Date(Date.now() - 30 * 86_400_000);
+  // Server Component: this runs once per request, so reading the request-time
+  // clock here is intended. Read it once and derive every window from it.
+  // eslint-disable-next-line react-hooks/purity
+  const now = Date.now();
+  const startToday = startOfDay(new Date(now));
+  const startWeek = new Date(now - 7 * 86_400_000);
+  const startMonth = new Date(now - 30 * 86_400_000);
+  // 14-day window for the daily applications chart.
+  const startChart = startOfDay(new Date(now - 13 * 86_400_000));
 
   const [
     totalApplications,
@@ -36,6 +43,11 @@ export default async function AdminInsightsPage() {
     countryBreakdown,
     ageBreakdown,
     genderBreakdown,
+    trackBreakdown,
+    employmentBreakdown,
+    dedicationBreakdown,
+    referralBreakdown,
+    recentAppDates,
   ] = await Promise.all([
     prisma.publicApplication.count(),
     prisma.publicApplication.count({ where: { createdAt: { gte: startWeek } } }),
@@ -68,11 +80,20 @@ export default async function AdminInsightsPage() {
     prisma.publicApplication.groupBy({ by: ["country"], _count: { _all: true } }),
     prisma.publicApplication.groupBy({ by: ["ageRange"], _count: { _all: true } }),
     prisma.publicApplication.groupBy({ by: ["gender"], _count: { _all: true } }),
+    prisma.publicApplication.groupBy({ by: ["trackInterest"], _count: { _all: true } }),
+    prisma.publicApplication.groupBy({ by: ["currentStatus"], _count: { _all: true } }),
+    prisma.publicApplication.groupBy({ by: ["dedication"], _count: { _all: true } }),
+    prisma.publicApplication.groupBy({ by: ["referralSource"], _count: { _all: true } }),
+    prisma.publicApplication.findMany({
+      where: { createdAt: { gte: startChart } },
+      select: { createdAt: true },
+    }),
   ]);
 
+  const reviewed = approvedApps + rejectedApps;
   const screeningRate =
     totalApplications > 0
-      ? Math.round((approvedApps / Math.max(1, approvedApps + rejectedApps)) * 100)
+      ? Math.round((approvedApps / Math.max(1, reviewed)) * 100)
       : 0;
   const dropOffStage0 =
     activeInterns > 0
@@ -88,28 +109,111 @@ export default async function AdminInsightsPage() {
     emailCountMap[c.status] = c._count._all;
   }
 
-  // Applicant demographics — counts by country, age range and gender, each
-  // sorted most-common first.
-  const countryRows = countryBreakdown
-    .map((r) => ({ label: r.country, count: r._count._all }))
-    .sort((a, b) => b.count - a.count);
-  const ageRows = ageBreakdown
-    .map((r) => ({ label: r.ageRange, count: r._count._all }))
-    .sort((a, b) => b.count - a.count);
-  const genderRows = genderBreakdown
-    .map((r) => ({ label: r.gender ?? "Not specified", count: r._count._all }))
-    .sort((a, b) => b.count - a.count);
+  // Demographic breakdowns — counts per group, most-common first.
+  const toRows = (
+    data: { _count: { _all: number } }[],
+    key: (r: Record<string, unknown>) => string
+  ) =>
+    data
+      .map((r) => ({ label: key(r as Record<string, unknown>), count: r._count._all }))
+      .sort((a, b) => b.count - a.count);
+
+  const countryRows = toRows(countryBreakdown, (r) => String(r.country));
+  const ageRows = toRows(ageBreakdown, (r) => String(r.ageRange));
+  const genderRows = toRows(genderBreakdown, (r) => (r.gender ? String(r.gender) : "Not specified"));
+  const trackRows = toRows(trackBreakdown, (r) => trackLabel(String(r.trackInterest)));
+  const employmentRows = toRows(employmentBreakdown, (r) => String(r.currentStatus));
+  const dedicationRows = toRows(dedicationBreakdown, (r) => String(r.dedication));
+  const referralRows = toRows(referralBreakdown, (r) =>
+    r.referralSource ? String(r.referralSource) : "Not specified"
+  );
+
+  // Daily applications for the last 14 days.
+  const todayStart = startOfDay(new Date(now)).getTime();
+  const dailyApps = Array.from({ length: 14 }, (_, i) => {
+    const d = new Date(todayStart - (13 - i) * 86_400_000);
+    return { label: `${d.getMonth() + 1}/${d.getDate()}`, count: 0 };
+  });
+  for (const a of recentAppDates) {
+    const idx = Math.round((startOfDay(new Date(a.createdAt)).getTime() - startChart.getTime()) / 86_400_000);
+    if (idx >= 0 && idx < 14) dailyApps[idx].count++;
+  }
+
+  // The funnel from raw applications down to finalists.
+  const funnel = [
+    { label: "Applications received", count: totalApplications },
+    { label: "Reviewed (approved or rejected)", count: reviewed },
+    { label: "Approved", count: approvedApps },
+    { label: "Active interns", count: activeInterns },
+    { label: "Finalists", count: finalists },
+  ];
+
+  // Everything above, flattened for the CSV export.
+  const exportSections: ExportSection[] = [
+    {
+      title: "Applications",
+      rows: [
+        ["Total received", totalApplications],
+        ["Today", appsToday],
+        ["Last 7 days", appsLast7],
+        ["Last 30 days", appsLast30],
+      ],
+    },
+    {
+      title: "Application status",
+      rows: [
+        ["Pending review", pendingApps],
+        ["Approved", approvedApps],
+        ["Rejected", rejectedApps],
+        ["Screening pass rate (%)", screeningRate],
+        ["Approved last 7 days", recentlyApproved],
+      ],
+    },
+    { title: "Conversion funnel", rows: funnel.map((f) => [f.label, f.count] as [string, number]) },
+    {
+      title: "Daily applications (last 14 days)",
+      rows: dailyApps.map((d) => [d.label, d.count] as [string, number]),
+    },
+    { title: "Demographics — Country", rows: countryRows.map((r) => [r.label, r.count]) },
+    { title: "Demographics — Age range", rows: ageRows.map((r) => [r.label, r.count]) },
+    { title: "Demographics — Gender", rows: genderRows.map((r) => [r.label, r.count]) },
+    { title: "Demographics — Track interest", rows: trackRows.map((r) => [r.label, r.count]) },
+    { title: "Demographics — Current status", rows: employmentRows.map((r) => [r.label, r.count]) },
+    { title: "Demographics — Weekly dedication", rows: dedicationRows.map((r) => [r.label, r.count]) },
+    { title: "Demographics — Referral source", rows: referralRows.map((r) => [r.label, r.count]) },
+    {
+      title: "Interns",
+      rows: [
+        ["Total interns", totalInterns],
+        ["Currently active", activeInterns],
+        ["Finalists", finalists],
+      ],
+    },
+    {
+      title: "Stage reports",
+      rows: [
+        ["Total", reportsTotal],
+        ["In review", reportsUnderReview],
+        ["Graded", reportsGraded],
+        ["Passed", reportsPassed],
+        ["Failed", reportsFailed],
+      ],
+    },
+  ];
 
   return (
     <div className="p-6 md:p-10 max-w-6xl mx-auto w-full">
-      <header className="mb-8">
-        <div className="flex items-center gap-3 mb-2">
-          <TrendingUp className="h-6 w-6 text-blue" />
-          <h1 className="text-2xl font-bold text-foreground">Programme Insights</h1>
+      <header className="mb-8 flex items-start justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-3 mb-2">
+            <TrendingUp className="h-6 w-6 text-blue" />
+            <h1 className="text-2xl font-bold text-foreground">Programme Insights</h1>
+          </div>
+          <p className="text-muted-foreground text-sm">
+            Live counts pulled directly from the database. Refresh the page to update.
+          </p>
         </div>
-        <p className="text-muted-foreground text-sm">
-          Live counts pulled directly from the database. Refresh the page to update.
-        </p>
+        <InsightsDownload sections={exportSections} />
       </header>
 
       {/* Top row: applications */}
@@ -139,12 +243,46 @@ export default async function AdminInsightsPage() {
         </div>
       </Section>
 
+      {/* Conversion funnel */}
+      <Section title="Conversion funnel">
+        <div className="bg-white border border-border rounded-xl p-4">
+          {funnel.map((f) => {
+            const pct = totalApplications > 0 ? (f.count / totalApplications) * 100 : 0;
+            const ofTop =
+              totalApplications > 0 ? Math.round((f.count / totalApplications) * 100) : 0;
+            return (
+              <div key={f.label} className="flex items-center gap-3 py-2 border-b border-border last:border-0">
+                <span className="text-sm text-muted-foreground w-56 shrink-0">{f.label}</span>
+                <div className="flex-1 h-3 bg-muted/40 rounded-full overflow-hidden">
+                  <div className="h-full bg-blue" style={{ width: `${Math.min(100, pct)}%` }} />
+                </div>
+                <span className="text-sm font-mono text-foreground w-20 text-right">
+                  {f.count}{" "}
+                  <span className="text-xs text-muted-foreground">({ofTop}%)</span>
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </Section>
+
+      {/* Applications over time */}
+      <Section title="Applications — last 14 days">
+        <div className="bg-white border border-border rounded-xl p-4">
+          <DailyBars data={dailyApps} />
+        </div>
+      </Section>
+
       {/* Applicant demographics */}
       <Section title="Applicant demographics">
-        <div className="grid sm:grid-cols-3 gap-4 items-start">
-          <Breakdown title="Country" rows={countryRows} />
-          <Breakdown title="Age range" rows={ageRows} />
-          <Breakdown title="Gender" rows={genderRows} />
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
+          <Breakdown title="Country" rows={countryRows} icon={Users} />
+          <Breakdown title="Age range" rows={ageRows} icon={Clock} />
+          <Breakdown title="Gender" rows={genderRows} icon={Users} />
+          <Breakdown title="Track interest" rows={trackRows} icon={Target} />
+          <Breakdown title="Current status" rows={employmentRows} icon={UserCheck} />
+          <Breakdown title="Weekly dedication" rows={dedicationRows} icon={Clock} />
+          <Breakdown title="Referral source" rows={referralRows} icon={TrendingUp} />
         </div>
       </Section>
 
@@ -244,6 +382,20 @@ function startOfDay(d: Date) {
   return c;
 }
 
+// trackInterest is stored either as a slug (soc, ethical_hacking, grc) or as a
+// display string. Normalise to a readable label for the breakdown.
+function trackLabel(track: string): string {
+  const map: Record<string, string> = {
+    soc: "SOC Analysis",
+    ethical_hacking: "Ethical Hacking",
+    grc: "GRC",
+    "SOC Analysis": "SOC Analysis",
+    "Ethical Hacking": "Ethical Hacking",
+    GRC: "GRC",
+  };
+  return map[track] || track;
+}
+
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="mb-8">
@@ -277,18 +429,22 @@ function Stat({
   );
 }
 
-// A simple labelled bar list — used for the country / age / gender breakdowns.
+// A simple labelled bar list — used for the demographic breakdowns.
 function Breakdown({
   title,
   rows,
+  icon: Icon,
 }: {
   title: string;
   rows: { label: string; count: number }[];
+  icon?: React.ElementType;
 }) {
   const max = Math.max(1, ...rows.map((r) => r.count));
+  const total = rows.reduce((a, r) => a + r.count, 0);
   return (
     <div className="bg-white border border-border rounded-xl p-4">
-      <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+      <h3 className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+        {Icon && <Icon className="h-3.5 w-3.5" />}
         {title}
       </h3>
       {rows.length === 0 ? (
@@ -306,11 +462,36 @@ function Breakdown({
                   style={{ width: `${(r.count / max) * 100}%` }}
                 />
               </div>
-              <span className="w-8 text-right font-mono text-foreground">{r.count}</span>
+              <span className="w-14 text-right font-mono text-foreground">
+                {r.count}
+                <span className="text-muted-foreground">
+                  {" "}
+                  {total > 0 ? `${Math.round((r.count / total) * 100)}%` : ""}
+                </span>
+              </span>
             </div>
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+// Vertical-bar chart for the 14-day applications trend.
+function DailyBars({ data }: { data: { label: string; count: number }[] }) {
+  const max = Math.max(1, ...data.map((d) => d.count));
+  return (
+    <div className="flex items-end gap-1.5 h-32">
+      {data.map((d) => (
+        <div key={d.label} className="flex-1 flex flex-col items-center gap-1 h-full justify-end">
+          <span className="text-[10px] font-mono text-foreground">{d.count}</span>
+          <div
+            className="w-full bg-blue rounded-t"
+            style={{ height: `${(d.count / max) * 100}%`, minHeight: d.count > 0 ? 2 : 0 }}
+          />
+          <span className="text-[9px] text-muted-foreground">{d.label}</span>
+        </div>
+      ))}
     </div>
   );
 }
