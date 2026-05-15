@@ -23,6 +23,7 @@ import {
   Activity,
   Shield,
   Mail,
+  Send,
   TrendingUp,
 } from "lucide-react";
 import { LogoMark } from "@/components/logo";
@@ -53,6 +54,7 @@ const adminLinks = [
   { href: "/ops", label: "Operations", icon: Activity },
   { href: "/admin", label: "Overview", icon: LayoutDashboard },
   { href: "/admin/applicants", label: "Applicants", icon: UserCheck },
+  { href: "/admin/mailing", label: "Decision Emails", icon: Send },
   { href: "/admin/interns", label: "Interns", icon: Users },
   { href: "/admin/teams", label: "Teams", icon: Award },
   { href: "/admin/assignments", label: "Assignments", icon: BookOpen },

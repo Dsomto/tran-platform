@@ -30,11 +30,52 @@ import { Prisma } from "@/generated/prisma";
 
 const CHUNK = 200;
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   const session = await getSession();
   if (!session || (session.role !== "ADMIN" && session.role !== "SUPER_ADMIN")) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const params = new URL(request.url).searchParams;
+
+  // ?preview=welcome|rejection — render the template with sample data so an
+  // admin can see exactly what goes out before queueing anything.
+  const preview = params.get("preview");
+  if (preview === "welcome") {
+    return Response.json(
+      renderPublicAcceptanceEmail({
+        fullName: "Jane Doe",
+        trackInterest: "SOC Analysis",
+        internId: "UBI-2025-0001",
+        tempPassword: "Ax7Kp2Qm9",
+      })
+    );
+  }
+  if (preview === "rejection") {
+    return Response.json(renderPublicRejectionEmail({ fullName: "Jane Doe" }));
+  }
+
+  // ?list=welcome|rejection — the actual applicants still owing that email,
+  // for the Decision Emails page. Capped at 500; `total` is the full count.
+  const list = params.get("list");
+  if (list === "welcome" || list === "rejection") {
+    const where: Prisma.PublicApplicationWhereInput =
+      list === "welcome"
+        ? { status: "approved", welcomeEmailSentAt: null }
+        : { status: "rejected", rejectionEmailSentAt: null };
+    const [applicants, total] = await Promise.all([
+      prisma.publicApplication.findMany({
+        where,
+        orderBy: { createdAt: "asc" },
+        take: 500,
+        select: { id: true, fullName: true, email: true, trackInterest: true, createdAt: true },
+      }),
+      prisma.publicApplication.count({ where }),
+    ]);
+    return Response.json({ applicants, total });
+  }
+
+  // default — pending counts for the button badges.
   const [welcomePending, rejectionPending] = await Promise.all([
     prisma.publicApplication.count({
       where: { status: "approved", welcomeEmailSentAt: null },
@@ -62,16 +103,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    return type === "welcome" ? enqueueWelcome() : enqueueRejection();
+    // Optional: enqueue just one applicant (the per-row "Send" button on the
+    // Decision Emails page). Omitted -> the whole pending pool.
+    const onlyId = typeof body?.applicationId === "string" ? body.applicationId : undefined;
+
+    return type === "welcome" ? enqueueWelcome(onlyId) : enqueueRejection(onlyId);
   } catch (error) {
     logger.error("send_pending_failed", error);
     return Response.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 
-async function enqueueWelcome(): Promise<Response> {
+async function enqueueWelcome(onlyId?: string): Promise<Response> {
   const pool = await prisma.publicApplication.findMany({
-    where: { status: "approved", welcomeEmailSentAt: null },
+    where: { status: "approved", welcomeEmailSentAt: null, ...(onlyId ? { id: onlyId } : {}) },
     select: {
       id: true,
       email: true,
@@ -151,9 +196,9 @@ async function enqueueWelcome(): Promise<Response> {
   return Response.json({ type: "welcome", total: pool.length, queued, skipped });
 }
 
-async function enqueueRejection(): Promise<Response> {
+async function enqueueRejection(onlyId?: string): Promise<Response> {
   const pool = await prisma.publicApplication.findMany({
-    where: { status: "rejected", rejectionEmailSentAt: null },
+    where: { status: "rejected", rejectionEmailSentAt: null, ...(onlyId ? { id: onlyId } : {}) },
     select: { id: true, email: true, fullName: true },
   });
   if (pool.length === 0) {
