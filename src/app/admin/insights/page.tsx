@@ -33,6 +33,9 @@ export default async function AdminInsightsPage() {
     reportsDivergent,
     emailQueueCounts,
     recentlyApproved,
+    countryBreakdown,
+    ageBreakdown,
+    genderBreakdown,
   ] = await Promise.all([
     prisma.publicApplication.count(),
     prisma.publicApplication.count({ where: { createdAt: { gte: startWeek } } }),
@@ -62,6 +65,9 @@ export default async function AdminInsightsPage() {
     prisma.publicApplication.count({
       where: { status: "approved", createdAt: { gte: startWeek } },
     }),
+    prisma.publicApplication.groupBy({ by: ["country"], _count: { _all: true } }),
+    prisma.publicApplication.groupBy({ by: ["ageRange"], _count: { _all: true } }),
+    prisma.publicApplication.groupBy({ by: ["gender"], _count: { _all: true } }),
   ]);
 
   const screeningRate =
@@ -81,6 +87,18 @@ export default async function AdminInsightsPage() {
   for (const c of emailQueueCounts) {
     emailCountMap[c.status] = c._count._all;
   }
+
+  // Applicant demographics — counts by country, age range and gender, each
+  // sorted most-common first.
+  const countryRows = countryBreakdown
+    .map((r) => ({ label: r.country, count: r._count._all }))
+    .sort((a, b) => b.count - a.count);
+  const ageRows = ageBreakdown
+    .map((r) => ({ label: r.ageRange, count: r._count._all }))
+    .sort((a, b) => b.count - a.count);
+  const genderRows = genderBreakdown
+    .map((r) => ({ label: r.gender ?? "Not specified", count: r._count._all }))
+    .sort((a, b) => b.count - a.count);
 
   return (
     <div className="p-6 md:p-10 max-w-6xl mx-auto w-full">
@@ -118,6 +136,15 @@ export default async function AdminInsightsPage() {
           {" · "}
           Approved last 7 days:{" "}
           <strong className="text-foreground">{recentlyApproved}</strong>
+        </div>
+      </Section>
+
+      {/* Applicant demographics */}
+      <Section title="Applicant demographics">
+        <div className="grid sm:grid-cols-3 gap-4 items-start">
+          <Breakdown title="Country" rows={countryRows} />
+          <Breakdown title="Age range" rows={ageRows} />
+          <Breakdown title="Gender" rows={genderRows} />
         </div>
       </Section>
 
@@ -246,6 +273,44 @@ function Stat({
         {label}
       </div>
       <div className="text-2xl font-bold text-foreground mt-1">{value}</div>
+    </div>
+  );
+}
+
+// A simple labelled bar list — used for the country / age / gender breakdowns.
+function Breakdown({
+  title,
+  rows,
+}: {
+  title: string;
+  rows: { label: string; count: number }[];
+}) {
+  const max = Math.max(1, ...rows.map((r) => r.count));
+  return (
+    <div className="bg-white border border-border rounded-xl p-4">
+      <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+        {title}
+      </h3>
+      {rows.length === 0 ? (
+        <p className="text-sm text-muted-foreground">No data yet.</p>
+      ) : (
+        <div className="space-y-1.5">
+          {rows.map((r) => (
+            <div key={r.label} className="flex items-center gap-2 text-xs">
+              <span className="w-24 truncate text-muted-foreground" title={r.label}>
+                {r.label}
+              </span>
+              <div className="flex-1 h-2 bg-muted/40 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-blue"
+                  style={{ width: `${(r.count / max) * 100}%` }}
+                />
+              </div>
+              <span className="w-8 text-right font-mono text-foreground">{r.count}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

@@ -248,11 +248,12 @@ export default function DecisionEmailsPage() {
                 <X className="h-5 w-5" />
               </button>
             </div>
-            <iframe
-              srcDoc={preview.html}
-              title="Email preview"
-              className="flex-1 w-full min-h-[420px] bg-white"
-            />
+            {/* Rendered inline rather than in an <iframe>: the site CSP sets
+                frame-src 'none', which blocks srcdoc iframes. The email HTML
+                is our own template (no scripts), so this is safe. */}
+            <div className="flex-1 overflow-y-auto bg-white">
+              <div dangerouslySetInnerHTML={{ __html: preview.html }} />
+            </div>
             <div className="p-3 text-xs text-muted-foreground border-t border-border">
               Sample data shown. Each applicant receives this with their own name
               {tab === "welcome" ? ", intern ID and login password" : ""}.
