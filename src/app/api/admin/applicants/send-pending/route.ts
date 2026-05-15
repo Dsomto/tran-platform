@@ -148,18 +148,19 @@ async function enqueueWelcome(onlyId?: string): Promise<Response> {
   // Sending the welcome email is the COMMIT point — this is where an approved
   // applicant actually becomes an intern. For each one: mint a UBI ID and a
   // temporary password, flip status queued_approved -> approved (the flip is
-  // the atomic claim, so a concurrent run can't double-commit), then create
-  // the backing User + Intern. If onboarding fails, roll the applicant back to
-  // the pending list and skip them rather than ship dead login credentials.
+  // the atomic claim, so a concurrent run can't double-commit), create the
+  // backing User + Intern, THEN enqueue the welcome email.
+  //
+  // Commit and enqueue happen in the SAME iteration, never in two passes: if
+  // the run times out or crashes, every processed applicant is fully done
+  // (intern created + email queued) and every un-processed one is still
+  // "queued_approved" — picked up by the next run. The failure window is one
+  // applicant wide, not the whole cohort. If onboarding OR the email insert
+  // fails, the applicant is rolled all the way back to the pending list so
+  // they are retried cleanly — never left a committed intern with no
+  // credentials email.
   const claimAt = new Date();
-  const committed: {
-    id: string;
-    email: string;
-    fullName: string;
-    trackInterest: string;
-    internId: string;
-    loginPassword: string;
-  }[] = [];
+  let queued = 0;
   let skipped = 0;
 
   for (const a of pool) {
@@ -179,16 +180,9 @@ async function enqueueWelcome(onlyId?: string): Promise<Response> {
     // count 0 -> another run already committed this applicant; skip silently.
     if (claim.count === 0) continue;
 
-    try {
-      await onboardApprovedApplicant({
-        email: a.email,
-        fullName: a.fullName,
-        trackInterest: a.trackInterest,
-        loginPassword,
-      });
-    } catch (err) {
-      logger.error("welcome_onboard_failed", err, { applicationId: a.id, email: a.email });
-      await prisma.publicApplication.update({
+    // Undo the whole commit — back to the pending list for a clean retry.
+    const rollback = () =>
+      prisma.publicApplication.update({
         where: { id: a.id },
         data: {
           status: "queued_approved",
@@ -199,42 +193,55 @@ async function enqueueWelcome(onlyId?: string): Promise<Response> {
           welcomeEmailSentAt: null,
         },
       });
+
+    try {
+      await onboardApprovedApplicant({
+        email: a.email,
+        fullName: a.fullName,
+        trackInterest: a.trackInterest,
+        loginPassword,
+      });
+    } catch (err) {
+      logger.error("welcome_onboard_failed", err, { applicationId: a.id, email: a.email });
+      await rollback();
       skipped++;
       continue;
     }
-    committed.push({ ...a, internId, loginPassword });
+
+    // Enqueue the welcome email now, while this applicant is still in hand. If
+    // the insert fails we roll the commit back rather than strand a
+    // credential-less intern. (onboardApprovedApplicant is idempotent, so the
+    // User/Intern it created are simply reused on the next attempt.)
+    try {
+      const user = await prisma.user.findUnique({
+        where: { email: a.email.toLowerCase() },
+        select: { id: true },
+      });
+      const { subject, html } = renderPublicAcceptanceEmail({
+        fullName: a.fullName,
+        trackInterest: a.trackInterest,
+        internId,
+        tempPassword: loginPassword,
+      });
+      await prisma.emailQueueItem.create({
+        data: {
+          userId: user?.id ?? null,
+          kind: "GENERAL",
+          toEmail: a.email,
+          subject,
+          body: html,
+          status: "PENDING",
+          context: { type: "acceptance", applicationId: a.id },
+        },
+      });
+      queued++;
+    } catch (err) {
+      logger.error("welcome_enqueue_failed", err, { applicationId: a.id, email: a.email });
+      await rollback();
+      skipped++;
+    }
   }
 
-  if (committed.length === 0) {
-    return Response.json({ type: "welcome", total: pool.length, queued: 0, skipped });
-  }
-
-  // Attach each welcome email to the User just created for the intern.
-  const users = await prisma.user.findMany({
-    where: { email: { in: committed.map((a) => a.email.toLowerCase()) } },
-    select: { id: true, email: true },
-  });
-  const userByEmail = new Map(users.map((u) => [u.email, u.id]));
-
-  const rows: Prisma.EmailQueueItemCreateManyInput[] = committed.map((a) => {
-    const { subject, html } = renderPublicAcceptanceEmail({
-      fullName: a.fullName,
-      trackInterest: a.trackInterest,
-      internId: a.internId,
-      tempPassword: a.loginPassword,
-    });
-    return {
-      userId: userByEmail.get(a.email.toLowerCase()) ?? null,
-      kind: "GENERAL",
-      toEmail: a.email,
-      subject,
-      body: html,
-      status: "PENDING",
-      context: { type: "acceptance", applicationId: a.id },
-    };
-  });
-
-  const queued = await enqueueChunked(rows, committed.map((a) => a.id), "welcome");
   return Response.json({ type: "welcome", total: pool.length, queued, skipped });
 }
 

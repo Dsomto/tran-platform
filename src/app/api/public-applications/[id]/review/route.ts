@@ -49,12 +49,23 @@ export async function POST(
     // Rejecting likewise only records the decision; the decline email goes out
     // in a batch from the same place.
     const status = action === "approved" ? "queued_approved" : "rejected";
-    const updated = await prisma.publicApplication.update({
-      where: { id },
+
+    // Conditional claim: the write only lands if the row is STILL "pending",
+    // so two admins deciding the same applicant at the same moment can't
+    // overwrite each other — the first decision wins, the second gets the
+    // "already reviewed" response.
+    const claim = await prisma.publicApplication.updateMany({
+      where: { id, status: "pending" },
       data: { status },
     });
+    if (claim.count === 0) {
+      return Response.json(
+        { error: "Application has already been reviewed." },
+        { status: 400 }
+      );
+    }
 
-    return Response.json({ success: true, application: updated, emailPending: true });
+    return Response.json({ success: true, emailPending: true });
   } catch (error) {
     logger.error("review_failed", error);
     return Response.json(

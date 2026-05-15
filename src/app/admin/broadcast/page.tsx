@@ -153,6 +153,7 @@ export default function BroadcastPage() {
             >
               <option value="all">All</option>
               <option value="pending">Pending</option>
+              <option value="queued_approved">Awaiting welcome email</option>
               <option value="approved">Approved</option>
               <option value="rejected">Rejected</option>
             </select>

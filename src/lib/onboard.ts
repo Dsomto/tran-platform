@@ -52,9 +52,18 @@ export async function onboardApprovedApplicant(app: OnboardInput): Promise<{
   });
 
   if (existing) {
+    // Reuse the account — but reset the password to the one we are about to
+    // email. The welcome email ships `app.loginPassword` as the temp password,
+    // so the stored hash MUST match it or the new intern can't log in. (This
+    // also makes a retry after a partial failure converge: the second attempt
+    // generates a fresh password and this keeps the stored hash in sync.)
     const intern =
       existing.intern ??
       (await prisma.intern.create({ data: { userId: existing.id, track } }));
+    await prisma.user.update({
+      where: { id: existing.id },
+      data: { password: await hashPassword(app.loginPassword) },
+    });
     return { userId: existing.id, internDbId: intern.id, wasExisting: true };
   }
 
