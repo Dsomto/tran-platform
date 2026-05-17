@@ -1,13 +1,17 @@
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { redirect } from "next/navigation";
 import StageShell from "@/components/stage/StageShell";
 import { STAGE_THEMES } from "@/components/stage/themes";
 import { BoardRecap } from "@/components/stage/BoardRecap";
-import { CapstoneReminder } from "@/components/stage/CapstoneReminder";
+import { StageJourneyMap } from "@/components/stage/StageJourneyMap";
+import { previewOf } from "@/components/stage/BoardTaskList";
 import { getStageAccess } from "@/lib/stage-access";
 import { stageUrl } from "@/lib/stage-routes";
 import { getBoardData } from "@/lib/stage-board";
 import { STAGE_BRIEFS } from "@/lib/stage-briefs";
+import { STAGE_STORIES, TOTAL_CHAPTERS } from "@/lib/stage-story";
+import { STAGE_LANDING_THEMES } from "@/lib/stage-landing-theme";
 
 function statusLabel(status: string | undefined | null): { label: string; tone: "pending" | "submitted" | "graded" | "late" } {
   const s = (status ?? "").toUpperCase();
@@ -23,9 +27,12 @@ export default async function Stage3BoardPage() {
     if (result.reason === "no-session") redirect("/login");
     redirect("/dashboard");
   }
-  const { internId, internCode } = result.access;
+  const { internId, internCode, firstName } = result.access;
 
   const theme = STAGE_THEMES["stage-3"];
+  const lt = STAGE_LANDING_THEMES["stage-3"];
+  const story = STAGE_STORIES["stage-3"];
+  const brief = STAGE_BRIEFS.STAGE_3;
 
   const { room, subByAssignment, allGraded } = await getBoardData(
     internId,
@@ -46,10 +53,8 @@ export default async function Stage3BoardPage() {
     );
   }
 
-  const completed = room.assignments.filter((a) => {
-    const sub = subByAssignment.get(a.id);
-    return sub && (sub.status === "GRADED" || sub.status === "SUBMITTED");
-  }).length;
+  const doneCount = room.assignments.filter((a) => subByAssignment.has(a.id)).length;
+  const nextChapter = story.chapter < TOTAL_CHAPTERS ? story.chapter + 1 : null;
 
   const toneStyles: Record<string, { bg: string; color: string; border: string }> = {
     pending: { bg: "rgba(251, 191, 36, 0.06)", color: "#fde68a", border: "rgba(251, 146, 60, 0.3)" },
@@ -62,34 +67,25 @@ export default async function Stage3BoardPage() {
     <StageShell theme={theme} internCode={internCode}>
       <div className="space-y-8">
         <BoardRecap
-          brief={STAGE_BRIEFS.STAGE_3}
+          brief={brief}
+          story={story}
+          firstName={firstName}
           landingHref={stageUrl("stage-3")}
+          capstoneHref={`${stageUrl("stage-3")}#capstone`}
           submitHref="/dashboard/reports/STAGE_3"
-          theme={{
-            panelClass: "stage-3-panel",
-            headingClass: "stage-3-heading",
-            pillClass: "stage-3-pill",
-            accentTextClass: "text-amber-400",
-            bodyTextClass: "text-amber-50/85",
-            mutedTextClass: "text-amber-200/55",
-            ctaBgClass: "bg-amber-500",
-            ctaHoverClass: "hover:bg-amber-600",
-            dividerClass: "border-amber-500/20",
-          }}
+          doneCount={doneCount}
+          totalCount={room.assignments.length}
+          theme={lt}
         />
 
-        <CapstoneReminder
+        <StageJourneyMap
+          theme={lt}
+          current="board"
           landingHref={stageUrl("stage-3")}
-          theme={{
-            panelClass: "stage-3-panel",
-            headingClass: "stage-3-heading",
-            accentTextClass: "text-amber-400",
-            bodyTextClass: "text-amber-50/85",
-            mutedTextClass: "text-amber-200/55",
-            ctaBgClass: "bg-amber-500",
-            ctaHoverClass: "hover:bg-amber-600",
-            dividerClass: "border-amber-500/20",
-          }}
+          boardHref={stageUrl("stage-3", "/board")}
+          capstoneHref={`${stageUrl("stage-3")}#capstone`}
+          submitHref="/dashboard/reports/STAGE_3"
+          nextChapter={nextChapter}
         />
 
         <section>
@@ -103,7 +99,7 @@ export default async function Stage3BoardPage() {
             <div className="text-right">
               <div className="stage-3-row-index">STATUS</div>
               <div className="font-mono text-sm text-amber-200">
-                {completed.toString().padStart(2, "0")} / {String(Math.max(room.assignments.length, 10)).padStart(2, "0")} logged
+                {doneCount.toString().padStart(2, "0")} / {String(room.assignments.length).padStart(2, "0")} logged
               </div>
               <div className="stage-3-threat-bar w-32 mt-1" />
             </div>
@@ -118,7 +114,7 @@ export default async function Stage3BoardPage() {
                 <Link
                   key={a.id}
                   href={stageUrl("stage-3", `/tasks/${a.order}`)}
-                  className="stage-3-panel p-5 transition block group"
+                  className="stage-3-panel stage-3-card p-5 transition block group"
                 >
                   <div className="flex items-center justify-between mb-3">
                     <span className="stage-3-pill">
@@ -141,6 +137,9 @@ export default async function Stage3BoardPage() {
                   <h3 className="font-semibold text-amber-50 group-hover:text-amber-300 transition leading-snug">
                     {a.title}
                   </h3>
+                  <p className="mt-1.5 text-[12px] leading-relaxed text-amber-200/55">
+                    {previewOf(a.description)}
+                  </p>
                   <div className="mt-3 flex items-center justify-between text-[10.5px] font-mono text-amber-200/55 tracking-wider uppercase">
                     <span>{a.widget.replace(/_/g, " ")}</span>
                     <span className="text-amber-300/80">{a.maxPoints} pts</span>
@@ -148,17 +147,6 @@ export default async function Stage3BoardPage() {
                 </Link>
               );
             })}
-            {Array.from({ length: Math.max(0, 10 - room.assignments.length) }).map((_, i) => (
-              <div
-                key={`placeholder-${i}`}
-                className="rounded-sm border border-dashed border-amber-400/12 p-5 text-amber-200/25 text-[11px] font-mono uppercase tracking-widest"
-              >
-                <div>awaiting exhibit</div>
-                <div className="mt-1 font-bold text-amber-400/30">
-                  {String(room.assignments.length + i + 1).padStart(3, "0")}
-                </div>
-              </div>
-            ))}
           </div>
         </section>
 
@@ -189,6 +177,23 @@ export default async function Stage3BoardPage() {
               </span>
             )}
           </div>
+          {allGraded && (
+            <div className="mt-5 pt-5 border-t border-amber-500/20">
+              <p
+                className="text-[15px] text-amber-50/90 leading-relaxed"
+                style={{ fontFamily: "Georgia, serif" }}
+              >
+                {story.cliffhanger}
+              </p>
+              <Link
+                href="/dashboard"
+                className="mt-4 inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-[0.14em] text-white bg-amber-500 hover:bg-amber-600 transition-colors"
+              >
+                Continue to the next chapter
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+          )}
         </section>
       </div>
     </StageShell>

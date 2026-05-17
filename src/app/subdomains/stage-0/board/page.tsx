@@ -1,21 +1,17 @@
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { redirect } from "next/navigation";
 import StageShell from "@/components/stage/StageShell";
 import { STAGE_THEMES } from "@/components/stage/themes";
 import { BoardRecap } from "@/components/stage/BoardRecap";
-import { CapstoneReminder } from "@/components/stage/CapstoneReminder";
+import { BoardTaskList } from "@/components/stage/BoardTaskList";
+import { StageJourneyMap } from "@/components/stage/StageJourneyMap";
 import { getStageAccess } from "@/lib/stage-access";
 import { stageUrl } from "@/lib/stage-routes";
 import { getBoardData } from "@/lib/stage-board";
 import { STAGE_BRIEFS } from "@/lib/stage-briefs";
-
-function statusLabel(status: string | undefined | null): { label: string; tone: "pending" | "submitted" | "graded" | "late" } {
-  const s = (status ?? "").toUpperCase();
-  if (s === "GRADED") return { label: "graded", tone: "graded" };
-  if (s === "LATE") return { label: "late", tone: "late" };
-  if (s === "SUBMITTED" || s === "PENDING_REVIEW") return { label: "submitted", tone: "submitted" };
-  return { label: "pending", tone: "pending" };
-}
+import { STAGE_STORIES, TOTAL_CHAPTERS } from "@/lib/stage-story";
+import { STAGE_LANDING_THEMES } from "@/lib/stage-landing-theme";
 
 export default async function Stage0BoardPage() {
   const result = await getStageAccess("stage-0");
@@ -23,9 +19,12 @@ export default async function Stage0BoardPage() {
     if (result.reason === "no-session") redirect("/login");
     redirect("/dashboard");
   }
-  const { internId, internCode } = result.access;
+  const { internId, internCode, firstName } = result.access;
 
   const theme = STAGE_THEMES["stage-0"];
+  const lt = STAGE_LANDING_THEMES["stage-0"];
+  const story = STAGE_STORIES["stage-0"];
+  const brief = STAGE_BRIEFS.STAGE_0;
 
   const { room, subByAssignment, allGraded } = await getBoardData(
     internId,
@@ -45,101 +44,60 @@ export default async function Stage0BoardPage() {
     );
   }
 
-  const toneStyles: Record<string, { bg: string; color: string; border: string }> = {
-    pending: { bg: "#f5f5f5", color: "#737373", border: "#e5e5e5" },
-    submitted: { bg: "#fef3c7", color: "#b45309", border: "rgba(217, 119, 6, 0.35)" },
-    graded: { bg: "#d1fae5", color: "#047857", border: "rgba(5, 150, 105, 0.45)" },
-    late: { bg: "#fee2e2", color: "#b91c1c", border: "rgba(220, 38, 38, 0.35)" },
-  };
+  const doneCount = room.assignments.filter((a) => subByAssignment.has(a.id)).length;
+  const totalCount = room.assignments.length;
+  const nextChapter = story.chapter < TOTAL_CHAPTERS ? story.chapter + 1 : null;
+
+  const tasks = room.assignments.map((a) => ({
+    id: a.id,
+    order: a.order ?? 0,
+    title: a.title,
+    description: a.description,
+    maxPoints: a.maxPoints,
+    widget: a.widget,
+  }));
+  const statusByTask = new Map(
+    room.assignments.map((a) => [a.id, subByAssignment.get(a.id)?.status as string | undefined])
+  );
 
   return (
     <StageShell theme={theme} internCode={internCode}>
       <div className="space-y-8">
         <BoardRecap
-          brief={STAGE_BRIEFS.STAGE_0}
+          brief={brief}
+          story={story}
+          firstName={firstName}
           landingHref={stageUrl("stage-0")}
+          capstoneHref={`${stageUrl("stage-0")}#capstone`}
           submitHref="/dashboard/reports/STAGE_0"
-          theme={{
-            panelClass: "stage-0-panel",
-            headingClass: "stage-0-heading",
-            pillClass: "stage-0-pill",
-            accentTextClass: "text-emerald-700",
-            bodyTextClass: "text-neutral-700",
-            mutedTextClass: "text-neutral-500",
-            ctaBgClass: "bg-emerald-600",
-            ctaHoverClass: "hover:bg-emerald-700",
-            dividerClass: "border-neutral-200",
-          }}
+          doneCount={doneCount}
+          totalCount={totalCount}
+          theme={lt}
         />
 
-        <CapstoneReminder
+        <StageJourneyMap
+          theme={lt}
+          current="board"
           landingHref={stageUrl("stage-0")}
-          theme={{
-            panelClass: "stage-0-panel",
-            headingClass: "stage-0-heading",
-            accentTextClass: "text-emerald-700",
-            bodyTextClass: "text-neutral-700",
-            mutedTextClass: "text-neutral-500",
-            ctaBgClass: "bg-emerald-600",
-            ctaHoverClass: "hover:bg-emerald-700",
-            dividerClass: "border-neutral-200",
-          }}
+          boardHref={stageUrl("stage-0", "/board")}
+          capstoneHref={`${stageUrl("stage-0")}#capstone`}
+          submitHref="/dashboard/reports/STAGE_0"
+          nextChapter={nextChapter}
         />
 
         <section>
           <div className="flex items-end justify-between mb-4">
-            <h2 className="stage-0-heading text-xl">Tasks</h2>
+            <h2 className="stage-0-heading text-xl">The desk queue</h2>
             <span className="text-xs font-mono text-neutral-500">
-              {room.assignments.length} / 10 logged
+              {room.assignments.length} tasks
             </span>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {room.assignments.map((a) => {
-              const sub = subByAssignment.get(a.id);
-              const s = statusLabel(sub?.status as string | undefined);
-              const toneStyle = toneStyles[s.tone];
-              return (
-                <Link
-                  key={a.id}
-                  href={stageUrl("stage-0", `/tasks/${a.order}`)}
-                  className="stage-0-panel p-5 transition block group"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="stage-0-pill">
-                      <span className="opacity-70">TASK</span>
-                      <span className="font-semibold">
-                        {String(a.order).padStart(2, "0")}
-                      </span>
-                    </span>
-                    <span
-                      className="text-[11px] px-2 py-0.5 rounded-full font-mono uppercase tracking-wide"
-                      style={{
-                        backgroundColor: toneStyle.bg,
-                        color: toneStyle.color,
-                        border: `1px solid ${toneStyle.border}`,
-                      }}
-                    >
-                      {s.label}
-                    </span>
-                  </div>
-                  <h3 className="mt-3 font-semibold text-neutral-900 group-hover:text-emerald-700 transition">
-                    {a.title}
-                  </h3>
-                  <p className="mt-1 text-xs font-mono text-neutral-500">
-                    {a.maxPoints} pts · {a.widget.replace(/_/g, " ").toLowerCase()}
-                  </p>
-                </Link>
-              );
-            })}
-            {Array.from({ length: Math.max(0, 10 - room.assignments.length) }).map((_, i) => (
-              <div
-                key={`placeholder-${i}`}
-                className="rounded-2xl border border-dashed border-neutral-300 p-5 text-neutral-400 text-xs font-mono"
-              >
-                awaiting task {String(room.assignments.length + i + 1).padStart(2, "0")}
-              </div>
-            ))}
-          </div>
+          <BoardTaskList
+            slug="stage-0"
+            theme={lt}
+            tasks={tasks}
+            statusByTask={statusByTask}
+          />
         </section>
 
         <section className="stage-0-panel p-6">
@@ -151,19 +109,36 @@ export default async function Stage0BoardPage() {
             <span
               className="text-[11px] px-2 py-0.5 rounded-full font-mono uppercase tracking-wide"
               style={{
-                backgroundColor: allGraded ? "rgba(52, 211, 153, 0.2)" : "rgba(52, 211, 153, 0.08)",
-                color: allGraded ? "#34d399" : "#6ee7b7",
-                border: `1px solid ${allGraded ? "rgba(52, 211, 153, 0.55)" : "rgba(52, 211, 153, 0.25)"}`,
+                backgroundColor: allGraded ? "rgba(5, 150, 105, 0.18)" : "rgba(5, 150, 105, 0.06)",
+                color: allGraded ? "#047857" : "#6b7280",
+                border: `1px solid ${allGraded ? "rgba(5, 150, 105, 0.4)" : "rgba(5, 150, 105, 0.2)"}`,
               }}
             >
               {allGraded ? "unlocked" : "locked"}
             </span>
           </div>
-          <p className="mt-3 text-sm text-emerald-700/85 whitespace-pre-wrap leading-relaxed">
+          <p className="mt-3 text-sm text-neutral-600 whitespace-pre-wrap leading-relaxed">
             {allGraded
               ? room.debrief
-              : "Complete and graded all ten inductions to unlock Amaka's debrief."}
+              : "Complete and pass all ten inductions to unlock Amaka's debrief."}
           </p>
+          {allGraded && (
+            <div className="mt-5 pt-5 border-t border-neutral-200">
+              <p
+                className="text-[15px] text-neutral-700 leading-relaxed"
+                style={{ fontFamily: "Georgia, serif" }}
+              >
+                {story.cliffhanger}
+              </p>
+              <Link
+                href="/dashboard"
+                className="mt-4 inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-[0.14em] text-white bg-emerald-600 hover:bg-emerald-700 transition-colors"
+              >
+                Continue to the next chapter
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+          )}
         </section>
       </div>
     </StageShell>

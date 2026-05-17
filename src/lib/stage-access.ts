@@ -13,6 +13,10 @@ export interface StageAccess {
   stageSlug: StageSlug;
   /** First + last name from the user's account — used for NDA validation. */
   fullName: string;
+  /** Given name on its own — used to personalise stage briefings. */
+  firstName: string;
+  /** Family name on its own. */
+  lastName: string;
   /** ISO timestamp when this intern signed the NDA, or null. */
   ndaSignedAt: string | null;
 }
@@ -91,6 +95,8 @@ export async function getStageAccess(
       userId: session.id,
       stageSlug: slug,
       fullName: `${session.firstName} ${session.lastName}`.trim(),
+      firstName: session.firstName.trim(),
+      lastName: session.lastName.trim(),
       ndaSignedAt: intern.ndaSignedAt?.toISOString() ?? null,
     },
   };

@@ -5,6 +5,8 @@ import { StageLanding } from "@/components/stage/StageLanding";
 import { getStageAccess } from "@/lib/stage-access";
 import { stageUrl } from "@/lib/stage-routes";
 import { STAGE_BRIEFS } from "@/lib/stage-briefs";
+import { STAGE_STORIES } from "@/lib/stage-story";
+import { STAGE_LANDING_THEMES } from "@/lib/stage-landing-theme";
 
 export default async function Stage3LandingPage() {
   const result = await getStageAccess("stage-3");
@@ -12,34 +14,23 @@ export default async function Stage3LandingPage() {
     if (result.reason === "no-session") redirect("/login");
     redirect("/dashboard");
   }
-  const { internCode, ndaSignedAt } = result.access;
+  const { internCode, firstName, ndaSignedAt } = result.access;
 
   if (!ndaSignedAt) {
     redirect(`/dashboard/onboarding?next=${encodeURIComponent(stageUrl("stage-3"))}`);
   }
 
-  const theme = STAGE_THEMES["stage-3"];
-  const brief = STAGE_BRIEFS.STAGE_3;
-
   return (
-    <StageShell theme={theme} internCode={internCode}>
+    <StageShell theme={STAGE_THEMES["stage-3"]} internCode={internCode}>
       <StageLanding
-        brief={brief}
+        brief={STAGE_BRIEFS.STAGE_3}
+        story={STAGE_STORIES["stage-3"]}
+        theme={STAGE_LANDING_THEMES["stage-3"]}
         boardHref={stageUrl("stage-3", "/board")}
-        companyName="Sankofa Digital · Chapter 4"
-        welcomeLine="The Griot is inside. Workstation 10.0.1.87 is in quarantine. Dami flew in this morning to lead the investigation. Counsel is already downstairs, asking what the timeline says. You don't have the timeline yet."
-        theme={{
-          slug: "stage-3",
-          panelClass: "stage-3-panel",
-          headingClass: "stage-3-heading",
-          pillClass: "stage-3-pill",
-          accentTextClass: "text-amber-400",
-          bodyTextClass: "text-amber-50/85",
-          mutedTextClass: "text-amber-200/55",
-          ctaBgClass: "bg-amber-500",
-          ctaHoverClass: "hover:bg-amber-600",
-          dividerClass: "border-amber-500/20",
-        }}
+        submitHref="/dashboard/reports/STAGE_3"
+        companyName="Sankofa Digital"
+        firstName={firstName}
+        internCode={internCode}
       />
     </StageShell>
   );

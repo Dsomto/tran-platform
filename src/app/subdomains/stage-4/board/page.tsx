@@ -3,11 +3,14 @@ import { redirect } from "next/navigation";
 import StageShell from "@/components/stage/StageShell";
 import { STAGE_THEMES } from "@/components/stage/themes";
 import { BoardRecap } from "@/components/stage/BoardRecap";
-import { CapstoneReminder } from "@/components/stage/CapstoneReminder";
+import { StageJourneyMap } from "@/components/stage/StageJourneyMap";
+import { previewOf } from "@/components/stage/BoardTaskList";
 import { getStageAccess } from "@/lib/stage-access";
 import { stageUrl } from "@/lib/stage-routes";
 import { getBoardData } from "@/lib/stage-board";
 import { STAGE_BRIEFS } from "@/lib/stage-briefs";
+import { STAGE_STORIES, TOTAL_CHAPTERS } from "@/lib/stage-story";
+import { STAGE_LANDING_THEMES } from "@/lib/stage-landing-theme";
 
 function statusLabel(status: string | undefined | null): { label: string; tone: "pending" | "submitted" | "graded" | "late" } {
   const s = (status ?? "").toUpperCase();
@@ -23,9 +26,12 @@ export default async function Stage4BoardPage() {
     if (result.reason === "no-session") redirect("/login");
     redirect("/dashboard");
   }
-  const { internId, internCode } = result.access;
+  const { internId, internCode, firstName } = result.access;
 
   const theme = STAGE_THEMES["stage-4"];
+  const lt = STAGE_LANDING_THEMES["stage-4"];
+  const story = STAGE_STORIES["stage-4"];
+  const brief = STAGE_BRIEFS.STAGE_4;
 
   const { room, subByAssignment, allGraded } = await getBoardData(
     internId,
@@ -47,15 +53,8 @@ export default async function Stage4BoardPage() {
     );
   }
 
-  const cleared = room.assignments.filter((a) => {
-    const sub = subByAssignment.get(a.id);
-    return sub && sub.status === "GRADED";
-  }).length;
-
-  const pointsEarned = room.assignments.reduce((total, a) => {
-    const sub = subByAssignment.get(a.id);
-    return total + (sub?.score ?? 0);
-  }, 0);
+  const doneCount = room.assignments.filter((a) => subByAssignment.has(a.id)).length;
+  const nextChapter = story.chapter < TOTAL_CHAPTERS ? story.chapter + 1 : null;
 
   const toneStyles: Record<string, { bg: string; color: string; border: string }> = {
     pending: { bg: "rgba(103, 232, 249, 0.06)", color: "#bae6fd", border: "rgba(103, 232, 249, 0.3)" },
@@ -68,60 +67,39 @@ export default async function Stage4BoardPage() {
     <StageShell theme={theme} internCode={internCode}>
       <div className="space-y-10">
         <BoardRecap
-          brief={STAGE_BRIEFS.STAGE_4}
+          brief={brief}
+          story={story}
+          firstName={firstName}
           landingHref={stageUrl("stage-4")}
+          capstoneHref={`${stageUrl("stage-4")}#capstone`}
           submitHref="/dashboard/reports/STAGE_4"
-          theme={{
-            panelClass: "stage-4-panel",
-            headingClass: "stage-4-heading",
-            pillClass: "stage-4-pill",
-            accentTextClass: "text-cyan-300",
-            bodyTextClass: "text-cyan-50/85",
-            mutedTextClass: "text-cyan-200/55",
-            ctaBgClass: "bg-cyan-500",
-            ctaHoverClass: "hover:bg-cyan-600",
-            dividerClass: "border-cyan-400/20",
-          }}
+          doneCount={doneCount}
+          totalCount={room.assignments.length}
+          theme={lt}
         />
 
-        <CapstoneReminder
+        <StageJourneyMap
+          theme={lt}
+          current="board"
           landingHref={stageUrl("stage-4")}
-          theme={{
-            panelClass: "stage-4-panel",
-            headingClass: "stage-4-heading",
-            accentTextClass: "text-cyan-300",
-            bodyTextClass: "text-cyan-50/85",
-            mutedTextClass: "text-cyan-200/55",
-            ctaBgClass: "bg-cyan-500",
-            ctaHoverClass: "hover:bg-cyan-600",
-            dividerClass: "border-cyan-400/20",
-          }}
+          boardHref={stageUrl("stage-4", "/board")}
+          capstoneHref={`${stageUrl("stage-4")}#capstone`}
+          submitHref="/dashboard/reports/STAGE_4"
+          nextChapter={nextChapter}
         />
 
-        <section className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <section className="grid grid-cols-2 gap-4">
           <div className="stage-4-kpi">
             <p className="stage-4-kpi-label">Agenda items</p>
             <p className="stage-4-kpi-value">
-              {cleared} / {Math.max(room.assignments.length, 10)}
+              {doneCount} / {room.assignments.length}
             </p>
-            <p className="mt-1 text-[11px] text-cyan-200/55">cleared by chair</p>
+            <p className="mt-1 text-[11px] text-cyan-200/55">walked through</p>
           </div>
           <div className="stage-4-kpi">
-            <p className="stage-4-kpi-label">Points earned</p>
-            <p className="stage-4-kpi-value">{pointsEarned}</p>
-            <p className="mt-1 text-[11px] text-cyan-200/55">of {room.totalPoints}</p>
-          </div>
-          <div className="stage-4-kpi">
-            <p className="stage-4-kpi-label">Pass threshold</p>
+            <p className="stage-4-kpi-label">Pass mark</p>
             <p className="stage-4-kpi-value">{room.passThreshold}%</p>
-            <p className="mt-1 text-[11px] text-cyan-200/55">required to advance</p>
-          </div>
-          <div className="stage-4-kpi">
-            <p className="stage-4-kpi-label">Outcome</p>
-            <p className="stage-4-kpi-value" style={{ color: allGraded ? "#86efac" : "#bae6fd" }}>
-              {allGraded ? "Ready" : "In progress"}
-            </p>
-            <p className="mt-1 text-[11px] text-cyan-200/55">track selection</p>
+            <p className="mt-1 text-[11px] text-cyan-200/55">on your stage report</p>
           </div>
         </section>
 
@@ -143,7 +121,7 @@ export default async function Stage4BoardPage() {
                 <Link
                   key={a.id}
                   href={stageUrl("stage-4", `/tasks/${a.order}`)}
-                  className="stage-4-panel p-5 transition block group"
+                  className="stage-4-panel stage-4-card p-5 transition block group"
                 >
                   <div className="flex items-center justify-between mb-3">
                     <span className="stage-4-pill">
@@ -169,6 +147,9 @@ export default async function Stage4BoardPage() {
                   >
                     {a.title}
                   </h3>
+                  <p className="mt-1.5 text-[12px] leading-relaxed text-cyan-200/55">
+                    {previewOf(a.description)}
+                  </p>
                   <div className="mt-3 flex items-center justify-between text-[10.5px] font-mono text-cyan-200/55 tracking-[0.15em] uppercase">
                     <span>{a.widget.replace(/_/g, " ").toLowerCase()}</span>
                     <span className="text-cyan-300/80 font-semibold">{a.maxPoints} pts</span>
@@ -176,17 +157,6 @@ export default async function Stage4BoardPage() {
                 </Link>
               );
             })}
-            {Array.from({ length: Math.max(0, 10 - room.assignments.length) }).map((_, i) => (
-              <div
-                key={`placeholder-${i}`}
-                className="rounded-sm border border-dashed border-cyan-400/15 p-5 text-cyan-200/30 text-[11px] font-mono uppercase tracking-[0.18em]"
-              >
-                <div>awaiting agenda</div>
-                <div className="mt-1 font-bold text-cyan-400/35" style={{ fontFamily: "Georgia, serif", fontSize: 22 }}>
-                  {String.fromCharCode(65 + room.assignments.length + i)}
-                </div>
-              </div>
-            ))}
           </div>
         </section>
 
@@ -209,12 +179,28 @@ export default async function Stage4BoardPage() {
           </div>
 
           {allGraded ? (
-            <p
-              className="text-cyan-50/85 whitespace-pre-wrap leading-relaxed"
-              style={{ fontFamily: "Georgia, serif", fontSize: 16 }}
-            >
-              {room.debrief}
-            </p>
+            <div className="space-y-5">
+              <p
+                className="text-cyan-50/85 whitespace-pre-wrap leading-relaxed"
+                style={{ fontFamily: "Georgia, serif", fontSize: 16 }}
+              >
+                {room.debrief}
+              </p>
+              <div className="pt-5 border-t border-cyan-400/20">
+                <p
+                  className="text-[15px] text-cyan-50/90 leading-relaxed"
+                  style={{ fontFamily: "Georgia, serif" }}
+                >
+                  {story.cliffhanger}
+                </p>
+                <Link
+                  href="/dashboard"
+                  className="mt-4 inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-[0.14em] text-white bg-cyan-500 hover:bg-cyan-600 transition-colors"
+                >
+                  Return to your dashboard
+                </Link>
+              </div>
+            </div>
           ) : (
             <div className="space-y-3">
               <p className="text-cyan-100/70 italic text-[15px]" style={{ fontFamily: "Georgia, serif" }}>

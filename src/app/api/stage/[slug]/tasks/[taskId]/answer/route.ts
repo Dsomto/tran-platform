@@ -3,14 +3,18 @@ import { logger } from "@/lib/logger";
 import { STAGE_SLUGS, STAGE_SLUG_TO_ENUM, StageSlug } from "@/lib/stage-login";
 import { getStageAccess } from "@/lib/stage-access";
 import { autoGradeSubmission, contentFromAnswer } from "@/lib/auto-grade";
-import { awardPoints, maybeAdvanceStage } from "@/lib/advance-stage";
+import { awardPoints } from "@/lib/advance-stage";
 
 /**
  * POST /api/stage/[slug]/tasks/[taskId]/answer
  *
  * Accepts { answer: Record<string, unknown> } — the submission payload.
- * Performs auto-grading for FLAG / MCQ tasks, stores the submission, awards
- * points, and (when the room is cleared) advances the intern's stage.
+ * Performs auto-grading for FLAG / MCQ tasks, stores the submission, and
+ * awards leaderboard points.
+ *
+ * Stage advancement is intentionally NOT done here. Interns advance only
+ * when an admin publishes a stage's results (capstone-driven) and opens the
+ * next stage's window — board tasks never auto-promote anyone.
  */
 export async function POST(
   request: Request,
@@ -85,15 +89,12 @@ export async function POST(
       );
     }
 
-    const advance = grade.autoGraded ? await maybeAdvanceStage(internId) : null;
-
     return Response.json({
       submissionId: submission.id,
       status: submission.status,
       score: submission.score,
       feedback: submission.feedback,
       autoGraded: grade.autoGraded,
-      advance,
     });
   } catch (err) {
     logger.error("stage_answer_failed", err);

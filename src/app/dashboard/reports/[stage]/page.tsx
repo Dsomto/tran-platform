@@ -4,6 +4,8 @@ import { Lock } from "lucide-react";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { STAGE_BRIEFS } from "@/lib/stage-briefs";
+import { STAGE_STORIES } from "@/lib/stage-story";
+import type { StageSlug } from "@/lib/stage-routes";
 import { ReportEditor } from "./report-editor";
 
 type StageKey = keyof typeof STAGE_BRIEFS;
@@ -67,6 +69,10 @@ export default async function ReportEditorPage({
     );
   }
 
+  // "STAGE_0" -> "stage-0" so we can pull the chapter's narrative.
+  const storySlug = `stage-${stage.split("_")[1]}` as StageSlug;
+  const story = STAGE_STORIES[storySlug];
+
   return (
     <ReportEditor
       stage={stage}
@@ -74,6 +80,13 @@ export default async function ReportEditorPage({
       stageSubtitle={brief.subtitle}
       storyline={brief.missionBrief[0] ?? ""}
       sectionHints={brief.sections}
+      chapter={story.chapter}
+      reportTo={story.reportTo}
+      folderContents={brief.practicalTasks.map((t) => ({
+        id: t.id,
+        title: t.title,
+        deliverable: t.deliverable,
+      }))}
       initialReport={
         existing
           ? {

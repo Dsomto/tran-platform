@@ -5,6 +5,8 @@ import { StageLanding } from "@/components/stage/StageLanding";
 import { getStageAccess } from "@/lib/stage-access";
 import { stageUrl } from "@/lib/stage-routes";
 import { STAGE_BRIEFS } from "@/lib/stage-briefs";
+import { STAGE_STORIES } from "@/lib/stage-story";
+import { STAGE_LANDING_THEMES } from "@/lib/stage-landing-theme";
 
 export default async function Stage4LandingPage() {
   const result = await getStageAccess("stage-4");
@@ -12,34 +14,23 @@ export default async function Stage4LandingPage() {
     if (result.reason === "no-session") redirect("/login");
     redirect("/dashboard");
   }
-  const { internCode, ndaSignedAt } = result.access;
+  const { internCode, firstName, ndaSignedAt } = result.access;
 
   if (!ndaSignedAt) {
     redirect(`/dashboard/onboarding?next=${encodeURIComponent(stageUrl("stage-4"))}`);
   }
 
-  const theme = STAGE_THEMES["stage-4"];
-  const brief = STAGE_BRIEFS.STAGE_4;
-
   return (
-    <StageShell theme={theme} internCode={internCode}>
+    <StageShell theme={STAGE_THEMES["stage-4"]} internCode={internCode}>
       <StageLanding
-        brief={brief}
+        brief={STAGE_BRIEFS.STAGE_4}
+        story={STAGE_STORIES["stage-4"]}
+        theme={STAGE_LANDING_THEMES["stage-4"]}
         boardHref={stageUrl("stage-4", "/board")}
-        companyName="Sankofa Digital · The Boardroom"
-        welcomeLine="Tomorrow at 09:00 the board sits. Adaeze, Babatunde, Chief Wale. They want three answers: did customer PII leave, are we in breach of GDPR, what does next year of security spend look like. Counsel is at the table with you."
-        theme={{
-          slug: "stage-4",
-          panelClass: "stage-4-panel",
-          headingClass: "stage-4-heading",
-          pillClass: "stage-4-pill",
-          accentTextClass: "text-cyan-300",
-          bodyTextClass: "text-cyan-50/85",
-          mutedTextClass: "text-cyan-200/55",
-          ctaBgClass: "bg-cyan-500",
-          ctaHoverClass: "hover:bg-cyan-600",
-          dividerClass: "border-cyan-400/20",
-        }}
+        submitHref="/dashboard/reports/STAGE_4"
+        companyName="Sankofa Digital"
+        firstName={firstName}
+        internCode={internCode}
       />
     </StageShell>
   );

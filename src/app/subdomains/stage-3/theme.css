@@ -126,7 +126,7 @@
   border-right: 2px solid;
 }
 
-.stage-3-panel:hover {
+.stage-3-card:hover {
   border-color: rgba(251, 191, 36, 0.4);
   transform: translateY(-1px);
   box-shadow:

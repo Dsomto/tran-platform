@@ -1,12 +1,10 @@
 import Link from "next/link";
 import {
   ArrowRight,
-  Building2,
   Target,
   Users,
   Wrench,
   BookOpen,
-  ClipboardList,
   CheckCircle2,
   FolderOpen,
   Quote,
@@ -18,67 +16,48 @@ import {
   MessageCircle,
   Megaphone,
   Sparkles,
+  ShieldCheck,
+  ListChecks,
+  MapPin,
+  Mail,
+  History,
 } from "lucide-react";
 import type { StageBrief, CastMember, BulletinKind } from "@/lib/stage-briefs";
+import type { StageLandingTheme } from "@/lib/stage-landing-theme";
+import {
+  type StageStory,
+  personalise,
+  CHAPTER_TITLES,
+  TOTAL_CHAPTERS,
+} from "@/lib/stage-story";
 import { PrintBriefButton } from "./PrintBriefButton";
-
-export interface StageLandingTheme {
-  slug: string;
-  panelClass: string;
-  headingClass: string;
-  pillClass: string;
-  accentTextClass: string;
-  bodyTextClass: string;
-  mutedTextClass: string;
-  ctaBgClass: string;
-  ctaHoverClass: string;
-  dividerClass: string;
-}
+import { StageJourneyMap } from "./StageJourneyMap";
 
 interface Props {
   brief: StageBrief;
+  story: StageStory;
   theme: StageLandingTheme;
   boardHref: string;
+  /** `/dashboard/reports/STAGE_X` — where the capstone is submitted. */
+  submitHref: string;
   /** Company / chapter name shown in the hero strip. */
   companyName: string;
-  /** Lead paragraph on the hero. */
-  welcomeLine: string;
+  /** Given name of the signed-in intern, for the briefing. */
+  firstName: string;
+  /** The intern's code, e.g. UBI-2026-0001. */
+  internCode: string;
 }
 
 function alignmentClasses(alignment: CastMember["alignment"]) {
   switch (alignment) {
     case "ally":
-      return {
-        ring: "ring-emerald-400/40",
-        bg: "bg-emerald-500/15",
-        text: "text-emerald-300",
-        badge: "bg-emerald-500/15 text-emerald-200 border-emerald-500/30",
-        label: "Ally",
-      };
+      return { ring: "ring-emerald-400/40", bg: "bg-emerald-500/15", text: "text-emerald-300", badge: "bg-emerald-500/15 text-emerald-200 border-emerald-500/30", label: "Ally" };
     case "peer":
-      return {
-        ring: "ring-blue-400/40",
-        bg: "bg-blue-500/15",
-        text: "text-blue-300",
-        badge: "bg-blue-500/15 text-blue-200 border-blue-500/30",
-        label: "Peer",
-      };
+      return { ring: "ring-blue-400/40", bg: "bg-blue-500/15", text: "text-blue-300", badge: "bg-blue-500/15 text-blue-200 border-blue-500/30", label: "Peer" };
     case "adversary":
-      return {
-        ring: "ring-rose-400/40",
-        bg: "bg-rose-500/15",
-        text: "text-rose-300",
-        badge: "bg-rose-500/15 text-rose-200 border-rose-500/30",
-        label: "Adversary",
-      };
+      return { ring: "ring-rose-400/40", bg: "bg-rose-500/15", text: "text-rose-300", badge: "bg-rose-500/15 text-rose-200 border-rose-500/30", label: "Adversary" };
     case "external":
-      return {
-        ring: "ring-amber-400/40",
-        bg: "bg-amber-500/15",
-        text: "text-amber-300",
-        badge: "bg-amber-500/15 text-amber-200 border-amber-500/30",
-        label: "Stakeholder",
-      };
+      return { ring: "ring-amber-400/40", bg: "bg-amber-500/15", text: "text-amber-300", badge: "bg-amber-500/15 text-amber-200 border-amber-500/30", label: "Stakeholder" };
   }
 }
 
@@ -94,65 +73,135 @@ function initialsOf(name: string): string {
 
 export function StageLanding({
   brief,
+  story,
   theme,
   boardHref,
+  submitHref,
   companyName,
-  welcomeLine,
+  firstName,
+  internCode,
 }: Props) {
+  const capstoneHref = "#capstone";
+  const nextChapter = story.chapter < TOTAL_CHAPTERS ? story.chapter + 1 : null;
+  const note = story.deskNote;
+
   return (
-    <div className="space-y-16 pb-20">
-      {/* ── Hero ───────────────────────────────────────────── */}
-      <section
-        className={`${theme.panelClass} relative overflow-hidden p-8 sm:p-14 lg:p-20`}
-      >
-        <div className="flex items-center gap-2.5 mb-6">
+    <div className="space-y-14 pb-20">
+      {/* ── Chapter progress rail ─────────────────────────── */}
+      <ChapterRail theme={theme} chapter={story.chapter} />
+
+      {/* ── Previously (chapters 2+) ──────────────────────── */}
+      {story.previously && (
+        <section className={`${theme.panelClass} p-5 sm:p-6`}>
+          <div className={`flex items-center gap-2 mb-2 text-[10.5px] font-mono uppercase tracking-[0.2em] ${theme.accentTextClass}`}>
+            <History className="w-3 h-3" />
+            Previously at {companyName}
+          </div>
+          <p className={`${theme.bodyTextClass} text-[15px] leading-relaxed`}>
+            {story.previously}
+          </p>
+        </section>
+      )}
+
+      {/* ── Hero — the internal briefing packet ───────────── */}
+      <section className={`${theme.panelClass} relative overflow-hidden p-7 sm:p-10 lg:p-12`}>
+        <div className="flex flex-wrap items-center gap-2.5 mb-5">
           <span className="relative flex w-2.5 h-2.5" aria-hidden="true">
             <span className={`${theme.ctaBgClass} absolute inset-0 rounded-full opacity-70 animate-ping`} />
             <span className={`${theme.ctaBgClass} relative inline-flex w-2.5 h-2.5 rounded-full`} />
           </span>
           <span className={`text-[10.5px] font-mono uppercase tracking-[0.25em] ${theme.accentTextClass}`}>
-            Mission active
+            Internal briefing
           </span>
-          <span className={`mx-2 h-3 w-px ${theme.dividerClass.replace("border-", "bg-")}`} aria-hidden="true" />
-          <span className={theme.pillClass}>{brief.label}</span>
+          <span className={`mx-1 h-3 w-px ${theme.dividerClass.replace("border-", "bg-")}`} aria-hidden="true" />
+          <span className={theme.pillClass}>
+            {brief.label} · Chapter {story.chapter} of {TOTAL_CHAPTERS}
+          </span>
         </div>
 
-        <div className="grid lg:grid-cols-[auto_1fr] gap-6 lg:gap-10 items-start">
-          <div
-            className={`hidden lg:grid w-24 h-24 rounded-2xl ${theme.ctaBgClass} place-items-center text-white shadow-2xl shrink-0`}
-          >
-            <Building2 className="w-12 h-12" />
-          </div>
-          <div className="min-w-0">
-            <p className={`text-xs sm:text-sm font-semibold uppercase tracking-[0.18em] mb-3 ${theme.accentTextClass}`}>
-              Welcome to {companyName}
-            </p>
-            <h1 className={`${theme.headingClass} text-4xl sm:text-5xl lg:text-6xl mb-5 tracking-tight`}>
-              {brief.subtitle}
-            </h1>
-            <p className={`${theme.bodyTextClass} text-lg sm:text-xl leading-relaxed max-w-3xl`}>
-              {welcomeLine}
-            </p>
+        <p className={`text-xs sm:text-sm font-semibold uppercase tracking-[0.18em] mb-2 ${theme.accentTextClass}`}>
+          {companyName}
+        </p>
+        <h1 className={`${theme.headingClass} text-3xl sm:text-5xl mb-3 tracking-tight`}>
+          Hi {firstName || "there"}.
+        </h1>
+        <h2 className={`${theme.bodyTextClass} text-xl sm:text-2xl font-semibold mb-5`}>
+          {brief.subtitle}
+        </h2>
 
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link
-                href={boardHref}
-                className={`${theme.ctaBgClass} ${theme.ctaHoverClass} inline-flex items-center gap-2 px-7 py-3.5 rounded-full text-sm font-bold uppercase tracking-[0.15em] text-white shadow-lg transition-opacity`}
-              >
-                Enter the mission board
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-              <PrintBriefButton
-                className={`inline-flex items-center gap-2 px-6 py-3.5 rounded-full text-sm font-semibold border ${theme.dividerClass} ${theme.bodyTextClass} hover:bg-white/5 transition-colors`}
-              />
+        {/* desk meta strip */}
+        <div className={`flex flex-wrap gap-x-5 gap-y-1.5 text-[12px] mb-7 ${theme.mutedTextClass}`}>
+          <span className="inline-flex items-center gap-1.5">
+            <MapPin className="w-3.5 h-3.5" /> {story.office}
+          </span>
+          <span className="inline-flex items-center gap-1.5 font-mono">
+            <ShieldCheck className="w-3.5 h-3.5" /> {internCode}
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <ListChecks className="w-3.5 h-3.5" /> Status: chapter open
+          </span>
+        </div>
+
+        {/* the note on the desk */}
+        <div className={`rounded-2xl border ${theme.dividerClass} ${theme.softBgClass} p-5 sm:p-6 mb-7`}>
+          <div className="flex items-center gap-3 mb-4">
+            <div className={`w-11 h-11 rounded-full grid place-items-center font-bold text-sm shrink-0 ${theme.ctaBgClass} text-white`} aria-hidden="true">
+              {initialsOf(note.from)}
+            </div>
+            <div className="min-w-0">
+              <div className={`${theme.bodyTextClass} text-sm font-semibold flex items-center gap-1.5`}>
+                <Mail className={`w-3.5 h-3.5 ${theme.accentTextClass}`} />
+                {note.from}
+              </div>
+              <div className={`${theme.mutedTextClass} text-[11.5px]`}>
+                {note.role} · note left on your desk
+              </div>
             </div>
           </div>
+          <div className="space-y-3" style={{ fontFamily: "Georgia, serif" }}>
+            {note.lines.map((line, i) => (
+              <p key={i} className={`${theme.bodyTextClass} text-[15px] leading-relaxed`}>
+                {personalise(line, firstName)}
+              </p>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex flex-wrap gap-3">
+          <Link
+            href={boardHref}
+            className={`${theme.ctaBgClass} ${theme.ctaHoverClass} inline-flex items-center gap-2 px-7 py-3.5 rounded-full text-sm font-bold uppercase tracking-[0.15em] text-white shadow-lg transition-opacity`}
+          >
+            Open the mission board
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+          <a
+            href={capstoneHref}
+            className={`inline-flex items-center gap-2 px-6 py-3.5 rounded-full text-sm font-semibold border ${theme.dividerClass} ${theme.bodyTextClass} hover:bg-white/5 transition-colors`}
+          >
+            <FolderOpen className="w-4 h-4" />
+            Review the capstone brief
+          </a>
+          <PrintBriefButton
+            className={`inline-flex items-center gap-2 px-6 py-3.5 rounded-full text-sm font-semibold border ${theme.dividerClass} ${theme.bodyTextClass} hover:bg-white/5 transition-colors`}
+          />
         </div>
       </section>
 
-      {/* ── About this stage ─────────────────────────────── */}
+      {/* ── Journey map — how the chapter fits together ───── */}
+      <StageJourneyMap
+        theme={theme}
+        current="briefing"
+        landingHref="#top"
+        boardHref={boardHref}
+        capstoneHref={capstoneHref}
+        submitHref={submitHref}
+        nextChapter={nextChapter}
+      />
+
+      {/* ── The case ──────────────────────────────────────── */}
       <section>
-        <SectionHeading icon={Target} accent={theme.accentTextClass} headingClass={theme.headingClass} eyebrow="About this chapter">
+        <SectionHeading icon={Target} accent={theme.accentTextClass} headingClass={theme.headingClass} eyebrow="The case">
           What you walked into
         </SectionHeading>
         <div className={`${theme.panelClass} p-7 sm:p-10 space-y-4`}>
@@ -161,32 +210,39 @@ export function StageLanding({
               {p}
             </p>
           ))}
+          <div className={`mt-5 pt-5 border-t ${theme.dividerClass} flex flex-wrap items-center gap-3`}>
+            <p className={`${theme.mutedTextClass} text-[13px] leading-relaxed flex-1 min-w-[240px]`}>
+              <ListChecks className={`inline w-3.5 h-3.5 mr-1.5 -translate-y-0.5 ${theme.accentTextClass}`} />
+              {story.tasksTeach}
+            </p>
+            <Link
+              href={boardHref}
+              className={`${theme.ctaBgClass} ${theme.ctaHoverClass} inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-[0.14em] text-white transition-opacity`}
+            >
+              Start the desk work
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
         </div>
       </section>
 
-      {/* ── Meet your coworkers ──────────────────────────── */}
+      {/* ── Meet your coworkers ───────────────────────────── */}
       <section>
-        <SectionHeading icon={Users} accent={theme.accentTextClass} headingClass={theme.headingClass} eyebrow="The cast">
-          Meet your coworkers
+        <SectionHeading icon={Users} accent={theme.accentTextClass} headingClass={theme.headingClass} eyebrow="The bench">
+          Who you are working with
         </SectionHeading>
         <p className={`${theme.mutedTextClass} text-sm mb-6 max-w-2xl`}>
-          These are the people whose work you&apos;ll see — and whose questions you&apos;ll
-          have to answer. Get a feel for who&apos;s who before you walk into the
-          mission board.
+          These are the people whose work you will see — and whose questions
+          you will have to answer. Get a feel for who is who before you walk
+          into the mission board.
         </p>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           {brief.cast.map((person) => {
             const a = alignmentClasses(person.alignment);
             return (
-              <article
-                key={person.name}
-                className={`${theme.panelClass} p-6 sm:p-7 transition-shadow`}
-              >
+              <article key={person.name} className={`${theme.panelClass} p-6 sm:p-7`}>
                 <div className="flex items-start gap-4 mb-4">
-                  <div
-                    className={`w-16 h-16 rounded-full grid place-items-center font-bold text-base shrink-0 ring-2 ${a.ring} ${a.bg} ${a.text}`}
-                    aria-hidden="true"
-                  >
+                  <div className={`w-16 h-16 rounded-full grid place-items-center font-bold text-base shrink-0 ring-2 ${a.ring} ${a.bg} ${a.text}`} aria-hidden="true">
                     {initialsOf(person.name)}
                   </div>
                   <div className="min-w-0 flex-1">
@@ -194,62 +250,48 @@ export function StageLanding({
                       {person.name}
                     </h3>
                     <p className={`${theme.mutedTextClass} text-sm`}>{person.role}</p>
-                    <span
-                      className={`inline-flex items-center gap-1 mt-2 text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded border ${a.badge}`}
-                    >
+                    <span className={`inline-flex items-center gap-1 mt-2 text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded border ${a.badge}`}>
                       {a.label}
                     </span>
                   </div>
                 </div>
                 {person.tag && (
-                  <p className={`${theme.mutedTextClass} text-xs italic mb-3`}>
-                    {person.tag}
-                  </p>
+                  <p className={`${theme.mutedTextClass} text-xs italic mb-3`}>{person.tag}</p>
                 )}
                 {person.greeting && (
                   <blockquote
                     className={`${theme.bodyTextClass} pl-4 border-l-2 ${theme.dividerClass} italic mb-3 leading-relaxed`}
                     style={{ fontFamily: "Georgia, serif" }}
                   >
-                    <Quote
-                      className={`inline-block w-3 h-3 mr-1 -translate-y-1 ${theme.accentTextClass}`}
-                      aria-hidden="true"
-                    />
+                    <Quote className={`inline-block w-3 h-3 mr-1 -translate-y-1 ${theme.accentTextClass}`} aria-hidden="true" />
                     {person.greeting}
                   </blockquote>
                 )}
-                <p className={`${theme.bodyTextClass} text-[14px] leading-relaxed`}>
-                  {person.bio}
-                </p>
+                <p className={`${theme.bodyTextClass} text-[14px] leading-relaxed`}>{person.bio}</p>
               </article>
             );
           })}
         </div>
       </section>
 
-      {/* ── Company life — the bulletin board ────────────── */}
+      {/* ── Company intranet — the bulletin board ─────────── */}
       <section>
-        <SectionHeading icon={Megaphone} accent={theme.accentTextClass} headingClass={theme.headingClass} eyebrow="Around the office">
-          What&apos;s going on this week
+        <SectionHeading icon={Megaphone} accent={theme.accentTextClass} headingClass={theme.headingClass} eyebrow="The intranet">
+          What is going on this week
         </SectionHeading>
         <p className={`${theme.mutedTextClass} text-sm mb-5 max-w-2xl`}>
-          Things you&apos;d hear if you were on the bench. Some of it is news,
-          some of it is gossip, some of it is the kind of detail you only
-          learn by sitting next to someone for a month.
+          Straight off the Sankofa intranet feed. Some of it is news, some of
+          it is gossip, some of it is the kind of detail you only learn by
+          sitting next to someone for a month. None of it is decoration —
+          read it like a colleague would.
         </p>
         <div className="grid sm:grid-cols-2 gap-3">
           {brief.bulletin.map((item, i) => {
             const v = bulletinVisuals(item.kind);
             const Icon = v.icon;
             return (
-              <article
-                key={i}
-                className={`${theme.panelClass} p-4 sm:p-5 flex gap-3`}
-              >
-                <div
-                  className={`shrink-0 w-9 h-9 rounded-lg grid place-items-center ${v.bg} ${v.text}`}
-                  aria-hidden="true"
-                >
+              <article key={i} className={`${theme.panelClass} p-4 sm:p-5 flex gap-3`}>
+                <div className={`shrink-0 w-9 h-9 rounded-lg grid place-items-center ${v.bg} ${v.text}`} aria-hidden="true">
                   <Icon className="w-4 h-4" />
                 </div>
                 <div className="min-w-0 flex-1">
@@ -258,14 +300,10 @@ export function StageLanding({
                       {v.label}
                     </span>
                     {item.meta && (
-                      <span className={`text-[10px] ${theme.mutedTextClass} truncate`}>
-                        · {item.meta}
-                      </span>
+                      <span className={`text-[10px] ${theme.mutedTextClass} truncate`}>· {item.meta}</span>
                     )}
                   </div>
-                  <p className={`${theme.bodyTextClass} text-[13.5px] leading-relaxed`}>
-                    {item.text}
-                  </p>
+                  <p className={`${theme.bodyTextClass} text-[13.5px] leading-relaxed`}>{item.text}</p>
                 </div>
               </article>
             );
@@ -273,12 +311,36 @@ export function StageLanding({
         </div>
       </section>
 
-      {/* ── THE CAPSTONE — emotional peak before the cooldown pull-quotes ── */}
+      {/* ── Rules of engagement — termsAndPolicies ────────── */}
+      <section>
+        <SectionHeading icon={ShieldCheck} accent={theme.accentTextClass} headingClass={theme.headingClass} eyebrow="Access terms">
+          Rules of engagement
+        </SectionHeading>
+        <div className={`${theme.panelClass} p-6 sm:p-8`}>
+          <p className={`${theme.mutedTextClass} text-[13px] mb-4`}>
+            By working this chapter you agree to the following. They are not
+            fine print — at Sankofa they are how the team stays out of trouble.
+          </p>
+          <ul className="space-y-2.5">
+            {brief.termsAndPolicies.map((term, i) => (
+              <li key={i} className="flex gap-3 items-start">
+                <span className={`shrink-0 mt-0.5 grid place-items-center w-5 h-5 rounded text-[10px] font-bold font-mono ${theme.ctaBgClass} text-white`}>
+                  {i + 1}
+                </span>
+                <span className={`${theme.bodyTextClass} text-[14px] leading-relaxed`}>{term}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      {/* ── THE CAPSTONE ──────────────────────────────────── */}
       <section
         id="capstone"
-        className={`${theme.panelClass} p-8 sm:p-12 relative overflow-hidden`}
+        className={`${theme.panelClass} p-8 sm:p-12 relative overflow-hidden scroll-mt-24`}
         style={{
-          backgroundImage: "radial-gradient(circle at 10% 0%, rgba(255,255,255,0.04), transparent 40%), radial-gradient(circle at 90% 100%, rgba(255,255,255,0.04), transparent 40%)",
+          backgroundImage:
+            "radial-gradient(circle at 10% 0%, rgba(255,255,255,0.04), transparent 40%), radial-gradient(circle at 90% 100%, rgba(255,255,255,0.04), transparent 40%)",
         }}
       >
         <div className="flex items-center gap-2 mb-3">
@@ -291,16 +353,19 @@ export function StageLanding({
         </div>
 
         <h2 className={`${theme.headingClass} text-3xl sm:text-4xl mb-3 tracking-tight`}>
-          The work that actually matters.
+          The report that actually leaves the building.
         </h2>
-        <p className={`${theme.bodyTextClass} text-base sm:text-lg leading-relaxed max-w-3xl mb-7`}>
-          The mission-board tasks test what you&apos;ve absorbed. The capstone
-          below is the bulk of what we&apos;ll grade. Build it off-platform in
-          Google Docs / Microsoft Word, drop everything into one shared
-          folder, then paste the link on your submission page.
+        <p className={`${theme.bodyTextClass} text-base sm:text-lg leading-relaxed max-w-3xl mb-3`}>
+          The mission-board tasks test what you have absorbed. This capstone is
+          the bulk of what we grade. Build it off-platform in Google Docs or
+          Microsoft Word, drop everything into one shared folder, then submit
+          the link on your report page.
+        </p>
+        <p className={`${theme.mutedTextClass} text-[13px] mb-7`}>
+          <Mail className={`inline w-3.5 h-3.5 mr-1.5 -translate-y-0.5 ${theme.accentTextClass}`} />
+          This package is delivered to <strong className={theme.bodyTextClass}>{story.reportTo}</strong>.
         </p>
 
-        {/* Drive folder + print — primary actions, side by side */}
         <div className="flex flex-wrap gap-3 mb-8">
           <a
             href={brief.resourcesDriveUrl}
@@ -312,24 +377,25 @@ export function StageLanding({
             Open your data folder
             <ArrowRight className="w-4 h-4" />
           </a>
+          <Link
+            href={submitHref}
+            className={`inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold border ${theme.dividerClass} ${theme.bodyTextClass} hover:bg-white/5 transition-colors`}
+          >
+            <ArrowRight className="w-4 h-4" />
+            Go to the submission page
+          </Link>
           <PrintBriefButton
             className={`inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold border ${theme.dividerClass} ${theme.bodyTextClass} hover:bg-white/5 transition-colors`}
           />
         </div>
 
-        {/* Numbered deliverables — bigger, more prominent */}
         <div className="space-y-3">
           <p className={`${theme.mutedTextClass} text-[11px] uppercase tracking-[0.18em] font-semibold mb-2`}>
             What goes in the folder
           </p>
           {brief.practicalTasks.map((task, idx) => (
-            <article
-              key={task.id}
-              className={`bg-white/5 border ${theme.dividerClass} rounded-xl p-5 flex gap-4`}
-            >
-              <span
-                className={`shrink-0 w-9 h-9 rounded-full ${theme.ctaBgClass} text-white text-sm font-bold grid place-items-center`}
-              >
+            <article key={task.id} className={`${theme.softBgClass} border ${theme.dividerClass} rounded-xl p-5 flex gap-4`}>
+              <span className={`shrink-0 w-9 h-9 rounded-full ${theme.ctaBgClass} text-white text-sm font-bold grid place-items-center`}>
                 {idx + 1}
               </span>
               <div className="min-w-0 flex-1">
@@ -339,9 +405,7 @@ export function StageLanding({
                 <p className={`${theme.bodyTextClass} text-[13.5px] leading-relaxed mb-2 opacity-85`}>
                   {task.description}
                 </p>
-                <span
-                  className={`inline-block text-[11px] font-mono px-2.5 py-1 rounded ${theme.ctaBgClass} text-white font-semibold`}
-                >
+                <span className={`inline-block text-[11px] font-mono px-2.5 py-1 rounded ${theme.ctaBgClass} text-white font-semibold`}>
                   {task.deliverable}
                 </span>
                 {task.alternate && (
@@ -354,11 +418,10 @@ export function StageLanding({
           ))}
         </div>
 
-        {/* Tools / readings, neat list under the deliverables */}
         {brief.resources.length > 0 && (
           <div className={`mt-7 pt-6 border-t ${theme.dividerClass}`}>
             <p className={`${theme.mutedTextClass} text-[11px] uppercase tracking-[0.18em] font-semibold mb-3`}>
-              Tools and readings you&apos;ll lean on
+              Tools and readings you will lean on
             </p>
             <ul className="grid sm:grid-cols-2 gap-x-6 gap-y-2.5">
               {brief.resources.map((r) => {
@@ -366,12 +429,7 @@ export function StageLanding({
                 return (
                   <li key={r.href} className="flex items-start gap-2.5">
                     <Icon className={`w-3.5 h-3.5 shrink-0 mt-1 ${theme.accentTextClass}`} />
-                    <a
-                      href={r.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={`${theme.bodyTextClass} text-sm leading-snug hover:underline`}
-                    >
+                    <a href={r.href} target="_blank" rel="noopener noreferrer" className={`${theme.bodyTextClass} text-sm leading-snug hover:underline`}>
                       {r.label}
                     </a>
                   </li>
@@ -381,7 +439,6 @@ export function StageLanding({
           </div>
         )}
 
-        {/* Grading bar */}
         <div className={`mt-7 pt-6 border-t ${theme.dividerClass}`}>
           <p className={`${theme.mutedTextClass} text-[11px] uppercase tracking-[0.18em] font-semibold mb-3 flex items-center gap-2`}>
             <CheckCircle2 className="w-3 h-3" />
@@ -390,50 +447,85 @@ export function StageLanding({
           <ul className="space-y-2">
             {brief.sections.map((s) => (
               <li key={s} className="flex gap-2.5 items-start">
-                <span
-                  className={`mt-2 w-1.5 h-1.5 rounded-full shrink-0 ${theme.ctaBgClass}`}
-                />
-                <span className={`${theme.bodyTextClass} text-[14px] leading-relaxed`}>
-                  {s}
-                </span>
+                <span className={`mt-2 w-1.5 h-1.5 rounded-full shrink-0 ${theme.ctaBgClass}`} />
+                <span className={`${theme.bodyTextClass} text-[14px] leading-relaxed`}>{s}</span>
               </li>
             ))}
           </ul>
         </div>
       </section>
 
-      {/* ── Cooldown — two pull-quotes from different voices in the office ── */}
-      {brief.cast[0]?.greeting && (
-        <PullQuote
-          theme={theme}
-          quote={brief.cast[0].greeting}
-          author={brief.cast[0].name}
-          role={brief.cast[0].role}
-        />
-      )}
-      {brief.cast[1]?.greeting && (
-        <PullQuote
-          theme={theme}
-          quote={brief.cast[1].greeting}
-          author={brief.cast[1].name}
-          role={brief.cast[1].role}
-        />
-      )}
-
-      {/* End strip — one quiet CTA back to the board, no repeated copy. The
-          hero, the capstone, and the bulletin already gave the user three
-          earlier entry points; this is just a soft landing at the bottom of
-          the scroll. */}
-      <div className="flex justify-center pt-2">
-        <Link
-          href={boardHref}
-          className={`${theme.ctaBgClass} ${theme.ctaHoverClass} inline-flex items-center gap-2 px-7 py-3 rounded-full text-sm font-bold uppercase tracking-[0.15em] text-white shadow-lg transition-opacity`}
+      {/* ── Cliffhanger — the pull into the next chapter ──── */}
+      <section className={`${theme.panelClass} p-7 sm:p-9 text-center`}>
+        <div className={`flex items-center justify-center gap-2 mb-3 text-[10.5px] font-mono uppercase tracking-[0.2em] ${theme.accentTextClass}`}>
+          <ArrowRight className="w-3 h-3" />
+          {nextChapter ? `Coming next · Chapter ${nextChapter}` : "The finale"}
+        </div>
+        <p
+          className={`${theme.bodyTextClass} text-lg sm:text-2xl leading-snug font-medium max-w-3xl mx-auto`}
+          style={{ fontFamily: "Georgia, serif" }}
         >
-          Enter the mission board
-          <ArrowRight className="w-4 h-4" />
-        </Link>
-      </div>
+          {story.cliffhanger}
+        </p>
+        <p className={`${theme.mutedTextClass} text-xs mt-4`}>
+          {nextChapter
+            ? "Finish and pass every task in this chapter to unlock the next room."
+            : "Finish and pass every task in this chapter to complete the programme handoff and choose your specialist track."}
+        </p>
+        <div className="flex justify-center mt-6">
+          <Link
+            href={boardHref}
+            className={`${theme.ctaBgClass} ${theme.ctaHoverClass} inline-flex items-center gap-2 px-7 py-3 rounded-full text-sm font-bold uppercase tracking-[0.15em] text-white shadow-lg transition-opacity`}
+          >
+            Enter the mission board
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+      </section>
     </div>
+  );
+}
+
+function ChapterRail({ theme, chapter }: { theme: StageLandingTheme; chapter: number }) {
+  return (
+    <nav aria-label="Programme progress" className={`${theme.panelClass} px-4 py-3.5 sm:px-6`}>
+      <ol className="flex items-center gap-1 sm:gap-2">
+        {CHAPTER_TITLES.map((title, i) => {
+          const n = i + 1;
+          const done = n < chapter;
+          const active = n === chapter;
+          return (
+            <li key={title} className="flex items-center gap-1 sm:gap-2 min-w-0">
+              <div className="flex items-center gap-2 min-w-0">
+                <span
+                  className={`grid place-items-center w-6 h-6 rounded-full text-[10px] font-bold shrink-0 ${
+                    active
+                      ? `${theme.ctaBgClass} text-white`
+                      : done
+                      ? `${theme.accentTextClass} border ${theme.dividerClass}`
+                      : `${theme.mutedTextClass} border ${theme.dividerClass}`
+                  }`}
+                >
+                  {done ? "✓" : n}
+                </span>
+                <span
+                  className={`text-[11.5px] truncate ${
+                    active
+                      ? `font-semibold ${theme.bodyTextClass}`
+                      : `${theme.mutedTextClass} ${active ? "" : "hidden sm:inline"}`
+                  }`}
+                >
+                  {title}
+                </span>
+              </div>
+              {n < CHAPTER_TITLES.length && (
+                <span className={`hidden sm:block h-px w-3 lg:w-8 ${theme.dividerClass.replace("border-", "bg-")}`} aria-hidden="true" />
+              )}
+            </li>
+          );
+        })}
+      </ol>
+    </nav>
   );
 }
 
@@ -461,33 +553,6 @@ function SectionHeading({
   );
 }
 
-function PullQuote({
-  theme,
-  quote,
-  author,
-  role,
-}: {
-  theme: StageLandingTheme;
-  quote: string;
-  author: string;
-  role: string;
-}) {
-  return (
-    <section className="py-6 sm:py-10 max-w-3xl mx-auto text-center">
-      <Quote className={`w-6 h-6 mx-auto mb-3 ${theme.accentTextClass} opacity-60`} />
-      <blockquote
-        className={`${theme.bodyTextClass} text-2xl sm:text-3xl leading-snug font-medium`}
-        style={{ fontFamily: "Georgia, serif" }}
-      >
-        &ldquo;{quote}&rdquo;
-      </blockquote>
-      <p className={`${theme.mutedTextClass} text-xs uppercase tracking-[0.2em] mt-4 font-mono`}>
-        {author} · {role}
-      </p>
-    </section>
-  );
-}
-
 function bulletinVisuals(kind: BulletinKind): {
   icon: React.ElementType;
   label: string;
@@ -496,13 +561,13 @@ function bulletinVisuals(kind: BulletinKind): {
 } {
   switch (kind) {
     case "news":
-      return { icon: Newspaper, label: "News", bg: "bg-blue-500/15", text: "text-blue-300" };
+      return { icon: Newspaper, label: "Company news", bg: "bg-blue-500/15", text: "text-blue-300" };
     case "meeting":
-      return { icon: Calendar, label: "Meeting", bg: "bg-violet-500/15", text: "text-violet-300" };
+      return { icon: Calendar, label: "Meeting notes", bg: "bg-violet-500/15", text: "text-violet-300" };
     case "gossip":
-      return { icon: Coffee, label: "Around the bench", bg: "bg-amber-500/15", text: "text-amber-300" };
+      return { icon: Coffee, label: "SOC bench overheard", bg: "bg-amber-500/15", text: "text-amber-300" };
     case "notice":
-      return { icon: Pin, label: "Notice", bg: "bg-emerald-500/15", text: "text-emerald-300" };
+      return { icon: Pin, label: "Pinned notice", bg: "bg-emerald-500/15", text: "text-emerald-300" };
     case "alert":
       return { icon: AlertTriangle, label: "Heads up", bg: "bg-rose-500/15", text: "text-rose-300" };
     case "joke":

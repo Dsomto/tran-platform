@@ -12,6 +12,8 @@ import {
   AlertTriangle,
   FileText,
   ExternalLink,
+  Mail,
+  ListChecks,
 } from "lucide-react";
 
 interface InitialReport {
@@ -31,12 +33,24 @@ interface WindowInfo {
   isOpen: boolean;
 }
 
+interface FolderItem {
+  id: string;
+  title: string;
+  deliverable: string;
+}
+
 interface Props {
   stage: string;
   stageLabel: string;
   stageSubtitle: string;
   storyline: string;
   sectionHints: string[];
+  /** Chapter number, 1-5. */
+  chapter: number;
+  /** Who this capstone is delivered to, in-fiction. */
+  reportTo: string;
+  /** The files the stage expects in the submitted folder. */
+  folderContents: FolderItem[];
   initialReport: InitialReport | null;
   windowInfo: WindowInfo | null;
   locked: boolean;
@@ -48,6 +62,9 @@ export function ReportEditor({
   stageSubtitle,
   storyline,
   sectionHints,
+  chapter,
+  reportTo,
+  folderContents,
   initialReport,
   windowInfo,
   locked,
@@ -195,6 +212,44 @@ export function ReportEditor({
         <p className="text-muted-foreground mt-2 leading-relaxed max-w-3xl">{storyline}</p>
       </header>
 
+      <section className="mb-6 rounded-xl border border-border bg-white p-5">
+        <p className="text-[11px] font-mono uppercase tracking-[0.18em] text-muted-foreground mb-2">
+          Chapter {chapter} · Capstone
+        </p>
+        <h2 className="font-semibold text-foreground text-lg mb-1.5">
+          This is the report that leaves the building.
+        </h2>
+        <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+          The mission-board tasks tested what you absorbed. This folder is the
+          bulk of what we grade — and in the story, it is the package delivered
+          to{" "}
+          <span className="inline-flex items-center gap-1 font-medium text-foreground">
+            <Mail className="h-3.5 w-3.5 text-blue" />
+            {reportTo}
+          </span>
+          .
+        </p>
+        <div className="rounded-lg bg-muted/40 border border-border p-4">
+          <p className="text-[11px] font-mono uppercase tracking-[0.16em] text-muted-foreground mb-2.5 flex items-center gap-1.5">
+            <ListChecks className="h-3.5 w-3.5" />
+            Required contents of your folder
+          </p>
+          <ul className="space-y-2">
+            {folderContents.map((item, idx) => (
+              <li key={item.id} className="flex gap-2.5 items-start text-sm">
+                <span className="shrink-0 grid place-items-center w-5 h-5 rounded bg-foreground text-background text-[10px] font-bold">
+                  {idx + 1}
+                </span>
+                <span className="text-foreground/80 leading-snug">
+                  <strong className="text-foreground">{item.title}</strong>{" "}
+                  <span className="text-muted-foreground">— {item.deliverable}</span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
       <section className="mb-6 bg-blue/5 border border-blue/20 rounded-xl p-5">
         <h2 className="font-semibold text-foreground flex items-center gap-2 mb-2">
           <FileText className="h-4 w-4 text-blue" />
@@ -338,7 +393,7 @@ export function ReportEditor({
           </label>
           <p className="text-xs text-muted-foreground mb-2">
             A second link — a diagram, a spreadsheet, a supporting file. Only paste
-            one more if it's genuinely relevant.
+            one more if it&apos;s genuinely relevant.
           </p>
           <input
             type="url"

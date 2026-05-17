@@ -5,6 +5,8 @@ import { StageLanding } from "@/components/stage/StageLanding";
 import { getStageAccess } from "@/lib/stage-access";
 import { stageUrl } from "@/lib/stage-routes";
 import { STAGE_BRIEFS } from "@/lib/stage-briefs";
+import { STAGE_STORIES } from "@/lib/stage-story";
+import { STAGE_LANDING_THEMES } from "@/lib/stage-landing-theme";
 
 export default async function Stage0LandingPage() {
   const result = await getStageAccess("stage-0");
@@ -12,35 +14,24 @@ export default async function Stage0LandingPage() {
     if (result.reason === "no-session") redirect("/login");
     redirect("/dashboard");
   }
-  const { internCode, ndaSignedAt } = result.access;
+  const { internCode, firstName, ndaSignedAt } = result.access;
 
   // One-time onboarding gate. Once signed, the intern lands here directly.
   if (!ndaSignedAt) {
     redirect(`/dashboard/onboarding?next=${encodeURIComponent(stageUrl("stage-0"))}`);
   }
 
-  const theme = STAGE_THEMES["stage-0"];
-  const brief = STAGE_BRIEFS.STAGE_0;
-
   return (
-    <StageShell theme={theme} internCode={internCode}>
+    <StageShell theme={STAGE_THEMES["stage-0"]} internCode={internCode}>
       <StageLanding
-        brief={brief}
+        brief={STAGE_BRIEFS.STAGE_0}
+        story={STAGE_STORIES["stage-0"]}
+        theme={STAGE_LANDING_THEMES["stage-0"]}
         boardHref={stageUrl("stage-0", "/board")}
+        submitHref="/dashboard/reports/STAGE_0"
         companyName="Sankofa Digital"
-        welcomeLine="You arrived at the Sankofa office at 8:47am. Reception is expecting you. Amaka has cleared the morning to walk you through the Q2 incident — and she does not want her time wasted."
-        theme={{
-          slug: "stage-0",
-          panelClass: "stage-0-panel",
-          headingClass: "stage-0-heading",
-          pillClass: "stage-0-pill",
-          accentTextClass: "text-emerald-700",
-          bodyTextClass: "text-neutral-700",
-          mutedTextClass: "text-neutral-500",
-          ctaBgClass: "bg-emerald-600",
-          ctaHoverClass: "hover:bg-emerald-700",
-          dividerClass: "border-neutral-200",
-        }}
+        firstName={firstName}
+        internCode={internCode}
       />
     </StageShell>
   );
