@@ -33,10 +33,9 @@ async function handleDrain(request: NextRequest): Promise<Response> {
       Math.max(1, parseInt(url.searchParams.get("limit") || "300") || 300)
     );
 
-    // Lease step: stamp lockedAt on up to `batch` PENDING rows. updateMany
-    // is atomic per-document on Mongo — two concurrent drains won't both
-    // win the same row because the second drain's where clause excludes
-    // rows whose lockedAt is fresh.
+    // Lease step. A row is claimable if it is PENDING and either unlocked or
+    // lock-stale. We re-assert that exact condition inside the updateMany so
+    // a row another drain already grabbed is never stolen.
     const leaseAt = new Date();
     const staleCutoff = new Date(Date.now() - STALE_LEASE_MS);
     const candidates = await prisma.emailQueueItem.findMany({
@@ -49,18 +48,38 @@ async function handleDrain(request: NextRequest): Promise<Response> {
       select: { id: true },
     });
     if (!candidates.length) {
-      return Response.json({ drained: 0, remaining: 0 });
+      // Report the REAL pending count, never a hardcoded 0 — so a cron run
+      // pointed at an empty or wrong database is obvious from the response.
+      const remaining = await prisma.emailQueueItem.count({ where: { status: "PENDING" } });
+      return Response.json({ drained: 0, remaining, note: "No claimable rows" });
     }
-    await prisma.emailQueueItem.updateMany({
-      where: { id: { in: candidates.map((c) => c.id) } },
+    const candidateIds = candidates.map((c) => c.id);
+
+    const claimed = await prisma.emailQueueItem.updateMany({
+      where: {
+        id: { in: candidateIds },
+        status: "PENDING",
+        OR: [{ lockedAt: null }, { lockedAt: { lt: staleCutoff } }],
+      },
       data: { lockedAt: leaseAt },
     });
+    if (!claimed.count) {
+      const remaining = await prisma.emailQueueItem.count({ where: { status: "PENDING" } });
+      return Response.json({ drained: 0, remaining, note: "No rows claimed" });
+    }
 
-    // Re-fetch with full bodies for sending. Filter to rows whose lockedAt
-    // is exactly leaseAt — anyone whose lockedAt got overwritten by a faster
-    // concurrent drain is no longer ours, and we skip them.
+    // Re-fetch the rows we just stamped, for sending. Match lockedAt with
+    // `gte: leaseAt` rather than exact equality — a millisecond serialization
+    // difference between the write and the read must not make our own rows
+    // invisible (the bug that left the queue stuck). Restricting to our own
+    // candidateIds + status PENDING keeps another run's rows out.
     const pending = await prisma.emailQueueItem.findMany({
-      where: { id: { in: candidates.map((c) => c.id) }, lockedAt: leaseAt },
+      where: {
+        id: { in: candidateIds },
+        status: "PENDING",
+        lockedAt: { gte: leaseAt },
+      },
+      orderBy: { enqueuedAt: "asc" },
     });
 
     if (!pending.length) {
