@@ -41,7 +41,14 @@ async function handleDrain(request: NextRequest): Promise<Response> {
     const candidates = await prisma.emailQueueItem.findMany({
       where: {
         status: "PENDING",
-        OR: [{ lockedAt: null }, { lockedAt: { lt: staleCutoff } }],
+        OR: [
+          // never locked — value is null, OR the field is absent from the
+          // document entirely (Prisma omits unset optional fields on Mongo
+          // create, and `lockedAt: null` does NOT match a missing field).
+          { lockedAt: null },
+          { lockedAt: { isSet: false } },
+          { lockedAt: { lt: staleCutoff } },
+        ],
       },
       orderBy: { enqueuedAt: "asc" },
       take: batch,
@@ -59,7 +66,14 @@ async function handleDrain(request: NextRequest): Promise<Response> {
       where: {
         id: { in: candidateIds },
         status: "PENDING",
-        OR: [{ lockedAt: null }, { lockedAt: { lt: staleCutoff } }],
+        OR: [
+          // never locked — value is null, OR the field is absent from the
+          // document entirely (Prisma omits unset optional fields on Mongo
+          // create, and `lockedAt: null` does NOT match a missing field).
+          { lockedAt: null },
+          { lockedAt: { isSet: false } },
+          { lockedAt: { lt: staleCutoff } },
+        ],
       },
       data: { lockedAt: leaseAt },
     });
