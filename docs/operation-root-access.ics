@@ -1,0 +1,186 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Ubuntu Bridge Initiative//Operation Root Access//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Operation Root Access - Programme Schedule
+X-WR-TIMEZONE:Africa/Lagos
+BEGIN:VEVENT
+UID:applications-close@ubinitiative.org
+DTSTAMP:20260517T120000Z
+DTSTART;VALUE=DATE:20260522
+DTEND;VALUE=DATE:20260523
+SUMMARY:Applications close
+DESCRIPTION:Last day to apply to Operation Root Access. No applications accepted after today.
+END:VEVENT
+BEGIN:VEVENT
+UID:decisions-emailed@ubinitiative.org
+DTSTAMP:20260517T120000Z
+DTSTART;VALUE=DATE:20260525
+DTEND;VALUE=DATE:20260526
+SUMMARY:Application decisions emailed
+DESCRIPTION:Accepted, waitlisted or declined. Check the inbox you applied with.
+END:VEVENT
+BEGIN:VEVENT
+UID:onboarding@ubinitiative.org
+DTSTAMP:20260517T120000Z
+DTSTART;VALUE=DATE:20260527
+DTEND;VALUE=DATE:20260528
+SUMMARY:Intern onboarding
+DESCRIPTION:Accounts, Slack, NDA and orientation for accepted interns.
+END:VEVENT
+BEGIN:VEVENT
+UID:stage-0-window@ubinitiative.org
+DTSTAMP:20260517T120000Z
+DTSTART;VALUE=DATE:20260601
+DTEND;VALUE=DATE:20260608
+SUMMARY:Stage 0 - Induction at the Gate
+DESCRIPTION:Week 1. Mission board open. Capstone folder due Sun 7 Jun 23:59 WAT.
+END:VEVENT
+BEGIN:VEVENT
+UID:stage-1-window@ubinitiative.org
+DTSTAMP:20260517T120000Z
+DTSTART;VALUE=DATE:20260608
+DTEND;VALUE=DATE:20260615
+SUMMARY:Stage 1 - Ciphers & Secrets
+DESCRIPTION:Week 2. Mission board open. Capstone folder due Sun 14 Jun 23:59 WAT.
+END:VEVENT
+BEGIN:VEVENT
+UID:stage-2-window@ubinitiative.org
+DTSTAMP:20260517T120000Z
+DTSTART;VALUE=DATE:20260615
+DTEND;VALUE=DATE:20260622
+SUMMARY:Stage 2 - The Attack Surface
+DESCRIPTION:Week 3. Mission board open. Capstone folder due Sun 21 Jun 23:59 WAT.
+END:VEVENT
+BEGIN:VEVENT
+UID:stage-3-window@ubinitiative.org
+DTSTAMP:20260517T120000Z
+DTSTART;VALUE=DATE:20260622
+DTEND;VALUE=DATE:20260629
+SUMMARY:Stage 3 - Inside the Walls
+DESCRIPTION:Week 4. Mission board open. Capstone folder due Sun 28 Jun 23:59 WAT.
+END:VEVENT
+BEGIN:VEVENT
+UID:stage-4-window@ubinitiative.org
+DTSTAMP:20260517T120000Z
+DTSTART;VALUE=DATE:20260629
+DTEND;VALUE=DATE:20260706
+SUMMARY:Stage 4 - The Debrief
+DESCRIPTION:Week 5. Mission board open. Capstone folder due Sun 5 Jul 23:59 WAT.
+END:VEVENT
+BEGIN:VEVENT
+UID:stage-0-deadline@ubinitiative.org
+DTSTAMP:20260517T120000Z
+DTSTART;VALUE=DATE:20260607
+DTEND;VALUE=DATE:20260608
+SUMMARY:Stage 0 submission deadline (23:59 WAT)
+DESCRIPTION:Submit your Stage 0 report folder link before 23:59 WAT today.
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Stage 0 submission due tomorrow
+TRIGGER:-P1D
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:stage-1-deadline@ubinitiative.org
+DTSTAMP:20260517T120000Z
+DTSTART;VALUE=DATE:20260614
+DTEND;VALUE=DATE:20260615
+SUMMARY:Stage 1 submission deadline (23:59 WAT)
+DESCRIPTION:Submit your Stage 1 report folder link before 23:59 WAT today.
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Stage 1 submission due tomorrow
+TRIGGER:-P1D
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:stage-2-deadline@ubinitiative.org
+DTSTAMP:20260517T120000Z
+DTSTART;VALUE=DATE:20260621
+DTEND;VALUE=DATE:20260622
+SUMMARY:Stage 2 submission deadline (23:59 WAT)
+DESCRIPTION:Submit your Stage 2 report folder link before 23:59 WAT today.
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Stage 2 submission due tomorrow
+TRIGGER:-P1D
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:stage-3-deadline@ubinitiative.org
+DTSTAMP:20260517T120000Z
+DTSTART;VALUE=DATE:20260628
+DTEND;VALUE=DATE:20260629
+SUMMARY:Stage 3 submission deadline (23:59 WAT)
+DESCRIPTION:Submit your Stage 3 report folder link before 23:59 WAT today.
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Stage 3 submission due tomorrow
+TRIGGER:-P1D
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:stage-4-deadline@ubinitiative.org
+DTSTAMP:20260517T120000Z
+DTSTART;VALUE=DATE:20260705
+DTEND;VALUE=DATE:20260706
+SUMMARY:Stage 4 submission deadline (23:59 WAT)
+DESCRIPTION:Submit your Stage 4 report folder link before 23:59 WAT today.
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Stage 4 submission due tomorrow
+TRIGGER:-P1D
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:stage-0-results@ubinitiative.org
+DTSTAMP:20260517T120000Z
+DTSTART;VALUE=DATE:20260608
+DTEND;VALUE=DATE:20260609
+SUMMARY:Stage 0 results announced
+DESCRIPTION:Results released one day after submission. Stage 1 opens today.
+END:VEVENT
+BEGIN:VEVENT
+UID:stage-1-results@ubinitiative.org
+DTSTAMP:20260517T120000Z
+DTSTART;VALUE=DATE:20260615
+DTEND;VALUE=DATE:20260616
+SUMMARY:Stage 1 results announced
+DESCRIPTION:Results released one day after submission. Stage 2 opens today.
+END:VEVENT
+BEGIN:VEVENT
+UID:stage-2-results@ubinitiative.org
+DTSTAMP:20260517T120000Z
+DTSTART;VALUE=DATE:20260622
+DTEND;VALUE=DATE:20260623
+SUMMARY:Stage 2 results announced
+DESCRIPTION:Results released one day after submission. Stage 3 opens today.
+END:VEVENT
+BEGIN:VEVENT
+UID:stage-3-results@ubinitiative.org
+DTSTAMP:20260517T120000Z
+DTSTART;VALUE=DATE:20260629
+DTEND;VALUE=DATE:20260630
+SUMMARY:Stage 3 results announced
+DESCRIPTION:Results released one day after submission. Stage 4 opens today.
+END:VEVENT
+BEGIN:VEVENT
+UID:programme-close@ubinitiative.org
+DTSTAMP:20260517T120000Z
+DTSTART;VALUE=DATE:20260706
+DTEND;VALUE=DATE:20260707
+SUMMARY:Programme close - results & track selection
+DESCRIPTION:Stage 4 results, the final debrief, and your specialist-track selection (SOC, Ethical Hacking or GRC).
+END:VEVENT
+BEGIN:VEVENT
+UID:town-hall-series@ubinitiative.org
+DTSTAMP:20260517T120000Z
+DTSTART:20260606T100000Z
+DTEND:20260606T113000Z
+RRULE:FREQ=WEEKLY;COUNT=5
+SUMMARY:Saturday town hall
+DESCRIPTION:Weekly live growth session - careers, specialisms, guest speakers and Q&A. 11:00 WAT.
+END:VEVENT
+END:VCALENDAR

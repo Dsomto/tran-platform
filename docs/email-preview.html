@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Email Preview — Operation Root Access</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: #e7ebf0;
+    color: #334155;
+    line-height: 1.6;
+    padding: 28px 16px 64px;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; }
+
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; margin-bottom: 8px;
+  }
+  .topbar h1 { font-size: 19px; color: #0f172a; letter-spacing: -0.01em; }
+  .btn {
+    background: #2563eb; color: #fff; border: 0;
+    font-size: 13px; font-weight: 600;
+    padding: 9px 18px; border-radius: 999px; cursor: pointer;
+    box-shadow: 0 4px 14px rgba(37,99,235,.3);
+  }
+  .btn:hover { background: #1d4ed8; }
+  .intro {
+    font-size: 13px; color: #64748b; margin-bottom: 26px;
+  }
+  .intro code {
+    background: #fff; border: 1px solid #cbd5e1; border-radius: 4px;
+    padding: 1px 6px; font-size: 12px; color: #1d4ed8;
+  }
+
+  /* email label */
+  .label {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.13em;
+    text-transform: uppercase; color: #475569;
+    margin: 30px 0 9px;
+  }
+  .dot { width: 9px; height: 9px; border-radius: 50%; }
+  .dot.accept { background: #16a34a; }
+  .dot.decline { background: #dc2626; }
+  .dot.news { background: #2563eb; }
+
+  /* email client frame */
+  .mail {
+    background: #fff; border: 1px solid #cbd5e1; border-radius: 12px;
+    overflow: hidden; box-shadow: 0 6px 22px rgba(15,23,42,.09);
+  }
+  .mail-head {
+    padding: 14px 18px; border-bottom: 1px solid #e2e8f0; background: #f8fafc;
+    font-size: 12.5px;
+  }
+  .mail-head .subject {
+    font-size: 15px; font-weight: 700; color: #0f172a; margin-bottom: 6px;
+  }
+  .mail-head .row { color: #64748b; }
+  .mail-head .row b { color: #334155; font-weight: 600; }
+
+  /* rendered email body */
+  .email-body { background: #f1f5f9; padding: 24px 18px; }
+  .email-inner { max-width: 540px; margin: 0 auto; }
+  .brandbar {
+    background: linear-gradient(135deg, #1d4ed8, #0891b2);
+    color: #fff; text-align: center; padding: 26px 24px;
+    border-radius: 14px 14px 0 0;
+  }
+  .brandbar .logo { font-size: 22px; font-weight: 800; letter-spacing: .04em; }
+  .brandbar .org { font-size: 12px; opacity: .9; margin-top: 2px; }
+  .card {
+    background: #fff; padding: 28px 26px; border-radius: 0 0 14px 14px;
+  }
+  .card h2 { font-size: 18px; color: #0f172a; margin-bottom: 12px; }
+  .card p { font-size: 14px; color: #475569; margin-bottom: 13px; }
+  .card p.tight { margin-bottom: 6px; }
+  .steps {
+    background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 10px;
+    padding: 14px 16px; margin: 4px 0 16px;
+  }
+  .steps .s { font-size: 13.5px; color: #0c4a6e; padding: 4px 0; }
+  .steps .s b { color: #0f172a; }
+  .quietbox {
+    background: #f8fafc; border-left: 3px solid #94a3b8; border-radius: 0 8px 8px 0;
+    padding: 12px 15px; margin: 4px 0 16px; font-size: 13.5px; color: #475569;
+  }
+  .token { color: #1d4ed8; font-weight: 600; }
+  .sign { font-size: 14px; color: #475569; margin-top: 4px; }
+  .emfoot {
+    text-align: center; font-size: 11px; color: #94a3b8; margin-top: 14px;
+  }
+
+  @media print {
+    body { background: #fff; padding: 0; }
+    .btn { display: none; }
+    .mail { box-shadow: none; break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <h1>Email Preview &mdash; Operation Root Access</h1>
+    <button class="btn" onclick="window.print()">Print / Save as PDF</button>
+  </div>
+  <p class="intro">
+    This is exactly how each message will look in the recipient's inbox.
+    Anything in <code>{blue}</code> is a merge field &mdash; it is filled in
+    automatically per person (for example <code>{First name}</code>). Edit the
+    wording freely; this page is a mock-up, not a live sender.
+  </p>
+
+  <!-- ============ ACCEPTANCE ============ -->
+  <div class="label"><span class="dot accept"></span> Acceptance email &mdash; sent 25 May</div>
+  <div class="mail">
+    <div class="mail-head">
+      <div class="subject">You're in &mdash; welcome to Operation Root Access</div>
+      <div class="row"><b>From:</b> Ubuntu Bridge Initiative &lt;admissions@ubuntubridgeinitiatives.org&gt;</div>
+      <div class="row"><b>To:</b> <span class="token">{First name}</span> &lt;<span class="token">{email}</span>&gt;</div>
+    </div>
+    <div class="email-body">
+      <div class="email-inner">
+        <div class="brandbar">
+          <div class="logo">UBI</div>
+          <div class="org">Ubuntu Bridge Initiative</div>
+        </div>
+        <div class="card">
+          <h2>Hi <span class="token">{First name}</span>, you made it.</h2>
+          <p>
+            We received more than <b>3,000 applications</b> for this cohort of
+            Operation Root Access. We could take around <b>500</b> people &mdash;
+            and you are one of them. Congratulations, and welcome.
+          </p>
+          <p>
+            We read your application closely. Something in how you wrote it told
+            us you will show up and do the work. Now it is time to prove us right.
+          </p>
+          <p class="tight"><b>What happens next:</b></p>
+          <div class="steps">
+            <div class="s"><b>27 May &mdash; Onboarding.</b> We email your login details and everything you need to set up your account.</div>
+            <div class="s"><b>1 June &mdash; The programme begins.</b> Stage 0 opens and your first room goes live.</div>
+          </div>
+          <p>
+            Between now and then, watch this inbox &mdash; every step comes here.
+            And clear your schedule for June: this programme is intensive, and
+            the people who finish are the people who treat it that way.
+          </p>
+          <p class="sign">
+            We are glad you are here. See you on the 27th.<br />
+            &mdash; The Ubuntu Bridge Initiative team
+          </p>
+        </div>
+        <div class="emfoot">Ubuntu Bridge Initiative &middot; ubuntubridgeinitiatives.org</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ DECLINE ============ -->
+  <div class="label"><span class="dot decline"></span> Decline email &mdash; sent 25 May</div>
+  <div class="mail">
+    <div class="mail-head">
+      <div class="subject">Your Operation Root Access application</div>
+      <div class="row"><b>From:</b> Ubuntu Bridge Initiative &lt;admissions@ubuntubridgeinitiatives.org&gt;</div>
+      <div class="row"><b>To:</b> <span class="token">{First name}</span> &lt;<span class="token">{email}</span>&gt;</div>
+    </div>
+    <div class="email-body">
+      <div class="email-inner">
+        <div class="brandbar">
+          <div class="logo">UBI</div>
+          <div class="org">Ubuntu Bridge Initiative</div>
+        </div>
+        <div class="card">
+          <h2>Hi <span class="token">{First name}</span>,</h2>
+          <p>
+            Thank you for applying to Operation Root Access &mdash; and for the
+            time and thought you put into your application.
+          </p>
+          <p>
+            This round we received over <b>3,000 applications</b> and could
+            offer only around <b>500</b> places. After a careful review, we are
+            not able to offer you a place in this cohort.
+          </p>
+          <div class="quietbox">
+            Please hear this clearly: this is not a judgement of your ability or
+            your potential. With this many strong applicants, we had to make
+            hard choices &mdash; and many people we would have loved to take did
+            not make this particular cohort.
+          </div>
+          <p>
+            If cybersecurity is something you want, do not stop here. Keep
+            building, keep learning &mdash; and keep an eye on us. This will not
+            be our last cohort.
+          </p>
+          <p class="sign">
+            Thank you again for applying. We wish you the very best.<br />
+            &mdash; The Ubuntu Bridge Initiative team
+          </p>
+        </div>
+        <div class="emfoot">Ubuntu Bridge Initiative &middot; ubuntubridgeinitiatives.org</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ ANNOUNCEMENT ============ -->
+  <div class="label"><span class="dot news"></span> Announcement template &mdash; reusable for timely news</div>
+  <div class="mail">
+    <div class="mail-head">
+      <div class="subject"><span class="token">{Headline}</span></div>
+      <div class="row"><b>From:</b> Ubuntu Bridge Initiative &lt;hello@ubuntubridgeinitiatives.org&gt;</div>
+      <div class="row"><b>To:</b> <span class="token">{First name}</span> &lt;<span class="token">{email}</span>&gt;</div>
+    </div>
+    <div class="email-body">
+      <div class="email-inner">
+        <div class="brandbar">
+          <div class="logo">UBI</div>
+          <div class="org">Ubuntu Bridge Initiative</div>
+        </div>
+        <div class="card">
+          <h2>Hi <span class="token">{First name}</span>,</h2>
+          <p>
+            <span class="token">{Your update goes here}</span> &mdash; a stage
+            opening, a deadline reminder, a Saturday town hall, a results day.
+            Keep it short and specific: one piece of news, said plainly.
+          </p>
+          <div class="quietbox">
+            <span class="token">{One clear action or date}</span> &mdash; e.g.
+            "Stage 1 opens Monday 8 June" or "Town hall this Saturday, 11:00 WAT."
+          </div>
+          <p>
+            Anything in blue is a merge field. Reuse this template for every
+            timely-news email so the cohort always recognises the look.
+          </p>
+          <p class="sign">
+            &mdash; The Ubuntu Bridge Initiative team
+          </p>
+        </div>
+        <div class="emfoot">Ubuntu Bridge Initiative &middot; ubuntubridgeinitiatives.org</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

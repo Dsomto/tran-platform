@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Applicant Acceptance Criteria — Operation Root Access</title>
+<style>
+  :root {
+    --ink: #0f172a;
+    --body: #334155;
+    --muted: #64748b;
+    --line: #e2e8f0;
+    --brand: #2563eb;
+    --reject: #dc2626;
+    --reject-bg: #fef2f2;
+    --accept: #16a34a;
+    --accept-bg: #f0fdf4;
+    --core: #1d4ed8;
+    --core-bg: #eff6ff;
+    --note-bg: #f8fafc;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: #eef2f6; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--body);
+    line-height: 1.6;
+    padding: 32px 16px 64px;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .sheet {
+    max-width: 840px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(15, 23, 42, 0.10);
+  }
+
+  /* ---- header ---- */
+  header {
+    background: linear-gradient(135deg, #0f172a, #1e3a8a);
+    color: #fff;
+    padding: 38px 44px 34px;
+  }
+  .eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    opacity: 0.85;
+    font-weight: 600;
+  }
+  header h1 {
+    font-size: 30px;
+    line-height: 1.2;
+    margin: 10px 0 6px;
+    letter-spacing: -0.02em;
+  }
+  header p { font-size: 14px; opacity: 0.92; }
+  .strict-stamp {
+    display: inline-block;
+    margin-top: 16px;
+    background: #dc2626;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    border-radius: 999px;
+  }
+  .meta {
+    margin-top: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 18px;
+    font-size: 12px;
+    opacity: 0.9;
+  }
+
+  /* ---- body ---- */
+  .content { padding: 36px 44px 44px; }
+  .lead {
+    font-size: 15px;
+    color: var(--body);
+    background: var(--note-bg);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--reject);
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin-bottom: 32px;
+  }
+  .lead strong { color: var(--ink); }
+
+  section { margin-bottom: 30px; }
+  .sec-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .badge {
+    width: 26px; height: 26px;
+    border-radius: 7px;
+    display: grid; place-items: center;
+    font-weight: 700; font-size: 14px;
+    color: #fff; flex: none;
+  }
+  .sec-head h2 {
+    font-size: 17px;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+  .sec-head .tag {
+    margin-left: auto;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 3px 9px;
+    border-radius: 999px;
+  }
+
+  ul.crit { list-style: none; }
+  ul.crit li {
+    position: relative;
+    padding: 11px 14px 11px 40px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    margin-bottom: 8px;
+    font-size: 14px;
+    background: #fff;
+  }
+  ul.crit li .mark {
+    position: absolute;
+    left: 12px; top: 11px;
+    font-weight: 700;
+    font-size: 15px;
+  }
+  ul.crit li b { color: var(--ink); }
+  ul.crit li .why { display: block; font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+
+  .reject .badge { background: var(--reject); }
+  .reject li { background: var(--reject-bg); border-color: #fecaca; }
+  .reject .mark { color: var(--reject); }
+  .reject .tag { background: var(--reject-bg); color: var(--reject); }
+
+  .accept .badge { background: var(--accept); }
+  .accept li { background: var(--accept-bg); border-color: #bbf7d0; }
+  .accept .mark { color: var(--accept); }
+  .accept .tag { background: var(--accept-bg); color: var(--accept); }
+
+  .core .badge { background: var(--core); }
+  .core .tag { background: var(--core-bg); color: var(--core); }
+  .core .panel {
+    background: var(--core-bg);
+    border: 1px solid #bfdbfe;
+    border-radius: 10px;
+    padding: 16px 18px;
+    font-size: 14px;
+  }
+  .core .panel b { color: var(--ink); }
+  .core .panel ul { list-style: none; margin-top: 10px; }
+  .core .panel ul li {
+    padding: 6px 0 6px 22px;
+    position: relative;
+    border-top: 1px solid #dbeafe;
+  }
+  .core .panel ul li:first-of-type { border-top: 0; }
+  .core .panel ul li::before {
+    content: "\2192";
+    position: absolute; left: 0;
+    color: var(--core); font-weight: 700;
+  }
+  .core .exception {
+    margin-top: 12px;
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    border-radius: 10px;
+    padding: 14px 16px 14px;
+    font-size: 13.5px;
+  }
+  .exc-label {
+    display: inline-block;
+    background: #d97706;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 3px 9px;
+    border-radius: 999px;
+    margin-bottom: 9px;
+  }
+  .core .exception p { margin-bottom: 6px; }
+  .core .exception b { color: var(--ink); }
+  .core .exception ol { margin: 8px 0 8px 20px; }
+  .core .exception ol li { padding: 2px 0; }
+
+  .neutral .badge { background: var(--muted); }
+  .neutral .tag { background: var(--note-bg); color: var(--muted); }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    font-size: 12.5px;
+    background: var(--note-bg);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 5px 12px;
+    color: var(--body);
+  }
+  .neutral .note { font-size: 12.5px; color: var(--muted); margin-top: 8px; }
+
+  /* ---- decision ---- */
+  .decide .badge { background: var(--ink); }
+  .decide .tag { background: var(--note-bg); color: var(--ink); }
+  .checklist {
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .checklist .row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 16px;
+    font-size: 14px;
+    border-bottom: 1px solid var(--line);
+  }
+  .checklist .row:last-child { border-bottom: 0; }
+  .box {
+    width: 18px; height: 18px;
+    border: 2px solid #94a3b8;
+    border-radius: 5px;
+    flex: none;
+    margin-top: 2px;
+  }
+  .verdict {
+    display: flex; gap: 12px; flex-wrap: wrap;
+    margin-top: 16px;
+  }
+  .verdict .v {
+    flex: 1; min-width: 220px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-size: 13px;
+  }
+  .verdict .v b { display: block; font-size: 15px; margin-bottom: 3px; }
+  .v.a { background: var(--accept-bg); border-color: #bbf7d0; }
+  .v.a b { color: var(--accept); }
+  .v.r { background: var(--reject-bg); border-color: #fecaca; }
+  .v.r b { color: var(--reject); }
+
+  footer {
+    border-top: 1px solid var(--line);
+    padding: 20px 44px 30px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  footer b { color: var(--reject); }
+
+  .actions {
+    max-width: 840px;
+    margin: 0 auto 16px;
+    text-align: right;
+  }
+  .btn {
+    background: var(--brand);
+    color: #fff;
+    border: 0;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 10px 20px;
+    border-radius: 999px;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+  }
+  .btn:hover { background: #1d4ed8; }
+
+  @media print {
+    body { background: #fff; padding: 0; }
+    .actions { display: none; }
+    .sheet { box-shadow: none; border-radius: 0; max-width: 100%; }
+    section { break-inside: avoid; }
+  }
+  @media (max-width: 600px) {
+    header, .content, footer { padding-left: 22px; padding-right: 22px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="actions">
+  <button class="btn" onclick="window.print()">Print / Save as PDF</button>
+</div>
+
+<div class="sheet">
+  <header>
+    <div class="eyebrow">Ubuntu Bridge Initiative</div>
+    <h1>Applicant Acceptance Criteria</h1>
+    <p>Operation Root Access &middot; the admissions standard every reviewer applies.</p>
+    <span class="strict-stamp">Strict &mdash; most applications will not pass</span>
+    <div class="meta">
+      <span>Over 3,000 applications &amp; climbing</span>
+      <span>Accepting ~500 (up to 600)</span>
+      <span>Version 2</span>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <p class="lead">
+      We have over <strong>3,000 applications</strong> and the number is still
+      rising. We can accept only about <strong>500</strong>, possibly 600. This
+      sheet is <strong>strict by design</strong> &mdash; the bar is high and most
+      applications will not clear it. Work it in order. <strong>Any single
+      trigger in Section A ends the review immediately.</strong> There is no
+      waitlist and no "maybe": every application ends as <strong>Accept</strong>
+      or <strong>Reject</strong>.
+    </p>
+
+    <!-- A — automatic rejects -->
+    <section class="reject">
+      <div class="sec-head">
+        <span class="badge">A</span>
+        <h2>Automatic rejects &mdash; any one ends the review</h2>
+        <span class="tag">Reject if any is true</span>
+      </div>
+      <ul class="crit">
+        <li>
+          <span class="mark">&times;</span>
+          <b>Full-time employed &mdash; with no availability case made.</b>
+          <span class="why">Full-time employment is disqualifying by default &mdash; the hours cannot be found twice. There is one exception, and it is judged in Section C: an applicant who makes a genuine, specific case for their availability inside their own write-up. Employed full-time with no such case = reject.</span>
+        </li>
+        <li>
+          <span class="mark">&times;</span>
+          <b>The write-up is AI-generated.</b>
+          <span class="why">If the answer reads as machine-written &mdash; smooth, generic, polished but empty, no concrete personal detail &mdash; reject. We are accepting a person, not a prompt. Be ruthless here.</span>
+        </li>
+        <li>
+          <span class="mark">&times;</span>
+          <b>The write-up is not personalized.</b>
+          <span class="why">If it could belong to any applicant &mdash; nothing specific about this person, their story, or why this programme &mdash; reject.</span>
+        </li>
+        <li>
+          <span class="mark">&times;</span>
+          <b>The application does not ring true.</b>
+          <span class="why">Inconsistent, exaggerated, or unverifiable claims. If experience, goals and write-up do not line up into one honest picture, reject.</span>
+        </li>
+        <li>
+          <span class="mark">&times;</span>
+          <b>No real full name.</b>
+          <span class="why">Strip any emoji or symbol from the name first. If what remains is not a plausible human name &mdash; gibberish, a single letter, "asdf" &mdash; reject.</span>
+        </li>
+        <li>
+          <span class="mark">&times;</span>
+          <b>Cannot show genuine commitment.</b>
+          <span class="why">If the applicant's own words show they cannot realistically commit to and show up for the programme, reject. See Section C.</span>
+        </li>
+        <li>
+          <span class="mark">&times;</span>
+          <b>Empty, gibberish, or one-line write-up.</b>
+          <span class="why">A blank, nonsensical or barely-there answer to the differentiator question is an automatic reject.</span>
+        </li>
+        <li>
+          <span class="mark">&times;</span>
+          <b>Required fields blank, or a duplicate application.</b>
+          <span class="why">Experience and goals must both be completed. Same person applying twice &mdash; keep the stronger, reject the rest.</span>
+        </li>
+      </ul>
+    </section>
+
+    <!-- B — required of every accepted applicant -->
+    <section class="accept">
+      <div class="sec-head">
+        <span class="badge">B</span>
+        <h2>Required of every accepted applicant</h2>
+        <span class="tag">All required &mdash; no partial pass</span>
+      </div>
+      <ul class="crit">
+        <li>
+          <span class="mark">&#10003;</span>
+          <b>Genuinely available and committed.</b>
+          <span class="why">Either not in full-time employment, or &mdash; if employed &mdash; they made the full availability case in their write-up (Section C). Their own words must show they will give this programme real, consistent time.</span>
+        </li>
+        <li>
+          <span class="mark">&#10003;</span>
+          <b>A personalized, human-written write-up.</b>
+          <span class="why">Written in their own voice, specific to them, self-aware, clearly not AI-generated. It must read like a real person who genuinely wants this.</span>
+        </li>
+        <li>
+          <span class="mark">&#10003;</span>
+          <b>An honest, consistent application.</b>
+          <span class="why">Every part of the application lines up and rings true. Nothing exaggerated, nothing that cannot be believed.</span>
+        </li>
+        <li>
+          <span class="mark">&#10003;</span>
+          <b>A real, complete full name.</b>
+          <span class="why">First and last name, no emojis or symbols. This is the name that will appear on their certificate.</span>
+        </li>
+        <li>
+          <span class="mark">&#10003;</span>
+          <b>A genuine learning signal and real intent.</b>
+          <span class="why">Courses, labs, TryHackMe / Hack The Box, CTFs, self-study, projects. Beginners are welcome &mdash; being new is fine, showing no effort is not.</span>
+        </li>
+        <li>
+          <span class="mark">&#10003;</span>
+          <b>Clear, relevant goals and a track.</b>
+          <span class="why">Goals connect to cybersecurity and to a track &mdash; SOC, Ethical Hacking, or GRC. "Not sure yet" is acceptable; the track is assigned later.</span>
+        </li>
+      </ul>
+      <p class="neutral note" style="margin-top:10px;">
+        Every point above is required. Miss one and the applicant is rejected &mdash; there is no partial pass.
+      </p>
+    </section>
+
+    <!-- C — commitment, the core gate -->
+    <section class="core">
+      <div class="sec-head">
+        <span class="badge">C</span>
+        <h2>Commitment &amp; availability &mdash; the core gate</h2>
+        <span class="tag">Judge this hardest</span>
+      </div>
+      <div class="panel">
+        <b>The time an applicant can give matters more than anything else.</b>
+        This programme is intensive. The single biggest reason a person fails it
+        is that they could not give it the hours. Judge commitment hard, from
+        two things &mdash; the application has no separate weekly-hours question,
+        so use these:
+        <ul>
+          <li><b>Their status.</b> Students, unemployed applicants, freelancers and people with flexible schedules can commit &mdash; judge the rest of the application. Full-time employment is disqualifying by default.</li>
+          <li><b>Their own words.</b> Read what they wrote about themselves and their goals. Vague, casual or non-committal &rarr; reject. Accept only applicants who clearly will show up and put in the work.</li>
+        </ul>
+      </div>
+      <div class="exception">
+        <span class="exc-label">The one exception &mdash; full-time employed</span>
+        <p>
+          A full-time-employed applicant may still be accepted &mdash; but only
+          if their <b>own write-up</b> makes the case, and makes it fully. It
+          must do <b>all four</b>:
+        </p>
+        <ol>
+          <li>state plainly that they currently have a job;</li>
+          <li>say what the job actually is;</li>
+          <li>explain why they want this internship and what they expect from it;</li>
+          <li>show convincingly that the job still leaves them free enough to fully commit to the programme.</li>
+        </ol>
+        <p>
+          If even one of those is missing, or the case is not convincing,
+          <b>reject</b>. A bare "I have a job but I'm interested" is not a case.
+        </p>
+      </div>
+    </section>
+
+    <!-- D — recorded only -->
+    <section class="neutral">
+      <div class="sec-head">
+        <span class="badge">D</span>
+        <h2>Recorded, not scored</h2>
+        <span class="tag">For balance &amp; reporting only</span>
+      </div>
+      <div class="chips">
+        <span class="chip">Country</span>
+        <span class="chip">Age range</span>
+        <span class="chip">Gender</span>
+        <span class="chip">Referral source</span>
+      </div>
+      <p class="note">
+        Kept for cohort balance and reporting only. These are never a reason to
+        accept or reject. (Employment status is <em>not</em> in this list &mdash;
+        it is a hard criterion, see Section A.)
+      </p>
+    </section>
+
+    <!-- E — decision -->
+    <section class="decide">
+      <div class="sec-head">
+        <span class="badge">E</span>
+        <h2>Decision &mdash; Accept or Reject only</h2>
+        <span class="tag">No waitlist</span>
+      </div>
+      <div class="checklist">
+        <div class="row"><span class="box"></span><span>Not in full-time employment &mdash; or made the full availability case in the write-up (Section C).</span></div>
+        <div class="row"><span class="box"></span><span>Passed every other check in Section A.</span></div>
+        <div class="row"><span class="box"></span><span>The write-up is personalized and human-written &mdash; not AI-generated.</span></div>
+        <div class="row"><span class="box"></span><span>The application is honest and consistent throughout.</span></div>
+        <div class="row"><span class="box"></span><span>Their own words prove real commitment (Section C).</span></div>
+        <div class="row"><span class="box"></span><span>Meets every required point in Section B.</span></div>
+      </div>
+      <div class="verdict">
+        <div class="v a"><b>Accept</b>Clears all of Section A and meets every point in Section B. A genuine, available, committed applicant.</div>
+        <div class="v r"><b>Reject</b>Any Section A trigger, or any Section B point unmet. There is no waitlist &mdash; this is the other outcome.</div>
+      </div>
+    </section>
+
+  </div>
+
+  <footer>
+    Ubuntu Bridge Initiative &middot; Operation Root Access &mdash; Admissions.
+    Apply this sheet to every applicant, the same way, every time.
+    <b>When in doubt, reject.</b> The bar is high on purpose &mdash; we are choosing
+    ~500 from thousands.
+  </footer>
+</div>
+
+</body>
+</html>

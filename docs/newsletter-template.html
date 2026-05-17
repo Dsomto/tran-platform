@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="color-scheme" content="light dark" />
+<meta name="supported-color-schemes" content="light dark" />
+<title>Ubuntu Bridge Initiative — Newsletter</title>
+<style>
+  /*
+    Dark-mode-safe newsletter.
+    The palette is defined as variables and hand-tuned for BOTH modes — the
+    design is never left to a mail client's automatic inversion, which is what
+    makes most emails unreadable in dark mode. Every surface has an explicit
+    colour, so text contrast holds either way.
+  */
+  :root {
+    --page:#eef1f5; --card:#ffffff; --ink:#0f172a; --text:#3a4658;
+    --muted:#6b7689; --line:#e6e9ef; --soft:#f4f6fa;
+    --accent:#2563eb; --accentInk:#1d4ed8; --onbrand:#ffffff;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --page:#0a0f1c; --card:#161d2e; --ink:#f1f5f9; --text:#c4cedd;
+      --muted:#93a0b4; --line:#2b3650; --soft:#1d2638;
+      --accent:#3b82f6; --accentInk:#7cb0ff; --onbrand:#ffffff;
+    }
+  }
+  /* Preview overrides — let the preview page force a mode regardless of OS.
+     Mail clients ignore these (and the script); real dark mode is the
+     @media query above. */
+  html.force-light {
+    --page:#eef1f5; --card:#ffffff; --ink:#0f172a; --text:#3a4658;
+    --muted:#6b7689; --line:#e6e9ef; --soft:#f4f6fa;
+    --accent:#2563eb; --accentInk:#1d4ed8; --onbrand:#ffffff;
+  }
+  html.force-dark {
+    --page:#0a0f1c; --card:#161d2e; --ink:#f1f5f9; --text:#c4cedd;
+    --muted:#93a0b4; --line:#2b3650; --soft:#1d2638;
+    --accent:#3b82f6; --accentInk:#7cb0ff; --onbrand:#ffffff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--page);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-text-size-adjust: 100%;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .outer { padding: 24px 14px 40px; }
+  .nl {
+    max-width: 600px; margin: 0 auto;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  /* brand header — the blue gradient reads well on light AND dark pages */
+  .brand {
+    background: linear-gradient(135deg, #1d4ed8, #0e7490);
+    padding: 26px 30px 24px;
+  }
+  .brand .badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.16);
+    color: #ffffff;
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    padding: 5px 11px; border-radius: 999px;
+  }
+  .brand .logo {
+    color: #ffffff; font-size: 24px; font-weight: 800;
+    letter-spacing: 0.02em; margin-top: 14px;
+  }
+  .brand .issue {
+    color: rgba(255,255,255,0.82); font-size: 12.5px; margin-top: 3px;
+  }
+
+  .body { padding: 30px 30px 14px; }
+  .hi { color: var(--ink); font-size: 19px; font-weight: 700; margin-bottom: 12px; }
+  p { color: var(--text); font-size: 15px; line-height: 1.65; margin-bottom: 16px; }
+  .token { color: var(--accentInk); font-weight: 600; }
+
+  /* hero story */
+  .hero {
+    background: var(--soft);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 20px 20px 6px;
+    margin-bottom: 22px;
+  }
+  .kicker {
+    color: var(--accentInk); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 7px;
+  }
+  .hero h2 { color: var(--ink); font-size: 18px; line-height: 1.35; margin-bottom: 10px; }
+
+  /* news items */
+  .section-label {
+    color: var(--muted); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.15em; text-transform: uppercase;
+    margin: 4px 0 12px;
+  }
+  .item {
+    border-top: 1px solid var(--line);
+    padding: 15px 0 1px;
+  }
+  .item h3 { color: var(--ink); font-size: 15.5px; margin-bottom: 4px; }
+  .item p { font-size: 14px; margin-bottom: 12px; }
+
+  /* CTA button */
+  .cta-wrap { text-align: center; padding: 8px 0 26px; }
+  .cta {
+    display: inline-block;
+    background: var(--accent);
+    color: #ffffff !important;
+    text-decoration: none;
+    font-size: 14px; font-weight: 700;
+    padding: 13px 30px; border-radius: 999px;
+  }
+
+  .sign { color: var(--text); font-size: 15px; margin-bottom: 26px; }
+
+  /* footer */
+  .foot {
+    background: var(--soft);
+    border-top: 1px solid var(--line);
+    padding: 20px 30px 24px;
+    text-align: center;
+  }
+  .foot p { color: var(--muted); font-size: 12px; line-height: 1.6; margin-bottom: 8px; }
+  .foot a { color: var(--accentInk); text-decoration: none; }
+</style>
+</head>
+<body>
+  <div class="outer">
+    <div class="nl">
+
+      <div class="brand">
+        <span class="badge">The Newsletter</span>
+        <div class="logo">Ubuntu Bridge Initiative</div>
+        <div class="issue">Issue <span>{Issue no.}</span> &middot; <span>{Month Year}</span></div>
+      </div>
+
+      <div class="body">
+        <div class="hi">Hi <span class="token">{First name}</span>,</div>
+        <p>
+          {Open with one warm line — what this issue is about, or what the
+          cohort should know first.}
+        </p>
+
+        <div class="hero">
+          <div class="kicker">{Lead story}</div>
+          <h2>{The headline of this issue&rsquo;s main story}</h2>
+          <p>
+            {Two or three sentences on the main update — a stage milestone, a
+            programme announcement, a result worth celebrating. Keep it plain
+            and specific.}
+          </p>
+        </div>
+
+        <div class="section-label">In this issue</div>
+
+        <div class="item">
+          <h3>{News item one}</h3>
+          <p>{One or two sentences. A date, a reminder, a small win.}</p>
+        </div>
+        <div class="item">
+          <h3>{News item two}</h3>
+          <p>{One or two sentences.}</p>
+        </div>
+        <div class="item">
+          <h3>{News item three}</h3>
+          <p>{One or two sentences.}</p>
+        </div>
+
+        <div class="cta-wrap">
+          <a class="cta" href="{link}">{Button label}</a>
+        </div>
+
+        <p class="sign">
+          &mdash; The Ubuntu Bridge Initiative team
+        </p>
+      </div>
+
+      <div class="foot">
+        <p>
+          You are receiving this because you are part of the Ubuntu Bridge
+          Initiative community.
+        </p>
+        <p>
+          Ubuntu Bridge Initiative &middot; ubuntubridgeinitiatives.org<br />
+          <a href="{unsubscribe}">Unsubscribe</a> &middot;
+          <a href="{preferences}">Email preferences</a>
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    /* Preview-only: a #dark or #light fragment forces a mode so the design
+       can be checked both ways. Mail clients run no JavaScript — in a real
+       inbox the @media (prefers-color-scheme) rule does the work. */
+    (function () {
+      var h = (location.hash || "").toLowerCase();
+      if (h.indexOf("dark") > -1) document.documentElement.className = "force-dark";
+      else if (h.indexOf("light") > -1) document.documentElement.className = "force-light";
+    })();
+  </script>
+</body>
+</html>
