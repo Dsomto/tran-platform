@@ -3,7 +3,7 @@ import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { logger } from "@/lib/logger";
 import { Prisma } from "@/generated/prisma";
-import { renderBroadcastEmail } from "@/lib/broadcast-email";
+import { renderBroadcastEmail, personalizeText, firstNameOf } from "@/lib/broadcast-email";
 
 // Newsletter / broadcast sender. Super-admin only.
 //
@@ -113,14 +113,14 @@ export async function POST(request: NextRequest) {
 
     // Resolve the recipient set — either everyone matching the filters, or an
     // explicitly picked list of application IDs.
-    let applicants: { id: string; email: string }[];
+    let applicants: { id: string; email: string; fullName: string }[];
 
     if (sendToAll) {
       const where = buildWhere((body?.filters ?? {}) as FilterInput);
       applicants = await prisma.publicApplication.findMany({
         where,
         take: SEND_ALL_CAP,
-        select: { id: true, email: true },
+        select: { id: true, email: true, fullName: true },
       });
       if (applicants.length === 0) {
         return Response.json(
@@ -137,7 +137,7 @@ export async function POST(request: NextRequest) {
       }
       applicants = await prisma.publicApplication.findMany({
         where: { id: { in: ids } },
-        select: { id: true, email: true },
+        select: { id: true, email: true, fullName: true },
       });
       if (applicants.length === 0) {
         return Response.json(
@@ -156,16 +156,20 @@ export async function POST(request: NextRequest) {
     });
     const userByEmail = new Map(users.map((u) => [u.email, u.id]));
 
-    const html = renderBroadcastEmail({ message });
-    const rows: Prisma.EmailQueueItemCreateManyInput[] = applicants.map((a) => ({
-      userId: userByEmail.get(a.email.toLowerCase()) ?? null,
-      kind: "GENERAL",
-      toEmail: a.email,
-      subject,
-      body: html,
-      status: "PENDING",
-      context: { type: "broadcast", applicationId: a.id },
-    }));
+    // Each recipient gets their own personalised copy — {First name} in the
+    // subject and message is filled with their actual name.
+    const rows: Prisma.EmailQueueItemCreateManyInput[] = applicants.map((a) => {
+      const firstName = firstNameOf(a.fullName);
+      return {
+        userId: userByEmail.get(a.email.toLowerCase()) ?? null,
+        kind: "GENERAL",
+        toEmail: a.email,
+        subject: personalizeText(subject, firstName),
+        body: renderBroadcastEmail({ message: personalizeText(message, firstName) }),
+        status: "PENDING",
+        context: { type: "broadcast", applicationId: a.id },
+      };
+    });
 
     let queued = 0;
     for (let i = 0; i < rows.length; i += CHUNK) {

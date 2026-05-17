@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Send, Loader2, Search, Users, Mail, Eye, EyeOff } from "lucide-react";
-import { renderBroadcastEmail } from "@/lib/broadcast-email";
+import { renderBroadcastEmail, personalizeText, firstNameOf } from "@/lib/broadcast-email";
 
 interface Recipient {
   id: string;
@@ -302,8 +302,14 @@ export function BroadcastClient() {
           onChange={(e) => setMessage(e.target.value)}
           rows={8}
           placeholder="Write your message. Plain text — line breaks are kept."
-          className="w-full p-2 border border-border rounded-lg text-sm mb-3 resize-y"
+          className="w-full p-2 border border-border rounded-lg text-sm mb-1.5 resize-y"
         />
+        <p className="text-xs text-muted-foreground mb-3">
+          Tip: type <span className="font-mono text-blue">{"{First name}"}</span>{" "}
+          to drop in each recipient&apos;s real name. Turn words into a link with{" "}
+          <span className="font-mono text-blue">{"[your words](https://link)"}</span>{" "}
+          — plain URLs become clickable on their own.
+        </p>
 
         {/* Recipients mode */}
         <div className="mb-3 rounded-lg border border-border p-3">
@@ -358,25 +364,30 @@ export function BroadcastClient() {
         </div>
 
         {/* Preview */}
-        {showPreview && (
-          <div className="mt-4 border border-border rounded-xl overflow-hidden">
-            <div className="bg-muted/30 border-b border-border px-4 py-2.5 text-xs">
-              <div className="text-muted-foreground">
-                This is exactly how the email will look in the recipient&apos;s inbox.
+        {showPreview && (() => {
+          const previewName = recipients[0] ? firstNameOf(recipients[0].fullName) : "Ada";
+          return (
+            <div className="mt-4 border border-border rounded-xl overflow-hidden">
+              <div className="bg-muted/30 border-b border-border px-4 py-2.5 text-xs">
+                <div className="text-muted-foreground">
+                  How the email looks in the inbox. Merge fields are shown filled with a
+                  sample name (<strong className="text-foreground">{previewName}</strong>)
+                  — each recipient gets their own.
+                </div>
+                <div className="mt-1 text-foreground">
+                  <span className="text-muted-foreground">Subject:</span>{" "}
+                  <strong>{personalizeText(subject, previewName).trim() || "(no subject)"}</strong>
+                </div>
               </div>
-              <div className="mt-1 text-foreground">
-                <span className="text-muted-foreground">Subject:</span>{" "}
-                <strong>{subject.trim() || "(no subject)"}</strong>
-              </div>
+              <iframe
+                title="Newsletter preview"
+                className="w-full bg-white"
+                style={{ height: 460, border: 0 }}
+                srcDoc={renderBroadcastEmail({ message: personalizeText(message, previewName) })}
+              />
             </div>
-            <iframe
-              title="Newsletter preview"
-              className="w-full bg-white"
-              style={{ height: 460, border: 0 }}
-              srcDoc={renderBroadcastEmail({ message })}
-            />
-          </div>
-        )}
+          );
+        })()}
       </section>
     </div>
   );
