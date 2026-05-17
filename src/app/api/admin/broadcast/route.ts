@@ -3,48 +3,80 @@ import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { logger } from "@/lib/logger";
 import { Prisma } from "@/generated/prisma";
+import { renderBroadcastEmail } from "@/lib/broadcast-email";
 
-// Custom email broadcaster. Admin filters the applicant pool, hand-picks
-// recipients, writes a message, and sends.
+// Newsletter / broadcast sender. Super-admin only.
 //
 // Like the decision emails, this does NOT send inline — it ENQUEUES
 // EmailQueueItem rows (status PENDING). The /api/cron/email-drain cron
 // delivers them gradually, lease-protected, with retries. So a broadcast to
 // thousands is a couple of fast DB writes, never an SMTP fan-out that times out.
 //
-// GET  ?status=&track=&country=&stage=  — applicants matching the filters.
-// POST { subject, message, applicationIds[] } — enqueue the email to each.
+// GET  ?status=&track=&country=&stage=  — applicants matching the filters
+//      (capped sample for the picker) plus the TRUE total count.
+// POST { subject, message, applicationIds[] }   — send to a hand-picked set
+//      { subject, message, sendToAll, filters }  — send to everyone matching
 
 const CHUNK = 200;
+// Display cap — the picker list is a sample for hand-picking individuals,
+// not a data export. The true count is returned separately, and a
+// send-to-all broadcast is never limited by this.
+const PICKER_CAP = 2000;
+// Sanity ceiling for a single send-to-all broadcast.
+const SEND_ALL_CAP = 50000;
+
+type FilterInput = {
+  status?: unknown;
+  track?: unknown;
+  country?: unknown;
+  stage?: unknown;
+};
+
+function buildWhere(f: FilterInput): Prisma.PublicApplicationWhereInput {
+  const where: Prisma.PublicApplicationWhereInput = {};
+
+  const status = typeof f.status === "string" ? f.status : "";
+  if (status && status !== "all") where.status = status;
+
+  const track = typeof f.track === "string" ? f.track.trim() : "";
+  if (track) where.trackInterest = { contains: track, mode: "insensitive" };
+
+  const country = typeof f.country === "string" ? f.country.trim() : "";
+  if (country) where.country = { contains: country, mode: "insensitive" };
+
+  const stageRaw = f.stage;
+  const stage =
+    typeof stageRaw === "number"
+      ? stageRaw
+      : typeof stageRaw === "string" && stageRaw !== "" && stageRaw !== "all"
+      ? Number(stageRaw)
+      : null;
+  if (stage !== null && Number.isFinite(stage)) where.stage = stage;
+
+  return where;
+}
 
 export async function GET(request: NextRequest) {
   const session = await getSession();
-  if (!session || (session.role !== "ADMIN" && session.role !== "SUPER_ADMIN")) {
+  if (!session || session.role !== "SUPER_ADMIN") {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const p = new URL(request.url).searchParams;
-  const where: Prisma.PublicApplicationWhereInput = {};
+  const where = buildWhere({
+    status: p.get("status"),
+    track: p.get("track"),
+    country: p.get("country"),
+    stage: p.get("stage"),
+  });
 
-  const status = p.get("status");
-  if (status && status !== "all") where.status = status;
+  // The true number of people who match — this is what the UI must show.
+  const total = await prisma.publicApplication.count({ where });
 
-  const track = p.get("track");
-  if (track) where.trackInterest = { contains: track, mode: "insensitive" };
-
-  const country = p.get("country");
-  if (country) where.country = { contains: country, mode: "insensitive" };
-
-  const stage = p.get("stage");
-  if (stage && stage !== "all" && Number.isFinite(Number(stage))) {
-    where.stage = Number(stage);
-  }
-
-  // Capped — this list is for picking recipients in the UI, not a data export.
   const applicants = await prisma.publicApplication.findMany({
     where,
     orderBy: { createdAt: "desc" },
-    take: 2000,
+    take: PICKER_CAP,
     select: {
       id: true,
       fullName: true,
@@ -56,35 +88,63 @@ export async function GET(request: NextRequest) {
     },
   });
 
-  return Response.json({ applicants, total: applicants.length });
+  return Response.json({
+    applicants,
+    total,
+    shown: applicants.length,
+    capped: total > applicants.length,
+  });
 }
 
 export async function POST(request: NextRequest) {
   try {
     const session = await getSession();
-    if (!session || (session.role !== "ADMIN" && session.role !== "SUPER_ADMIN")) {
+    if (!session || session.role !== "SUPER_ADMIN") {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const body = await request.json().catch(() => ({}));
     const subject = typeof body?.subject === "string" ? body.subject.trim() : "";
     const message = typeof body?.message === "string" ? body.message.trim() : "";
-    const ids: string[] = Array.isArray(body?.applicationIds)
-      ? body.applicationIds.filter((x: unknown): x is string => typeof x === "string")
-      : [];
+    const sendToAll = body?.sendToAll === true;
 
     if (!subject) return Response.json({ error: "A subject is required." }, { status: 400 });
     if (!message) return Response.json({ error: "A message is required." }, { status: 400 });
-    if (ids.length === 0) {
-      return Response.json({ error: "Pick at least one recipient." }, { status: 400 });
-    }
 
-    const applicants = await prisma.publicApplication.findMany({
-      where: { id: { in: ids } },
-      select: { id: true, email: true },
-    });
-    if (applicants.length === 0) {
-      return Response.json({ error: "None of the selected recipients exist." }, { status: 409 });
+    // Resolve the recipient set — either everyone matching the filters, or an
+    // explicitly picked list of application IDs.
+    let applicants: { id: string; email: string }[];
+
+    if (sendToAll) {
+      const where = buildWhere((body?.filters ?? {}) as FilterInput);
+      applicants = await prisma.publicApplication.findMany({
+        where,
+        take: SEND_ALL_CAP,
+        select: { id: true, email: true },
+      });
+      if (applicants.length === 0) {
+        return Response.json(
+          { error: "No applicants match those filters." },
+          { status: 409 }
+        );
+      }
+    } else {
+      const ids: string[] = Array.isArray(body?.applicationIds)
+        ? body.applicationIds.filter((x: unknown): x is string => typeof x === "string")
+        : [];
+      if (ids.length === 0) {
+        return Response.json({ error: "Pick at least one recipient." }, { status: 400 });
+      }
+      applicants = await prisma.publicApplication.findMany({
+        where: { id: { in: ids } },
+        select: { id: true, email: true },
+      });
+      if (applicants.length === 0) {
+        return Response.json(
+          { error: "None of the selected recipients exist." },
+          { status: 409 }
+        );
+      }
     }
 
     // Attach the queue row to a User where one exists (e.g. approved interns);
@@ -114,36 +174,11 @@ export async function POST(request: NextRequest) {
       queued += chunk.length;
     }
 
-    return Response.json({ queued, requested: ids.length });
+    return Response.json({ queued, requested: applicants.length });
   } catch (error) {
     logger.error("broadcast_failed", error);
     return Response.json({ error: "Internal server error" }, { status: 500 });
   }
-}
-
-// Wrap the admin's plain-text message in the standard branded shell. The
-// message is HTML-escaped — admins type plain text, not markup — and newlines
-// become line breaks.
-function renderBroadcastEmail({ message }: { message: string }): string {
-  const safe = message
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/\n/g, "<br/>");
-  return `
-    <div style="font-family:'Segoe UI',sans-serif;max-width:600px;margin:0 auto;background:#F8FAFC;padding:40px 20px;">
-      <div style="background:linear-gradient(135deg,#2563EB,#0891B2);padding:32px;border-radius:16px;text-align:center;color:white;">
-        <h1 style="margin:0 0 8px;font-size:24px;font-weight:700;">UBI</h1>
-        <p style="margin:0;font-size:13px;opacity:0.9;">Ubuntu Bridge Initiative</p>
-      </div>
-      <div style="background:white;padding:32px;border-radius:16px;margin-top:20px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
-        <div style="color:#334155;line-height:1.7;font-size:14px;">${safe}</div>
-      </div>
-      <p style="text-align:center;color:#94A3B8;font-size:12px;margin-top:24px;">
-        Ubuntu Bridge Initiative · ubuntubridgeinitiatives.org
-      </p>
-    </div>
-  `;
 }
 
 // Enqueuing is a handful of DB writes; 300s is ample headroom even for a

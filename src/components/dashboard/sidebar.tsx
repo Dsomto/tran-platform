@@ -55,7 +55,7 @@ const adminLinks = [
   { href: "/admin", label: "Overview", icon: LayoutDashboard },
   { href: "/admin/applicants", label: "Applicants", icon: UserCheck },
   { href: "/admin/mailing", label: "Decision Emails", icon: Send },
-  { href: "/admin/broadcast", label: "Send Email", icon: Mail },
+  { href: "/admin/broadcast", label: "Newsletter", icon: Mail },
   { href: "/admin/interns", label: "Interns", icon: Users },
   { href: "/admin/teams", label: "Teams", icon: Award },
   { href: "/admin/assignments", label: "Assignments", icon: BookOpen },
@@ -73,8 +73,15 @@ export function Sidebar({ role, userName }: SidebarProps) {
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
 
+  // The Newsletter tab is super-admin only — a core admin never sees it.
   const links =
-    role === "INTERN" ? internLinks : role === "GRADER" ? graderLinks : adminLinks;
+    role === "INTERN"
+      ? internLinks
+      : role === "GRADER"
+      ? graderLinks
+      : adminLinks.filter(
+          (l) => l.href !== "/admin/broadcast" || role === "SUPER_ADMIN"
+        );
 
   async function handleLogout() {
     await fetch("/api/auth/logout", { method: "POST" });
