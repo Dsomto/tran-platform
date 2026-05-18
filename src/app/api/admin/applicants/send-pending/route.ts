@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { logger } from "@/lib/logger";
 import { renderPublicAcceptanceEmail, renderPublicRejectionEmail } from "@/lib/email";
+import { rejectionReasons } from "@/lib/applicant-score";
 import { Prisma } from "@/generated/prisma";
 import { nextInternId } from "@/lib/intern-id";
 import { onboardApprovedApplicant } from "@/lib/onboard";
@@ -74,7 +75,21 @@ export async function GET(request: NextRequest) {
     );
   }
   if (preview === "rejection") {
-    return Response.json(renderPublicRejectionEmail({ fullName: "Jane Doe" }));
+    // Sample reasons so the admin sees the "a little context" block exactly
+    // as a real applicant would.
+    return Response.json(
+      renderPublicRejectionEmail({
+        fullName: "Jane Doe",
+        reasons: rejectionReasons({
+          fullName: "Jane",
+          currentStatus: "Employed full-time",
+          experience: "I am interested in cybersecurity and want to learn.",
+          whyPickYou: "I am hardworking and a fast learner.",
+          goals: "To become a cybersecurity expert.",
+          dedication: "I'll try my best, but I have other commitments",
+        }),
+      })
+    );
   }
 
   // ?list=welcome|rejection — the actual applicants still owing that email,
@@ -248,7 +263,17 @@ async function enqueueWelcome(onlyId?: string): Promise<Response> {
 async function enqueueRejection(onlyId?: string): Promise<Response> {
   const pool = await prisma.publicApplication.findMany({
     where: { status: "rejected", ...rejectionUnsent, ...(onlyId ? { id: onlyId } : {}) },
-    select: { id: true, email: true, fullName: true },
+    // The extra fields feed rejectionReasons() — gentle, specific decline copy.
+    select: {
+      id: true,
+      email: true,
+      fullName: true,
+      currentStatus: true,
+      experience: true,
+      whyPickYou: true,
+      goals: true,
+      dedication: true,
+    },
   });
   if (pool.length === 0) {
     return Response.json({ type: "rejection", total: 0, queued: 0 });
@@ -277,7 +302,10 @@ async function enqueueRejection(onlyId?: string): Promise<Response> {
   const userByEmail = new Map(users.map((u) => [u.email, u.id]));
 
   const rows: Prisma.EmailQueueItemCreateManyInput[] = mine.map((a) => {
-    const { subject, html } = renderPublicRejectionEmail({ fullName: a.fullName });
+    const { subject, html } = renderPublicRejectionEmail({
+      fullName: a.fullName,
+      reasons: rejectionReasons(a),
+    });
     return {
       userId: userByEmail.get(a.email.toLowerCase()) ?? null,
       kind: "GENERAL",

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
@@ -26,6 +26,8 @@ import {
   Send,
   TrendingUp,
   ClipboardList,
+  Sparkles,
+  Hourglass,
 } from "lucide-react";
 import { LogoMark } from "@/components/logo";
 import { useState } from "react";
@@ -55,6 +57,8 @@ const adminLinks = [
   { href: "/ops", label: "Operations", icon: Activity },
   { href: "/admin", label: "Overview", icon: LayoutDashboard },
   { href: "/admin/applicants", label: "Applicants", icon: UserCheck },
+  { href: "/admin/applicants?tab=recommended", label: "Recommended", icon: Sparkles },
+  { href: "/admin/applicants?tab=waitlisted", label: "Waitlist", icon: Hourglass },
   { href: "/admin/application-form", label: "Application Form", icon: ClipboardList },
   { href: "/admin/mailing", label: "Decision Emails", icon: Send },
   { href: "/admin/broadcast", label: "Newsletter", icon: Mail },
@@ -73,7 +77,21 @@ const adminLinks = [
 export function Sidebar({ role, userName }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const tab = searchParams.get("tab") ?? "";
   const [collapsed, setCollapsed] = useState(false);
+
+  // Active-link test. Links carrying a ?tab= query (Recommended, Waitlist)
+  // match only when that exact tab is open; the plain Applicants link stays
+  // active for every other tab.
+  function linkActive(href: string): boolean {
+    const [p, q] = href.split("?");
+    if (q) return pathname === p && `tab=${tab}` === q;
+    if (p === "/admin/applicants")
+      return pathname === p && tab !== "recommended" && tab !== "waitlisted";
+    if (p === "/dashboard" || p === "/admin") return pathname === p;
+    return pathname === p || pathname.startsWith(p);
+  }
 
   // The Newsletter tab is super-admin only — a core admin never sees it.
   const links =
@@ -112,11 +130,7 @@ export function Sidebar({ role, userName }: SidebarProps) {
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
         {links.map((link) => {
-          const isActive =
-            pathname === link.href ||
-            (link.href !== "/dashboard" &&
-              link.href !== "/admin" &&
-              pathname.startsWith(link.href));
+          const isActive = linkActive(link.href);
 
           return (
             <Link

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Topbar } from "@/components/dashboard/topbar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -72,7 +73,15 @@ function getTrackLabel(track: string) {
 
 export default function ApplicantsPage() {
   const [applications, setApplications] = useState<PublicApp[]>([]);
-  const [filter, setFilter] = useState("pending");
+  // The open tab is driven by the URL (?tab=) so the sidebar's Recommended /
+  // Waitlist links land directly on the right view. Initialise from the URL
+  // to avoid a flash, then keep it in sync via the effect below.
+  const TABS = ["recommended", "pending", "approved", "waitlisted", "rejected"];
+  const [filter, setFilter] = useState(() => {
+    if (typeof window === "undefined") return "pending";
+    const t = new URLSearchParams(window.location.search).get("tab");
+    return TABS.includes(t ?? "") ? (t as string) : "pending";
+  });
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [page, setPage] = useState(1);
@@ -102,11 +111,25 @@ export default function ApplicantsPage() {
     avatarUrl: null as string | null,
   });
 
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const urlTab = searchParams.get("tab");
+
   useEffect(() => {
     fetch("/api/auth/me")
       .then((r) => r.json())
       .then((d) => d.user && setUser(d.user));
   }, []);
+
+  // Keep the open tab in sync with the URL — covers sidebar navigation to
+  // ?tab=recommended / ?tab=waitlisted while already on this page.
+  useEffect(() => {
+    const t = TABS.includes(urlTab ?? "") ? (urlTab as string) : "pending";
+    setFilter(t);
+    setPage(1);
+    setSelectedIds(new Set());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlTab]);
 
   // Fetch counts for all statuses
   const fetchCounts = useCallback(async () => {
@@ -453,7 +476,7 @@ export default function ApplicantsPage() {
           {filterTabs.map((tab) => (
             <button
               key={tab.key}
-              onClick={() => { setFilter(tab.key); setPage(1); setSelectedIds(new Set()); }}
+              onClick={() => router.replace(`/admin/applicants?tab=${tab.key}`, { scroll: false })}
               className={`flex items-center gap-4 p-4 rounded-2xl border transition-all cursor-pointer ${
                 filter === tab.key
                   ? "border-blue/30 bg-blue/5 shadow-lg shadow-blue/10"

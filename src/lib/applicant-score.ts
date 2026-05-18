@@ -194,6 +194,87 @@ export function disqualifier(a: DisqualifyInput): string | null {
   return null;
 }
 
+export interface RejectionReasonInput {
+  fullName: string | null;
+  currentStatus: string | null;
+  experience: string | null;
+  whyPickYou: string | null;
+  goals: string | null;
+  dedication: string | null;
+}
+
+/**
+ * Up to `max` gentle, specific reasons an applicant was not selected, derived
+ * only from their own application. The wording is deliberately COMPARATIVE
+ * ("for this cohort we leaned toward…") or about what we could/couldn't see
+ * ("we weren't certain…", "harder for us to picture…") — never a flat factual
+ * accusation. That softens the decline and means the applicant cannot easily
+ * argue the point ("but I actually did X"): the email never claims they did
+ * not. Returns [] when nothing specific stands out — the rejection email then
+ * falls back to the generic "exceptional number of applications" line it
+ * already carries.
+ */
+export function rejectionReasons(a: RejectionReasonInput, max = 2): string[] {
+  const reasons: string[] = [];
+  const free = `${a.experience ?? ""} ${a.whyPickYou ?? ""} ${a.goals ?? ""}`;
+  const lc = free.toLowerCase();
+
+  // 1. Over-experienced — flattering, and the most defensible of all.
+  const yearsMatch = lc.match(/(\d+)\s*\+?\s*years?/);
+  const overExperienced =
+    OVER_EXPERIENCED.some((t) => lc.includes(t)) ||
+    (yearsMatch ? Number(yearsMatch[1]) >= 6 : false);
+  if (overExperienced) {
+    reasons.push(
+      "Your background already looks stronger than what this foundation-level programme is built for — a more advanced path would likely serve you better."
+    );
+  }
+
+  // 2. Limited hands-on practice — comparative, only if not over-experienced.
+  const hands = new Set<string>();
+  for (const { term, label } of HANDS_ON) if (lc.includes(term)) hands.add(label);
+  if (!overExperienced && hands.size < 2) {
+    reasons.push(
+      "For this cohort we leaned toward applicants who could point to more hands-on practice — labs, tools, projects — than came through in your application."
+    );
+  }
+
+  // 3. Brief answers — comparative, about what we could see.
+  const totalWords = free.trim().split(/\s+/).filter(Boolean).length;
+  if (totalWords < 90) {
+    reasons.push(
+      "In a few sections your answers were quite brief, which made it harder for us to picture your experience next to other applicants."
+    );
+  }
+
+  // 4. Availability — full-time work or a hedged commitment answer.
+  const ded = (a.dedication ?? "").toLowerCase();
+  const fullTime = (a.currentStatus ?? "").toLowerCase().includes("full-time");
+  const hedged = ded.includes("try my best") || ded.includes("not sure");
+  if (fullTime || hedged) {
+    reasons.push(
+      "This is a demanding, time-intensive programme, and from your application we weren't certain it would sit comfortably alongside your current commitments."
+    );
+  }
+
+  // 5. Name not a complete, proper full name.
+  const nameParts = (a.fullName ?? "")
+    .trim()
+    .split(/\s+/)
+    .filter(
+      (p) =>
+        /^[\p{L}][\p{L}'.-]*$/u.test(p) &&
+        p.replace(/[^\p{L}]/gu, "").length >= 2
+    );
+  if (nameParts.length < 2) {
+    reasons.push(
+      "A few details on your form, including your name, weren't fully complete — which isn't necessarily a reflection of you, but it is part of what we review."
+    );
+  }
+
+  return reasons.slice(0, max);
+}
+
 export function scoreApplication(a: ScoreInput): ScoredApplication {
   const experience = a.experience ?? "";
   const whyPickYou = a.whyPickYou ?? "";

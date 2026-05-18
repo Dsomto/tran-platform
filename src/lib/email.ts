@@ -428,8 +428,31 @@ export async function sendPublicAcceptanceEmail(
 // renderPublicAcceptanceEmail.
 export function renderPublicRejectionEmail(opts: {
   fullName: string;
+  // Up to two gentle, specific reasons (from rejectionReasons). When present
+  // they render as a soft "a little context" block; when omitted the email
+  // carries only its generic competitiveness line.
+  reasons?: string[];
 }): { subject: string; html: string } {
   const firstName = opts.fullName.split(" ")[0];
+  const reasons = (opts.reasons ?? []).filter(Boolean);
+  const reasonsBlock =
+    reasons.length === 0
+      ? ""
+      : `
+            <!-- Gentle, specific context -->
+            <div style="margin: 28px 0; padding: 22px 24px; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px;">
+              <p style="color: #475569; margin: 0 0 10px; font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;">A little context</p>
+              <p style="color: #475569; margin: 0 0 14px; font-size: 14px; line-height: 1.7;">
+                ${
+                  reasons.length === 1 ? "One thing" : "A couple of things"
+                } stood out as we compared applications — shared gently, only so it's useful for next time:
+              </p>
+              <ul style="color: #334155; margin: 0; padding-left: 20px; font-size: 14px; line-height: 1.7;">
+                ${reasons
+                  .map((r) => `<li style="margin-bottom: 8px;">${r}</li>`)
+                  .join("\n                ")}
+              </ul>
+            </div>`;
   return {
     subject: "UBI application update — and what's next",
     html: `
@@ -457,7 +480,7 @@ export function renderPublicRejectionEmail(opts: {
             <p style="color: #334155; line-height: 1.75; margin: 0 0 18px; font-size: 15px;">
               This is not a judgment of your potential. We received an enormous number of applications and could only accept a fraction of them. The line we drew is narrow and somewhat arbitrary at the edges — strong candidates we believed in were on the wrong side of it. You may be one of them.
             </p>
-
+${reasonsBlock}
             <!-- Apply again callout -->
             <div style="margin: 28px 0; padding: 22px 24px; background: linear-gradient(135deg, #EFF6FF, #DBEAFE); border-left: 4px solid #2563EB; border-radius: 10px;">
               <p style="color: #1E40AF; margin: 0 0 6px; font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;">Try again next cohort</p>
