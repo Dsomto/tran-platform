@@ -20,6 +20,7 @@ import {
   UserCheck,
   UserX,
   Hourglass,
+  Sparkles,
   Download,
   Mail,
   Globe,
@@ -51,6 +52,9 @@ interface PublicApp {
   stage: number;
   stageStatus: string;
   createdAt: string;
+  // Present only on rows from the Recommended tab.
+  _score?: number;
+  _reasons?: string[];
 }
 
 const trackLabels: Record<string, string> = {
@@ -82,7 +86,13 @@ export default function ApplicantsPage() {
     total: number;
   } | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [counts, setCounts] = useState({ pending: 0, approved: 0, rejected: 0, waitlisted: 0 });
+  const [counts, setCounts] = useState({
+    pending: 0,
+    approved: 0,
+    rejected: 0,
+    waitlisted: 0,
+    recommended: 0,
+  });
   // How many approved / rejected applicants still owe a decision email.
   const [pendingEmails, setPendingEmails] = useState({ welcomePending: 0, rejectionPending: 0 });
   const [sendingBatch, setSendingBatch] = useState(false);
@@ -106,12 +116,13 @@ export default function ApplicantsPage() {
       fetch("/api/public-applications?status=rejected&limit=1").then((r) => r.json()),
       fetch("/api/public-applications?status=waitlisted&limit=1").then((r) => r.json()),
     ]);
-    setCounts({
+    setCounts((c) => ({
+      ...c,
       pending: p.pagination?.total || 0,
       approved: a.pagination?.total || 0,
       rejected: r.pagination?.total || 0,
       waitlisted: w.pagination?.total || 0,
-    });
+    }));
     // Pull the decision-email backlog so the toolbar can show
     // "Send N pending welcome emails" with a live count.
     try {
@@ -163,18 +174,27 @@ export default function ApplicantsPage() {
   const fetchApps = useCallback(async () => {
     setIsLoading(true);
     try {
-      const params = new URLSearchParams({
-        status: filter,
-        page: String(page),
-        limit: "20",
-      });
-      if (search) params.set("search", search);
+      // The Recommended tab is scored server-side; everything else is a
+      // plain status filter. Both return the same { applications, pagination }
+      // shape so the rendering below is shared.
+      const url =
+        filter === "recommended"
+          ? `/api/admin/applicants/recommended?page=${page}&limit=20`
+          : `/api/public-applications?${new URLSearchParams({
+              status: filter,
+              page: String(page),
+              limit: "20",
+              ...(search ? { search } : {}),
+            })}`;
 
-      const res = await fetch(`/api/public-applications?${params}`);
+      const res = await fetch(url);
       const data = await res.json();
       setApplications(data.applications || []);
       setTotalPages(data.pagination?.totalPages || 1);
       setTotal(data.pagination?.total || 0);
+      if (filter === "recommended") {
+        setCounts((c) => ({ ...c, recommended: data.pagination?.total || 0 }));
+      }
     } finally {
       setIsLoading(false);
     }
@@ -262,6 +282,51 @@ export default function ApplicantsPage() {
           `Rejected ${n} applicant${s}.\n\nNo emails sent yet. Go to the Rejected tab and click "Send decline emails" when you're ready.`
         );
       }
+    } finally {
+      setIsReviewing(false);
+      setBulkProgress(null);
+    }
+  }
+
+  // Approve every applicant on the Recommended list in one action. Records
+  // the decision only — no emails go out (they're sent later from Decision
+  // Emails). Same batched, conditional-claim review as handleBulkReview.
+  async function approveAllRecommended() {
+    if (
+      !confirm(
+        `Approve all ${total} recommended applicant${total === 1 ? "" : "s"}?\n\n` +
+          "This records the decision for every one of them. No emails go out " +
+          "yet — you can still review them in Decision Emails before sending."
+      )
+    ) {
+      return;
+    }
+    setIsReviewing(true);
+    try {
+      const idRes = await fetch("/api/admin/applicants/recommended?ids=1");
+      const idData = await idRes.json();
+      const ids: string[] = idData.ids || [];
+      const BATCH_SIZE = 20;
+      setBulkProgress({ done: 0, total: ids.length });
+      for (let i = 0; i < ids.length; i += BATCH_SIZE) {
+        const batch = ids.slice(i, i + BATCH_SIZE);
+        await Promise.allSettled(
+          batch.map((id) =>
+            fetch(`/api/public-applications/${id}/review`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ action: "approved" }),
+            })
+          )
+        );
+        setBulkProgress({ done: Math.min(i + BATCH_SIZE, ids.length), total: ids.length });
+      }
+      setSelectedIds(new Set());
+      await Promise.all([fetchApps(), fetchCounts()]);
+      alert(
+        `Approved ${ids.length} recommended applicant${ids.length === 1 ? "" : "s"}.\n\n` +
+          'No emails sent yet — go to Decision Emails and click "Send welcome emails" when ready.'
+      );
     } finally {
       setIsReviewing(false);
       setBulkProgress(null);
@@ -365,6 +430,7 @@ export default function ApplicantsPage() {
   };
 
   const filterTabs = [
+    { key: "recommended", label: "Recommended", icon: Sparkles, count: counts.recommended },
     { key: "pending", label: "Pending", icon: Clock, count: counts.pending },
     { key: "approved", label: "Approved", icon: UserCheck, count: counts.approved },
     { key: "waitlisted", label: "Waitlisted", icon: Hourglass, count: counts.waitlisted },
@@ -418,7 +484,18 @@ export default function ApplicantsPage() {
             />
           </div>
           <div className="flex gap-2 flex-wrap">
-            {filter === "pending" && selectedIds.size > 0 && (
+            {filter === "recommended" && applications.length > 0 && (
+              <Button
+                size="sm"
+                onClick={approveAllRecommended}
+                isLoading={isReviewing}
+              >
+                <Sparkles className="w-4 h-4 mr-1" />
+                Approve all {total}
+              </Button>
+            )}
+            {(filter === "pending" || filter === "recommended") &&
+              selectedIds.size > 0 && (
               <>
                 <Button
                   size="sm"
@@ -707,6 +784,24 @@ export default function ApplicantsPage() {
                   </div>
                 )}
 
+                {/* Why the recommender scored this applicant */}
+                {selected._reasons && selected._reasons.length > 0 && (
+                  <div className="border-t border-border pt-4">
+                    <p className="text-xs font-semibold text-muted uppercase tracking-wide mb-2 flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-blue" />
+                      Why this scored {selected._score}
+                    </p>
+                    <ul className="space-y-1.5">
+                      {selected._reasons.map((r, i) => (
+                        <li key={i} className="text-sm text-foreground/80 flex gap-2">
+                          <span className="text-blue shrink-0">&bull;</span>
+                          <span>{r}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
                 {/* Review actions — shown for fresh applications and for
                     waitlisted ones (so a waitlisted applicant can later be
                     approved or rejected). */}
@@ -774,7 +869,10 @@ export default function ApplicantsPage() {
         <Card variant="glass">
           <CardContent>
             {/* Select all header */}
-            {(filter === "pending" || filter === "approved") && applications.length > 0 && (
+            {(filter === "pending" ||
+              filter === "approved" ||
+              filter === "recommended") &&
+              applications.length > 0 && (
               <div className="flex items-center gap-3 pb-4 mb-4 border-b border-border">
                 <input
                   type="checkbox"
@@ -813,7 +911,9 @@ export default function ApplicantsPage() {
                       selectedIds.has(app.id) ? "bg-blue/5" : ""
                     }`}
                   >
-                    {(filter === "pending" || filter === "approved") && (
+                    {(filter === "pending" ||
+                      filter === "approved" ||
+                      filter === "recommended") && (
                       <input
                         type="checkbox"
                         checked={selectedIds.has(app.id)}
@@ -843,6 +943,20 @@ export default function ApplicantsPage() {
                     </div>
 
                     <div className="flex items-center gap-2 shrink-0">
+                      {app._score != null && (
+                        <Badge
+                          variant={
+                            app._score >= 60
+                              ? "success"
+                              : app._score >= 42
+                              ? "warning"
+                              : "danger"
+                          }
+                          size="sm"
+                        >
+                          Score {app._score}
+                        </Badge>
+                      )}
                       {app.status === "approved" && app.stage >= 0 && (
                         <Badge variant={app.stageStatus === "eliminated" ? "danger" : "primary"} size="sm">
                           {app.stageStatus === "eliminated" ? "Eliminated" : app.stage === 10 ? "Finalist" : `Stage ${app.stage}`}
