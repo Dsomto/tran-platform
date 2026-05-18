@@ -12,6 +12,8 @@ import {
   Eye,
   ChevronLeft,
   ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
   Search,
   Users,
   Clock,
@@ -845,6 +847,15 @@ export default function ApplicantsPage() {
                 variant="outline"
                 size="sm"
                 disabled={page === 1}
+                onClick={() => setPage(1)}
+                title="First page"
+              >
+                <ChevronsLeft className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page === 1}
                 onClick={() => setPage(page - 1)}
               >
                 <ChevronLeft className="w-4 h-4" />
@@ -859,6 +870,15 @@ export default function ApplicantsPage() {
                 onClick={() => setPage(page + 1)}
               >
                 <ChevronRight className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page === totalPages}
+                onClick={() => setPage(totalPages)}
+                title="Last page"
+              >
+                <ChevronsRight className="w-4 h-4" />
               </Button>
             </div>
           </div>

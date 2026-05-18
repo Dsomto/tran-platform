@@ -25,6 +25,7 @@ import {
   Mail,
   Send,
   TrendingUp,
+  ClipboardList,
 } from "lucide-react";
 import { LogoMark } from "@/components/logo";
 import { useState } from "react";
@@ -54,6 +55,7 @@ const adminLinks = [
   { href: "/ops", label: "Operations", icon: Activity },
   { href: "/admin", label: "Overview", icon: LayoutDashboard },
   { href: "/admin/applicants", label: "Applicants", icon: UserCheck },
+  { href: "/admin/application-form", label: "Application Form", icon: ClipboardList },
   { href: "/admin/mailing", label: "Decision Emails", icon: Send },
   { href: "/admin/broadcast", label: "Newsletter", icon: Mail },
   { href: "/admin/interns", label: "Interns", icon: Users },
