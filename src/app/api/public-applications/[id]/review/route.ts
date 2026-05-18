@@ -30,13 +30,6 @@ export async function POST(
       return Response.json({ error: "Application not found" }, { status: 404 });
     }
 
-    if (application.status !== "pending") {
-      return Response.json(
-        { error: "Application has already been reviewed." },
-        { status: 400 }
-      );
-    }
-
     // Decision only — nothing is committed here.
     //
     // Approving does NOT create an intern account or assign a UBI ID. The
@@ -48,24 +41,51 @@ export async function POST(
     //
     // Rejecting likewise only records the decision; the decline email goes out
     // in a batch from the same place.
-    const status = action === "approved" ? "queued_approved" : "rejected";
+    const desired = action === "approved" ? "queued_approved" : "rejected";
 
-    // Conditional claim: the write only lands if the row is STILL "pending",
-    // so two admins deciding the same applicant at the same moment can't
-    // overwrite each other — the first decision wins, the second gets the
-    // "already reviewed" response.
-    const claim = await prisma.publicApplication.updateMany({
-      where: { id, status: "pending" },
-      data: { status },
-    });
-    if (claim.count === 0) {
+    if (application.status === desired) {
+      return Response.json({ success: true, status: desired, unchanged: true });
+    }
+
+    // Once a decision email has gone out, the decision is final here — the
+    // applicant has already been told. Approved-and-onboarded likewise.
+    if (application.status === "approved") {
       return Response.json(
-        { error: "Application has already been reviewed." },
+        { error: "This applicant has already been onboarded — their decision can't be changed here." },
+        { status: 400 }
+      );
+    }
+    if (application.welcomeEmailSentAt || application.rejectionEmailSentAt) {
+      return Response.json(
+        { error: "A decision email has already been sent — the decision can no longer be changed." },
         { status: 400 }
       );
     }
 
-    return Response.json({ success: true, emailPending: true });
+    // Allowed source states: a fresh "pending" application, or a flip between
+    // the two not-yet-emailed decisions (queued_approved ⇄ rejected).
+    if (!["pending", "queued_approved", "rejected"].includes(application.status)) {
+      return Response.json(
+        { error: "This applicant's decision cannot be changed." },
+        { status: 400 }
+      );
+    }
+
+    // Conditional claim on the CURRENT status, so two admins acting on the
+    // same applicant at once can't overwrite each other — the first write
+    // wins, the second sees the row already moved.
+    const claim = await prisma.publicApplication.updateMany({
+      where: { id, status: application.status },
+      data: { status: desired },
+    });
+    if (claim.count === 0) {
+      return Response.json(
+        { error: "This applicant was just updated by someone else — reload and try again." },
+        { status: 409 }
+      );
+    }
+
+    return Response.json({ success: true, status: desired, emailPending: true });
   } catch (error) {
     logger.error("review_failed", error);
     return Response.json(

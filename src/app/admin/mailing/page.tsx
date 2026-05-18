@@ -1,13 +1,41 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Send, Mail, Eye, Loader2, CheckCircle2, XCircle, X } from "lucide-react";
+import {
+  Send,
+  Mail,
+  Eye,
+  Loader2,
+  CheckCircle2,
+  XCircle,
+  X,
+  FileText,
+  ArrowLeftRight,
+} from "lucide-react";
 
 interface Applicant {
   id: string;
   fullName: string;
   email: string;
   trackInterest: string;
+  createdAt: string;
+}
+
+interface ApplicationDetail {
+  id: string;
+  fullName: string;
+  email: string;
+  country: string;
+  ageRange: string;
+  gender: string | null;
+  currentStatus: string;
+  experience: string;
+  trackInterest: string;
+  dedication: string;
+  goals: string;
+  whyPickYou: string | null;
+  referralSource: string | null;
+  status: string;
   createdAt: string;
 }
 
@@ -26,6 +54,9 @@ export default function DecisionEmailsPage() {
   const [sendingId, setSendingId] = useState<string | null>(null);
   const [preview, setPreview] = useState<{ subject: string; html: string } | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
+  const [appPreview, setAppPreview] = useState<ApplicationDetail | null>(null);
+  const [appPreviewLoading, setAppPreviewLoading] = useState<string | null>(null);
+  const [flippingId, setFlippingId] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -103,6 +134,62 @@ export default function DecisionEmailsPage() {
       setToast("Couldn't load the email preview.");
     } finally {
       setPreviewLoading(false);
+    }
+  }
+
+  // Open the full application of one applicant.
+  async function openApplicantPreview(id: string) {
+    setAppPreviewLoading(id);
+    setToast(null);
+    try {
+      const res = await fetch(`/api/public-applications/${id}`);
+      const data = await res.json();
+      if (!res.ok) {
+        setToast(data.error || "Couldn't load the application.");
+      } else {
+        setAppPreview(data.application);
+      }
+    } catch {
+      setToast("Couldn't load the application.");
+    } finally {
+      setAppPreviewLoading(null);
+    }
+  }
+
+  // Flip a not-yet-emailed decision: the welcome tab holds approved
+  // applicants (flip → rejected); the rejection tab holds rejected ones
+  // (flip → approved). No email has gone out, so this just moves the
+  // pending decision between the two tabs.
+  async function flipDecision(a: Applicant) {
+    const action = tab === "welcome" ? "rejected" : "approved";
+    const toWord = action === "rejected" ? "Rejected" : "Approved";
+    if (
+      !confirm(
+        `Move ${a.fullName} to ${toWord}? They have not been emailed yet — ` +
+          "this only changes the pending decision."
+      )
+    ) {
+      return;
+    }
+    setFlippingId(a.id);
+    setToast(null);
+    try {
+      const res = await fetch(`/api/public-applications/${a.id}/review`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setToast(data.error || "Couldn't change the decision.");
+      } else {
+        setToast(`${a.fullName} moved to ${toWord}.`);
+        await load();
+      }
+    } catch {
+      setToast("Network error while changing the decision.");
+    } finally {
+      setFlippingId(null);
     }
   }
 
@@ -199,19 +286,46 @@ export default function DecisionEmailsPage() {
                   <td className="p-3 font-medium text-foreground">{a.fullName}</td>
                   <td className="p-3 font-mono text-xs text-muted-foreground">{a.email}</td>
                   <td className="p-3 text-xs text-muted-foreground">{a.trackInterest}</td>
-                  <td className="p-3 text-right">
-                    <button
-                      onClick={() => send(a.id)}
-                      disabled={sendingId === a.id || busyAll}
-                      className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-lg border border-border hover:bg-muted/50 disabled:opacity-40"
-                    >
-                      {sendingId === a.id ? (
-                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                      ) : (
-                        <Send className="h-3.5 w-3.5" />
-                      )}
-                      Send
-                    </button>
+                  <td className="p-3">
+                    <div className="flex items-center justify-end gap-1.5">
+                      <button
+                        onClick={() => openApplicantPreview(a.id)}
+                        disabled={appPreviewLoading === a.id}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-lg border border-border hover:bg-muted/50 disabled:opacity-40"
+                      >
+                        {appPreviewLoading === a.id ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <FileText className="h-3.5 w-3.5" />
+                        )}
+                        Preview
+                      </button>
+                      <button
+                        onClick={() => flipDecision(a)}
+                        disabled={flippingId === a.id || busyAll}
+                        title={tab === "welcome" ? "Move to Rejected" : "Move to Approved"}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-lg border border-border hover:bg-muted/50 disabled:opacity-40"
+                      >
+                        {flippingId === a.id ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <ArrowLeftRight className="h-3.5 w-3.5" />
+                        )}
+                        {tab === "welcome" ? "Reject" : "Approve"}
+                      </button>
+                      <button
+                        onClick={() => send(a.id)}
+                        disabled={sendingId === a.id || busyAll}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-lg border border-border hover:bg-muted/50 disabled:opacity-40"
+                      >
+                        {sendingId === a.id ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <Send className="h-3.5 w-3.5" />
+                        )}
+                        Send
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -261,6 +375,75 @@ export default function DecisionEmailsPage() {
           </div>
         </div>
       )}
+
+      {/* Application preview modal */}
+      {appPreview && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/30 backdrop-blur-sm p-4"
+          onClick={() => setAppPreview(null)}
+        >
+          <div
+            className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between p-4 border-b border-border">
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-foreground truncate">
+                  {appPreview.fullName}
+                </p>
+                <p className="text-xs font-mono text-muted-foreground truncate">
+                  {appPreview.email}
+                </p>
+              </div>
+              <button
+                onClick={() => setAppPreview(null)}
+                className="p-2 rounded-lg hover:bg-muted/50 text-muted-foreground shrink-0"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-5 space-y-4">
+              <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+                <Field label="Track interest" value={appPreview.trackInterest} />
+                <Field label="Country" value={appPreview.country} />
+                <Field label="Age range" value={appPreview.ageRange} />
+                <Field label="Gender" value={appPreview.gender || "—"} />
+                <Field label="Current status" value={appPreview.currentStatus} />
+                <Field label="Dedication" value={appPreview.dedication} />
+                <Field label="Referral source" value={appPreview.referralSource || "—"} />
+                <Field label="Decision status" value={appPreview.status} />
+              </div>
+              <LongField label="Experience" value={appPreview.experience} />
+              <LongField label="Goals" value={appPreview.goals} />
+              <LongField label="Why pick you" value={appPreview.whyPickYou || "—"} />
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Field({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">
+        {label}
+      </p>
+      <p className="text-sm text-foreground mt-0.5 break-words">{value}</p>
+    </div>
+  );
+}
+
+function LongField({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide mb-1">
+        {label}
+      </p>
+      <p className="text-sm text-foreground/90 leading-relaxed whitespace-pre-wrap bg-muted/20 border border-border rounded-lg p-3">
+        {value}
+      </p>
     </div>
   );
 }
