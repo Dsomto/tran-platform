@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth";
-import { scoreApplication } from "@/lib/applicant-score";
+import { scoreApplication, disqualifier } from "@/lib/applicant-score";
 import snapshot from "@/data/recommended-snapshot.json";
 
 // The "Recommended" tab.
@@ -49,6 +49,9 @@ export async function GET(request: Request) {
   });
 
   const ranked = pending
+    // Hard gates first — no real full name, a one/two-line application, or no
+    // prior cybersecurity knowledge: excluded regardless of agent score.
+    .filter((a) => disqualifier(a) === null)
     .map((a) => {
       const snap = scoreMap.get(a.id);
       if (snap) {

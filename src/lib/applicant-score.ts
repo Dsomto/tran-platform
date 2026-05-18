@@ -138,6 +138,62 @@ function clamp(n: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, n));
 }
 
+// Concrete cybersecurity concepts/terms — distinct from the hands-on list.
+// Used only to confirm an applicant shows SOME prior knowledge; the bare
+// word "cybersecurity" is deliberately excluded (everyone applying says it).
+const CYBER_KNOWLEDGE = [
+  ...HANDS_ON.map((h) => h.term),
+  "network", "linux", "phishing", "firewall", "encryption", "cryptograph",
+  "vulnerab", "threat", "siem", "soc analy", "owasp", "penetration",
+  "malware", "incident", "risk management", "iso 27001", "iso27001",
+  "cia triad", "ethical hack", "forensic", "nist", "grc", "vapt",
+  "red team", "blue team", "active directory", "phishing", "ransomware",
+];
+
+export interface DisqualifyInput {
+  fullName: string | null;
+  experience: string | null;
+  whyPickYou: string | null;
+  goals: string | null;
+}
+
+/**
+ * Hard gates for the Recommended list — non-negotiable rules applied on top
+ * of the score. Returns a short reason if the applicant fails a gate, or
+ * null if they pass. Disqualified applicants are excluded from the
+ * recommendations regardless of how highly they scored.
+ */
+export function disqualifier(a: DisqualifyInput): string | null {
+  // 1. A real, complete full name — at least two proper alphabetic parts.
+  const nameParts = (a.fullName ?? "")
+    .trim()
+    .split(/\s+/)
+    .filter(
+      (p) =>
+        /^[\p{L}][\p{L}'.-]*$/u.test(p) &&
+        p.replace(/[^\p{L}]/gu, "").length >= 2
+    );
+  if (nameParts.length < 2) return "No real full name";
+
+  const why = (a.whyPickYou ?? "").trim();
+  const free = `${a.experience ?? ""} ${why} ${a.goals ?? ""}`;
+  const totalWords = free.trim().split(/\s+/).filter(Boolean).length;
+  const whyWords = why.split(/\s+/).filter(Boolean).length;
+
+  // 2. Not a one/two-liner — both overall, and on the key "why pick you".
+  if (totalWords < 50) return "One/two-line application — too thin";
+  if (whyWords < 12) return "One-line answer to 'why pick you'";
+
+  // 3. Must show some prior cybersecurity knowledge — a real concept, tool,
+  //    platform, certification or course, not just "I want to learn".
+  const lc = free.toLowerCase();
+  if (!CYBER_KNOWLEDGE.some((t) => lc.includes(t))) {
+    return "No prior cybersecurity knowledge shown";
+  }
+
+  return null;
+}
+
 export function scoreApplication(a: ScoreInput): ScoredApplication {
   const experience = a.experience ?? "";
   const whyPickYou = a.whyPickYou ?? "";
