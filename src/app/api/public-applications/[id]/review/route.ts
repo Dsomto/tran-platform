@@ -15,9 +15,9 @@ export async function POST(
     const { id } = await params;
     const { action } = await request.json();
 
-    if (!action || !["approved", "rejected"].includes(action)) {
+    if (!action || !["approved", "rejected", "waitlisted"].includes(action)) {
       return Response.json(
-        { error: "Invalid action. Must be 'approved' or 'rejected'." },
+        { error: "Invalid action. Must be 'approved', 'rejected' or 'waitlisted'." },
         { status: 400 }
       );
     }
@@ -41,7 +41,12 @@ export async function POST(
     //
     // Rejecting likewise only records the decision; the decline email goes out
     // in a batch from the same place.
-    const desired = action === "approved" ? "queued_approved" : "rejected";
+    const desired =
+      action === "approved"
+        ? "queued_approved"
+        : action === "waitlisted"
+        ? "waitlisted"
+        : "rejected";
 
     if (application.status === desired) {
       return Response.json({ success: true, status: desired, unchanged: true });
@@ -63,8 +68,8 @@ export async function POST(
     }
 
     // Allowed source states: a fresh "pending" application, or a flip between
-    // the two not-yet-emailed decisions (queued_approved ⇄ rejected).
-    if (!["pending", "queued_approved", "rejected"].includes(application.status)) {
+    // the not-yet-emailed decisions (queued_approved ⇄ rejected ⇄ waitlisted).
+    if (!["pending", "queued_approved", "rejected", "waitlisted"].includes(application.status)) {
       return Response.json(
         { error: "This applicant's decision cannot be changed." },
         { status: 400 }

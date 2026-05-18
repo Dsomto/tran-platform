@@ -19,6 +19,7 @@ import {
   Clock,
   UserCheck,
   UserX,
+  Hourglass,
   Download,
   Mail,
   Globe,
@@ -81,7 +82,7 @@ export default function ApplicantsPage() {
     total: number;
   } | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [counts, setCounts] = useState({ pending: 0, approved: 0, rejected: 0 });
+  const [counts, setCounts] = useState({ pending: 0, approved: 0, rejected: 0, waitlisted: 0 });
   // How many approved / rejected applicants still owe a decision email.
   const [pendingEmails, setPendingEmails] = useState({ welcomePending: 0, rejectionPending: 0 });
   const [sendingBatch, setSendingBatch] = useState(false);
@@ -99,15 +100,17 @@ export default function ApplicantsPage() {
 
   // Fetch counts for all statuses
   const fetchCounts = useCallback(async () => {
-    const [p, a, r] = await Promise.all([
+    const [p, a, r, w] = await Promise.all([
       fetch("/api/public-applications?status=pending&limit=1").then((r) => r.json()),
       fetch("/api/public-applications?status=approved&limit=1").then((r) => r.json()),
       fetch("/api/public-applications?status=rejected&limit=1").then((r) => r.json()),
+      fetch("/api/public-applications?status=waitlisted&limit=1").then((r) => r.json()),
     ]);
     setCounts({
       pending: p.pagination?.total || 0,
       approved: a.pagination?.total || 0,
       rejected: r.pagination?.total || 0,
+      waitlisted: w.pagination?.total || 0,
     });
     // Pull the decision-email backlog so the toolbar can show
     // "Send N pending welcome emails" with a live count.
@@ -194,7 +197,7 @@ export default function ApplicantsPage() {
     return () => clearTimeout(timer);
   }, [searchInput]);
 
-  async function handleReview(id: string, action: "approved" | "rejected") {
+  async function handleReview(id: string, action: "approved" | "rejected" | "waitlisted") {
     setIsReviewing(true);
     try {
       // Decision only — no email goes out here. The applicant lands in the
@@ -215,7 +218,7 @@ export default function ApplicantsPage() {
     }
   }
 
-  async function handleBulkReview(action: "approved" | "rejected") {
+  async function handleBulkReview(action: "approved" | "rejected" | "waitlisted") {
     if (selectedIds.size === 0) return;
     const ids = Array.from(selectedIds);
 
@@ -244,13 +247,19 @@ export default function ApplicantsPage() {
       await Promise.all([fetchApps(), fetchCounts()]);
 
       // No emails went out — tell the admin where to trigger the batch send.
+      const n = ids.length;
+      const s = n === 1 ? "" : "s";
       if (action === "approved") {
         alert(
-          `Approved ${ids.length} applicant${ids.length === 1 ? "" : "s"}.\n\nNo emails sent yet. Go to the Approved tab and click "Send welcome emails" when you're ready to notify them all at once.`
+          `Approved ${n} applicant${s}.\n\nNo emails sent yet. Go to the Approved tab and click "Send welcome emails" when you're ready to notify them all at once.`
+        );
+      } else if (action === "waitlisted") {
+        alert(
+          `Moved ${n} applicant${s} to the waitlist.\n\nNo emails go out for the waitlist — review them from the Waitlisted tab later to approve or reject.`
         );
       } else {
         alert(
-          `Rejected ${ids.length} applicant${ids.length === 1 ? "" : "s"}.\n\nNo emails sent yet. Go to the Rejected tab and click "Send decline emails" when you're ready.`
+          `Rejected ${n} applicant${s}.\n\nNo emails sent yet. Go to the Rejected tab and click "Send decline emails" when you're ready.`
         );
       }
     } finally {
@@ -352,11 +361,13 @@ export default function ApplicantsPage() {
     pending: "warning",
     approved: "success",
     rejected: "danger",
+    waitlisted: "warning",
   };
 
   const filterTabs = [
     { key: "pending", label: "Pending", icon: Clock, count: counts.pending },
     { key: "approved", label: "Approved", icon: UserCheck, count: counts.approved },
+    { key: "waitlisted", label: "Waitlisted", icon: Hourglass, count: counts.waitlisted },
     { key: "rejected", label: "Rejected", icon: UserX, count: counts.rejected },
   ];
 
@@ -364,7 +375,7 @@ export default function ApplicantsPage() {
     <>
       <Topbar
         title="Public Applications"
-        subtitle={`${counts.pending + counts.approved + counts.rejected} total applications`}
+        subtitle={`${counts.pending + counts.approved + counts.rejected + counts.waitlisted} total applications`}
         firstName={user.firstName}
         lastName={user.lastName}
         avatarUrl={user.avatarUrl}
@@ -416,6 +427,15 @@ export default function ApplicantsPage() {
                 >
                   <CheckCircle className="w-4 h-4 mr-1" />
                   Approve ({selectedIds.size})
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => handleBulkReview("waitlisted")}
+                  isLoading={isReviewing}
+                >
+                  <Hourglass className="w-4 h-4 mr-1" />
+                  Waitlist ({selectedIds.size})
                 </Button>
                 <Button
                   variant="danger"
@@ -687,8 +707,10 @@ export default function ApplicantsPage() {
                   </div>
                 )}
 
-                {/* Review actions */}
-                {selected.status === "pending" && (
+                {/* Review actions — shown for fresh applications and for
+                    waitlisted ones (so a waitlisted applicant can later be
+                    approved or rejected). */}
+                {(selected.status === "pending" || selected.status === "waitlisted") && (
                   <div className="border-t border-border pt-4 flex gap-3">
                     <Button
                       onClick={() => handleReview(selected.id, "approved")}
@@ -698,6 +720,17 @@ export default function ApplicantsPage() {
                       <CheckCircle className="w-4 h-4 mr-2" />
                       Approve
                     </Button>
+                    {selected.status === "pending" && (
+                      <Button
+                        variant="secondary"
+                        onClick={() => handleReview(selected.id, "waitlisted")}
+                        isLoading={isReviewing}
+                        className="flex-1"
+                      >
+                        <Hourglass className="w-4 h-4 mr-2" />
+                        Waitlist
+                      </Button>
+                    )}
                     <Button
                       variant="danger"
                       onClick={() => handleReview(selected.id, "rejected")}

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { CalendarClock, Lock, ArrowLeft, Bell } from "lucide-react";
+import { CalendarClock, Lock, ArrowLeft } from "lucide-react";
 
 type Props = {
   reason: "not_yet_open" | "manually_closed" | "closed_past_deadline";
@@ -107,19 +107,13 @@ export function ApplicationClosed({ reason, opensAt, note }: Props) {
             </>
           )}
 
-          <div className="mt-10 flex flex-col sm:flex-row gap-3 justify-center">
+          <div className="mt-10 flex justify-center">
             <Link
               href="/"
               className="inline-flex items-center justify-center gap-1.5 text-sm font-medium text-foreground border border-border px-6 py-3 rounded-full hover:bg-surface-hover transition-colors"
             >
               <ArrowLeft className="w-4 h-4" /> Back to home
             </Link>
-            <a
-              href="mailto:somtochukwu.okoma@ethnoscyber.com?subject=Notify%20me%20when%20UBI%20applications%20open"
-              className="inline-flex items-center justify-center gap-1.5 text-sm font-semibold text-white bg-blue px-6 py-3 rounded-full hover:bg-blue-dark transition-colors"
-            >
-              <Bell className="w-4 h-4" /> Email me when it opens
-            </a>
           </div>
         </div>
       </div>
