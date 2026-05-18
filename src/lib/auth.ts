@@ -186,7 +186,7 @@ const LOCKOUT_MINUTES = 15;
 
 export type LoginResult =
   | { ok: true; user: SessionUser; token: string }
-  | { ok: false; reason: "invalid" | "locked"; lockedUntil?: Date };
+  | { ok: false; reason: "invalid" | "locked" | "eliminated"; lockedUntil?: Date };
 
 export async function login(
   identifier: string,
@@ -240,6 +240,20 @@ export async function login(
       },
     });
     return { ok: false, reason: "invalid" };
+  }
+
+  // Password is correct — but an eliminated intern may not log back in.
+  // Elimination sets PublicApplication.stageStatus = "eliminated"; that write
+  // is the guaranteed signal (the Intern.isActive mirror is best-effort).
+  // Admins / graders have no application row, so they are never affected.
+  if (user.role === "INTERN") {
+    const app = await prisma.publicApplication.findFirst({
+      where: { email: user.email.toLowerCase() },
+      select: { stageStatus: true },
+    });
+    if (app?.stageStatus === "eliminated") {
+      return { ok: false, reason: "eliminated" };
+    }
   }
 
   // Success — reset counter and lockedUntil.

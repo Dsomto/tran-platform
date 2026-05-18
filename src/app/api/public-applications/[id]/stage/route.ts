@@ -41,6 +41,14 @@ export async function POST(
       where: { id },
       data: { stageStatus: "eliminated" },
     });
+    // Revoke any live session for this person immediately — bumping
+    // tokenVersion invalidates their JWT, so they're logged out at once
+    // and cannot log back in (the login check blocks eliminated interns).
+    // updateMany so an applicant with no account is simply a no-op.
+    await prisma.user.updateMany({
+      where: { email: application.email.toLowerCase() },
+      data: { tokenVersion: { increment: 1 } },
+    });
     // Mirror onto the backing Intern (isActive -> false) and queue the
     // elimination email. Never throws.
     await syncApplicantStages(

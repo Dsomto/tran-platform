@@ -36,6 +36,15 @@ export async function POST(request: NextRequest) {
           { status: 423 }
         );
       }
+      if (result.reason === "eliminated") {
+        return Response.json(
+          {
+            error:
+              "This account is no longer active. If you believe this is a mistake, contact the programme team.",
+          },
+          { status: 403 }
+        );
+      }
       return invalid();
     }
 
