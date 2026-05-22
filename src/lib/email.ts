@@ -258,6 +258,18 @@ export async function sendPasswordResetEmail(opts: {
 // can be delivered via direct send OR by enqueueing in EmailQueueItem (for
 // retry on transient SMTP failures). Kept as a separate function so route
 // handlers can queue without forcing a synchronous send.
+// Sponsor acknowledgment — credits Peter Ejiofor / Ethnos Cyber, whose
+// sponsorship funds the programme. Reused in the acceptance and rejection
+// emails. Edit the copy here to update both.
+const SPONSOR_BLOCK = `
+            <!-- Sponsor acknowledgment -->
+            <div style="margin: 28px 0; padding: 22px 24px; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px;">
+              <p style="color: #475569; margin: 0 0 6px; font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;">Made possible by our sponsor</p>
+              <p style="color: #334155; margin: 0; font-size: 14px; line-height: 1.7;">
+                This programme is sponsored by <strong>Peter Ejiofor</strong>, Founder &amp; CEO of <strong>Ethnos Cyber Limited</strong> — a cybersecurity leader with 15+ years in information security and a recipient of the African Leadership Excellence Award. His backing is why this programme is free for everyone who takes part. We&apos;re deeply grateful.
+              </p>
+            </div>`;
+
 export function renderPublicAcceptanceEmail(opts: {
   fullName: string;
   trackInterest: string;
@@ -350,7 +362,7 @@ export function renderPublicAcceptanceEmail(opts: {
               <br/>
               <a href="${letterUrl}" style="color: #2563EB; word-break: break-all;">${letterUrl}</a>
             </p>
-
+${SPONSOR_BLOCK}
             <hr style="border: none; border-top: 1px solid #E2E8F0; margin: 32px 0 24px;" />
 
             <p style="color: #334155; line-height: 1.7; margin: 0 0 4px; font-size: 15px;">
@@ -418,11 +430,13 @@ export function renderPublicRejectionEmail(opts: {
       : `
             <!-- Gentle, specific context -->
             <div style="margin: 28px 0; padding: 22px 24px; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px;">
-              <p style="color: #475569; margin: 0 0 10px; font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;">A little context</p>
+              <p style="color: #475569; margin: 0 0 10px; font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;">If it helps for next time</p>
               <p style="color: #475569; margin: 0 0 14px; font-size: 14px; line-height: 1.7;">
-                ${
-                  reasons.length === 1 ? "One thing" : "A couple of things"
-                } stood out as we compared applications — shared gently, only so it's useful for next time:
+                Please don&apos;t take ${
+                  reasons.length === 1 ? "this" : "these"
+                } as the reason you weren&apos;t selected — think of ${
+                  reasons.length === 1 ? "it" : "them"
+                } as a small, optional nudge for your next application:
               </p>
               <ul style="color: #334155; margin: 0; padding-left: 20px; font-size: 14px; line-height: 1.7;">
                 ${reasons
@@ -455,7 +469,7 @@ export function renderPublicRejectionEmail(opts: {
             </p>
 
             <p style="color: #334155; line-height: 1.75; margin: 0 0 18px; font-size: 15px;">
-              This is not a judgment of your potential. We received an enormous number of applications and could only accept a fraction of them. The line we drew is narrow and somewhat arbitrary at the edges — strong candidates we believed in were on the wrong side of it. You may be one of them.
+              This is not a judgment of your ability or your effort. We received an enormous number of applications for very few places, and the hardest part of this whole process was turning away people we genuinely believed in. For many reading this exact email, there was nothing wrong with your application at all — we simply ran out of room. For others it came down to fit or timing this round. Please don&apos;t read it as a verdict on you.
             </p>
 ${reasonsBlock}
             <!-- Apply again callout -->
@@ -468,16 +482,16 @@ ${reasonsBlock}
 
             <!-- Stay close callout (workshops) -->
             <div style="margin: 28px 0; padding: 22px 24px; background: linear-gradient(135deg, #ECFDF5, #F0FDF4); border-left: 4px solid #10B981; border-radius: 10px;">
-              <p style="color: #065F46; margin: 0 0 6px; font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;">Stay close — keep this inbox open</p>
+              <p style="color: #065F46; margin: 0 0 6px; font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;">Want to stay in the loop?</p>
               <p style="color: #064E3B; margin: 0; font-size: 14px; line-height: 1.7;">
-                Over the coming weeks we'll be sending you <strong>invitations to free cybersecurity workshops</strong> you can use to keep building. Look out for them.
+                We&apos;ll be running <strong>free cybersecurity workshops</strong> and sharing other opportunities over the coming months. If you&apos;d like us to keep you posted, just <strong>reply to this email with &ldquo;YES&rdquo;</strong> and we&apos;ll add you to the list — no pressure either way.
               </p>
             </div>
 
             <p style="color: #334155; line-height: 1.75; margin: 24px 0 18px; font-size: 15px;">
               In the meantime: read, build, break things in safe environments. The skills compound. The next time you apply, the work you've been doing in between will show up clearly in your application — and we'll be ready to see it.
             </p>
-
+${SPONSOR_BLOCK}
             <p style="color: #334155; line-height: 1.75; margin: 24px 0 4px; font-size: 15px;">
               Wishing you the best, ${firstName}.
             </p>
