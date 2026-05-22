@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Mail, AlertTriangle, CheckCircle2, Clock, RefreshCw, Loader2 } from "lucide-react";
+import { Mail, AlertTriangle, CheckCircle2, Clock, RefreshCw, Loader2, Search } from "lucide-react";
 
 interface EmailItem {
   id: string;
   toEmail: string;
+  applicantName: string | null;
   subject: string;
   status: "PENDING" | "SENT" | "FAILED";
   attempts: number;
@@ -21,6 +22,7 @@ export default function AdminEmailsPage() {
   const [items, setItems] = useState<EmailItem[]>([]);
   const [counts, setCounts] = useState<Record<string, number>>({});
   const [filter, setFilter] = useState<StatusFilter>("FAILED");
+  const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [retrying, setRetrying] = useState(false);
@@ -31,6 +33,7 @@ export default function AdminEmailsPage() {
     try {
       const params = new URLSearchParams();
       if (filter !== "ALL") params.set("status", filter);
+      if (search.trim()) params.set("q", search.trim());
       const res = await fetch(`/api/admin/emails?${params}`);
       const data = await res.json();
       setItems(data.items ?? []);
@@ -44,8 +47,9 @@ export default function AdminEmailsPage() {
   }
 
   useEffect(() => {
-    load();
-  }, [filter]); // eslint-disable-line react-hooks/exhaustive-deps
+    const t = setTimeout(load, 300);
+    return () => clearTimeout(t);
+  }, [filter, search]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function retry(ids: string[]) {
     if (ids.length === 0) return;
@@ -134,6 +138,22 @@ export default function AdminEmailsPage() {
         />
       </div>
 
+      <div className="relative mb-4">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <input
+          type="search"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search decision emails by applicant name…"
+          className="w-full pl-9 pr-3 py-2 text-sm bg-white border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue/30"
+        />
+      </div>
+      {search.trim() && (
+        <p className="mb-4 text-xs text-muted-foreground">
+          Showing stage pass/fail emails for applicants matching “{search.trim()}”.
+        </p>
+      )}
+
       {toast && (
         <div className="mb-4 p-3 bg-blue/10 border border-blue/30 rounded-lg text-sm text-foreground">
           {toast}
@@ -173,7 +193,9 @@ export default function AdminEmailsPage() {
         </div>
       ) : items.length === 0 ? (
         <div className="p-8 bg-white border border-border rounded-xl text-center text-muted-foreground">
-          {filter === "FAILED"
+          {search.trim()
+            ? `No stage pass/fail emails for applicants matching “${search.trim()}”.`
+            : filter === "FAILED"
             ? "No failed emails. Everything that tried to send made it."
             : filter === "PENDING"
             ? "No pending emails."
@@ -210,7 +232,12 @@ export default function AdminEmailsPage() {
                       onChange={() => toggle(item.id)}
                     />
                   </td>
-                  <td className="p-3 font-mono text-xs">{item.toEmail}</td>
+                  <td className="p-3">
+                    {item.applicantName && (
+                      <div className="text-sm text-foreground">{item.applicantName}</div>
+                    )}
+                    <div className="font-mono text-xs text-muted-foreground">{item.toEmail}</div>
+                  </td>
                   <td className="p-3">{item.subject}</td>
                   <td className="p-3">
                     <StatusPill status={item.status} attempts={item.attempts} />
