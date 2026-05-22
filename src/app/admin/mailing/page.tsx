@@ -14,6 +14,7 @@ import {
   FileText,
   ArrowLeftRight,
   Hourglass,
+  Search,
 } from "lucide-react";
 
 interface Applicant {
@@ -44,6 +45,29 @@ interface ApplicationDetail {
 
 type Tab = "welcome" | "rejection" | "waitlist";
 
+interface SearchResult {
+  id: string;
+  fullName: string;
+  email: string;
+  trackInterest: string;
+  status: string; // pending | queued_approved | rejected | waitlisted
+}
+
+// Human label for a current decision status.
+const DECISION_LABEL: Record<string, string> = {
+  pending: "Undecided",
+  queued_approved: "Approved",
+  rejected: "Rejected",
+  waitlisted: "Waitlisted",
+};
+
+// Which switch action corresponds to a given status (to hide the no-op button).
+const STATUS_FOR_ACTION: Record<"approved" | "rejected" | "waitlisted", string> = {
+  approved: "queued_approved",
+  rejected: "rejected",
+  waitlisted: "waitlisted",
+};
+
 // Decision Emails — the dedicated home for the welcome / decline emails.
 // Approving or rejecting an applicant only records the decision; the email is
 // queued from here. Queued emails are delivered in the background by the
@@ -64,6 +88,11 @@ export default function DecisionEmailsPage() {
   // Sending is locked to one account (see canSendEmails). Other admins can
   // view and re-route decisions, but the send buttons are disabled for them.
   const [canSend, setCanSend] = useState(false);
+  // Name search to find anyone (pre-email) and switch their decision.
+  const [search, setSearch] = useState("");
+  const [results, setResults] = useState<SearchResult[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [switchingId, setSwitchingId] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/auth/me")
@@ -71,6 +100,53 @@ export default function DecisionEmailsPage() {
       .then((d) => setCanSend(canSendEmails(d.user?.email)))
       .catch(() => setCanSend(false));
   }, []);
+
+  useEffect(() => {
+    const q = search.trim();
+    if (q.length < 2) {
+      setResults([]);
+      return;
+    }
+    setSearching(true);
+    const t = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/admin/applicants/search?q=${encodeURIComponent(q)}`);
+        const data = await res.json();
+        setResults(data.results ?? []);
+      } catch {
+        setResults([]);
+      } finally {
+        setSearching(false);
+      }
+    }, 300);
+    return () => clearTimeout(t);
+  }, [search]);
+
+  async function switchDecision(id: string, action: "approved" | "rejected" | "waitlisted") {
+    setSwitchingId(id);
+    setToast(null);
+    try {
+      const res = await fetch(`/api/public-applications/${id}/review`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setToast(data.error || "Couldn't switch the decision.");
+      } else {
+        setResults((rs) =>
+          rs.map((r) => (r.id === id ? { ...r, status: data.status ?? r.status } : r))
+        );
+        setToast("Decision updated.");
+        load();
+      }
+    } catch {
+      setToast("Network error while switching the decision.");
+    } finally {
+      setSwitchingId(null);
+    }
+  }
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -226,6 +302,64 @@ export default function DecisionEmailsPage() {
           automatically in the background; track delivery on the Email Queue page.
         </p>
       </header>
+
+      {/* Search a name → switch their decision (before any email is sent) */}
+      <div className="mb-6 bg-white border border-border rounded-xl p-4">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <input
+            type="search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search a name to switch their decision (approve / reject / waitlist)…"
+            className="w-full pl-9 pr-3 py-2 text-sm bg-white border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue/30"
+          />
+        </div>
+        {search.trim().length >= 2 && (
+          <div className="mt-3">
+            {searching ? (
+              <p className="text-sm text-muted-foreground px-1 py-2">Searching…</p>
+            ) : results.length === 0 ? (
+              <p className="text-sm text-muted-foreground px-1 py-2">
+                No switchable applicant matches “{search.trim()}”. (Already-emailed decisions can&apos;t be changed.)
+              </p>
+            ) : (
+              <div className="divide-y divide-border border border-border rounded-lg overflow-hidden">
+                {results.map((r) => (
+                  <div key={r.id} className="flex flex-wrap items-center gap-2 p-3 hover:bg-muted/20">
+                    <div className="min-w-0 flex-1">
+                      <div className="text-sm font-medium text-foreground truncate">{r.fullName}</div>
+                      <div className="text-xs font-mono text-muted-foreground truncate">{r.email}</div>
+                    </div>
+                    <span className="text-xs px-2 py-0.5 rounded-md border border-border text-muted-foreground">
+                      {DECISION_LABEL[r.status] ?? r.status}
+                    </span>
+                    <div className="flex items-center gap-1.5">
+                      {(["approved", "rejected", "waitlisted"] as const)
+                        .filter((action) => STATUS_FOR_ACTION[action] !== r.status)
+                        .map((action) => (
+                          <button
+                            key={action}
+                            onClick={() => switchDecision(r.id, action)}
+                            disabled={switchingId === r.id}
+                            className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-lg border border-border hover:bg-muted/50 disabled:opacity-40 capitalize"
+                          >
+                            {switchingId === r.id ? (
+                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            ) : (
+                              <ArrowLeftRight className="h-3.5 w-3.5" />
+                            )}
+                            {action === "approved" ? "Approve" : action === "rejected" ? "Reject" : "Waitlist"}
+                          </button>
+                        ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Tabs */}
       <div className="flex gap-2 mb-6">
