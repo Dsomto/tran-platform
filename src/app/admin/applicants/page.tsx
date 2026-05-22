@@ -298,7 +298,7 @@ export default function ApplicantsPage() {
         );
       } else if (action === "waitlisted") {
         alert(
-          `Moved ${n} applicant${s} to the waitlist.\n\nNo emails go out for the waitlist — review them from the Waitlisted tab later to approve or reject.`
+          `Moved ${n} applicant${s} to the waitlist.\n\nNo emails sent yet. Go to Decision Emails → Waitlist to notify them, or review them from the Waitlisted tab later to approve or reject.`
         );
       } else {
         alert(

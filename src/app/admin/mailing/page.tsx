@@ -11,6 +11,7 @@ import {
   X,
   FileText,
   ArrowLeftRight,
+  Hourglass,
 } from "lucide-react";
 
 interface Applicant {
@@ -39,7 +40,7 @@ interface ApplicationDetail {
   createdAt: string;
 }
 
-type Tab = "welcome" | "rejection";
+type Tab = "welcome" | "rejection" | "waitlist";
 
 // Decision Emails — the dedicated home for the welcome / decline emails.
 // Approving or rejecting an applicant only records the decision; the email is
@@ -77,8 +78,9 @@ export default function DecisionEmailsPage() {
     load();
   }, [load]);
 
-  const label = tab === "welcome" ? "welcome" : "decline";
-  const decisionWord = tab === "welcome" ? "approved" : "rejected";
+  const label = tab === "welcome" ? "welcome" : tab === "waitlist" ? "waitlist" : "decline";
+  const decisionWord =
+    tab === "welcome" ? "approved" : tab === "waitlist" ? "waitlisted" : "rejected";
 
   async function send(applicationId?: string) {
     const isAll = !applicationId;
@@ -221,6 +223,12 @@ export default function DecisionEmailsPage() {
           icon={XCircle}
           label="Decline — Rejected"
         />
+        <TabButton
+          active={tab === "waitlist"}
+          onClick={() => setTab("waitlist")}
+          icon={Hourglass}
+          label="Waitlist"
+        />
       </div>
 
       {toast && (
@@ -300,19 +308,21 @@ export default function DecisionEmailsPage() {
                         )}
                         Preview
                       </button>
-                      <button
-                        onClick={() => flipDecision(a)}
-                        disabled={flippingId === a.id || busyAll}
-                        title={tab === "welcome" ? "Move to Rejected" : "Move to Approved"}
-                        className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-lg border border-border hover:bg-muted/50 disabled:opacity-40"
-                      >
-                        {flippingId === a.id ? (
-                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                        ) : (
-                          <ArrowLeftRight className="h-3.5 w-3.5" />
-                        )}
-                        {tab === "welcome" ? "Reject" : "Approve"}
-                      </button>
+                      {tab !== "waitlist" && (
+                        <button
+                          onClick={() => flipDecision(a)}
+                          disabled={flippingId === a.id || busyAll}
+                          title={tab === "welcome" ? "Move to Rejected" : "Move to Approved"}
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-lg border border-border hover:bg-muted/50 disabled:opacity-40"
+                        >
+                          {flippingId === a.id ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <ArrowLeftRight className="h-3.5 w-3.5" />
+                          )}
+                          {tab === "welcome" ? "Reject" : "Approve"}
+                        </button>
+                      )}
                       <button
                         onClick={() => send(a.id)}
                         disabled={sendingId === a.id || busyAll}
@@ -369,8 +379,7 @@ export default function DecisionEmailsPage() {
               <div dangerouslySetInnerHTML={{ __html: preview.html }} />
             </div>
             <div className="p-3 text-xs text-muted-foreground border-t border-border">
-              Sample data shown. Each applicant receives this with their own name
-              {tab === "welcome" ? ", intern ID and login password" : ""}.
+              Sample data shown. Each applicant receives this with their own name.
             </div>
           </div>
         </div>

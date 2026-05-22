@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { logger } from "@/lib/logger";
-import { renderPublicAcceptanceEmail, renderPublicRejectionEmail } from "@/lib/email";
+import { renderPublicAcceptanceEmail, renderPublicRejectionEmail, renderPublicWaitlistEmail } from "@/lib/email";
 import { rejectionReasons } from "@/lib/applicant-score";
 import { Prisma } from "@/generated/prisma";
 import { nextInternId } from "@/lib/intern-id";
@@ -44,6 +44,12 @@ const rejectionUnsent: Prisma.PublicApplicationWhereInput = {
   OR: [{ rejectionEmailSentAt: null }, { rejectionEmailSentAt: { isSet: false } }],
 };
 
+// Same absent-or-null treatment for the waitlist pool, keyed off
+// waitlistEmailSentAt.
+const waitlistUnsent: Prisma.PublicApplicationWhereInput = {
+  OR: [{ waitlistEmailSentAt: null }, { waitlistEmailSentAt: { isSet: false } }],
+};
+
 // Temporary login password — stored in plain text on the application just long
 // enough to render the welcome email, then hashed on first login.
 function generatePassword(): string {
@@ -74,6 +80,14 @@ export async function GET(request: NextRequest) {
       })
     );
   }
+  if (preview === "waitlist") {
+    return Response.json(
+      renderPublicWaitlistEmail({
+        fullName: "Jane Doe",
+        trackInterest: "SOC Analysis",
+      })
+    );
+  }
   if (preview === "rejection") {
     // Sample reasons so the admin sees the "a little context" block exactly
     // as a real applicant would.
@@ -95,10 +109,12 @@ export async function GET(request: NextRequest) {
   // ?list=welcome|rejection — the actual applicants still owing that email,
   // for the Decision Emails page. Capped at 500; `total` is the full count.
   const list = params.get("list");
-  if (list === "welcome" || list === "rejection") {
+  if (list === "welcome" || list === "rejection" || list === "waitlist") {
     const where: Prisma.PublicApplicationWhereInput =
       list === "welcome"
         ? { status: "queued_approved" }
+        : list === "waitlist"
+        ? { status: "waitlisted", ...waitlistUnsent }
         : { status: "rejected", ...rejectionUnsent };
     const [applicants, total] = await Promise.all([
       prisma.publicApplication.findMany({
@@ -113,15 +129,18 @@ export async function GET(request: NextRequest) {
   }
 
   // default — pending counts for the button badges.
-  const [welcomePending, rejectionPending] = await Promise.all([
+  const [welcomePending, rejectionPending, waitlistPending] = await Promise.all([
     prisma.publicApplication.count({
       where: { status: "queued_approved" },
     }),
     prisma.publicApplication.count({
       where: { status: "rejected", ...rejectionUnsent },
     }),
+    prisma.publicApplication.count({
+      where: { status: "waitlisted", ...waitlistUnsent },
+    }),
   ]);
-  return Response.json({ welcomePending, rejectionPending });
+  return Response.json({ welcomePending, rejectionPending, waitlistPending });
 }
 
 export async function POST(request: NextRequest) {
@@ -133,9 +152,9 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json().catch(() => ({}));
     const type = body?.type;
-    if (type !== "welcome" && type !== "rejection") {
+    if (type !== "welcome" && type !== "rejection" && type !== "waitlist") {
       return Response.json(
-        { error: "type must be 'welcome' or 'rejection'" },
+        { error: "type must be 'welcome', 'rejection' or 'waitlist'" },
         { status: 400 }
       );
     }
@@ -144,7 +163,9 @@ export async function POST(request: NextRequest) {
     // Decision Emails page). Omitted -> the whole pending pool.
     const onlyId = typeof body?.applicationId === "string" ? body.applicationId : undefined;
 
-    return type === "welcome" ? enqueueWelcome(onlyId) : enqueueRejection(onlyId);
+    if (type === "welcome") return enqueueWelcome(onlyId);
+    if (type === "waitlist") return enqueueWaitlist(onlyId);
+    return enqueueRejection(onlyId);
   } catch (error) {
     logger.error("send_pending_failed", error);
     return Response.json({ error: "Internal server error" }, { status: 500 });
@@ -321,6 +342,59 @@ async function enqueueRejection(onlyId?: string): Promise<Response> {
   return Response.json({ type: "rejection", total: pool.length, queued });
 }
 
+async function enqueueWaitlist(onlyId?: string): Promise<Response> {
+  const pool = await prisma.publicApplication.findMany({
+    where: { status: "waitlisted", ...waitlistUnsent, ...(onlyId ? { id: onlyId } : {}) },
+    select: { id: true, email: true, fullName: true, trackInterest: true },
+  });
+  if (pool.length === 0) {
+    return Response.json({ type: "waitlist", total: 0, queued: 0 });
+  }
+
+  // Claim by stamping waitlistEmailSentAt, then re-read to keep only the rows
+  // this run actually claimed — so concurrent runs can't double-send.
+  const claimAt = new Date();
+  await prisma.publicApplication.updateMany({
+    where: { id: { in: pool.map((a) => a.id) }, ...waitlistUnsent },
+    data: { waitlistEmailSentAt: claimAt },
+  });
+  const claimed = await prisma.publicApplication.findMany({
+    where: { id: { in: pool.map((a) => a.id) }, waitlistEmailSentAt: claimAt },
+    select: { id: true },
+  });
+  const claimedIds = new Set(claimed.map((r) => r.id));
+  const mine = pool.filter((a) => claimedIds.has(a.id));
+  if (mine.length === 0) {
+    return Response.json({ type: "waitlist", total: pool.length, queued: 0 });
+  }
+
+  // Waitlisted applicants usually have no User account — userId stays null.
+  const users = await prisma.user.findMany({
+    where: { email: { in: mine.map((a) => a.email.toLowerCase()) } },
+    select: { id: true, email: true },
+  });
+  const userByEmail = new Map(users.map((u) => [u.email, u.id]));
+
+  const rows: Prisma.EmailQueueItemCreateManyInput[] = mine.map((a) => {
+    const { subject, html } = renderPublicWaitlistEmail({
+      fullName: a.fullName,
+      trackInterest: a.trackInterest,
+    });
+    return {
+      userId: userByEmail.get(a.email.toLowerCase()) ?? null,
+      kind: "GENERAL",
+      toEmail: a.email,
+      subject,
+      body: html,
+      status: "PENDING",
+      context: { type: "waitlist", applicationId: a.id },
+    };
+  });
+
+  const queued = await enqueueChunked(rows, mine.map((a) => a.id), "waitlist");
+  return Response.json({ type: "waitlist", total: pool.length, queued });
+}
+
 /**
  * Insert the queue rows in chunks. If a chunk fails, release the claim
  * (welcomeEmailSentAt / rejectionEmailSentAt -> null) on every row from the
@@ -330,7 +404,7 @@ async function enqueueRejection(onlyId?: string): Promise<Response> {
 async function enqueueChunked(
   rows: Prisma.EmailQueueItemCreateManyInput[],
   appIds: string[],
-  type: "welcome" | "rejection"
+  type: "welcome" | "rejection" | "waitlist"
 ): Promise<number> {
   let queued = 0;
   for (let i = 0; i < rows.length; i += CHUNK) {
@@ -341,17 +415,16 @@ async function enqueueChunked(
     } catch (err) {
       logger.error("send_pending_enqueue_chunk_failed", err, { type, from: i });
       const remaining = appIds.slice(i);
-      if (type === "welcome") {
-        await prisma.publicApplication.updateMany({
-          where: { id: { in: remaining } },
-          data: { welcomeEmailSentAt: null },
-        });
-      } else {
-        await prisma.publicApplication.updateMany({
-          where: { id: { in: remaining } },
-          data: { rejectionEmailSentAt: null },
-        });
-      }
+      const releaseField =
+        type === "welcome"
+          ? "welcomeEmailSentAt"
+          : type === "waitlist"
+          ? "waitlistEmailSentAt"
+          : "rejectionEmailSentAt";
+      await prisma.publicApplication.updateMany({
+        where: { id: { in: remaining } },
+        data: { [releaseField]: null },
+      });
       break;
     }
   }

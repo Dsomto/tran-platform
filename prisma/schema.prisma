@@ -462,6 +462,7 @@ model PublicApplication {
   // which applicants in the approved/rejected pool still owe an email.
   welcomeEmailSentAt   DateTime?
   rejectionEmailSentAt DateTime?
+  waitlistEmailSentAt  DateTime?
   status          String   @default("pending")
   stage           Int      @default(-1)     // -1 = not started, 0-9 = active stages, 10 = finalist
   stageStatus     String   @default("none") // none | active | advanced | eliminated

@@ -112,7 +112,7 @@ export async function sendApplicationConfirmation(
                   </td>
                   <td style="vertical-align: top; padding: 10px 0;">
                     <p style="color: #0F172A; margin: 0 0 2px; font-size: 14px; font-weight: 600;">Either way, stay close</p>
-                    <p style="color: #64748B; margin: 0; font-size: 13px; line-height: 1.6;">We periodically send free workshop invitations and certification vouchers to everyone who applied.</p>
+                    <p style="color: #64748B; margin: 0; font-size: 13px; line-height: 1.6;">We periodically send free workshop invitations to everyone who applied.</p>
                   </td>
                 </tr>
               </table>
@@ -264,11 +264,10 @@ export function renderPublicAcceptanceEmail(opts: {
   internId?: string;
   tempPassword?: string;
 }): { subject: string; html: string } {
-  const { fullName, trackInterest, internId, tempPassword } = opts;
+  const { fullName, trackInterest } = opts;
   const firstName = fullName.split(" ")[0];
   const sig = signLetter(fullName, trackInterest);
   const letterUrl = `${publicAppUrl()}/letter/acceptance?name=${encodeURIComponent(fullName)}&track=${encodeURIComponent(trackInterest)}&sig=${sig}`;
-  const loginUrl = `${publicAppUrl()}/login`;
 
   return {
     subject: "Welcome to UBI — your access to Cohort 1",
@@ -302,7 +301,7 @@ export function renderPublicAcceptanceEmail(opts: {
             <div style="margin: 28px 0; padding: 22px 24px; background: linear-gradient(135deg, #ECFDF5, #F0FDF4); border-left: 4px solid #10B981; border-radius: 10px;">
               <p style="color: #065F46; margin: 0 0 6px; font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;">Free, ever</p>
               <p style="color: #064E3B; margin: 0; font-size: 14px; line-height: 1.7;">
-                No tuition. No application fee. We give you <strong>vouchers for industry certifications</strong> as you progress. No data bill if you qualify for the scholarship. Your only cost is the time and effort you put in.
+                No tuition. No application fee. No data bill if you qualify for the scholarship. Your only cost is the time and effort you put in.
               </p>
             </div>
 
@@ -332,40 +331,18 @@ export function renderPublicAcceptanceEmail(opts: {
                 <td style="vertical-align: top; padding: 12px 0 12px 16px;">
                   <p style="color: #92400E; margin: 0 0 4px; font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;">Finalists</p>
                   <p style="color: #0F172A; margin: 0 0 4px; font-size: 15px; font-weight: 600;">Top tier benefits</p>
-                  <p style="color: #64748B; margin: 0; font-size: 13px; line-height: 1.7;">1-on-1 mentorship from senior practitioners, hardware (laptops where needed), and priority placement on our Hire page. Finalists get chosen first for jobs in our network.</p>
+                  <p style="color: #64748B; margin: 0; font-size: 13px; line-height: 1.7;">Sponsored industry certifications, 1-on-1 mentorship from senior practitioners, hardware (laptops where needed), and priority placement on our Hire page. Finalists get chosen first for jobs in our network.</p>
                 </td>
               </tr>
             </table>
 
-            ${internId && tempPassword ? `
-            <!-- Login credentials -->
-            <div style="margin: 28px 0; padding: 24px; background: #0F172A; border-radius: 14px;">
-              <p style="color: #38BDF8; margin: 0 0 14px; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;">Your login</p>
-              <table style="width: 100%; border-collapse: collapse;">
-                <tr>
-                  <td style="padding: 8px 0; color: #94A3B8; font-size: 13px;">Intern ID</td>
-                  <td style="padding: 8px 0; color: #F1F5F9; font-size: 14px; font-family: 'SF Mono', Monaco, Menlo, monospace; text-align: right; font-weight: 600;">${internId}</td>
-                </tr>
-                <tr>
-                  <td style="padding: 8px 0; border-top: 1px solid rgba(255,255,255,0.08); color: #94A3B8; font-size: 13px;">Temp password</td>
-                  <td style="padding: 8px 0; border-top: 1px solid rgba(255,255,255,0.08); color: #F1F5F9; font-size: 14px; font-family: 'SF Mono', Monaco, Menlo, monospace; text-align: right; font-weight: 600;">${tempPassword}</td>
-                </tr>
-              </table>
-              <p style="margin: 18px 0 0; text-align: center;">
-                <a href="${loginUrl}" style="display: inline-block; background: #2563EB; color: white; padding: 12px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; letter-spacing: 0.3px;">
-                  Log in to your dashboard
-                </a>
-              </p>
-              <p style="color: #64748B; margin: 16px 0 0; font-size: 12px; line-height: 1.6; text-align: center;">
-                You'll be asked to set a new password on first login. Please don't share these credentials.
-              </p>
-            </div>
-            ` : ""}
-
             <!-- What's next -->
             <h3 style="color: #0F172A; margin: 28px 0 10px; font-size: 17px; font-weight: 700;">What's next</h3>
             <p style="color: #475569; line-height: 1.75; margin: 0 0 14px; font-size: 14px;">
-              The orientation date and the programme start date will be communicated separately — keep an eye on your inbox. Stage 0 is already accessible from your dashboard so you can start orienting yourself.
+              For now, let it land — <strong>you made it.</strong> Out of thousands of applications, yours stood out. So go celebrate it: <strong>post it on your socials</strong> and let the world know you're in UBI Cohort 1. Tag us and we'll cheer you on. 🎉
+            </p>
+            <p style="color: #475569; line-height: 1.75; margin: 0 0 14px; font-size: 14px;">
+              Your login details and dashboard access are coming in a separate email shortly, together with the orientation and programme start dates. Keep an eye on your inbox.
             </p>
 
             <p style="color: #475569; line-height: 1.75; margin: 28px 0 14px; font-size: 14px;">
@@ -489,11 +466,11 @@ ${reasonsBlock}
               </p>
             </div>
 
-            <!-- Stay close callout (workshops + vouchers) -->
+            <!-- Stay close callout (workshops) -->
             <div style="margin: 28px 0; padding: 22px 24px; background: linear-gradient(135deg, #ECFDF5, #F0FDF4); border-left: 4px solid #10B981; border-radius: 10px;">
               <p style="color: #065F46; margin: 0 0 6px; font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;">Stay close — keep this inbox open</p>
               <p style="color: #064E3B; margin: 0; font-size: 14px; line-height: 1.7;">
-                Over the coming weeks we'll be sending you <strong>invitations to free cybersecurity workshops</strong> and <strong>certification vouchers</strong> you can use to keep building. Look out for them.
+                Over the coming weeks we'll be sending you <strong>invitations to free cybersecurity workshops</strong> you can use to keep building. Look out for them.
               </p>
             </div>
 
@@ -503,6 +480,76 @@ ${reasonsBlock}
 
             <p style="color: #334155; line-height: 1.75; margin: 24px 0 4px; font-size: 15px;">
               Wishing you the best, ${firstName}.
+            </p>
+            <p style="color: #0F172A; line-height: 1.5; margin: 16px 0 0; font-size: 15px; font-weight: 600;">
+              — Somto Okoma
+            </p>
+            <p style="color: #64748B; line-height: 1.5; margin: 0; font-size: 13px;">
+              Head of Programme, Ubuntu Bridge Initiative
+            </p>
+          </div>
+
+          <!-- Footer -->
+          <p style="text-align: center; color: #94A3B8; font-size: 11px; margin: 24px 0 0; letter-spacing: 0.3px;">
+            Ubuntu Bridge Initiative &middot; Building the next generation of cybersecurity professionals
+          </p>
+        </div>
+      </div>
+    `,
+  };
+}
+
+// Render the waitlist email body. A waitlist decision is neither a yes nor a
+// no — the applicant is held for a later look — so the copy is deliberately
+// warm and hopeful. Returns subject + html so it can be enqueued like the
+// other public-application emails.
+export function renderPublicWaitlistEmail(opts: {
+  fullName: string;
+  trackInterest: string;
+}): { subject: string; html: string } {
+  const firstName = opts.fullName.split(" ")[0];
+  return {
+    subject: "UBI Cohort 1 — you're on the waitlist",
+    html: `
+      <div style="font-family: -apple-system, 'Segoe UI', Roboto, sans-serif; background: #F1F5F9; padding: 40px 20px;">
+        <div style="max-width: 600px; margin: 0 auto;">
+
+          <!-- Header -->
+          <div style="background: linear-gradient(135deg, #0F172A 0%, #1E293B 60%, #B45309 100%); padding: 48px 32px; border-radius: 18px 18px 0 0; text-align: center; color: white;">
+            <div style="display: inline-block; padding: 6px 14px; border: 1.5px solid rgba(255,255,255,0.3); border-radius: 999px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 18px;">Cohort 1 · ${opts.trackInterest}</div>
+            <h1 style="margin: 0; font-size: 28px; font-weight: 800; letter-spacing: -0.5px;">You're on the waitlist.</h1>
+            <p style="margin: 8px 0 0; font-size: 13px; opacity: 0.75;">An update on your Cohort 1 application</p>
+          </div>
+
+          <!-- Card -->
+          <div style="background: white; padding: 40px 36px; border-radius: 0 0 18px 18px; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);">
+
+            <p style="color: #475569; line-height: 1.75; margin: 0 0 18px; font-size: 15px;">
+              Hi ${firstName},
+            </p>
+
+            <p style="color: #334155; line-height: 1.75; margin: 0 0 18px; font-size: 15px;">
+              I want to be straight with you: <strong>this is not a no — and it's not yet a yes.</strong> You've been placed on the <strong>waitlist</strong> for UBI Cohort 1.
+            </p>
+
+            <p style="color: #334155; line-height: 1.75; margin: 0 0 18px; font-size: 15px;">
+              We received an enormous number of strong applications and only had so many seats to start. Yours was good enough that we didn't want to let it go — so we're holding it. As places open up, we move through the waitlist, and you're on it.
+            </p>
+
+            <!-- What this means -->
+            <div style="margin: 28px 0; padding: 22px 24px; background: linear-gradient(135deg, #FFFBEB, #FEF3C7); border-left: 4px solid #F59E0B; border-radius: 10px;">
+              <p style="color: #92400E; margin: 0 0 6px; font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;">What this means</p>
+              <p style="color: #78350F; margin: 0; font-size: 14px; line-height: 1.7;">
+                You don't need to do anything right now. If a place opens for your track, we'll email you directly with the next steps. Keep this inbox open — that's where the next update will land.
+              </p>
+            </div>
+
+            <p style="color: #334155; line-height: 1.75; margin: 24px 0 18px; font-size: 15px;">
+              In the meantime: keep building. Read, practise, break things in safe environments. If you're offered a place, the work you've been doing in between will only make your start stronger.
+            </p>
+
+            <p style="color: #334155; line-height: 1.75; margin: 24px 0 4px; font-size: 15px;">
+              Thank you for your patience, ${firstName} — and for wanting to be here.
             </p>
             <p style="color: #0F172A; line-height: 1.5; margin: 16px 0 0; font-size: 15px; font-weight: 600;">
               — Somto Okoma
