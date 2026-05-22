@@ -265,8 +265,11 @@ const SPONSOR_BLOCK = `
             <!-- Sponsor acknowledgment -->
             <div style="margin: 28px 0; padding: 22px 24px; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px;">
               <p style="color: #475569; margin: 0 0 6px; font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;">Made possible by our sponsor</p>
-              <p style="color: #334155; margin: 0; font-size: 14px; line-height: 1.7;">
+              <p style="color: #334155; margin: 0 0 12px; font-size: 14px; line-height: 1.7;">
                 This programme is sponsored by <strong>Peter Ejiofor</strong>, Founder &amp; CEO of <strong>Ethnos Cyber Limited</strong> — a cybersecurity leader with 15+ years in information security and a recipient of the African Leadership Excellence Award. His backing is why this programme is free for everyone who takes part. We&apos;re deeply grateful.
+              </p>
+              <p style="margin: 0; font-size: 14px; line-height: 1.7;">
+                <a href="https://scanone.ethnoscyber.com" style="color: #2563EB; font-weight: 600; text-decoration: none;">Check out ScanOne by Ethnos Cyber → scanone.ethnoscyber.com</a>
               </p>
             </div>`;
 
@@ -482,9 +485,9 @@ ${reasonsBlock}
 
             <!-- Stay close callout (workshops) -->
             <div style="margin: 28px 0; padding: 22px 24px; background: linear-gradient(135deg, #ECFDF5, #F0FDF4); border-left: 4px solid #10B981; border-radius: 10px;">
-              <p style="color: #065F46; margin: 0 0 6px; font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;">Want to stay in the loop?</p>
+              <p style="color: #065F46; margin: 0 0 6px; font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;">Stay in the loop</p>
               <p style="color: #064E3B; margin: 0; font-size: 14px; line-height: 1.7;">
-                We&apos;ll be running <strong>free cybersecurity workshops</strong> and sharing other opportunities over the coming months. If you&apos;d like us to keep you posted, just <strong>reply to this email with &ldquo;YES&rdquo;</strong> and we&apos;ll add you to the list — no pressure either way.
+                We&apos;ll be running <strong>free cybersecurity workshops</strong> and sharing other opportunities over the coming months. To make sure they reach you, please <strong>don&apos;t block or unsubscribe from this email</strong> — keep it open and we&apos;ll keep you posted.
               </p>
             </div>
 
@@ -561,7 +564,7 @@ export function renderPublicWaitlistEmail(opts: {
             <p style="color: #334155; line-height: 1.75; margin: 24px 0 18px; font-size: 15px;">
               In the meantime: keep building. Read, practise, break things in safe environments. If you're offered a place, the work you've been doing in between will only make your start stronger.
             </p>
-
+${SPONSOR_BLOCK}
             <p style="color: #334155; line-height: 1.75; margin: 24px 0 4px; font-size: 15px;">
               Thank you for your patience, ${firstName} — and for wanting to be here.
             </p>
