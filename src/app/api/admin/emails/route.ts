@@ -77,3 +77,33 @@ export async function GET(request: NextRequest) {
     return Response.json({ error: "Internal server error" }, { status: 500 });
   }
 }
+
+// Permanently remove queue rows — for emails that have failed repeatedly and
+// should NOT be sent. This only drops the queue row; it never sends anything,
+// so it carries no 2FA gate (unlike retry). PENDING rows can be deleted too,
+// which is the way to cancel an email before it goes out.
+// DELETE body: { ids: string[] }
+export async function DELETE(request: NextRequest) {
+  try {
+    const session = await getSession();
+    if (!session || (session.role !== "ADMIN" && session.role !== "SUPER_ADMIN")) {
+      return Response.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = await request.json().catch(() => ({}));
+    const ids: unknown = body?.ids;
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return Response.json({ error: "ids must be a non-empty array" }, { status: 400 });
+    }
+    const idStrings = ids.filter((x): x is string => typeof x === "string");
+
+    const result = await prisma.emailQueueItem.deleteMany({
+      where: { id: { in: idStrings } },
+    });
+    logger.info("delete_emails", { by: session.email, deleted: result.count });
+    return Response.json({ deleted: result.count });
+  } catch (error) {
+    logger.error("delete_emails_failed", error);
+    return Response.json({ error: "Internal server error" }, { status: 500 });
+  }
+}

@@ -35,6 +35,7 @@ import {
 } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { canSendEmails } from "@/lib/email-permissions";
+import { promptTotpCode } from "@/lib/totp-prompt";
 
 interface PublicApp {
   id: string;
@@ -170,12 +171,14 @@ export default function ApplicantsPage() {
     if (!confirm(`Queue ${count} pending ${label} email${count === 1 ? "" : "s"} for delivery? This covers every ${type === "welcome" ? "approved" : "rejected"} applicant who hasn't been emailed yet. They send in the background — no need to keep this tab open.`)) {
       return;
     }
+    const totpCode = promptTotpCode();
+    if (totpCode === null) return;
     setSendingBatch(true);
     try {
       const res = await fetch("/api/admin/applicants/send-pending", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type }),
+        body: JSON.stringify({ type, totpCode }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -195,6 +198,48 @@ export default function ApplicantsPage() {
       alert("Network error while queueing emails.");
     } finally {
       setSendingBatch(false);
+    }
+  }
+
+  // One-click close-out: reject every still-pending applicant. Decision only —
+  // no email goes out here (decline emails are sent later from Decision Emails).
+  // Locked to the authorised account + a fresh 2FA code.
+  async function handleRejectRemaining() {
+    const n = counts.pending;
+    if (n === 0) return;
+    if (
+      !confirm(
+        `Reject ALL ${n} still-pending applicant${n === 1 ? "" : "s"} at once?\n\n` +
+          "This sets their decision to Rejected. Approved and waitlisted applicants are not touched. " +
+          "No email goes out now — decline emails are sent separately from Decision Emails.\n\n" +
+          "This is hard to undo at scale."
+      )
+    ) {
+      return;
+    }
+    const totpCode = promptTotpCode();
+    if (totpCode === null) return;
+    setIsReviewing(true);
+    try {
+      const res = await fetch("/api/admin/applicants/reject-remaining", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ totpCode }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(`Couldn't reject: ${data.error || "unknown error"}`);
+      } else {
+        alert(
+          `Rejected ${data.rejected} applicant${data.rejected === 1 ? "" : "s"}.\n\n` +
+            "No emails sent yet. Go to the Rejected tab and click \"Send decline emails\" when you're ready."
+        );
+        await Promise.all([fetchApps(), fetchCounts()]);
+      }
+    } catch {
+      alert("Network error while rejecting the remaining applicants.");
+    } finally {
+      setIsReviewing(false);
     }
   }
 
@@ -597,6 +642,19 @@ export default function ApplicantsPage() {
                 Send {pendingEmails.rejectionPending} decline email{pendingEmails.rejectionPending === 1 ? "" : "s"}
               </Button>
             )}
+            {/* Close-out: reject every still-undecided applicant at once. Locked
+                to the authorised account + 2FA (see handleRejectRemaining). */}
+            {filter === "pending" && counts.pending > 0 && canSend && (
+              <Button
+                variant="danger"
+                size="sm"
+                onClick={handleRejectRemaining}
+                isLoading={isReviewing}
+              >
+                <XCircle className="w-4 h-4 mr-1" />
+                Reject all {counts.pending} remaining
+              </Button>
+            )}
             <Button variant="outline" size="sm" onClick={handleExportCSV}>
               <Download className="w-4 h-4 mr-1" />
               Export CSV
@@ -794,8 +852,14 @@ export default function ApplicantsPage() {
                     <button
                       onClick={async () => {
                         if (!confirm(`Resend the welcome email (with login credentials) to ${selected.email}?`)) return;
+                        const totpCode = promptTotpCode();
+                        if (totpCode === null) return;
                         try {
-                          const res = await fetch(`/api/public-applications/${selected.id}/resend-welcome`, { method: "POST" });
+                          const res = await fetch(`/api/public-applications/${selected.id}/resend-welcome`, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ totpCode }),
+                          });
                           const data = await res.json();
                           if (!res.ok || data.emailSent === false) {
                             alert(`Resend FAILED.\n\nReason: ${data.emailError || data.error || "unknown"}\n\nCheck Vercel logs for [email:send] lines.`);

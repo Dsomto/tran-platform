@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Mail, AlertTriangle, CheckCircle2, Clock, RefreshCw, Loader2, Search } from "lucide-react";
+import { Mail, AlertTriangle, CheckCircle2, Clock, RefreshCw, Loader2, Search, Trash2 } from "lucide-react";
 import { canSendEmails } from "@/lib/email-permissions";
+import { promptTotpCode } from "@/lib/totp-prompt";
 
 interface EmailItem {
   id: string;
@@ -27,6 +28,7 @@ export default function AdminEmailsPage() {
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [retrying, setRetrying] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   // Retrying re-sends mail, so it is locked to the single authorised account.
   const [canSend, setCanSend] = useState(false);
@@ -64,13 +66,15 @@ export default function AdminEmailsPage() {
   async function retry(ids: string[]) {
     if (ids.length === 0) return;
     if (!confirm(`Retry ${ids.length} email${ids.length === 1 ? "" : "s"}? Each will be re-sent immediately.`)) return;
+    const totpCode = promptTotpCode();
+    if (totpCode === null) return;
     setRetrying(true);
     setToast(null);
     try {
       const res = await fetch(`/api/admin/emails/retry`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ids }),
+        body: JSON.stringify({ ids, totpCode }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -83,6 +87,38 @@ export default function AdminEmailsPage() {
       setToast("Network error during retry.");
     } finally {
       setRetrying(false);
+    }
+  }
+
+  async function removeEmails(ids: string[]) {
+    if (ids.length === 0) return;
+    if (
+      !confirm(
+        `Delete ${ids.length} email${ids.length === 1 ? "" : "s"} from the queue? ` +
+          "They will NOT be sent — this just removes them. This cannot be undone."
+      )
+    ) {
+      return;
+    }
+    setDeleting(true);
+    setToast(null);
+    try {
+      const res = await fetch(`/api/admin/emails`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setToast(`Delete failed: ${data.error || "unknown"}`);
+      } else {
+        setToast(`Deleted ${data.deleted} email${data.deleted === 1 ? "" : "s"}.`);
+        load();
+      }
+    } catch {
+      setToast("Network error during delete.");
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -201,6 +237,23 @@ export default function AdminEmailsPage() {
               className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-lg border border-border hover:bg-muted/50 disabled:opacity-40"
             >
               Retry all failed
+            </button>
+          )}
+          <button
+            onClick={() => removeEmails(Array.from(selected))}
+            disabled={selected.size === 0 || deleting}
+            className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-lg border border-rose-200 text-rose-700 hover:bg-rose-50 disabled:opacity-40"
+          >
+            {deleting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+            Delete selected
+          </button>
+          {filter === "FAILED" && items.length > 0 && (
+            <button
+              onClick={() => removeEmails(items.map((i) => i.id))}
+              disabled={deleting}
+              className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-lg border border-rose-200 text-rose-700 hover:bg-rose-50 disabled:opacity-40"
+            >
+              Delete all failed
             </button>
           )}
         </div>

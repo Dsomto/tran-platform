@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth";
-import { canSendEmails } from "@/lib/email-permissions";
+import { guardEmailSend } from "@/lib/email-send-guard";
 import { sendPublicAcceptanceEmail } from "@/lib/email";
 import { logger } from "@/lib/logger";
 
@@ -8,14 +8,15 @@ import { logger } from "@/lib/logger";
 // Synchronous send — Resend is reliable enough that single attempts deliver.
 // Reuses the password we already issued (PublicApplication.loginPassword).
 export async function POST(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getSession();
-    if (!session || !canSendEmails(session.email)) {
-      return Response.json({ error: "Only the authorised account can send emails." }, { status: 403 });
-    }
+    const body = await request.json().catch(() => ({}));
+    // Locked to the single authorised account + a fresh 2FA code.
+    const blocked = await guardEmailSend(session, body?.totpCode);
+    if (blocked) return blocked;
 
     const { id } = await params;
     const application = await prisma.publicApplication.findUnique({ where: { id } });

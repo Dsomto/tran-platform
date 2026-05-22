@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth";
-import { canSendEmails } from "@/lib/email-permissions";
+import { guardEmailSend } from "@/lib/email-send-guard";
 import { logger } from "@/lib/logger";
 import { Prisma } from "@/generated/prisma";
 import { renderBroadcastEmail, personalizeText, firstNameOf } from "@/lib/broadcast-email";
@@ -100,13 +100,12 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await getSession();
-    // Broadcast sends mail too, so it is locked to the single authorised
-    // account — the co-super-admin can open the page but cannot send.
-    if (!session || !canSendEmails(session.email)) {
-      return Response.json({ error: "Only the authorised account can send emails." }, { status: 403 });
-    }
-
     const body = await request.json().catch(() => ({}));
+    // Broadcast sends mail too: locked to the single authorised account + 2FA.
+    // The co-super-admin can open the page but cannot send.
+    const blocked = await guardEmailSend(session, body?.totpCode);
+    if (blocked) return blocked;
+
     const subject = typeof body?.subject === "string" ? body.subject.trim() : "";
     const message = typeof body?.message === "string" ? body.message.trim() : "";
     const sendToAll = body?.sendToAll === true;

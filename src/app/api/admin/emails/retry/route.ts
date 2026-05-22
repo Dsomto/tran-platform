@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import nodemailer from "nodemailer";
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth";
-import { canSendEmails } from "@/lib/email-permissions";
+import { guardEmailSend } from "@/lib/email-send-guard";
 import { logger } from "@/lib/logger";
 
 // Retry one or many EmailQueueItem rows immediately (not waiting for cron).
@@ -14,12 +14,11 @@ import { logger } from "@/lib/logger";
 export async function POST(request: NextRequest) {
   try {
     const session = await getSession();
-    // Retrying re-sends mail, so it is locked to the single authorised account.
-    if (!session || !canSendEmails(session.email)) {
-      return Response.json({ error: "Only the authorised account can send emails." }, { status: 403 });
-    }
-
     const body = await request.json();
+    // Retrying re-sends mail: locked to the single authorised account + 2FA.
+    const blocked = await guardEmailSend(session, body?.totpCode);
+    if (blocked) return blocked;
+
     const ids: unknown = body?.ids;
     if (!Array.isArray(ids) || ids.length === 0) {
       return Response.json({ error: "ids must be a non-empty array of EmailQueueItem ids" }, { status: 400 });

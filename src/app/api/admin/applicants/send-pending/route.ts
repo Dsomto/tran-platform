@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth";
-import { canSendEmails } from "@/lib/email-permissions";
+import { guardEmailSend } from "@/lib/email-send-guard";
 import { logger } from "@/lib/logger";
 import { renderPublicAcceptanceEmail, renderPublicRejectionEmail, renderPublicWaitlistEmail } from "@/lib/email";
 import { rejectionReasons } from "@/lib/applicant-score";
@@ -147,13 +147,13 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await getSession();
-    // Sending is locked to a single account — see canSendEmails. Other admins
-    // (incl. the co-super-admin) can view the pools but cannot queue/send.
-    if (!session || !canSendEmails(session.email)) {
-      return Response.json({ error: "Only the authorised account can send emails." }, { status: 403 });
-    }
-
     const body = await request.json().catch(() => ({}));
+    // Sending is locked to the single authorised account AND requires a fresh
+    // 2FA code — other admins (incl. the co-super-admin) can view the pools but
+    // cannot queue/send.
+    const blocked = await guardEmailSend(session, body?.totpCode);
+    if (blocked) return blocked;
+
     const type = body?.type;
     if (type !== "welcome" && type !== "rejection" && type !== "waitlist") {
       return Response.json(

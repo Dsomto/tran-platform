@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { canSendEmails } from "@/lib/email-permissions";
+import { promptTotpCode } from "@/lib/totp-prompt";
 import {
   Send,
   Mail,
@@ -109,12 +110,18 @@ export default function DecisionEmailsPage() {
     } else {
       setSendingId(applicationId);
     }
+    const totpCode = promptTotpCode();
+    if (totpCode === null) {
+      setBusyAll(false);
+      setSendingId(null);
+      return;
+    }
     setToast(null);
     try {
       const res = await fetch("/api/admin/applicants/send-pending", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: tab, ...(applicationId ? { applicationId } : {}) }),
+        body: JSON.stringify({ type: tab, totpCode, ...(applicationId ? { applicationId } : {}) }),
       });
       const data = await res.json();
       if (!res.ok) {

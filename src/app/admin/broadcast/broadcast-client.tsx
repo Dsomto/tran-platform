@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Send, Loader2, Search, Users, Mail, Eye, EyeOff } from "lucide-react";
 import { renderBroadcastEmail, personalizeText, firstNameOf } from "@/lib/broadcast-email";
 import { canSendEmails } from "@/lib/email-permissions";
+import { promptTotpCode } from "@/lib/totp-prompt";
 
 interface Recipient {
   id: string;
@@ -107,13 +108,15 @@ export function BroadcastClient() {
     if (!confirm(`Send this newsletter to ${who}? It queues for delivery and sends in the background.`)) {
       return;
     }
+    const totpCode = promptTotpCode();
+    if (totpCode === null) return;
     setSending(true);
     setToast(null);
     try {
       const payload =
         sendMode === "all"
-          ? { subject, message, sendToAll: true, filters: { status, track, country, stage } }
-          : { subject, message, applicationIds: Array.from(selected) };
+          ? { subject, message, totpCode, sendToAll: true, filters: { status, track, country, stage } }
+          : { subject, message, totpCode, applicationIds: Array.from(selected) };
       const res = await fetch("/api/admin/broadcast", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
