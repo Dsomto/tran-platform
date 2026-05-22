@@ -69,7 +69,9 @@ export function createToken(user: SessionUser): string {
 
 export function verifyToken(token: string): SessionTokenPayload | null {
   try {
-    return jwt.verify(token, jwtSecret()) as SessionTokenPayload;
+    // Pin the algorithm so a token can't be presented under a different alg
+    // (algorithm-confusion hardening). We only ever sign with HS256.
+    return jwt.verify(token, jwtSecret(), { algorithms: ["HS256"] }) as SessionTokenPayload;
   } catch {
     return null;
   }

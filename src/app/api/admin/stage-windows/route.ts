@@ -3,12 +3,15 @@ import { getSession } from "@/lib/auth";
 import { logger } from "@/lib/logger";
 
 // GET /api/admin/stage-windows
-// Read-only listing of stage windows. Authenticated users only.
-// Status changes go through /api/admin/stage-windows/status (super admin).
+// Read-only listing of stage windows. Admin / super-admin only (its only
+// consumer is the admin stage panel). Status changes go through
+// /api/admin/stage-windows/status (super admin).
 export async function GET() {
   try {
     const session = await getSession();
-    if (!session) return Response.json({ error: "Not authenticated" }, { status: 401 });
+    if (!session || (session.role !== "ADMIN" && session.role !== "SUPER_ADMIN")) {
+      return Response.json({ error: "Unauthorized" }, { status: 401 });
+    }
     const windows = await prisma.stageWindow.findMany({ orderBy: { stage: "asc" } });
     return Response.json({ windows });
   } catch (error) {

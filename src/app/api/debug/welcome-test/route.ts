@@ -15,6 +15,12 @@ import { sendPublicAcceptanceEmail } from "@/lib/email";
 //   "send"          — sendPublicAcceptanceEmail threw
 //   "ok"            — full path succeeded; check the inbox + spam folder
 async function handle(request: NextRequest): Promise<Response> {
+  // Sends real mail / surfaces SMTP details. Disabled in production by default
+  // so a leaked CRON_SECRET alone can't use it; set ENABLE_DEBUG_ENDPOINTS=true
+  // to temporarily re-enable for diagnostics.
+  if (process.env.NODE_ENV === "production" && process.env.ENABLE_DEBUG_ENDPOINTS !== "true") {
+    return Response.json({ error: "Not found" }, { status: 404 });
+  }
   const secret = process.env.CRON_SECRET;
   if (!secret) {
     return Response.json({ error: "CRON_SECRET not configured" }, { status: 500 });

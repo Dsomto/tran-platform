@@ -41,6 +41,11 @@ function extractStageFromPath(pathname: string): { stage: string; rest: string }
 // and avoid an NDA redirect loop.
 function withPathnameHeader(request: NextRequest, pathname: string) {
   const h = new Headers(request.headers);
+  // Defense-in-depth: drop the CVE-2025-29927 vector header so a client can
+  // never smuggle it through (the installed Next.js already patches it).
+  h.delete("x-middleware-subrequest");
+  // Always set x-pathname ourselves — overwriting any client-supplied value so
+  // layouts can't be tricked by a spoofed pathname.
   h.set("x-pathname", pathname);
   return h;
 }
