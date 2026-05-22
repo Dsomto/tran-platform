@@ -37,13 +37,13 @@
     "framer-motion": "^12.38.0",
     "jsonwebtoken": "^9.0.3",
     "lucide-react": "^1.8.0",
-    "next": "16.2.3",
+    "next": "16.2.6",
     "next-auth": "^5.0.0-beta.30",
     "nodemailer": "^8.0.5",
     "pdfkit": "^0.18.0",
     "prisma": "^6.8.2",
-    "react": "19.2.4",
-    "react-dom": "19.2.4",
+    "react": "19.2.6",
+    "react-dom": "19.2.6",
     "sharp": "^0.34.5",
     "tailwind-merge": "^3.5.0",
     "uuid": "^13.0.0"
@@ -59,8 +59,14 @@
     "@types/uuid": "^10.0.0",
     "dotenv": "^17.4.2",
     "eslint": "^9",
-    "eslint-config-next": "16.2.3",
+    "eslint-config-next": "16.2.6",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "overrides": {
+    "postcss": "8.5.15"
+  },
+  "engines": {
+    "node": ">=20.9.0"
   }
 }
