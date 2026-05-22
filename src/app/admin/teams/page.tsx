@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar } from "@/components/ui/avatar";
-import { Trophy, Users, Plus } from "lucide-react";
+import { Trophy, Users, Plus, Trash2 } from "lucide-react";
 
 interface TeamData {
   id: string;
@@ -38,8 +38,10 @@ export default function TeamsPage() {
   const [adminUser, setAdminUser] = useState({
     firstName: "",
     lastName: "",
+    role: "",
     avatarUrl: null as string | null,
   });
+  const isSuperAdmin = adminUser.role === "SUPER_ADMIN";
 
   useEffect(() => {
     fetch("/api/auth/me")
@@ -56,6 +58,24 @@ export default function TeamsPage() {
   useEffect(() => {
     fetchTeams();
   }, [fetchTeams]);
+
+  async function handleDelete(team: TeamData) {
+    if (
+      !confirm(
+        `Delete team "${team.name}"? Its ${team._count.members} member${team._count.members === 1 ? "" : "s"} ` +
+          "will be un-assigned (not deleted) and can be placed on another team. This can't be undone."
+      )
+    ) {
+      return;
+    }
+    const res = await fetch(`/api/teams/${team.id}`, { method: "DELETE" });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      alert(`Couldn't delete team: ${data.error || "unknown error"}`);
+      return;
+    }
+    fetchTeams();
+  }
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
@@ -165,11 +185,23 @@ export default function TeamsPage() {
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <Trophy className="w-4 h-4 text-primary" />
-                      <span className="text-lg font-bold text-primary">
-                        {team.totalPoints}
-                      </span>
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1">
+                        <Trophy className="w-4 h-4 text-primary" />
+                        <span className="text-lg font-bold text-primary">
+                          {team.totalPoints}
+                        </span>
+                      </div>
+                      {isSuperAdmin && (
+                        <button
+                          onClick={() => handleDelete(team)}
+                          title="Delete team"
+                          aria-label={`Delete team ${team.name}`}
+                          className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
                     </div>
                   </div>
 
