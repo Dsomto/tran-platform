@@ -204,6 +204,9 @@ model Intern {
   track           Track
   points          Int          @default(0)
   isActive        Boolean      @default(true)
+  // Set when the intern is eliminated (isActive -> false). Drives the
+  // purge-eliminated cron, which hard-deletes the account ~2 days later.
+  eliminatedAt    DateTime?
   finalist        Boolean      @default(false)
   stageDoorCode   String?                     // per-intern password for stage-door logins (plain, hashed on User)
   slackJoined     Boolean      @default(false) // self-attested: has the intern joined the Slack workspace

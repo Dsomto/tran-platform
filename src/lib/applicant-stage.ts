@@ -94,7 +94,7 @@ export async function syncApplicantStages(
       if (internIds.length) {
         await prisma.intern.updateMany({
           where: { id: { in: internIds } },
-          data: { isActive: false },
+          data: { isActive: false, eliminatedAt: new Date() },
         });
       }
     } else {

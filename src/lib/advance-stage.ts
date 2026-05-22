@@ -121,7 +121,7 @@ export async function maybeAdvanceStage(internId: string): Promise<AdvanceResult
   if (eliminated) {
     await prisma.intern.update({
       where: { id: internId },
-      data: { isActive: false },
+      data: { isActive: false, eliminatedAt: new Date() },
     });
     await prisma.stageHistory.create({
       data: {

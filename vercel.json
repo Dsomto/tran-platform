@@ -4,6 +4,10 @@
     {
       "path": "/api/cron/email-drain?limit=300",
       "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/cron/purge-eliminated",
+      "schedule": "0 3 * * *"
     }
   ],
   "buildCommand": "prisma generate && next build"
