@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Send, Loader2, Search, Users, Mail, Eye, EyeOff } from "lucide-react";
 import { renderBroadcastEmail, personalizeText, firstNameOf } from "@/lib/broadcast-email";
+import { canSendEmails } from "@/lib/email-permissions";
 
 interface Recipient {
   id: string;
@@ -38,6 +39,16 @@ export function BroadcastClient() {
   const [showPreview, setShowPreview] = useState(false);
   const [sending, setSending] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  // Sending is locked to one account (see canSendEmails) regardless of role —
+  // the co-super-admin can compose/preview but cannot send.
+  const [allowedToSend, setAllowedToSend] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then((r) => r.json())
+      .then((d) => setAllowedToSend(canSendEmails(d.user?.email)))
+      .catch(() => setAllowedToSend(false));
+  }, []);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -147,6 +158,13 @@ export function BroadcastClient() {
       {toast && (
         <div className="mb-4 p-3 bg-blue/10 border border-blue/30 rounded-lg text-sm text-foreground">
           {toast}
+        </div>
+      )}
+
+      {!allowedToSend && (
+        <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
+          Sending is restricted to the programme owner&apos;s account. You can compose and preview a
+          broadcast, but the send button is disabled.
         </div>
       )}
 
@@ -355,7 +373,8 @@ export function BroadcastClient() {
           </button>
           <button
             onClick={send}
-            disabled={!canSend || sending}
+            disabled={!canSend || sending || !allowedToSend}
+            title={allowedToSend ? undefined : "Only the authorised account can send emails."}
             className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-blue text-white hover:opacity-90 disabled:opacity-40"
           >
             {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}

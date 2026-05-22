@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { canSendEmails } from "@/lib/email-permissions";
 import {
   Send,
   Mail,
@@ -59,6 +60,16 @@ export default function DecisionEmailsPage() {
   const [appPreviewLoading, setAppPreviewLoading] = useState<string | null>(null);
   const [flippingId, setFlippingId] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  // Sending is locked to one account (see canSendEmails). Other admins can
+  // view and re-route decisions, but the send buttons are disabled for them.
+  const [canSend, setCanSend] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then((r) => r.json())
+      .then((d) => setCanSend(canSendEmails(d.user?.email)))
+      .catch(() => setCanSend(false));
+  }, []);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -237,6 +248,13 @@ export default function DecisionEmailsPage() {
         </div>
       )}
 
+      {!canSend && (
+        <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
+          Sending is restricted to the programme owner&apos;s account. You can review applicants and
+          re-route decisions here, but the send buttons are disabled.
+        </div>
+      )}
+
       {/* Summary + bulk actions */}
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4 p-4 bg-white border border-border rounded-xl">
         <div className="text-sm text-foreground">
@@ -259,7 +277,8 @@ export default function DecisionEmailsPage() {
           </button>
           <button
             onClick={() => send()}
-            disabled={busyAll || total === 0}
+            disabled={busyAll || total === 0 || !canSend}
+            title={canSend ? undefined : "Only the authorised account can send emails."}
             className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-blue text-white hover:opacity-90 disabled:opacity-40"
           >
             {busyAll ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
@@ -325,7 +344,8 @@ export default function DecisionEmailsPage() {
                       )}
                       <button
                         onClick={() => send(a.id)}
-                        disabled={sendingId === a.id || busyAll}
+                        disabled={sendingId === a.id || busyAll || !canSend}
+                        title={canSend ? undefined : "Only the authorised account can send emails."}
                         className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-lg border border-border hover:bg-muted/50 disabled:opacity-40"
                       >
                         {sendingId === a.id ? (

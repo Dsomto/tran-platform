@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth";
+import { canSendEmails } from "@/lib/email-permissions";
 import { logger } from "@/lib/logger";
 import { renderPublicAcceptanceEmail, renderPublicRejectionEmail, renderPublicWaitlistEmail } from "@/lib/email";
 import { rejectionReasons } from "@/lib/applicant-score";
@@ -146,8 +147,10 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await getSession();
-    if (!session || (session.role !== "ADMIN" && session.role !== "SUPER_ADMIN")) {
-      return Response.json({ error: "Unauthorized" }, { status: 401 });
+    // Sending is locked to a single account — see canSendEmails. Other admins
+    // (incl. the co-super-admin) can view the pools but cannot queue/send.
+    if (!session || !canSendEmails(session.email)) {
+      return Response.json({ error: "Only the authorised account can send emails." }, { status: 403 });
     }
 
     const body = await request.json().catch(() => ({}));

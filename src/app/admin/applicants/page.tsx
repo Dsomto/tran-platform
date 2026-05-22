@@ -34,6 +34,7 @@ import {
   Shield,
 } from "lucide-react";
 import { formatDate } from "@/lib/utils";
+import { canSendEmails } from "@/lib/email-permissions";
 
 interface PublicApp {
   id: string;
@@ -108,8 +109,11 @@ export default function ApplicantsPage() {
   const [user, setUser] = useState({
     firstName: "",
     lastName: "",
+    email: "",
     avatarUrl: null as string | null,
   });
+  // Sending is locked to one account regardless of role (see canSendEmails).
+  const canSend = canSendEmails(user.email);
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -572,7 +576,7 @@ export default function ApplicantsPage() {
             {/* Batch decision-email senders. Approving / rejecting only
                 records the decision now — these buttons fan the emails out
                 when the admin is ready. Shown on the relevant tab only. */}
-            {filter === "approved" && pendingEmails.welcomePending > 0 && (
+            {filter === "approved" && pendingEmails.welcomePending > 0 && canSend && (
               <Button
                 size="sm"
                 onClick={() => sendPendingBatch("welcome")}
@@ -582,7 +586,7 @@ export default function ApplicantsPage() {
                 Send {pendingEmails.welcomePending} welcome email{pendingEmails.welcomePending === 1 ? "" : "s"}
               </Button>
             )}
-            {filter === "rejected" && pendingEmails.rejectionPending > 0 && (
+            {filter === "rejected" && pendingEmails.rejectionPending > 0 && canSend && (
               <Button
                 variant="danger"
                 size="sm"
@@ -784,7 +788,9 @@ export default function ApplicantsPage() {
                       ))}
                     </div>
                     {/* Resend welcome email — for when the original landed in spam
-                        or got lost. Reuses the existing stored credentials. */}
+                        or got lost. Reuses the existing stored credentials.
+                        Sending is locked to the authorised account. */}
+                    {canSend && (
                     <button
                       onClick={async () => {
                         if (!confirm(`Resend the welcome email (with login credentials) to ${selected.email}?`)) return;
@@ -804,6 +810,7 @@ export default function ApplicantsPage() {
                     >
                       Resend welcome email
                     </button>
+                    )}
                   </div>
                 )}
 

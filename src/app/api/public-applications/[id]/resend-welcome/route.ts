@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth";
+import { canSendEmails } from "@/lib/email-permissions";
 import { sendPublicAcceptanceEmail } from "@/lib/email";
 import { logger } from "@/lib/logger";
 
@@ -12,8 +13,8 @@ export async function POST(
 ) {
   try {
     const session = await getSession();
-    if (!session || (session.role !== "ADMIN" && session.role !== "SUPER_ADMIN")) {
-      return Response.json({ error: "Unauthorized" }, { status: 401 });
+    if (!session || !canSendEmails(session.email)) {
+      return Response.json({ error: "Only the authorised account can send emails." }, { status: 403 });
     }
 
     const { id } = await params;

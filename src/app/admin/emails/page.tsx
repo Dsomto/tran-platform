@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Mail, AlertTriangle, CheckCircle2, Clock, RefreshCw, Loader2, Search } from "lucide-react";
+import { canSendEmails } from "@/lib/email-permissions";
 
 interface EmailItem {
   id: string;
@@ -27,6 +28,15 @@ export default function AdminEmailsPage() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [retrying, setRetrying] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  // Retrying re-sends mail, so it is locked to the single authorised account.
+  const [canSend, setCanSend] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then((r) => r.json())
+      .then((d) => setCanSend(canSendEmails(d.user?.email)))
+      .catch(() => setCanSend(false));
+  }, []);
 
   async function load() {
     setLoading(true);
@@ -160,6 +170,13 @@ export default function AdminEmailsPage() {
         </div>
       )}
 
+      {!canSend && (
+        <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
+          Retrying re-sends email, so it is restricted to the programme owner&apos;s account. You can
+          view the queue here, but the retry buttons are disabled.
+        </div>
+      )}
+
       <div className="flex items-center justify-between mb-3">
         <div className="text-sm text-muted-foreground">
           {selected.size > 0
@@ -169,7 +186,8 @@ export default function AdminEmailsPage() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => retry(Array.from(selected))}
-            disabled={selected.size === 0 || retrying}
+            disabled={selected.size === 0 || retrying || !canSend}
+            title={canSend ? undefined : "Only the authorised account can send emails."}
             className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-lg bg-blue text-white hover:opacity-90 disabled:opacity-40"
           >
             {retrying ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
@@ -178,7 +196,8 @@ export default function AdminEmailsPage() {
           {filter === "FAILED" && items.length > 0 && (
             <button
               onClick={() => retry(items.map((i) => i.id))}
-              disabled={retrying}
+              disabled={retrying || !canSend}
+              title={canSend ? undefined : "Only the authorised account can send emails."}
               className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-lg border border-border hover:bg-muted/50 disabled:opacity-40"
             >
               Retry all failed

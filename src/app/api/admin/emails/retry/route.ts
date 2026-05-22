@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import nodemailer from "nodemailer";
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth";
+import { canSendEmails } from "@/lib/email-permissions";
 import { logger } from "@/lib/logger";
 
 // Retry one or many EmailQueueItem rows immediately (not waiting for cron).
@@ -13,8 +14,9 @@ import { logger } from "@/lib/logger";
 export async function POST(request: NextRequest) {
   try {
     const session = await getSession();
-    if (!session || (session.role !== "ADMIN" && session.role !== "SUPER_ADMIN")) {
-      return Response.json({ error: "Unauthorized" }, { status: 401 });
+    // Retrying re-sends mail, so it is locked to the single authorised account.
+    if (!session || !canSendEmails(session.email)) {
+      return Response.json({ error: "Only the authorised account can send emails." }, { status: 403 });
     }
 
     const body = await request.json();
