@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Mail, AlertTriangle, CheckCircle2, Clock, RefreshCw, Loader2, Search, Trash2 } from "lucide-react";
+import { Mail, AlertTriangle, CheckCircle2, Clock, RefreshCw, Loader2, Search, Trash2, Pencil } from "lucide-react";
 import { canSendEmails } from "@/lib/email-permissions";
 import { promptTotpCode } from "@/lib/totp-prompt";
 
@@ -29,6 +29,7 @@ export default function AdminEmailsPage() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [retrying, setRetrying] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   // Retrying re-sends mail, so it is locked to the single authorised account.
   const [canSend, setCanSend] = useState(false);
@@ -119,6 +120,41 @@ export default function AdminEmailsPage() {
       setToast("Network error during delete.");
     } finally {
       setDeleting(false);
+    }
+  }
+
+  async function editRecipient(item: EmailItem) {
+    const newEmail = window.prompt(
+      `Correct the recipient for this email.\n\nCurrent: ${item.toEmail}\n\nNew email:`,
+      item.toEmail
+    );
+    if (newEmail == null) return; // cancelled
+    const cleaned = newEmail.trim();
+    if (!cleaned || cleaned.toLowerCase() === item.toEmail.toLowerCase()) return;
+    const totpCode = promptTotpCode();
+    if (totpCode === null) return;
+
+    setEditingId(item.id);
+    setToast(null);
+    try {
+      const res = await fetch(`/api/admin/emails/${item.id}/edit-recipient`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ newEmail: cleaned, totpCode }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setToast(`Couldn't update: ${data.error || "unknown error"}`);
+      } else {
+        setToast(
+          `Recipient updated to ${data.newEmail}. The email will resend within ~5 minutes (or click "Retry selected" to send it now).`
+        );
+        load();
+      }
+    } catch {
+      setToast("Network error while updating the recipient.");
+    } finally {
+      setEditingId(null);
     }
   }
 
@@ -292,6 +328,7 @@ export default function AdminEmailsPage() {
                 <th className="p-3 text-left">Status</th>
                 <th className="p-3 text-left">When</th>
                 <th className="p-3 text-left">Reason</th>
+                {canSend && <th className="p-3 text-left w-32">Actions</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -320,6 +357,23 @@ export default function AdminEmailsPage() {
                   <td className="p-3 text-xs text-rose-700 max-w-xs truncate">
                     {item.failReason ?? ""}
                   </td>
+                  {canSend && (
+                    <td className="p-3">
+                      <button
+                        onClick={() => editRecipient(item)}
+                        disabled={editingId === item.id}
+                        title="Correct a typo'd recipient and resend"
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-lg border border-border hover:bg-muted/50 disabled:opacity-40"
+                      >
+                        {editingId === item.id ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <Pencil className="h-3.5 w-3.5" />
+                        )}
+                        Edit & resend
+                      </button>
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>
