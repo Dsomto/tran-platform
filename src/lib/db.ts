@@ -7,4 +7,13 @@ const globalForPrisma = globalThis as unknown as {
 
 export const prisma = globalForPrisma.prisma ?? new PrismaClient();
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+// Cache the client on globalThis in EVERY environment.
+// - Dev: survives Next.js HMR so we don't spawn a fresh client per hot-reload.
+// - Production (Vercel): when a serverless lambda is warm-reused for a new
+//   request, the module can re-evaluate. Without this cache, each
+//   re-evaluation calls `new PrismaClient()` and opens another connection
+//   pool against MongoDB Atlas — the classic Flex-tier "max connections"
+//   killer. Pinning the client on globalThis keeps the pool count bounded
+//   to one per lambda instance, which together with `maxPoolSize=5` on
+//   DATABASE_URL keeps cluster connections sane under load.
+globalForPrisma.prisma = prisma;
