@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { BarChart3, Loader2, Send, CheckCircle2, RotateCcw } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { BarChart3, Loader2, Send, CheckCircle2, RotateCcw, ArrowLeftRight } from "lucide-react";
 
 interface Summary {
   total: number;
@@ -12,6 +12,20 @@ interface Summary {
   median: number | null;
   mean: number | null;
   histogram: { bucket: string; count: number }[];
+}
+
+interface BucketRow {
+  reportId: string;
+  internId: string;
+  fullName: string;
+  email: string;
+  score: number;
+}
+
+interface Buckets {
+  threshold: number;
+  willPass: BucketRow[];
+  willFail: BucketRow[];
 }
 
 const STAGES = [
@@ -28,6 +42,11 @@ export function StageResultsPanel() {
   const [loading, setLoading] = useState(false);
   const [threshold, setThreshold] = useState("60");
   const [preview, setPreview] = useState<{ willPass: number; willFail: number } | null>(null);
+  // Named buckets pulled when the admin clicks Preview — drives the per-row
+  // review + swap UI. `overrides` is the client-side decision to force a
+  // specific intern's outcome regardless of their score; sent on Publish.
+  const [buckets, setBuckets] = useState<Buckets | null>(null);
+  const [overrides, setOverrides] = useState<Record<string, "pass" | "fail">>({});
   const [publishing, setPublishing] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -39,6 +58,8 @@ export function StageResultsPanel() {
   async function loadSummary(s: string) {
     setLoading(true);
     setPreview(null);
+    setBuckets(null);
+    setOverrides({});
     setResult(null);
     setError(null);
     try {
@@ -68,22 +89,60 @@ export function StageResultsPanel() {
       setError("Threshold must be 0–100");
       return;
     }
+    // Resetting overrides whenever the admin re-runs the preview keeps the
+    // swap-state honest: a new threshold restarts the review.
+    setOverrides({});
     try {
-      const res = await fetch("/api/admin/stage-results", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ stage, passingScore: t, dryRun: true }),
-      });
+      const res = await fetch(`/api/admin/stage-results?stage=${stage}&threshold=${t}`);
       const data = await res.json();
       if (!res.ok) {
         setError(data.error || "Failed");
         return;
       }
-      setPreview({ willPass: data.willPass, willFail: data.willFail });
+      const b: Buckets | undefined = data.buckets;
+      if (!b) {
+        setError("No graded reports for this stage.");
+        return;
+      }
+      setBuckets(b);
+      setPreview({ willPass: b.willPass.length, willFail: b.willFail.length });
     } catch {
       setError("Network error");
     }
   }
+
+  // Effective outcome for a row = threshold bucket XOR override.
+  function swap(internId: string, current: "pass" | "fail") {
+    setOverrides((prev) => {
+      const next = { ...prev };
+      const target: "pass" | "fail" = current === "pass" ? "fail" : "pass";
+      // If swapping back to the threshold-derived bucket, drop the override
+      // rather than setting one — keeps the request body minimal and lets
+      // the threshold remain the source of truth where possible.
+      const baseline = buckets?.willPass.some((r) => r.internId === internId) ? "pass" : "fail";
+      if (target === baseline) delete next[internId];
+      else next[internId] = target;
+      return next;
+    });
+  }
+
+  // Final lists shown in the UI = threshold buckets with overrides applied.
+  const effective = useMemo(() => {
+    if (!buckets) return null;
+    const willPass: BucketRow[] = [];
+    const willFail: BucketRow[] = [];
+    for (const r of [...buckets.willPass, ...buckets.willFail]) {
+      const baseline: "pass" | "fail" = buckets.willPass.some((x) => x.internId === r.internId)
+        ? "pass"
+        : "fail";
+      const outcome = overrides[r.internId] ?? baseline;
+      if (outcome === "pass") willPass.push(r);
+      else willFail.push(r);
+    }
+    willPass.sort((a, b) => b.score - a.score);
+    willFail.sort((a, b) => b.score - a.score);
+    return { willPass, willFail };
+  }, [buckets, overrides]);
 
   async function publish() {
     setError(null);
@@ -92,14 +151,18 @@ export function StageResultsPanel() {
       setError("Threshold must be 0–100");
       return;
     }
-    const confirmMsg = `Publish Stage ${stage.replace("STAGE_", "")} results with passing threshold ${t}?\n\nEmails will be queued for every graded participant. This cannot be easily undone.`;
+    const overrideCount = Object.keys(overrides).length;
+    const confirmMsg =
+      `Publish Stage ${stage.replace("STAGE_", "")} results with passing threshold ${t}` +
+      (overrideCount > 0 ? ` and ${overrideCount} manual override${overrideCount === 1 ? "" : "s"}` : "") +
+      `?\n\nEmails will be queued for every graded participant. This cannot be easily undone.`;
     if (!confirm(confirmMsg)) return;
     setPublishing(true);
     try {
       const res = await fetch("/api/admin/stage-results", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ stage, passingScore: t }),
+        body: JSON.stringify({ stage, passingScore: t, overrides }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -279,14 +342,46 @@ export function StageResultsPanel() {
                 Publish results
               </button>
             </div>
-            {preview && (
+            {preview && effective && (
               <div className="mt-4 p-3 bg-blue/5 border border-blue/20 rounded-lg text-sm">
                 With threshold <strong>{threshold}</strong>:{" "}
-                <strong className="text-emerald-700">{preview.willPass}</strong> will pass,{" "}
-                <strong className="text-rose-700">{preview.willFail}</strong> will not.
+                <strong className="text-emerald-700">{effective.willPass.length}</strong> will pass,{" "}
+                <strong className="text-rose-700">{effective.willFail.length}</strong> will not.
+                {Object.keys(overrides).length > 0 && (
+                  <>
+                    {" "}
+                    <span className="text-muted-foreground">
+                      ({Object.keys(overrides).length} manual override
+                      {Object.keys(overrides).length === 1 ? "" : "s"})
+                    </span>
+                  </>
+                )}
               </div>
             )}
           </section>
+
+          {effective && (
+            <section className="mt-6 grid md:grid-cols-2 gap-4">
+              {/* Will-PASS column */}
+              <BucketColumn
+                title="Will pass"
+                tone="emerald"
+                rows={effective.willPass}
+                actionLabel="Move to Fail"
+                overrides={overrides}
+                onSwap={(internId) => swap(internId, "pass")}
+              />
+              {/* Will-FAIL column */}
+              <BucketColumn
+                title="Will not pass"
+                tone="rose"
+                rows={effective.willFail}
+                actionLabel="Move to Pass"
+                overrides={overrides}
+                onSwap={(internId) => swap(internId, "fail")}
+              />
+            </section>
+          )}
 
           {(summary.byStatus.PASSED ?? 0) + (summary.byStatus.FAILED ?? 0) > 0 && (
             <section className="mt-6 bg-white border border-rose-200 rounded-xl p-5">
@@ -362,6 +457,68 @@ function Histogram({ data, total }: { data: { bucket: string; count: number }[];
           </div>
         );
       })}
+    </div>
+  );
+}
+
+function BucketColumn({
+  title,
+  tone,
+  rows,
+  actionLabel,
+  overrides,
+  onSwap,
+}: {
+  title: string;
+  tone: "emerald" | "rose";
+  rows: BucketRow[];
+  actionLabel: string;
+  overrides: Record<string, "pass" | "fail">;
+  onSwap: (internId: string) => void;
+}) {
+  const headerClass =
+    tone === "emerald"
+      ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+      : "bg-rose-50 text-rose-800 border-rose-200";
+  return (
+    <div className="bg-white border border-border rounded-xl overflow-hidden">
+      <div className={`px-4 py-3 border-b text-xs font-semibold uppercase tracking-wide ${headerClass}`}>
+        {title} ({rows.length})
+      </div>
+      {rows.length === 0 ? (
+        <p className="p-4 text-sm text-muted-foreground">No one in this bucket.</p>
+      ) : (
+        <ul className="divide-y divide-border max-h-96 overflow-y-auto">
+          {rows.map((r) => {
+            const isOverride = overrides[r.internId] != null;
+            return (
+              <li key={r.internId} className="flex items-center gap-3 px-4 py-2.5">
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm text-foreground truncate">{r.fullName}</p>
+                  <p className="text-[11px] font-mono text-muted-foreground truncate">{r.email}</p>
+                </div>
+                <span className="text-sm font-semibold tabular-nums text-foreground">{r.score}</span>
+                {isOverride && (
+                  <span
+                    className="text-[10px] px-1.5 py-0.5 rounded-md border border-blue/30 bg-blue/5 text-blue uppercase tracking-wide"
+                    title="Moved here manually, against the threshold"
+                  >
+                    Override
+                  </span>
+                )}
+                <button
+                  onClick={() => onSwap(r.internId)}
+                  title={actionLabel}
+                  className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-md border border-border hover:bg-muted/40"
+                >
+                  <ArrowLeftRight className="h-3 w-3" />
+                  Swap
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </div>
   );
 }

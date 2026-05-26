@@ -67,6 +67,43 @@ export async function GET(request: NextRequest) {
       histogram: bucketHistogram(scores),
     };
 
+    // Optional named-buckets mode: when `?threshold=N` is provided we also
+    // return who would PASS and who would FAIL by name + score. Used by the
+    // /admin/stage-results "review before publish" view, so the super-admin
+    // can swap individuals between the two buckets before committing.
+    const thresholdParam = url.searchParams.get("threshold");
+    const t = thresholdParam !== null ? Number(thresholdParam) : NaN;
+    if (Number.isFinite(t) && t >= 0 && t <= 100) {
+      const graded = await prisma.stageReport.findMany({
+        where: { stage, status: "GRADED" },
+        select: {
+          id: true,
+          score: true,
+          intern: {
+            select: {
+              id: true,
+              user: { select: { firstName: true, lastName: true, email: true } },
+            },
+          },
+        },
+        orderBy: { score: "desc" },
+      });
+      const willPass: { reportId: string; internId: string; fullName: string; email: string; score: number }[] = [];
+      const willFail: typeof willPass = [];
+      for (const r of graded) {
+        const row = {
+          reportId: r.id,
+          internId: r.intern.id,
+          fullName: `${r.intern.user.firstName} ${r.intern.user.lastName}`.trim(),
+          email: r.intern.user.email,
+          score: r.score ?? 0,
+        };
+        if ((r.score ?? 0) >= t) willPass.push(row);
+        else willFail.push(row);
+      }
+      return Response.json({ stage, summary, buckets: { threshold: t, willPass, willFail } });
+    }
+
     return Response.json({ stage, summary });
   } catch (error) {
     logger.error("stage_results_summary_failed", error);
@@ -127,10 +164,28 @@ export async function POST(request: NextRequest) {
       return Response.json({ error: "No graded reports to publish for this stage" }, { status: 409 });
     }
 
+    // Per-intern overrides — supplied from the review UI when an admin swaps
+    // individuals between the threshold-derived buckets. Shape:
+    //   { overrides: { "<internId>": "pass" | "fail" } }
+    // Any internId listed forces that outcome regardless of score; everyone
+    // else falls through the threshold comparison below. Audit-logged with
+    // the publish action so the override decision is recoverable.
+    const rawOverrides = body?.overrides;
+    const overrides = new Map<string, "pass" | "fail">();
+    if (rawOverrides && typeof rawOverrides === "object") {
+      for (const [k, v] of Object.entries(rawOverrides)) {
+        if (typeof k === "string" && (v === "pass" || v === "fail")) {
+          overrides.set(k, v);
+        }
+      }
+    }
+
     const willPass: typeof graded = [];
     const willFail: typeof graded = [];
     for (const r of graded) {
-      if ((r.score ?? 0) >= threshold) willPass.push(r);
+      const forced = overrides.get(r.intern.id);
+      const passes = forced ? forced === "pass" : (r.score ?? 0) >= threshold;
+      if (passes) willPass.push(r);
       else willFail.push(r);
     }
 
@@ -139,6 +194,7 @@ export async function POST(request: NextRequest) {
         dryRun: true,
         willPass: willPass.length,
         willFail: willFail.length,
+        overridesApplied: overrides.size,
       });
     }
 
