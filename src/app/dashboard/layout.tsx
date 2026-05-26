@@ -19,20 +19,29 @@ export default async function DashboardLayout({
     redirect("/admin");
   }
 
-  // One-time NDA gate: any unsigned intern is routed to onboarding before
-  // they see the rest of the dashboard. The proxy forwards `x-pathname`
-  // so we can skip this when the user is already on the onboarding page,
-  // which would otherwise loop.
+  // Two compulsory gates, in priority order:
+  //   1. NDA       — unsigned interns are routed to /dashboard/onboarding.
+  //   2. Slack     — once the NDA is signed, interns must self-confirm they
+  //                  joined the cohort Slack workspace at /dashboard/slack
+  //                  before they can use the rest of the dashboard.
+  // The proxy forwards `x-pathname` so we can skip the redirect on the gate's
+  // own page; without that we'd loop forever.
   const h = await headers();
   const pathname = h.get("x-pathname") ?? "";
-  if (!pathname.startsWith("/dashboard/onboarding")) {
+  const onOnboarding = pathname.startsWith("/dashboard/onboarding");
+  const onSlackPage = pathname.startsWith("/dashboard/slack");
+
+  if (!onOnboarding) {
     const intern = await prisma.intern.findUnique({
       where: { userId: session.id },
-      select: { ndaSignedAt: true },
+      select: { ndaSignedAt: true, slackJoined: true },
     });
     if (intern && !intern.ndaSignedAt) {
       const next = pathname && pathname.startsWith("/") ? pathname : "/dashboard";
       redirect(`/dashboard/onboarding?next=${encodeURIComponent(next)}`);
+    }
+    if (intern && intern.ndaSignedAt && !intern.slackJoined && !onSlackPage) {
+      redirect("/dashboard/slack");
     }
   }
 

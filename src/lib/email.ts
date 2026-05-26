@@ -2,6 +2,7 @@ import nodemailer from "nodemailer";
 import { logger } from "./logger";
 import { publicAppUrl } from "./public-url";
 import { signLetter } from "./letter-sig";
+import { SLACK_INVITE_URL, SLACK_INVITE_PITCH } from "./slack";
 
 // Build a fresh SMTP transporter on every send. We previously kept a pooled
 // singleton at module level, but that pattern fails badly on Vercel:
@@ -597,6 +598,83 @@ export async function sendPublicRejectionEmail(
     subject,
     html,
   });
+}
+
+// Render the credentials email — sent separately from the welcome email so
+// the password never ships in the same message as the marketing-tone
+// acceptance. Includes the intern ID, temp password, login URL, and the
+// compulsory Slack invite they need to join.
+export function renderCredentialsEmail(opts: {
+  fullName: string;
+  internId: string;
+  tempPassword: string;
+}): { subject: string; html: string } {
+  const { fullName, internId, tempPassword } = opts;
+  const firstName = fullName.split(" ")[0];
+  const loginUrl = `${publicAppUrl()}/login`;
+  return {
+    subject: "Your UBI login — and the Slack invite (please join)",
+    html: `
+      <div style="font-family: -apple-system, 'Segoe UI', Roboto, sans-serif; background: #F1F5F9; padding: 40px 20px;">
+        <div style="max-width: 600px; margin: 0 auto;">
+
+          <div style="background: linear-gradient(135deg, #0F172A 0%, #1E293B 60%, #2563EB 100%); padding: 40px 32px; border-radius: 18px 18px 0 0; text-align: center; color: white;">
+            <div style="display: inline-block; padding: 6px 14px; border: 1.5px solid rgba(255,255,255,0.3); border-radius: 999px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 14px;">Cohort 1 · Your login</div>
+            <h1 style="margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -0.5px;">You're ready to log in.</h1>
+          </div>
+
+          <div style="background: white; padding: 36px 36px 32px; border-radius: 0 0 18px 18px; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);">
+            <p style="color: #475569; line-height: 1.75; margin: 0 0 16px; font-size: 15px;">Hi ${firstName},</p>
+            <p style="color: #334155; line-height: 1.75; margin: 0 0 18px; font-size: 15px;">
+              Here are your login details for the UBI portal. Keep them private — you'll be asked to set a new password on first login.
+            </p>
+
+            <!-- Credentials -->
+            <div style="margin: 22px 0; padding: 22px; background: #0F172A; border-radius: 14px;">
+              <p style="color: #38BDF8; margin: 0 0 12px; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;">Your login</p>
+              <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                  <td style="padding: 8px 0; color: #94A3B8; font-size: 13px;">Intern ID</td>
+                  <td style="padding: 8px 0; color: #F1F5F9; font-size: 14px; font-family: 'SF Mono', Monaco, Menlo, monospace; text-align: right; font-weight: 600;">${internId}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; border-top: 1px solid rgba(255,255,255,0.08); color: #94A3B8; font-size: 13px;">Temp password</td>
+                  <td style="padding: 8px 0; border-top: 1px solid rgba(255,255,255,0.08); color: #F1F5F9; font-size: 14px; font-family: 'SF Mono', Monaco, Menlo, monospace; text-align: right; font-weight: 600;">${tempPassword}</td>
+                </tr>
+              </table>
+              <p style="margin: 18px 0 0; text-align: center;">
+                <a href="${loginUrl}" style="display: inline-block; background: #2563EB; color: white; padding: 12px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px;">Log in to your dashboard</a>
+              </p>
+              <p style="color: #64748B; margin: 14px 0 0; font-size: 12px; line-height: 1.6; text-align: center;">
+                You'll be asked to set a new password on first login. Please don't share these credentials.
+              </p>
+            </div>
+
+            <!-- Compulsory Slack join -->
+            <div style="margin: 28px 0; padding: 22px 24px; background: linear-gradient(135deg, #ECFDF5, #F0FDF4); border-left: 4px solid #10B981; border-radius: 10px;">
+              <p style="color: #065F46; margin: 0 0 6px; font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;">Required: join the Slack workspace</p>
+              <p style="color: #064E3B; margin: 0 0 12px; font-size: 14px; line-height: 1.7;">
+                ${SLACK_INVITE_PITCH} This is how we coordinate the cohort day-to-day — please join before your first stage opens.
+              </p>
+              <p style="margin: 0;">
+                <a href="${SLACK_INVITE_URL}" style="display: inline-block; background: #10B981; color: white; padding: 11px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px;">Join the UBI Slack →</a>
+              </p>
+            </div>
+
+${SPONSOR_BLOCK}
+
+            <p style="color: #334155; line-height: 1.7; margin: 24px 0 4px; font-size: 15px;">See you on the inside.</p>
+            <p style="color: #0F172A; line-height: 1.5; margin: 16px 0 0; font-size: 15px; font-weight: 600;">— Somto Okoma</p>
+            <p style="color: #64748B; line-height: 1.5; margin: 0; font-size: 13px;">Head of Programme, Ubuntu Bridge Initiative</p>
+          </div>
+
+          <p style="text-align: center; color: #94A3B8; font-size: 11px; margin: 24px 0 0; letter-spacing: 0.3px;">
+            Ubuntu Bridge Initiative &middot; Building the next generation of cybersecurity professionals
+          </p>
+        </div>
+      </div>
+    `,
+  };
 }
 
 // ─── BATCH EMAIL UTILITY ─────────────────────────────────

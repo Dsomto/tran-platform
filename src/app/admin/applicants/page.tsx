@@ -78,7 +78,7 @@ export default function ApplicantsPage() {
   // The open tab is driven by the URL (?tab=) so the sidebar's Recommended /
   // Waitlist links land directly on the right view. Initialise from the URL
   // to avoid a flash, then keep it in sync via the effect below.
-  const TABS = ["recommended", "pending", "approved", "waitlisted", "rejected"];
+  const TABS = ["pending", "approved", "waitlisted", "rejected"];
   const [filter, setFilter] = useState(() => {
     if (typeof window === "undefined") return "pending";
     const t = new URLSearchParams(window.location.search).get("tab");
@@ -104,9 +104,12 @@ export default function ApplicantsPage() {
     waitlisted: 0,
     recommended: 0,
   });
-  // How many approved / rejected applicants still owe a decision email.
+  // How many approved / rejected applicants still owe a decision email, and
+  // how many approved interns still owe their credentials email.
   const [pendingEmails, setPendingEmails] = useState({ welcomePending: 0, rejectionPending: 0 });
+  const [credentialsPending, setCredentialsPending] = useState(0);
   const [sendingBatch, setSendingBatch] = useState(false);
+  const [sendingCreds, setSendingCreds] = useState(false);
   const [user, setUser] = useState({
     firstName: "",
     lastName: "",
@@ -162,6 +165,12 @@ export default function ApplicantsPage() {
     } catch {
       /* non-fatal — leave counts as-is */
     }
+    try {
+      const cp = await fetch("/api/admin/applicants/send-credentials").then((x) => x.json());
+      setCredentialsPending(cp.pending || 0);
+    } catch {
+      /* non-fatal */
+    }
   }, []);
 
   async function sendPendingBatch(type: "welcome" | "rejection") {
@@ -198,6 +207,45 @@ export default function ApplicantsPage() {
       alert("Network error while queueing emails.");
     } finally {
       setSendingBatch(false);
+    }
+  }
+
+  // Send the credentials email (intern ID + temp password + Slack invite) to
+  // every approved applicant who hasn't received it yet. The acceptance email
+  // intentionally doesn't carry the password; this is the follow-up.
+  async function sendCredentialsBatch() {
+    if (credentialsPending === 0) return;
+    if (
+      !confirm(
+        `Queue ${credentialsPending} credentials email${credentialsPending === 1 ? "" : "s"}? ` +
+          "Each recipient gets their intern ID, temp password, and the Slack invite."
+      )
+    ) {
+      return;
+    }
+    const totpCode = promptTotpCode();
+    if (totpCode === null) return;
+    setSendingCreds(true);
+    try {
+      const res = await fetch("/api/admin/applicants/send-credentials", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ totpCode }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(`Couldn't queue credentials emails: ${data.error || "unknown error"}`);
+      } else {
+        alert(
+          `${data.queued} credentials email${data.queued === 1 ? "" : "s"} queued for delivery.\n\n` +
+            "Track delivery on the Email Queue page."
+        );
+        fetchCounts();
+      }
+    } catch {
+      alert("Network error while queueing credentials.");
+    } finally {
+      setSendingCreds(false);
     }
   }
 
@@ -502,7 +550,6 @@ export default function ApplicantsPage() {
   };
 
   const filterTabs = [
-    { key: "recommended", label: "Recommended", icon: Sparkles, count: counts.recommended },
     { key: "pending", label: "Pending", icon: Clock, count: counts.pending },
     { key: "approved", label: "Approved", icon: UserCheck, count: counts.approved },
     { key: "waitlisted", label: "Waitlisted", icon: Hourglass, count: counts.waitlisted },
@@ -629,6 +676,16 @@ export default function ApplicantsPage() {
               >
                 <Mail className="w-4 h-4 mr-1" />
                 Send {pendingEmails.welcomePending} welcome email{pendingEmails.welcomePending === 1 ? "" : "s"}
+              </Button>
+            )}
+            {filter === "approved" && credentialsPending > 0 && canSend && (
+              <Button
+                size="sm"
+                onClick={sendCredentialsBatch}
+                isLoading={sendingCreds}
+              >
+                <Mail className="w-4 h-4 mr-1" />
+                Send {credentialsPending} credentials email{credentialsPending === 1 ? "" : "s"}
               </Button>
             )}
             {filter === "rejected" && pendingEmails.rejectionPending > 0 && canSend && (

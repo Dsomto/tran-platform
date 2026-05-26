@@ -26,8 +26,8 @@ import {
   Send,
   TrendingUp,
   ClipboardList,
-  Sparkles,
   Hourglass,
+  Hash,
 } from "lucide-react";
 import { LogoMark } from "@/components/logo";
 import { useState } from "react";
@@ -43,6 +43,7 @@ const graderLinks = [
 
 const internLinks = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
+  { href: "/dashboard/slack", label: "Join Slack", icon: Hash },
   { href: "/dashboard/assignments", label: "Assignments", icon: BookOpen },
   { href: "/dashboard/reports", label: "Reports", icon: FileText },
   { href: "/dashboard/announcements", label: "Announcements", icon: Megaphone },
@@ -57,7 +58,6 @@ const adminLinks = [
   { href: "/ops", label: "Operations", icon: Activity },
   { href: "/admin", label: "Overview", icon: LayoutDashboard },
   { href: "/admin/applicants", label: "Applicants", icon: UserCheck },
-  { href: "/admin/applicants?tab=recommended", label: "Recommended", icon: Sparkles },
   { href: "/admin/applicants?tab=waitlisted", label: "Waitlist", icon: Hourglass },
   { href: "/admin/application-form", label: "Application Form", icon: ClipboardList },
   { href: "/admin/mailing", label: "Decision Emails", icon: Send },

@@ -466,6 +466,7 @@ model PublicApplication {
   welcomeEmailSentAt   DateTime?
   rejectionEmailSentAt DateTime?
   waitlistEmailSentAt  DateTime?
+  credentialsEmailSentAt DateTime?
   status          String   @default("pending")
   stage           Int      @default(-1)     // -1 = not started, 0-9 = active stages, 10 = finalist
   stageStatus     String   @default("none") // none | active | advanced | eliminated
