@@ -7,8 +7,12 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Moving an intern between stages is a high-impact decision: it overrides
+    // the grading flow and can trigger downstream emails. Promotion happens in
+    // bulk via /admin/stage-results (super-admin only); one-off per-intern
+    // moves stay super-admin too.
     const session = await getSession();
-    if (!session || (session.role !== "ADMIN" && session.role !== "SUPER_ADMIN")) {
+    if (!session || session.role !== "SUPER_ADMIN") {
       return Response.json({ error: "Not authorized" }, { status: 403 });
     }
 
