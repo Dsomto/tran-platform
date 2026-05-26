@@ -19,11 +19,24 @@ export default async function DashboardLayout({
     redirect("/admin");
   }
 
+  // First-login password change: as long as PublicApplication.loginPassword
+  // is set (the plaintext temp password we generated and emailed), the intern
+  // is still on the temp password. Send them to /change-password until they
+  // pick their own. That endpoint clears loginPassword, which removes the
+  // gate on the next request. Admins/graders have no PublicApplication row
+  // so this is a no-op for them.
+  const appRow = await prisma.publicApplication.findUnique({
+    where: { email: session.email },
+    select: { loginPassword: true },
+  });
+  if (appRow?.loginPassword) {
+    redirect("/change-password");
+  }
+
   // One-time NDA gate: any unsigned intern is routed to onboarding before
   // they see the rest of the dashboard. The proxy forwards `x-pathname` so
   // we can skip this when the user is already on the onboarding page —
-  // which would otherwise loop. (The Slack-join gate that briefly lived
-  // here was reverted; the invite now lives in the Announcements tab.)
+  // which would otherwise loop.
   const h = await headers();
   const pathname = h.get("x-pathname") ?? "";
   if (!pathname.startsWith("/dashboard/onboarding")) {

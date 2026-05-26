@@ -1,7 +1,8 @@
 "use client";
 
-import { Bell, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
+import { NotificationBell } from "./notification-bell";
 
 interface TopbarProps {
   title: string;
@@ -30,11 +31,8 @@ export function Topbar({ title, subtitle, firstName, lastName, avatarUrl }: Topb
           />
         </div>
 
-        {/* Notifications */}
-        <button className="relative p-2 rounded-xl hover:bg-surface-hover transition-colors cursor-pointer">
-          <Bell className="w-5 h-5 text-muted" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-danger rounded-full" />
-        </button>
+        {/* Notifications — real dropdown of the latest announcements */}
+        <NotificationBell />
 
         {/* Profile */}
         <Avatar

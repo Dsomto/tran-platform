@@ -50,6 +50,14 @@ export async function POST(request: NextRequest) {
     }
 
     const hashed = await hashPassword(newPassword);
+    // Look up the user's email so we can also clear PublicApplication
+    // .loginPassword — the temp-password marker the first-login gate watches.
+    // Otherwise an intern who resets via forgot-password would still be sent
+    // to /change-password on next login.
+    const user = await prisma.user.findUnique({
+      where: { id: row.userId },
+      select: { email: true },
+    });
     await prisma.$transaction([
       prisma.user.update({
         where: { id: row.userId },
@@ -64,6 +72,14 @@ export async function POST(request: NextRequest) {
         where: { id: row.id },
         data: { consumedAt: new Date() },
       }),
+      ...(user
+        ? [
+            prisma.publicApplication.updateMany({
+              where: { email: user.email },
+              data: { loginPassword: null },
+            }),
+          ]
+        : []),
     ]);
 
     return Response.json({ ok: true });
