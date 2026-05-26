@@ -1,7 +1,8 @@
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { Megaphone, Pin } from "lucide-react";
+import { Megaphone, Pin, Hash, ExternalLink } from "lucide-react";
 import { formatDate } from "@/lib/utils";
+import { SLACK_INVITE_URL, SLACK_INVITE_PITCH } from "@/lib/slack";
 
 export default async function InternAnnouncementsPage() {
   const session = await requireAuth();
@@ -42,6 +43,26 @@ export default async function InternAnnouncementsPage() {
           Programme announcements from the team. Pinned messages sit at the top.
         </p>
       </header>
+
+      {/* Persistent Slack invite — every intern needs to join the workspace,
+          so we surface the link at the top of Announcements (more discoverable
+          than burying it in any single post). */}
+      <a
+        href={SLACK_INVITE_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="mb-6 flex items-start gap-4 p-5 bg-[#4A154B] text-white rounded-xl hover:opacity-95 transition-opacity"
+      >
+        <Hash className="h-6 w-6 mt-0.5 shrink-0" />
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-xs font-semibold uppercase tracking-wide opacity-70">Join the cohort Slack</span>
+            <ExternalLink className="h-3 w-3 opacity-70" />
+          </div>
+          <p className="text-sm leading-relaxed opacity-95">{SLACK_INVITE_PITCH}</p>
+          <p className="mt-2 text-[11px] font-mono opacity-70 break-all">{SLACK_INVITE_URL}</p>
+        </div>
+      </a>
 
       {announcements.length === 0 ? (
         <div className="p-10 bg-white border border-border rounded-xl text-center text-muted-foreground">
