@@ -45,6 +45,23 @@ export async function POST(
       return Response.json({ error: "Task belongs to a different stage" }, { status: 400 });
     }
 
+    // Auto-graded tasks lock once solved: re-answering a correctly-graded task
+    // must not re-award points (the leaderboard would otherwise inflate).
+    const existing = await prisma.submission.findUnique({
+      where: { internId_assignmentId: { internId, assignmentId: assignment.id } },
+      select: { id: true, status: true, score: true },
+    });
+    if (existing && existing.status === "GRADED" && (existing.score ?? 0) > 0) {
+      return Response.json({
+        submissionId: existing.id,
+        status: existing.status,
+        score: existing.score,
+        feedback: "You've already solved this task.",
+        autoGraded: true,
+        alreadySolved: true,
+      });
+    }
+
     const grade = autoGradeSubmission(
       assignment,
       answer as Record<string, unknown>,

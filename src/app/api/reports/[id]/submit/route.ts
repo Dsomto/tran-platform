@@ -25,10 +25,11 @@ export async function POST(
       return Response.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    // Terminal states cannot be re-submitted.
-    if (report.status === "PASSED") {
+    // Terminal states cannot be re-submitted. A FAILED report means the stage
+    // decision is final (elimination), so it is locked just like PASSED.
+    if (report.status === "PASSED" || report.status === "FAILED") {
       return Response.json(
-        { error: "This stage has already been passed" },
+        { error: "This stage report has already been decided and can no longer be re-submitted" },
         { status: 409 }
       );
     }
@@ -51,11 +52,10 @@ export async function POST(
       );
     }
 
-    // Bump version on resubmit (anything that was already SUBMITTED/UNDER_REVIEW/FAILED).
+    // Bump version on resubmit (anything that was already SUBMITTED/UNDER_REVIEW).
     const isResubmit =
       report.status === "SUBMITTED" ||
-      report.status === "UNDER_REVIEW" ||
-      report.status === "FAILED";
+      report.status === "UNDER_REVIEW";
 
     const updated = await prisma.stageReport.update({
       where: { id: report.id },

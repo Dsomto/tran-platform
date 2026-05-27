@@ -17,7 +17,16 @@ export async function POST(
     }
 
     const { id } = await params;
-    const { action } = await request.json(); // "promote" or "demote"
+    const { action } = await request.json(); // "promote" only
+
+    // Demotion is not allowed: interns only ever advance (via the cutoff flow)
+    // or are eliminated. Moving someone back a stage is never a valid action.
+    if (action !== "promote") {
+      return Response.json(
+        { error: "Only promotion is allowed. Interns are eliminated rather than demoted." },
+        { status: 400 }
+      );
+    }
 
     const intern = await prisma.intern.findUnique({ where: { id } });
     if (!intern) {
@@ -25,15 +34,7 @@ export async function POST(
     }
 
     const currentNum = parseInt(intern.currentStage.replace("STAGE_", ""));
-    let newNum: number;
-
-    if (action === "promote") {
-      newNum = Math.min(currentNum + 1, 9);
-    } else if (action === "demote") {
-      newNum = Math.max(currentNum - 1, 0);
-    } else {
-      return Response.json({ error: "Invalid action" }, { status: 400 });
-    }
+    const newNum = Math.min(currentNum + 1, 9);
 
     if (newNum === currentNum) {
       return Response.json(
@@ -55,7 +56,7 @@ export async function POST(
           fromStage: intern.currentStage,
           toStage: newStage,
           promotedBy: session.id,
-          reason: action === "promote" ? "Admin promotion" : "Admin demotion",
+          reason: "Admin promotion",
         },
       }),
     ]);

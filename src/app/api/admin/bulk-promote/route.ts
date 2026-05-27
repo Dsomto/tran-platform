@@ -5,7 +5,9 @@ import { getSession } from "@/lib/auth";
 export async function POST(request: NextRequest) {
   try {
     const session = await getSession();
-    if (!session || (session.role !== "ADMIN" && session.role !== "SUPER_ADMIN")) {
+    // Stage moves are high-impact, so this matches the single-intern endpoint:
+    // super-admin only (was previously open to plain ADMIN).
+    if (!session || session.role !== "SUPER_ADMIN") {
       return new Response(null, { status: 404 });
     }
 
@@ -18,9 +20,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!action || !["promote", "demote"].includes(action)) {
+    // Demotion is not allowed — interns only advance or are eliminated.
+    if (action !== "promote") {
       return Response.json(
-        { error: "Action must be 'promote' or 'demote'" },
+        { error: "Only 'promote' is allowed. Interns are eliminated rather than demoted." },
         { status: 400 }
       );
     }
@@ -32,10 +35,7 @@ export async function POST(request: NextRequest) {
     const results = await Promise.allSettled(
       interns.map(async (intern) => {
         const currentNum = parseInt(intern.currentStage.replace("STAGE_", ""));
-        const newNum =
-          action === "promote"
-            ? Math.min(currentNum + 1, 9)
-            : Math.max(currentNum - 1, 0);
+        const newNum = Math.min(currentNum + 1, 9);
 
         if (newNum === currentNum) return { id: intern.id, skipped: true };
 
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
             fromStage: intern.currentStage,
             toStage: newStage,
             promotedBy: session.id,
-            reason: `Bulk ${action}`,
+            reason: "Bulk promote",
           },
         });
 

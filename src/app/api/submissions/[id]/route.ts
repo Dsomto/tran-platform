@@ -50,19 +50,24 @@ export async function PATCH(
       },
     });
 
-    // Award points to the intern (scored portion). Uses a PointLog for audit.
-    await prisma.intern.update({
-      where: { id: submission.internId },
-      data: { points: { increment: score } },
-    });
-    await prisma.pointLog.create({
-      data: {
-        internId: submission.internId,
-        points: score,
-        reason: `Graded: ${submission.assignment.title}`,
-        awardedBy: session.id,
-      },
-    });
+    // Award only the delta vs. any previous grade, so re-grading a submission
+    // adjusts the intern's points instead of awarding the full score again.
+    const priorScore = submission.score ?? 0;
+    const delta = score - priorScore;
+    if (delta !== 0) {
+      await prisma.intern.update({
+        where: { id: submission.internId },
+        data: { points: { increment: delta } },
+      });
+      await prisma.pointLog.create({
+        data: {
+          internId: submission.internId,
+          points: delta,
+          reason: `${priorScore > 0 ? "Re-graded" : "Graded"}: ${submission.assignment.title}`,
+          awardedBy: session.id,
+        },
+      });
+    }
 
     sendGradeNotification(
       submission.intern.user.email,

@@ -105,6 +105,19 @@ export async function POST(request: NextRequest) {
 
     const isLate = assignment.dueDate != null && new Date() > assignment.dueDate;
 
+    // A graded submission is final — block resubmission so a new upload can't
+    // wipe the grade and the points already awarded for it.
+    const existing = await prisma.submission.findUnique({
+      where: { internId_assignmentId: { internId: intern.id, assignmentId } },
+      select: { status: true },
+    });
+    if (existing && existing.status === "GRADED") {
+      return Response.json(
+        { error: "This submission has already been graded and can no longer be changed." },
+        { status: 409 }
+      );
+    }
+
     // Upsert so a re-submission updates the existing record (matches the
     // @@unique([internId, assignmentId]) constraint).
     const submission = await prisma.submission.upsert({
