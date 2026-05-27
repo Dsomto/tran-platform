@@ -811,6 +811,19 @@ function renderResultEmail(opts: {
         </div>`
       : "";
 
+  // For eliminated participants: a warm community note. No links here — the
+  // alumni-community / device-pitch details go out in a separate follow-up email.
+  const communityBlock = !passed
+    ? `
+        <div style="border-top:1px solid #E2E8F0;margin-top:20px;padding-top:20px;">
+          <p style="margin:0;color:#334155;font-size:14px;line-height:1.7;">
+            This isn't the end of the road. You remain part of the UBI community — we'll be in
+            touch by email about alumni opportunities, including the chance to pitch for device
+            and equipment support. Thank you for the work and effort you put in.
+          </p>
+        </div>`
+    : "";
+
   return `
     <div style="font-family:'Segoe UI',sans-serif;max-width:600px;margin:0 auto;background:#F8FAFC;padding:40px 20px;">
       <div style="background:linear-gradient(135deg,#2563EB,#0891B2);padding:32px;border-radius:16px;text-align:center;color:white;">
@@ -830,6 +843,7 @@ function renderResultEmail(opts: {
         <div style="color:#475569;line-height:1.7;font-size:14px;background:#F8FAFC;border-radius:8px;padding:16px;">${safeFeedback}</div>
         <p style="color:#475569;line-height:1.7;margin:24px 0 0;">${cta}</p>
         ${slackBlock}
+        ${communityBlock}
       </div>
       <p style="text-align:center;color:#94A3B8;font-size:12px;margin-top:24px;">
         Ubuntu Bridge Initiative · ubuntubridgeinitiatives.org

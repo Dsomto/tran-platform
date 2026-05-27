@@ -156,7 +156,7 @@ export function generateStageCertificate(opts: {
       .font("Helvetica-Bold")
       .fillColor("#374151")
       .text("Okoma Somtochukwu", 120, baselineY + 8);
-    doc.font("Helvetica").text("Head of Programme · UBI");
+    doc.font("Helvetica").text("Head of Programme · TRAN (The Root Access Network)");
 
     // Date (right)
     const dateStr = issuedAt.toLocaleDateString("en-GB", {
