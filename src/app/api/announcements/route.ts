@@ -23,9 +23,28 @@ export async function GET(request: NextRequest) {
     }
 
     const url = new URL(request.url);
-    const limit = parseInt(url.searchParams.get("limit") || "20");
+    const rawLimit = parseInt(url.searchParams.get("limit") || "20", 10);
+    const limit = Number.isFinite(rawLimit) ? Math.min(Math.max(rawLimit, 1), 50) : 20;
+
+    let where: Prisma.AnnouncementWhereInput = {};
+    if (session.role === "INTERN") {
+      const intern = await prisma.intern.findUnique({
+        where: { userId: session.id },
+        select: { currentStage: true, track: true },
+      });
+      if (!intern) {
+        return Response.json({ announcements: [] });
+      }
+      where = {
+        AND: [
+          { OR: [{ stage: null }, { stage: intern.currentStage }] },
+          { OR: [{ track: null }, { track: intern.track }] },
+        ],
+      };
+    }
 
     const announcements = await prisma.announcement.findMany({
+      where,
       include: {
         author: {
           select: { firstName: true, lastName: true, avatarUrl: true },

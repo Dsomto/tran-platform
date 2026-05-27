@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Grader Rubric — Stages 0–4</title>
+<style>
+  body { font: 15px/1.65 -apple-system, "Segoe UI", Roboto, sans-serif; color: #0f172a; max-width: 820px; margin: 40px auto; padding: 0 20px; }
+  h1 { font-size: 26px; } h2 { font-size: 20px; margin-top: 32px; border-top: 1px solid #e2e8f0; padding-top: 20px; }
+  h3 { font-size: 16px; } code { background: #f1f5f9; padding: 1px 5px; border-radius: 4px; font-size: 13px; }
+  table { border-collapse: collapse; width: 100%; margin: 14px 0; font-size: 14px; }
+  th, td { border: 1px solid #e2e8f0; padding: 8px 10px; text-align: left; vertical-align: top; }
+  th { background: #f8fafc; } hr { border: none; border-top: 1px solid #e2e8f0; margin: 28px 0; }
+  em { color: #475569; } @media print { body { margin: 0; } }
+</style>
+</head>
+<body>
+<h1>UBI Cohort 1 — Grader Rubric (Stages 0–4)</h1>
+<p><em>Confidential. For graders and programme staff only.</em></p>
+<h2>How grading works</h2>
+<ul><li>Every stage is scored out of <strong>100 points</strong>, split across its tasks below.</li><li>A participant needs <strong>≥ 50%</strong> to advance. <strong>Below 50% is an elimination</strong> — the</li></ul>
+<p>  system deactivates the account and an elimination email goes out, so grade</p>
+<p>  honestly and leave a one-line justification on every task.</p>
+<ul><li>Score each task against three bands:</li><li><strong>Strong (full band):</strong> meets the intent, correct, and clearly reasoned.</li><li><strong>Adequate (about half):</strong> the core is right but shallow, partly wrong, or</li></ul>
+<p>    thinly justified.</p>
+<ul><li><strong>Insufficient (0–25%):</strong> missing, copied, off-topic, or fundamentally wrong.</li><li><strong>Reasoning beats the right answer.</strong> A correct answer with no working scores</li></ul>
+<p>  lower than a slightly-off answer that shows sound method.</p>
+<ul><li><strong>Integrity:</strong> identical wording across submissions, AI-tells with no</li></ul>
+<p>  understanding, or pasted tool output with no interpretation cap the task at</p>
+<p>  *Insufficient*. Flag suspected collusion to a programme manager — do not</p>
+<p>  eliminate on suspicion alone.</p>
+<p>Use the same scale everywhere: <strong>4 = strong · 2 = adequate · 0–1 = insufficient</strong>,</p>
+<p>then weight to the points shown.</p>
+<hr/>
+<h2>Stage 0 — Foundations: Induction at the Gate (100 pts)</h2>
+<p>Goal: can this person triage, reason about basics, and act ethically?</p>
+<table><thead><tr><th>Task</th><th>Pts</th><th>Strong looks like</th><th>Insufficient looks like</th></tr></thead><tbody><tr><td>Auth-log triage</td><td>25</td><td>Correctly separates normal vs suspicious lines; explains *why* (timing, geo, volume); proposes a next step</td><td>Lists lines with no reasoning; misreads benign activity as attack</td></tr><tr><td>CIA-triad CVE triage (10 CVEs)</td><td>20</td><td>Correct primary CIA leg per CVE with a one-line, defensible rationale</td><td>Wrong legs, no rationale, or a single copied definition</td></tr><tr><td>Decode four encoded strings</td><td>15</td><td>All four decoded with the encoding named and method shown</td><td>Plaintext only, no method; or wrong encodings</td></tr><tr><td>"Suspicious login" mini-playbook</td><td>20</td><td>Clear, ordered, actionable steps a junior could follow; scoping + escalation</td><td>Vague prose, no order, no escalation path</td></tr><tr><td>Ethics stance</td><td>20</td><td>Takes a clear position, weighs the trade-off honestly, shows judgement</td><td>Platitudes; dodges the dilemma</td></tr></tbody></table>
+<p>Red flags: tool output pasted with no interpretation; "hacking" framed as the goal rather than defence.</p>
+<hr/>
+<h2>Stage 1 — Applied Cryptography: Ciphers &amp; Secrets (100 pts)</h2>
+<p>Goal: practical crypto literacy — break, identify, and reason about controls.</p>
+<table><thead><tr><th>Task</th><th>Pts</th><th>Strong looks like</th><th>Insufficient looks like</th></tr></thead><tbody><tr><td>Decrypt the ciphertext</td><td>25</td><td>Correct plaintext + reproducible recipe (e.g., CyberChef URL) + the ECB note</td><td>Plaintext with no method; can't reproduce</td></tr><tr><td>Identify the classical cipher</td><td>15</td><td>Correct cipher named with the tell that gave it away</td><td>Guess with no reasoning</td></tr><tr><td>Audit three JWTs</td><td>25</td><td>Each token's specific red flag named (alg=none, weak secret, no exp, etc.)</td><td>Generic "looks insecure"; misses the real flaw</td></tr><tr><td>Hash vs encryption memo</td><td>15</td><td>Crisp, correct distinction with a when-to-use-each example</td><td>Conflates the two; reversibility confusion</td></tr><tr><td>Five cryptographic controls</td><td>20</td><td>Specific, prioritised, justified to the scenario</td><td>Generic checklist with no fit to the brief</td></tr></tbody></table>
+<p>Red flags: "decrypting" a hash; recommending controls that don't match the scenario.</p>
+<hr/>
+<h2>Stage 2 — Web Application Security: The Attack Surface (100 pts)</h2>
+<p>Goal: read code/traffic, find the bug, map it, and fix it.</p>
+<table><thead><tr><th>Task</th><th>Pts</th><th>Strong looks like</th><th>Insufficient looks like</th></tr></thead><tbody><tr><td>Find the SQLi in the code</td><td>25</td><td>Vulnerable line quoted, class named, working PoC, and a correct parameterised fix</td><td>Points near it but no PoC or wrong fix</td></tr><tr><td>Trace the attack in the HTTP capture</td><td>25</td><td>Numbered, accurate sequence with annotations showing what each request did</td><td>Restates packets with no narrative</td></tr><tr><td>Map five findings to OWASP Top 10 (2021)</td><td>25</td><td>Correct category per finding with a one-line justification</td><td>Wrong categories; no justification</td></tr><tr><td>Remaining task(s) (fix / writeup)</td><td>25</td><td>Clear remediation that would actually close the issue</td><td>Superficial advice ("sanitise inputs")</td></tr></tbody></table>
+<p>Red flags: a PoC that doesn't demonstrate the named bug; "fixes" that don't address root cause.</p>
+<hr/>
+<h2>Stage 3 — Incident Response &amp; DFIR (100 pts)</h2>
+<p>Goal: turn messy evidence into a defensible incident narrative.</p>
+<table><thead><tr><th>Task</th><th>Pts</th><th>Strong looks like</th><th>Insufficient looks like</th></tr></thead><tbody><tr><td>Process triage</td><td>15</td><td>Picks out the malicious/suspicious processes with reasoning</td><td>Lists everything; no judgement</td></tr><tr><td>Incident timeline</td><td>20</td><td>Accurate, ordered, time-stamped reconstruction</td><td>Out of order; gaps unaddressed</td></tr><tr><td>IOC list</td><td>20</td><td>Precise, correctly typed IOCs (hashes, IPs, domains) usable for detection</td><td>Vague or wrong indicators</td></tr><tr><td>MITRE ATT&amp;CK mapping</td><td>20</td><td>Correct techniques (Txxxx) tied to evidence</td><td>Technique IDs with no evidence link</td></tr><tr><td>Formal incident report (5–7 pp)</td><td>25</td><td>Exec summary + timeline + impact + recommendations; reads like real IR</td><td>Disorganised; no recommendations</td></tr></tbody></table>
+<p>Red flags: IOCs invented rather than extracted; ATT&amp;CK IDs that don't match the activity.</p>
+<hr/>
+<h2>Stage 4 — Governance &amp; Risk: The Debrief (100 pts)</h2>
+<p>Goal: translate technical incident into business risk and a credible plan.</p>
+<table><thead><tr><th>Task</th><th>Pts</th><th>Strong looks like</th><th>Insufficient looks like</th></tr></thead><tbody><tr><td>Five-entry risk register</td><td>20</td><td>Real risks with likelihood/impact and sane scoring</td><td>Generic risks; arbitrary scores</td></tr><tr><td>GDPR 72-hour breach letter</td><td>20</td><td>Hits the required notification elements; right tone; on-time framing</td><td>Misses mandatory content; wrong audience</td></tr><tr><td>Map incident to NIST CSF 2.0</td><td>20</td><td>Correct Functions/Categories tied to the incident</td><td>Name-drops CSF with no mapping</td></tr><tr><td>12-month remediation roadmap</td><td>20</td><td>Sequenced, realistic, owners + horizons</td><td>Wish-list with no sequencing</td></tr><tr><td>Track-selection rationale (binding)</td><td>20</td><td>Honest fit between strengths and chosen track</td><td>No reasoning; contradicts their work</td></tr></tbody></table>
+<p>Red flags: compliance theatre with no link to the actual incident.</p>
+<hr/>
+<h2>Grader checklist (every submission)</h2>
+<ol><li>Score each task on the 0–4 scale, weight to points, total out of 100.</li><li>Leave a one-line justification per task — the participant may be eliminated on this.</li><li>Flag integrity concerns to a PM; never eliminate on suspicion alone.</li><li>Submit grades by the stage deadline so the cohort isn't held up.</li></ol>
+</body>
+</html>

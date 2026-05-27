@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Newsletter — Design Directions</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: #e9edf1;
+    color: #334155;
+    line-height: 1.6;
+    padding: 30px 16px 70px;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .wrap { max-width: 680px; margin: 0 auto; }
+  .topbar { display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap; }
+  h1.page { font-size: 20px; color: #0f172a; }
+  .btn {
+    background: #15233f; color: #fff; border: 0; font-size: 13px; font-weight: 600;
+    padding: 9px 18px; border-radius: 999px; cursor: pointer;
+  }
+  .lead { font-size: 13.5px; color: #64748b; margin: 8px 0 30px; }
+
+  .opt-label {
+    display: flex; align-items: baseline; gap: 10px; margin: 38px 0 4px;
+  }
+  .opt-num {
+    font-size: 12px; font-weight: 800; letter-spacing: .1em;
+    background: #15233f; color: #fff; padding: 3px 9px; border-radius: 6px;
+  }
+  .opt-name { font-size: 17px; font-weight: 700; color: #0f172a; }
+  .opt-desc { font-size: 13px; color: #64748b; margin-bottom: 14px; }
+
+  .frame {
+    background: #aeb8c4;
+    border-radius: 14px;
+    padding: 18px;
+  }
+  .email { max-width: 560px; margin: 0 auto; background: #fff; }
+
+  /* ============ D1 — THE DISPATCH (editorial) ============ */
+  .d1 { border: 1px solid #dfe3e8; }
+  .d1-masthead { padding: 30px 36px 18px; text-align: center; }
+  .d1-mark { color: #0f9d6e; font-size: 15px; letter-spacing: .3em; }
+  .d1-wordmark {
+    font-size: 14px; font-weight: 800; letter-spacing: .26em;
+    color: #15233f; margin-top: 8px;
+  }
+  .d1-rule { height: 2px; background: #15233f; margin: 14px 0 0; }
+  .d1-meta {
+    display: flex; justify-content: space-between;
+    font-size: 10px; letter-spacing: .14em; text-transform: uppercase;
+    color: #8a93a1; padding: 8px 36px 0;
+  }
+  .d1-meta .a { color: #0f9d6e; font-weight: 700; }
+  .d1-body { padding: 24px 36px 30px; }
+  .d1-h {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 24px; line-height: 1.3; color: #15233f; margin-bottom: 14px;
+  }
+  .d1-body p { font-size: 15px; color: #3f4a5a; line-height: 1.75; margin-bottom: 14px; }
+  .d1-link {
+    display: inline-block; margin-top: 4px;
+    font-size: 13px; font-weight: 700; letter-spacing: .04em;
+    color: #0f9d6e; text-decoration: none;
+    border-bottom: 2px solid #0f9d6e; padding-bottom: 3px;
+  }
+  .d1-foot {
+    border-top: 1px solid #e6e9ee; padding: 18px 36px 24px; text-align: center;
+  }
+  .d1-foot p { font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #9aa3b0; }
+  .d1-foot a { color: #15233f; }
+
+  /* ============ D2 — SIGNAL (bold / graphic) ============ */
+  .d2 { border: 1px solid #dfe3e8; }
+  .d2-strip { height: 5px; background: #0f9d6e; }
+  .d2-head { background: #15233f; padding: 26px 32px; display: flex; align-items: center; gap: 14px; }
+  .d2-mono {
+    width: 48px; height: 48px; border-radius: 13px; background: #0f9d6e;
+    color: #fff; font-weight: 800; font-size: 19px;
+    display: grid; place-items: center; flex: none;
+    box-shadow: 0 6px 16px rgba(15,157,110,.4);
+  }
+  .d2-head .org { color: #fff; font-size: 16px; font-weight: 700; }
+  .d2-head .tag { color: #8fa0bd; font-size: 10px; letter-spacing: .2em; text-transform: uppercase; margin-top: 3px; }
+  .d2-body { padding: 30px 32px 16px; }
+  .d2-h { font-size: 25px; font-weight: 800; line-height: 1.25; color: #15233f; margin-bottom: 14px; letter-spacing: -.01em; }
+  .d2-body p { font-size: 15px; color: #475569; line-height: 1.7; margin-bottom: 15px; }
+  .d2-callout {
+    background: #ecfdf5; border-left: 4px solid #0f9d6e;
+    border-radius: 0 10px 10px 0; padding: 13px 16px; margin-bottom: 18px;
+    font-size: 14px; color: #134e3a;
+  }
+  .d2-btn {
+    display: inline-block; background: #0f9d6e; color: #fff !important;
+    text-decoration: none; font-size: 14px; font-weight: 700;
+    padding: 13px 28px; border-radius: 9px;
+  }
+  .d2-foot { padding: 22px 32px 26px; background: #f3f5f8; text-align: center; margin-top: 14px; }
+  .d2-foot p { font-size: 12px; color: #8a93a1; line-height: 1.6; }
+  .d2-foot a { color: #15233f; text-decoration: none; }
+
+  /* ============ D3 — STUDIO (minimal / clean) ============ */
+  .d3 { border: 1px solid #e3e6ea; }
+  .d3-top {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 26px 34px 0;
+  }
+  .d3-mono {
+    width: 30px; height: 30px; border-radius: 8px; background: #15233f;
+    color: #fff; font-weight: 800; font-size: 12px; display: grid; place-items: center;
+  }
+  .d3-kicker { font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: #aab2bd; }
+  .d3-rule { height: 1px; background: #ebedf0; margin: 22px 34px 0; }
+  .d3-body { padding: 28px 34px 30px; }
+  .d3-eyebrow {
+    font-size: 11px; font-weight: 700; letter-spacing: .15em; text-transform: uppercase;
+    color: #0f9d6e; margin-bottom: 10px;
+  }
+  .d3-h { font-size: 22px; font-weight: 700; line-height: 1.35; color: #111827; margin-bottom: 16px; letter-spacing: -.01em; }
+  .d3-body p { font-size: 15px; color: #4b5563; line-height: 1.85; margin-bottom: 16px; }
+  .d3-btn {
+    display: inline-block; background: #15233f; color: #fff !important;
+    text-decoration: none; font-size: 13px; font-weight: 600;
+    padding: 12px 26px; border-radius: 999px; margin-top: 2px;
+  }
+  .d3-foot { border-top: 1px solid #ebedf0; padding: 20px 34px 26px; }
+  .d3-foot p { font-size: 11px; color: #aab2bd; }
+  .d3-foot a { color: #6b7280; }
+
+  .token { color: #0f9d6e; font-weight: 600; }
+
+  @media print {
+    body { background: #fff; padding: 0; }
+    .btn { display: none; }
+    .frame { background: #fff; break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <h1 class="page">Newsletter — three design directions</h1>
+    <button class="btn" onclick="window.print()">Print / Save as PDF</button>
+  </div>
+  <p class="lead">
+    Same message, three different designs — so you're choosing the look, not the
+    words. Pick the one that feels right and I'll build it out properly
+    (dark-mode-safe) and wire it into the Newsletter tool.
+    <span class="token">{First name}</span> is a merge field — it fills in per person.
+  </p>
+
+  <!-- ===================== OPTION 1 ===================== -->
+  <div class="opt-label">
+    <span class="opt-num">01</span>
+    <span class="opt-name">The Dispatch</span>
+  </div>
+  <p class="opt-desc">Editorial. A proper masthead, a serif headline, calm and considered — reads like a real publication, not a template.</p>
+  <div class="frame">
+    <div class="email d1">
+      <div class="d1-masthead">
+        <div class="d1-mark">&#9670;</div>
+        <div class="d1-wordmark">UBUNTU BRIDGE INITIATIVE</div>
+        <div class="d1-rule"></div>
+        <div class="d1-meta">
+          <span class="a">Operation Root Access</span>
+          <span>Briefing &middot; 17 May 2026</span>
+        </div>
+      </div>
+      <div class="d1-body">
+        <h2 class="d1-h">A quick word before decisions go out.</h2>
+        <p>Hi <span class="token">{First name}</span>,</p>
+        <p>We&apos;ve been heads-down getting Operation Root Access ready, and there are a couple of things worth knowing this week.</p>
+        <p>Decisions on your application go out on or before <strong>26 May</strong>. If you&apos;re in, onboarding starts <strong>1 June</strong>. Keep an eye on this inbox — every update comes through here.</p>
+        <a class="d1-link" href="#">Open the platform &rarr;</a>
+      </div>
+      <div class="d1-foot">
+        <p>Ubuntu Bridge Initiative &middot; <a href="#">Unsubscribe</a></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== OPTION 2 ===================== -->
+  <div class="opt-label">
+    <span class="opt-num">02</span>
+    <span class="opt-name">Signal</span>
+  </div>
+  <p class="opt-desc">Bold and graphic. A solid brand band, a real logo mark, a confident headline and a clear button. Modern, branded, punchy.</p>
+  <div class="frame">
+    <div class="email d2">
+      <div class="d2-strip"></div>
+      <div class="d2-head">
+        <div class="d2-mono">UB</div>
+        <div>
+          <div class="org">Ubuntu Bridge Initiative</div>
+          <div class="tag">The Newsletter</div>
+        </div>
+      </div>
+      <div class="d2-body">
+        <h2 class="d2-h">A quick word before decisions go out.</h2>
+        <p>Hi <span class="token">{First name}</span>, we&apos;ve been heads-down getting Operation Root Access ready — here&apos;s what&apos;s worth knowing this week.</p>
+        <div class="d2-callout">
+          Decisions go out on or before <strong>26 May</strong>. Onboarding starts <strong>1 June</strong>.
+        </div>
+        <p>Keep an eye on this inbox — every update comes through here.</p>
+        <a class="d2-btn" href="#">Open the platform</a>
+      </div>
+      <div class="d2-foot">
+        <p>Ubuntu Bridge Initiative &middot; ubuntubridgeinitiatives.org<br />
+          <a href="#">Unsubscribe</a> &nbsp;&middot;&nbsp; <a href="#">Email preferences</a></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== OPTION 3 ===================== -->
+  <div class="opt-label">
+    <span class="opt-num">03</span>
+    <span class="opt-name">Studio</span>
+  </div>
+  <p class="opt-desc">Minimal and clean. Mostly white, lots of air, one accent used sparingly. Understated and premium — quietly designed.</p>
+  <div class="frame">
+    <div class="email d3">
+      <div class="d3-top">
+        <div class="d3-mono">UB</div>
+        <div class="d3-kicker">Newsletter &middot; 17 May</div>
+      </div>
+      <div class="d3-rule"></div>
+      <div class="d3-body">
+        <div class="d3-eyebrow">Operation Root Access</div>
+        <h2 class="d3-h">A quick word before decisions go out.</h2>
+        <p>Hi <span class="token">{First name}</span>,</p>
+        <p>We&apos;ve been heads-down getting the programme ready. Decisions on your application go out on or before <strong>26 May</strong>; if you&apos;re in, onboarding starts <strong>1 June</strong>.</p>
+        <p>Keep an eye on this inbox — every update comes through here.</p>
+        <a class="d3-btn" href="#">Open the platform</a>
+      </div>
+      <div class="d3-foot">
+        <p>Ubuntu Bridge Initiative &nbsp;&middot;&nbsp; <a href="#">Unsubscribe</a></p>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
