@@ -28,6 +28,7 @@ import {
   ClipboardList,
   Hourglass,
   Hash,
+  UserPlus,
 } from "lucide-react";
 import { LogoMark } from "@/components/logo";
 import { useState } from "react";
@@ -63,10 +64,11 @@ const adminLinks = [
   { href: "/admin/mailing", label: "Decision Emails", icon: Send },
   { href: "/admin/broadcast", label: "Newsletter", icon: Mail },
   { href: "/admin/interns", label: "Interns", icon: Users },
+  { href: "/admin/provision", label: "Provision Interns", icon: UserPlus },
   { href: "/admin/teams", label: "Teams", icon: Award },
   { href: "/admin/assignments", label: "Assignments", icon: BookOpen },
   { href: "/admin/reports", label: "Grading Queue", icon: Gavel },
-  { href: "/admin/stage-results", label: "Publish Results", icon: BarChart3 },
+  { href: "/admin/stage-results", label: "Stage Results", icon: BarChart3 },
   { href: "/admin/scholarships", label: "Scholarships", icon: Heart },
   { href: "/admin/announcements", label: "Announcements", icon: Megaphone },
   { href: "/admin/leaderboard", label: "Leaderboard", icon: BarChart3 },
