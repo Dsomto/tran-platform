@@ -1,22 +1,20 @@
 import { NextRequest } from "next/server";
 import crypto from "node:crypto";
 import { prisma } from "@/lib/db";
-import { requireSuperAdmin } from "@/lib/auth";
+import { requireSuperAdmin, hashPassword } from "@/lib/auth";
 import { logger } from "@/lib/logger";
-import { onboardApprovedApplicant } from "@/lib/onboard";
 import { recordAudit, auditMetaFromRequest } from "@/lib/audit";
 
-// Directly provision intern accounts from a pasted list of name + email — for
-// people brought in outside the public application flow. For each entry we
-// create (or reuse) a User + Intern, set a fresh temp password, and queue a
-// login email. They sign in with their EMAIL + temp password and are forced to
-// change it on first login (existing first-login flow).
+// Directly provision GRADER accounts from a pasted list of name + email — for
+// graders brought on to score stage reports. Each entry creates (or reuses) a
+// User with role GRADER (no Intern record, no track), sets a fresh temp
+// password, and queues a login email. They sign in with their EMAIL + temp
+// password and set a new password on first login.
 //
-// POST { raw: string, track: "SOC_ANALYSIS" | "ETHICAL_HACKING" | "GRC" }
-// Super-admin only. Idempotent per email (re-running resets the password and
-// re-sends the login email).
+// POST { raw: string }   Super-admin only. Idempotent per email (re-running
+// resets the password and re-sends the email). An existing ADMIN / SUPER_ADMIN
+// is never downgraded to GRADER.
 
-const TRACKS = ["SOC_ANALYSIS", "ETHICAL_HACKING", "GRC"] as const;
 const EMAIL_RE = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/;
 
 // Unambiguous alphabet (no 0/O/1/l/I) for a readable temp password.
@@ -26,6 +24,12 @@ function generatePassword(len = 10): string {
   let out = "";
   for (let i = 0; i < len; i++) out += PW_ALPHABET[bytes[i] % PW_ALPHABET.length];
   return out;
+}
+
+function splitName(fullName: string): { firstName: string; lastName: string } {
+  const parts = fullName.trim().split(/\s+/);
+  if (parts.length <= 1) return { firstName: parts[0] ?? "", lastName: "" };
+  return { firstName: parts[0], lastName: parts.slice(1).join(" ") };
 }
 
 // Parse free-form pasted text into { name, email } entries. Handles:
@@ -74,13 +78,13 @@ function renderLoginEmail(opts: {
     <div style="font-family:'Segoe UI',sans-serif;max-width:600px;margin:0 auto;background:#F8FAFC;padding:40px 20px;">
       <div style="background:linear-gradient(135deg,#0F172A,#2563EB);padding:32px;border-radius:16px;text-align:center;color:white;">
         <h1 style="margin:0 0 6px;font-size:24px;font-weight:800;">Ubuntu Bridge Initiative</h1>
-        <p style="margin:0;font-size:13px;opacity:0.9;">Your login is ready</p>
+        <p style="margin:0;font-size:13px;opacity:0.9;">Grader access</p>
       </div>
       <div style="background:white;padding:32px;border-radius:16px;margin-top:20px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
         <h2 style="color:#0F172A;margin:0 0 16px;">Hi ${firstName},</h2>
         <p style="color:#334155;line-height:1.7;margin:0 0 16px;">
-          An account has been created for you on the UBI cybersecurity internship platform. Use the
-          details below to log in, then change your password right away.
+          You've been added as a <strong>grader</strong> on the UBI cybersecurity internship
+          platform. Use the details below to log in, then change your password right away.
         </p>
         <div style="background:#F1F5F9;border:1px solid #E2E8F0;border-radius:10px;padding:16px 20px;margin:20px 0;">
           <p style="margin:0 0 8px;color:#0F172A;font-size:14px;"><strong>Email:</strong> ${email}</p>
@@ -90,7 +94,7 @@ function renderLoginEmail(opts: {
         </div>
         <div style="text-align:center;margin:24px 0;">
           <a href="${loginUrl}" style="display:inline-block;background:#2563EB;color:white;padding:11px 26px;border-radius:9999px;font-size:14px;font-weight:600;text-decoration:none;">
-            Log in
+            Log in to grade
           </a>
         </div>
         <p style="color:#64748B;line-height:1.7;font-size:13px;margin:16px 0 0;">
@@ -110,7 +114,6 @@ export async function POST(request: NextRequest) {
     const admin = await requireSuperAdmin();
     const body = await request.json().catch(() => ({}));
 
-    const track = (TRACKS as readonly string[]).includes(body?.track) ? body.track : "SOC_ANALYSIS";
     const raw = typeof body?.raw === "string" ? body.raw : "";
     const dryRun = body?.dryRun === true;
 
@@ -133,27 +136,50 @@ export async function POST(request: NextRequest) {
     for (const e of entries) {
       try {
         const tempPassword = generatePassword();
-        const { userId, wasExisting } = await onboardApprovedApplicant({
-          email: e.email,
-          fullName: e.name,
-          trackInterest: track,
-          loginPassword: tempPassword,
+        const email = e.email.toLowerCase().trim();
+        const { firstName, lastName } = splitName(e.name);
+
+        const existing = await prisma.user.findUnique({
+          where: { email },
+          select: { id: true, role: true },
         });
-        const firstName = e.name.split(/\s+/)[0] || e.email.split("@")[0];
+
+        let userId: string;
+        let status: "created" | "existing-updated";
+        if (existing) {
+          // Never downgrade an admin to grader; otherwise (re)set role + password.
+          const keepRole = existing.role === "ADMIN" || existing.role === "SUPER_ADMIN";
+          await prisma.user.update({
+            where: { id: existing.id },
+            data: {
+              password: await hashPassword(tempPassword),
+              ...(keepRole ? {} : { role: "GRADER" }),
+            },
+          });
+          userId = existing.id;
+          status = "existing-updated";
+        } else {
+          const user = await prisma.user.create({
+            data: { email, password: await hashPassword(tempPassword), firstName, lastName, role: "GRADER" },
+          });
+          userId = user.id;
+          status = "created";
+        }
+
         await prisma.emailQueueItem.create({
           data: {
             userId,
-            toEmail: e.email,
+            toEmail: email,
             kind: "GENERAL",
-            subject: "Your UBI login",
-            body: renderLoginEmail({ firstName, email: e.email, tempPassword, loginUrl }),
+            subject: "Your UBI grader login",
+            body: renderLoginEmail({ firstName: firstName || email.split("@")[0], email, tempPassword, loginUrl }),
             status: "PENDING",
-            context: { type: "direct-provision", email: e.email },
+            context: { type: "direct-provision-grader", email },
           },
         });
-        results.push({ email: e.email, name: e.name, status: wasExisting ? "existing-updated" : "created" });
+        results.push({ email, name: e.name, status });
       } catch (err) {
-        logger.error("provision_intern_failed", err, { email: e.email });
+        logger.error("provision_grader_failed", err, { email: e.email });
         results.push({ email: e.email, name: e.name, status: "error" });
       }
     }
@@ -164,16 +190,16 @@ export async function POST(request: NextRequest) {
 
     await recordAudit({
       actor: admin,
-      action: "interns.direct-provision",
-      targetType: "INTERN",
+      action: "graders.direct-provision",
+      targetType: "USER",
       targetId: "bulk",
-      details: { track, total: entries.length, created, existing, failed },
+      details: { total: entries.length, created, existing, failed },
       ...auditMetaFromRequest(request),
     });
 
     return Response.json({ total: entries.length, created, existing, failed, results });
   } catch (error) {
-    logger.error("provision_interns_failed", error);
+    logger.error("provision_graders_failed", error);
     return Response.json({ error: "Internal server error" }, { status: 500 });
   }
 }

@@ -3,12 +3,6 @@
 import { useState } from "react";
 import { UserPlus, Loader2, Send, CheckCircle2, AlertCircle } from "lucide-react";
 
-const TRACKS = [
-  { value: "SOC_ANALYSIS", label: "SOC Analysis" },
-  { value: "ETHICAL_HACKING", label: "Ethical Hacking" },
-  { value: "GRC", label: "GRC" },
-];
-
 interface ResultRow {
   email: string;
   name: string;
@@ -27,7 +21,6 @@ Email: john@example.com
 
 export function ProvisionPanel() {
   const [raw, setRaw] = useState("");
-  const [track, setTrack] = useState("SOC_ANALYSIS");
   const [busy, setBusy] = useState<null | "preview" | "provision">(null);
   const [parsed, setParsed] = useState<number | null>(null);
   const [results, setResults] = useState<ResultRow[] | null>(null);
@@ -35,7 +28,7 @@ export function ProvisionPanel() {
   const [error, setError] = useState<string | null>(null);
 
   async function post(body: Record<string, unknown>) {
-    const res = await fetch("/api/admin/provision-interns", {
+    const res = await fetch("/api/admin/provision-graders", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
@@ -54,7 +47,7 @@ export function ProvisionPanel() {
     setSummary(null);
     setBusy("preview");
     try {
-      const data = await post({ raw, track, dryRun: true });
+      const data = await post({ raw, dryRun: true });
       if (data) setParsed(data.parsed as number);
     } finally {
       setBusy(null);
@@ -65,8 +58,8 @@ export function ProvisionPanel() {
     setError(null);
     if (
       !confirm(
-        "Provision these accounts and email each their login?\n\n" +
-          "Each person gets a new account (or has their password reset if they already exist) " +
+        "Provision these grader accounts and email each their login?\n\n" +
+          "Each person gets a grader account (or has their password reset if they already exist) " +
           "and a login email is queued. This sends real emails."
       )
     ) {
@@ -76,7 +69,7 @@ export function ProvisionPanel() {
     setResults(null);
     setSummary(null);
     try {
-      const data = await post({ raw, track });
+      const data = await post({ raw });
       if (data) {
         setResults(data.results as ResultRow[]);
         setSummary(
@@ -93,13 +86,13 @@ export function ProvisionPanel() {
       <header className="mb-8">
         <div className="flex items-center gap-3 mb-1">
           <UserPlus className="h-6 w-6 text-blue" />
-          <h1 className="text-2xl font-bold text-foreground">Provision Interns</h1>
+          <h1 className="text-2xl font-bold text-foreground">Provision Graders</h1>
         </div>
         <p className="text-muted-foreground text-sm max-w-2xl">
-          Directly create accounts for people brought in outside the application flow. Paste their
-          names + emails, choose a track, and each gets an account plus a login email. They sign in
-          with their <strong>email</strong> and a temporary password, and set a new password on first
-          login. Re-running for an existing email just resets the password and re-sends the email.
+          Create grader accounts for people brought on to score stage reports. Paste their names +
+          emails and each gets a grader account plus a login email. They sign in with their{" "}
+          <strong>email</strong> and a temporary password, and set a new password on first login.
+          Re-running for an existing email just resets the password and re-sends the email.
         </p>
       </header>
 
@@ -133,20 +126,6 @@ export function ProvisionPanel() {
         </div>
 
         <div className="flex flex-wrap items-end gap-3">
-          <div>
-            <label className="block text-xs text-muted-foreground mb-1">Track</label>
-            <select
-              value={track}
-              onChange={(e) => setTrack(e.target.value)}
-              className="p-2 border border-border rounded-lg bg-white text-sm"
-            >
-              {TRACKS.map((t) => (
-                <option key={t.value} value={t.value}>
-                  {t.label}
-                </option>
-              ))}
-            </select>
-          </div>
           <button
             onClick={preview}
             disabled={busy != null || !raw.trim()}
