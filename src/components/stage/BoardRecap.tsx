@@ -3,6 +3,7 @@ import { ArrowLeft, FileText, FolderOpen, ListChecks, Coffee } from "lucide-reac
 import type { StageBrief } from "@/lib/stage-briefs";
 import type { StageStory } from "@/lib/stage-story";
 import type { StageLandingTheme } from "@/lib/stage-landing-theme";
+import { EggCodename, EggHoverNote } from "@/components/dashboard/easter-eggs/widgets";
 
 interface Props {
   brief: StageBrief;
@@ -45,7 +46,9 @@ export function BoardRecap({
           <Coffee className="w-3 h-3" />
           Your desk queue
         </span>
-        <span className={theme.pillClass}>{brief.label} · Chapter {story.chapter}</span>
+        <EggCodename>
+          <span className={theme.pillClass}>{brief.label} · Chapter {story.chapter}</span>
+        </EggCodename>
       </div>
 
       <h1 className={`${theme.headingClass} text-2xl sm:text-3xl mb-3`}>
@@ -90,7 +93,7 @@ export function BoardRecap({
           className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold border ${theme.dividerClass} ${theme.bodyTextClass} hover:bg-white/5 transition-colors`}
         >
           <FolderOpen className="w-3.5 h-3.5" />
-          Capstone brief
+          <EggHoverNote note="Evidence beats confidence.">Capstone brief</EggHoverNote>
         </Link>
         <Link
           href={submitHref}

@@ -40,6 +40,12 @@ export default async function SecuritySettingsPage() {
         </p>
       </header>
 
+      {user.totpEnabled && (
+        <div className="mb-6 inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-800">
+          <Shield className="h-3.5 w-3.5" /> Paranoid, professionally.
+        </div>
+      )}
+
       {isPrivileged && !user.totpEnabled && (
         <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-900">
           <strong>Recommended:</strong> your account has admin or grader

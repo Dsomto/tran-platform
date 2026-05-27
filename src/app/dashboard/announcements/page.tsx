@@ -109,6 +109,11 @@ export default async function InternAnnouncementsPage() {
           ))}
         </div>
       )}
+      {announcements.length > 0 && (
+        <p className="mt-8 text-center text-[11px] font-mono uppercase tracking-[0.2em] text-muted-foreground/50">
+          End of transmission.
+        </p>
+      )}
     </div>
   );
 }

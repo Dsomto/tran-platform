@@ -1,12 +1,20 @@
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
+import { prisma } from "@/lib/db";
 import { Topbar } from "@/components/dashboard/topbar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Settings } from "lucide-react";
+import { trackLabel } from "@/lib/utils";
+import { EggWhoami } from "@/components/dashboard/easter-eggs/widgets";
 
 export default async function SettingsPage() {
   const session = await getSession();
   if (!session) redirect("/login");
+
+  const intern = await prisma.intern.findUnique({
+    where: { userId: session.id },
+    select: { currentStage: true, track: true },
+  });
 
   return (
     <>
@@ -59,6 +67,11 @@ export default async function SettingsPage() {
           </CardContent>
         </Card>
       </div>
+      <EggWhoami
+        firstName={session.firstName}
+        stage={intern ? `stage ${intern.currentStage.replace("STAGE_", "")}` : "—"}
+        track={intern ? trackLabel(intern.track) : session.role.toLowerCase()}
+      />
     </>
   );
 }
