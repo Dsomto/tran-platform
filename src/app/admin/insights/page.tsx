@@ -49,6 +49,8 @@ export default async function AdminInsightsPage() {
     dedicationBreakdown,
     referralBreakdown,
     recentAppDates,
+    stageStatusBreakdown,
+    stageWindows,
   ] = await Promise.all([
     prisma.publicApplication.count(),
     prisma.publicApplication.count({ where: { createdAt: { gte: startWeek } } }),
@@ -89,6 +91,10 @@ export default async function AdminInsightsPage() {
     prisma.publicApplication.findMany({
       where: { createdAt: { gte: startChart } },
       select: { createdAt: true },
+    }),
+    prisma.stageReport.groupBy({ by: ["stage", "status"], _count: { _all: true } }),
+    prisma.stageWindow.findMany({
+      select: { stage: true, passingScore: true, cutoffAppliedAt: true },
     }),
   ]);
 
@@ -156,6 +162,36 @@ export default async function AdminInsightsPage() {
     { label: "Finalists", count: finalists },
   ];
 
+  // Per-stage outcomes for the cutoff→pending→finalize flow: promoted (PASSED),
+  // eliminated (FAILED), and what's still pending review. Cutoff shown only once
+  // it's been applied. Stages with no report activity are dropped.
+  const STAGE_RESULT_KEYS = [
+    "STAGE_0", "STAGE_1", "STAGE_2", "STAGE_3", "STAGE_4",
+    "STAGE_5", "STAGE_6", "STAGE_7", "STAGE_8", "STAGE_9",
+  ];
+  const stageResultRows = STAGE_RESULT_KEYS.map((st) => {
+    const n = (status: string) =>
+      stageStatusBreakdown.find((r) => r.stage === st && r.status === status)?._count._all ?? 0;
+    const win = stageWindows.find((w) => w.stage === st);
+    const promoted = n("PASSED");
+    const eliminated = n("FAILED");
+    const pendingPromotion = n("PENDING_PROMOTION");
+    const pendingElimination = n("PENDING_ELIMINATION");
+    const graded = n("GRADED");
+    const inReview = n("SUBMITTED") + n("UNDER_REVIEW") + n("DRAFT") + n("LATE");
+    return {
+      stage: st,
+      label: st.replace("STAGE_", "Stage "),
+      cutoff: win?.cutoffAppliedAt ? win.passingScore : null,
+      promoted,
+      eliminated,
+      pendingPromotion,
+      pendingElimination,
+      graded,
+      total: promoted + eliminated + pendingPromotion + pendingElimination + graded + inReview,
+    };
+  }).filter((r) => r.total > 0);
+
   // Everything above, flattened for the CSV export.
   const exportSections: ExportSection[] = [
     {
@@ -207,6 +243,16 @@ export default async function AdminInsightsPage() {
         ["Passed", reportsPassed],
         ["Failed", reportsFailed],
       ],
+    },
+    {
+      title: "Stage outcomes (per stage)",
+      rows: stageResultRows.flatMap((r) => [
+        [`${r.label} — cutoff`, r.cutoff ?? 0] as [string, number],
+        [`${r.label} — promoted`, r.promoted] as [string, number],
+        [`${r.label} — eliminated`, r.eliminated] as [string, number],
+        [`${r.label} — pending promotion`, r.pendingPromotion] as [string, number],
+        [`${r.label} — pending elimination`, r.pendingElimination] as [string, number],
+      ]),
     },
   ];
 
@@ -353,6 +399,40 @@ export default async function AdminInsightsPage() {
           </div>
         )}
       </Section>
+
+      {/* Stage outcomes — promotion / elimination per stage */}
+      {stageResultRows.length > 0 && (
+        <Section title="Stage outcomes (promotion / elimination)">
+          <div className="bg-white border border-border rounded-xl overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-xs text-muted-foreground uppercase tracking-wide border-b border-border">
+                  <th className="text-left font-medium px-4 py-2.5">Stage</th>
+                  <th className="text-right font-medium px-3 py-2.5">Cutoff</th>
+                  <th className="text-right font-medium px-3 py-2.5 text-emerald-700">Promoted</th>
+                  <th className="text-right font-medium px-3 py-2.5 text-rose-700">Eliminated</th>
+                  <th className="text-right font-medium px-3 py-2.5">Pending promo</th>
+                  <th className="text-right font-medium px-3 py-2.5">Pending elim</th>
+                  <th className="text-right font-medium px-4 py-2.5">Graded</th>
+                </tr>
+              </thead>
+              <tbody>
+                {stageResultRows.map((r) => (
+                  <tr key={r.stage} className="border-b border-border last:border-0">
+                    <td className="px-4 py-2.5 text-foreground">{r.label}</td>
+                    <td className="px-3 py-2.5 text-right font-mono text-foreground">{r.cutoff ?? "—"}</td>
+                    <td className="px-3 py-2.5 text-right font-mono text-emerald-700">{r.promoted}</td>
+                    <td className="px-3 py-2.5 text-right font-mono text-rose-700">{r.eliminated}</td>
+                    <td className="px-3 py-2.5 text-right font-mono text-foreground">{r.pendingPromotion}</td>
+                    <td className="px-3 py-2.5 text-right font-mono text-foreground">{r.pendingElimination}</td>
+                    <td className="px-4 py-2.5 text-right font-mono text-muted-foreground">{r.graded}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Section>
+      )}
 
       {/* Email queue */}
       <Section title="Email delivery">
