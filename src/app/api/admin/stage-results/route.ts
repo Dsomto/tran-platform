@@ -24,6 +24,16 @@ function isStageKey(v: unknown): v is StageKey {
   return typeof v === "string" && (STAGE_KEYS as readonly string[]).includes(v);
 }
 
+type PendingRow = {
+  reportId: string;
+  internId: string;
+  fullName: string;
+  email: string;
+  reportScore: number;
+  terminalScore: number | null;
+  finalScore: number;
+};
+
 // GET: summarise the state of a stage's reports — status counts + score distribution.
 // Used by /admin/stage-results to show what will happen if a given threshold is applied.
 export async function GET(request: NextRequest) {
@@ -69,6 +79,44 @@ export async function GET(request: NextRequest) {
       histogram: bucketHistogram(scores),
     };
 
+    // Persisted pending buckets (post-cutoff) — drives the two-tab review UI.
+    const pendingReports = await prisma.stageReport.findMany({
+      where: { stage, status: { in: ["PENDING_PROMOTION", "PENDING_ELIMINATION"] } },
+      select: {
+        id: true,
+        status: true,
+        score: true,
+        terminalScore: true,
+        finalScore: true,
+        intern: {
+          select: { id: true, user: { select: { firstName: true, lastName: true, email: true } } },
+        },
+      },
+      orderBy: { finalScore: "desc" },
+    });
+    let pending: { cutoff: number | null; promotion: PendingRow[]; elimination: PendingRow[] } | null =
+      null;
+    if (pendingReports.length > 0) {
+      const win = await prisma.stageWindow.findUnique({
+        where: { stage },
+        select: { passingScore: true },
+      });
+      const toRow = (r: (typeof pendingReports)[number]): PendingRow => ({
+        reportId: r.id,
+        internId: r.intern.id,
+        fullName: `${r.intern.user.firstName} ${r.intern.user.lastName}`.trim(),
+        email: r.intern.user.email,
+        reportScore: r.score ?? 0,
+        terminalScore: r.terminalScore,
+        finalScore: r.finalScore ?? 0,
+      });
+      pending = {
+        cutoff: win?.passingScore ?? null,
+        promotion: pendingReports.filter((r) => r.status === "PENDING_PROMOTION").map(toRow),
+        elimination: pendingReports.filter((r) => r.status === "PENDING_ELIMINATION").map(toRow),
+      };
+    }
+
     // Optional named-buckets mode: when `?threshold=N` is provided we also
     // return who would PASS and who would FAIL by name + score. Used by the
     // /admin/stage-results "review before publish" view, so the super-admin
@@ -103,10 +151,10 @@ export async function GET(request: NextRequest) {
         if ((r.score ?? 0) >= t) willPass.push(row);
         else willFail.push(row);
       }
-      return Response.json({ stage, summary, buckets: { threshold: t, willPass, willFail } });
+      return Response.json({ stage, summary, pending, buckets: { threshold: t, willPass, willFail } });
     }
 
-    return Response.json({ stage, summary });
+    return Response.json({ stage, summary, pending });
   } catch (error) {
     logger.error("stage_results_summary_failed", error);
     return Response.json({ error: "Internal server error" }, { status: 500 });

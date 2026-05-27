@@ -1,7 +1,16 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { BarChart3, Loader2, Send, CheckCircle2, RotateCcw, ArrowLeftRight } from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+  BarChart3,
+  Loader2,
+  Send,
+  CheckCircle2,
+  RotateCcw,
+  ArrowLeftRight,
+  Download,
+  Scale,
+} from "lucide-react";
 
 interface Summary {
   total: number;
@@ -14,18 +23,20 @@ interface Summary {
   histogram: { bucket: string; count: number }[];
 }
 
-interface BucketRow {
+interface PendingRow {
   reportId: string;
   internId: string;
   fullName: string;
   email: string;
-  score: number;
+  reportScore: number;
+  terminalScore: number | null;
+  finalScore: number;
 }
 
-interface Buckets {
-  threshold: number;
-  willPass: BucketRow[];
-  willFail: BucketRow[];
+interface Pending {
+  cutoff: number | null;
+  promotion: PendingRow[];
+  elimination: PendingRow[];
 }
 
 const STAGES = [
@@ -39,27 +50,18 @@ const STAGES = [
 export function StageResultsPanel() {
   const [stage, setStage] = useState("STAGE_0");
   const [summary, setSummary] = useState<Summary | null>(null);
+  const [pending, setPending] = useState<Pending | null>(null);
   const [loading, setLoading] = useState(false);
-  const [threshold, setThreshold] = useState("60");
+  const [cutoff, setCutoff] = useState("60");
   const [preview, setPreview] = useState<{ willPass: number; willFail: number } | null>(null);
-  // Named buckets pulled when the admin clicks Preview — drives the per-row
-  // review + swap UI. `overrides` is the client-side decision to force a
-  // specific intern's outcome regardless of their score; sent on Publish.
-  const [buckets, setBuckets] = useState<Buckets | null>(null);
-  const [overrides, setOverrides] = useState<Record<string, "pass" | "fail">>({});
-  const [publishing, setPublishing] = useState(false);
+  const [busy, setBusy] = useState<null | "preview" | "apply" | "finalize" | "swap" | "reset">(null);
   const [result, setResult] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [resetting, setResetting] = useState(false);
-  // Default: "unlock only" — reset reverts reports to GRADED so the stage can
-  // be re-published, but interns already advanced stay where they are.
   const [moveInternsBack, setMoveInternsBack] = useState(false);
 
   async function loadSummary(s: string) {
     setLoading(true);
     setPreview(null);
-    setBuckets(null);
-    setOverrides({});
     setResult(null);
     setError(null);
     try {
@@ -68,8 +70,11 @@ export function StageResultsPanel() {
       if (!res.ok) {
         setError(data.error || "Failed to load");
         setSummary(null);
+        setPending(null);
       } else {
         setSummary(data.summary);
+        setPending(data.pending ?? null);
+        if (data.pending?.cutoff != null) setCutoff(String(data.pending.cutoff));
       }
     } catch {
       setError("Network error");
@@ -82,101 +87,114 @@ export function StageResultsPanel() {
     loadSummary(stage);
   }, [stage]);
 
-  async function previewThreshold() {
-    setError(null);
-    const t = Number(threshold);
+  function validCutoff(): number | null {
+    const t = Number(cutoff);
     if (!Number.isFinite(t) || t < 0 || t > 100) {
-      setError("Threshold must be 0–100");
-      return;
+      setError("Cutoff must be 0–100");
+      return null;
     }
-    // Resetting overrides whenever the admin re-runs the preview keeps the
-    // swap-state honest: a new threshold restarts the review.
-    setOverrides({});
+    return t;
+  }
+
+  async function previewCutoff() {
+    setError(null);
+    const t = validCutoff();
+    if (t == null) return;
+    setBusy("preview");
     try {
       const res = await fetch(`/api/admin/stage-results?stage=${stage}&threshold=${t}`);
       const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || "Failed");
+      if (!res.ok || !data.buckets) {
+        setError(data.error || "No graded reports for this stage.");
         return;
       }
-      const b: Buckets | undefined = data.buckets;
-      if (!b) {
-        setError("No graded reports for this stage.");
-        return;
-      }
-      setBuckets(b);
-      setPreview({ willPass: b.willPass.length, willFail: b.willFail.length });
-    } catch {
-      setError("Network error");
-    }
-  }
-
-  // Effective outcome for a row = threshold bucket XOR override.
-  function swap(internId: string, current: "pass" | "fail") {
-    setOverrides((prev) => {
-      const next = { ...prev };
-      const target: "pass" | "fail" = current === "pass" ? "fail" : "pass";
-      // If swapping back to the threshold-derived bucket, drop the override
-      // rather than setting one — keeps the request body minimal and lets
-      // the threshold remain the source of truth where possible.
-      const baseline = buckets?.willPass.some((r) => r.internId === internId) ? "pass" : "fail";
-      if (target === baseline) delete next[internId];
-      else next[internId] = target;
-      return next;
-    });
-  }
-
-  // Final lists shown in the UI = threshold buckets with overrides applied.
-  const effective = useMemo(() => {
-    if (!buckets) return null;
-    const willPass: BucketRow[] = [];
-    const willFail: BucketRow[] = [];
-    for (const r of [...buckets.willPass, ...buckets.willFail]) {
-      const baseline: "pass" | "fail" = buckets.willPass.some((x) => x.internId === r.internId)
-        ? "pass"
-        : "fail";
-      const outcome = overrides[r.internId] ?? baseline;
-      if (outcome === "pass") willPass.push(r);
-      else willFail.push(r);
-    }
-    willPass.sort((a, b) => b.score - a.score);
-    willFail.sort((a, b) => b.score - a.score);
-    return { willPass, willFail };
-  }, [buckets, overrides]);
-
-  async function publish() {
-    setError(null);
-    const t = Number(threshold);
-    if (!Number.isFinite(t) || t < 0 || t > 100) {
-      setError("Threshold must be 0–100");
-      return;
-    }
-    const overrideCount = Object.keys(overrides).length;
-    const confirmMsg =
-      `Publish Stage ${stage.replace("STAGE_", "")} results with passing threshold ${t}` +
-      (overrideCount > 0 ? ` and ${overrideCount} manual override${overrideCount === 1 ? "" : "s"}` : "") +
-      `?\n\nEmails will be queued for every graded participant. This cannot be easily undone.`;
-    if (!confirm(confirmMsg)) return;
-    setPublishing(true);
-    try {
-      const res = await fetch("/api/admin/stage-results", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ stage, passingScore: t, overrides }),
+      setPreview({
+        willPass: data.buckets.willPass.length,
+        willFail: data.buckets.willFail.length,
       });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || "Publish failed");
-      } else {
-        setResult(
-          `Published. ${data.passed} participants passed, ${data.failed} did not. Emails queued.`
-        );
-        await loadSummary(stage);
-      }
     } catch {
       setError("Network error");
     } finally {
-      setPublishing(false);
+      setBusy(null);
+    }
+  }
+
+  async function post(body: Record<string, unknown>): Promise<Record<string, unknown> | null> {
+    const res = await fetch("/api/admin/stage-results", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      setError((data as { error?: string }).error || "Request failed");
+      return null;
+    }
+    return data;
+  }
+
+  async function applyCutoff() {
+    setError(null);
+    setResult(null);
+    const t = validCutoff();
+    if (t == null) return;
+    const isReapply = pending != null;
+    if (
+      isReapply &&
+      !confirm(
+        `Re-apply cutoff ${t} for Stage ${stage.replace("STAGE_", "")}?\n\n` +
+          "Everyone is re-sorted on the new cutoff. Any manual swaps you made are discarded."
+      )
+    ) {
+      return;
+    }
+    setBusy("apply");
+    try {
+      const data = await post({ action: "apply-cutoff", stage, passingScore: t });
+      if (data) {
+        setResult(
+          `Cutoff ${data.threshold} applied. ${data.pendingPromotion} pending promotion, ${data.pendingElimination} pending elimination.`
+        );
+        setPreview(null);
+        await loadSummary(stage);
+      }
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function swap(row: PendingRow, to: "promote" | "eliminate") {
+    setError(null);
+    setBusy("swap");
+    try {
+      const data = await post({ action: "swap", stage, reportId: row.reportId, to });
+      if (data) await loadSummary(stage);
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function finalize() {
+    if (!pending) return;
+    const msg =
+      `Finalize Stage ${stage.replace("STAGE_", "")}?\n\n` +
+      `${pending.promotion.length} will be PROMOTED (advanced + congratulations email + certificate).\n` +
+      `${pending.elimination.length} will be ELIMINATED (removed from the programme + result email).\n\n` +
+      "This is the commit step. Re-running only processes anyone still pending.";
+    if (!confirm(msg)) return;
+    setError(null);
+    setResult(null);
+    setBusy("finalize");
+    try {
+      const data = await post({ action: "finalize", stage });
+      if (data) {
+        setResult(
+          `Finalized. ${data.promoted} promoted, ${data.eliminated} eliminated. Emails queued.`
+        );
+        await loadSummary(stage);
+      }
+    } finally {
+      setBusy(null);
     }
   }
 
@@ -187,46 +205,63 @@ export function StageResultsPanel() {
       (moveInternsBack
         ? "Promoted interns WILL be moved back to this stage."
         : "Promoted interns will stay where they are.") +
-      "\n\nYou can then publish this stage again.";
+      "\n\nYou can then apply a cutoff again.";
     if (!confirm(msg)) return;
-    setResetting(true);
     setError(null);
     setResult(null);
+    setBusy("reset");
     try {
-      const res = await fetch("/api/admin/stage-results", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "reset", stage, moveInternsBack }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || "Reset failed");
-      } else {
+      const data = await post({ action: "reset", stage, moveInternsBack });
+      if (data) {
         setResult(
-          `Reset done. ${data.reportsReverted} report${data.reportsReverted === 1 ? "" : "s"} back to GRADED, ` +
-            `${data.internsMovedBack} intern${data.internsMovedBack === 1 ? "" : "s"} moved back, ` +
-            `${data.emailsCancelled} unsent email${data.emailsCancelled === 1 ? "" : "s"} removed. You can publish again.`
+          `Reset done. ${data.reportsReverted} report(s) back to GRADED, ${data.internsMovedBack} intern(s) moved back, ${data.emailsCancelled} unsent email(s) removed.`
         );
         await loadSummary(stage);
       }
-    } catch {
-      setError("Network error");
     } finally {
-      setResetting(false);
+      setBusy(null);
     }
   }
+
+  function exportCsv() {
+    if (!pending) return;
+    const esc = (v: string | number | null) => {
+      const s = v == null ? "" : String(v);
+      return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+    const header = ["Decision", "Name", "Email", "Report", "Terminal", "Final"];
+    const lines = [header.join(",")];
+    const push = (rows: PendingRow[], decision: string) => {
+      for (const r of rows) {
+        lines.push(
+          [esc(decision), esc(r.fullName), esc(r.email), esc(r.reportScore), esc(r.terminalScore), esc(r.finalScore)].join(",")
+        );
+      }
+    };
+    push(pending.promotion, "Promotion");
+    push(pending.elimination, "Elimination");
+    const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `stage-${stage.replace("STAGE_", "")}-pending-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  const finalized = !!summary && (summary.byStatus.PASSED ?? 0) + (summary.byStatus.FAILED ?? 0) > 0;
 
   return (
     <div className="p-6 md:p-10 max-w-5xl mx-auto w-full">
       <header className="mb-8">
         <div className="flex items-center gap-3 mb-1">
           <BarChart3 className="h-6 w-6 text-blue" />
-          <h1 className="text-2xl font-bold text-foreground">Publish Stage Results</h1>
+          <h1 className="text-2xl font-bold text-foreground">Stage Results</h1>
         </div>
         <p className="text-muted-foreground text-sm max-w-2xl">
-          Choose a stage, review the grade distribution, then set the passing
-          threshold and publish. Publishing promotes passers to the next stage
-          and queues result emails to everyone.
+          Grade reports, then set a cutoff to sort everyone into Pending Promotion / Pending
+          Elimination on their final score (80% report + 20% terminal). Review, swap individuals if
+          needed, then finalize to promote and eliminate.
         </p>
       </header>
 
@@ -269,19 +304,13 @@ export function StageResultsPanel() {
           <section className="mb-6 grid grid-cols-2 md:grid-cols-4 gap-4">
             <Stat label="Total reports" value={summary.total} />
             <Stat label="Graded" value={summary.graded} />
-            <Stat
-              label="Median score"
-              value={summary.median != null ? summary.median : "—"}
-            />
-            <Stat
-              label="Mean score"
-              value={summary.mean != null ? summary.mean : "—"}
-            />
+            <Stat label="Median score" value={summary.median != null ? summary.median : "—"} />
+            <Stat label="Mean score" value={summary.mean != null ? summary.mean : "—"} />
           </section>
 
           <section className="mb-6 bg-white border border-border rounded-xl p-5">
             <h2 className="text-sm font-semibold text-foreground mb-3 uppercase tracking-wide">
-              Score distribution
+              Score distribution (report grade)
             </h2>
             <Histogram data={summary.histogram} total={summary.graded} />
             <div className="mt-3 text-xs text-muted-foreground">
@@ -305,93 +334,139 @@ export function StageResultsPanel() {
             </div>
           </section>
 
-          <section className="bg-white border border-border rounded-xl p-5">
-            <h2 className="text-sm font-semibold text-foreground mb-3 uppercase tracking-wide">
-              Set passing threshold and publish
-            </h2>
-            <p className="text-sm text-muted-foreground mb-4">
-              Look at the distribution above and choose a threshold. Preview it
-              first to see how many will pass vs. fail.
-            </p>
-            <div className="flex flex-wrap items-end gap-3">
-              <div>
-                <label className="block text-xs text-muted-foreground mb-1">
-                  Passing score
-                </label>
-                <input
-                  type="number"
-                  min={0}
-                  max={100}
-                  value={threshold}
-                  onChange={(e) => setThreshold(e.target.value)}
-                  className="w-28 p-2 border border-border rounded-lg text-sm"
-                />
+          {/* Cutoff form: shown when nothing is pending yet and there are graded reports. */}
+          {!pending && !finalized && (
+            <section className="bg-white border border-border rounded-xl p-5">
+              <h2 className="text-sm font-semibold text-foreground mb-3 uppercase tracking-wide">
+                Set the cutoff
+              </h2>
+              <p className="text-sm text-muted-foreground mb-4">
+                Choose a cutoff on the final score. Preview the split, then apply it to sort everyone
+                into the two pending buckets. Nothing is committed until you finalize.
+              </p>
+              <div className="flex flex-wrap items-end gap-3">
+                <div>
+                  <label className="block text-xs text-muted-foreground mb-1">Cutoff (final score)</label>
+                  <input
+                    type="number"
+                    min={0}
+                    max={100}
+                    value={cutoff}
+                    onChange={(e) => {
+                      setCutoff(e.target.value);
+                      setPreview(null);
+                    }}
+                    className="w-28 p-2 border border-border rounded-lg text-sm"
+                  />
+                </div>
+                <button
+                  onClick={previewCutoff}
+                  disabled={busy != null || summary.graded === 0}
+                  className="px-4 py-2 text-sm font-medium rounded-lg border border-border hover:bg-muted/50 disabled:opacity-50"
+                >
+                  Preview
+                </button>
+                <button
+                  onClick={applyCutoff}
+                  disabled={busy != null || summary.graded === 0}
+                  className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-blue text-white hover:opacity-90 disabled:opacity-50"
+                >
+                  {busy === "apply" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Scale className="h-4 w-4" />}
+                  Apply cutoff & sort
+                </button>
               </div>
-              <button
-                onClick={previewThreshold}
-                className="px-4 py-2 text-sm font-medium rounded-lg border border-border hover:bg-muted/50"
-              >
-                Preview
-              </button>
-              <button
-                onClick={publish}
-                disabled={publishing || summary.graded === 0}
-                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-blue text-white hover:opacity-90 disabled:opacity-50"
-              >
-                {publishing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                Publish results
-              </button>
-            </div>
-            {preview && effective && (
-              <div className="mt-4 p-3 bg-blue/5 border border-blue/20 rounded-lg text-sm">
-                With threshold <strong>{threshold}</strong>:{" "}
-                <strong className="text-emerald-700">{effective.willPass.length}</strong> will pass,{" "}
-                <strong className="text-rose-700">{effective.willFail.length}</strong> will not.
-                {Object.keys(overrides).length > 0 && (
-                  <>
-                    {" "}
-                    <span className="text-muted-foreground">
-                      ({Object.keys(overrides).length} manual override
-                      {Object.keys(overrides).length === 1 ? "" : "s"})
-                    </span>
-                  </>
-                )}
-              </div>
-            )}
-          </section>
-
-          {effective && (
-            <section className="mt-6 grid md:grid-cols-2 gap-4">
-              {/* Will-PASS column */}
-              <BucketColumn
-                title="Will pass"
-                tone="emerald"
-                rows={effective.willPass}
-                actionLabel="Move to Fail"
-                overrides={overrides}
-                onSwap={(internId) => swap(internId, "pass")}
-              />
-              {/* Will-FAIL column */}
-              <BucketColumn
-                title="Will not pass"
-                tone="rose"
-                rows={effective.willFail}
-                actionLabel="Move to Pass"
-                overrides={overrides}
-                onSwap={(internId) => swap(internId, "fail")}
-              />
+              {preview && (
+                <div className="mt-4 p-3 bg-blue/5 border border-blue/20 rounded-lg text-sm">
+                  With cutoff <strong>{cutoff}</strong> (on the report grade):{" "}
+                  <strong className="text-emerald-700">{preview.willPass}</strong> would pass,{" "}
+                  <strong className="text-rose-700">{preview.willFail}</strong> would not. The final
+                  sort also blends in the terminal score.
+                </div>
+              )}
             </section>
           )}
 
-          {(summary.byStatus.PASSED ?? 0) + (summary.byStatus.FAILED ?? 0) > 0 && (
+          {/* Pending review: two persisted buckets + swap + finalize + CSV. */}
+          {pending && (
+            <>
+              <section className="bg-white border border-border rounded-xl p-5">
+                <div className="flex flex-wrap items-end gap-3 justify-between">
+                  <div>
+                    <h2 className="text-sm font-semibold text-foreground mb-1 uppercase tracking-wide">
+                      Pending review · cutoff {pending.cutoff ?? "—"}
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                      Sorted on final score. Swap individuals if needed, or re-apply a different
+                      cutoff. Finalize when ready.
+                    </p>
+                  </div>
+                  <div className="flex items-end gap-2">
+                    <input
+                      type="number"
+                      min={0}
+                      max={100}
+                      value={cutoff}
+                      onChange={(e) => setCutoff(e.target.value)}
+                      className="w-24 p-2 border border-border rounded-lg text-sm"
+                      title="Cutoff"
+                    />
+                    <button
+                      onClick={applyCutoff}
+                      disabled={busy != null}
+                      className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg border border-border hover:bg-muted/50 disabled:opacity-50"
+                    >
+                      {busy === "apply" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Scale className="h-4 w-4" />}
+                      Re-apply
+                    </button>
+                    <button
+                      onClick={exportCsv}
+                      className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg border border-border hover:bg-muted/50"
+                    >
+                      <Download className="h-4 w-4" />
+                      CSV
+                    </button>
+                    <button
+                      onClick={finalize}
+                      disabled={busy != null}
+                      className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-blue text-white hover:opacity-90 disabled:opacity-50"
+                    >
+                      {busy === "finalize" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                      Finalize
+                    </button>
+                  </div>
+                </div>
+              </section>
+
+              <section className="mt-4 grid md:grid-cols-2 gap-4">
+                <PendingColumn
+                  title="Pending promotion"
+                  tone="emerald"
+                  rows={pending.promotion}
+                  actionLabel="Move to elimination"
+                  disabled={busy != null}
+                  onSwap={(row) => swap(row, "eliminate")}
+                />
+                <PendingColumn
+                  title="Pending elimination"
+                  tone="rose"
+                  rows={pending.elimination}
+                  actionLabel="Move to promotion"
+                  disabled={busy != null}
+                  onSwap={(row) => swap(row, "promote")}
+                />
+              </section>
+            </>
+          )}
+
+          {finalized && (
             <section className="mt-6 bg-white border border-rose-200 rounded-xl p-5">
               <h2 className="text-sm font-semibold text-rose-800 mb-2 uppercase tracking-wide">
                 Reset published results
               </h2>
               <p className="text-sm text-muted-foreground mb-4">
-                This stage has published results. Resetting reverts every PASSED / FAILED
-                report back to GRADED so you can publish again, and deletes result emails for
-                this stage that haven&apos;t sent yet. Already-sent emails are not affected.
+                This stage has finalized results. Resetting reverts every PASSED / FAILED report back
+                to GRADED so you can apply a cutoff again, and deletes result emails for this stage
+                that haven&apos;t sent yet. Already-sent emails are not affected.
               </p>
               <label className="flex items-start gap-2 mb-4 text-sm text-foreground">
                 <input
@@ -409,14 +484,10 @@ export function StageResultsPanel() {
               </label>
               <button
                 onClick={resetResults}
-                disabled={resetting}
+                disabled={busy != null}
                 className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border border-rose-300 text-rose-800 hover:bg-rose-50 disabled:opacity-50"
               >
-                {resetting ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <RotateCcw className="h-4 w-4" />
-                )}
+                {busy === "reset" ? <Loader2 className="h-4 w-4 animate-spin" /> : <RotateCcw className="h-4 w-4" />}
                 Reset published results
               </button>
             </section>
@@ -446,14 +517,9 @@ function Histogram({ data, total }: { data: { bucket: string; count: number }[];
           <div key={d.bucket} className="flex items-center gap-3 text-xs">
             <span className="w-14 text-muted-foreground tabular-nums">{d.bucket}</span>
             <div className="flex-1 bg-muted/40 rounded h-5 overflow-hidden">
-              <div
-                className="bg-blue h-full rounded"
-                style={{ width: `${pct}%` }}
-              />
+              <div className="bg-blue h-full rounded" style={{ width: `${pct}%` }} />
             </div>
-            <span className="w-8 text-right font-medium tabular-nums text-foreground">
-              {d.count}
-            </span>
+            <span className="w-8 text-right font-medium tabular-nums text-foreground">{d.count}</span>
           </div>
         );
       })}
@@ -461,20 +527,20 @@ function Histogram({ data, total }: { data: { bucket: string; count: number }[];
   );
 }
 
-function BucketColumn({
+function PendingColumn({
   title,
   tone,
   rows,
   actionLabel,
-  overrides,
+  disabled,
   onSwap,
 }: {
   title: string;
   tone: "emerald" | "rose";
-  rows: BucketRow[];
+  rows: PendingRow[];
   actionLabel: string;
-  overrides: Record<string, "pass" | "fail">;
-  onSwap: (internId: string) => void;
+  disabled: boolean;
+  onSwap: (row: PendingRow) => void;
 }) {
   const headerClass =
     tone === "emerald"
@@ -488,35 +554,33 @@ function BucketColumn({
       {rows.length === 0 ? (
         <p className="p-4 text-sm text-muted-foreground">No one in this bucket.</p>
       ) : (
-        <ul className="divide-y divide-border max-h-96 overflow-y-auto">
-          {rows.map((r) => {
-            const isOverride = overrides[r.internId] != null;
-            return (
-              <li key={r.internId} className="flex items-center gap-3 px-4 py-2.5">
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm text-foreground truncate">{r.fullName}</p>
-                  <p className="text-[11px] font-mono text-muted-foreground truncate">{r.email}</p>
-                </div>
-                <span className="text-sm font-semibold tabular-nums text-foreground">{r.score}</span>
-                {isOverride && (
-                  <span
-                    className="text-[10px] px-1.5 py-0.5 rounded-md border border-blue/30 bg-blue/5 text-blue uppercase tracking-wide"
-                    title="Moved here manually, against the threshold"
-                  >
-                    Override
-                  </span>
-                )}
-                <button
-                  onClick={() => onSwap(r.internId)}
-                  title={actionLabel}
-                  className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-md border border-border hover:bg-muted/40"
-                >
-                  <ArrowLeftRight className="h-3 w-3" />
-                  Swap
-                </button>
-              </li>
-            );
-          })}
+        <ul className="divide-y divide-border max-h-[28rem] overflow-y-auto">
+          {rows.map((r) => (
+            <li key={r.reportId} className="flex items-center gap-3 px-4 py-2.5">
+              <div className="min-w-0 flex-1">
+                <p className="text-sm text-foreground truncate">{r.fullName}</p>
+                <p className="text-[11px] font-mono text-muted-foreground truncate">{r.email}</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">
+                  report {r.reportScore} · terminal {r.terminalScore ?? "—"}
+                </p>
+              </div>
+              <span
+                className="text-sm font-semibold tabular-nums text-foreground"
+                title="Final score (0.8·report + 0.2·terminal)"
+              >
+                {r.finalScore}
+              </span>
+              <button
+                onClick={() => onSwap(r)}
+                disabled={disabled}
+                title={actionLabel}
+                className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-md border border-border hover:bg-muted/40 disabled:opacity-50"
+              >
+                <ArrowLeftRight className="h-3 w-3" />
+                Swap
+              </button>
+            </li>
+          ))}
         </ul>
       )}
     </div>
