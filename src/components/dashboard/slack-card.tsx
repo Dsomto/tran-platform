@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { MessageSquare, CheckCircle2, Loader2, ExternalLink } from "lucide-react";
+import { useClickStreak } from "./easter-eggs/hooks";
 
 interface Props {
   inviteUrl: string | null;
@@ -15,6 +16,8 @@ export function SlackCard({ inviteUrl, joined, joinedAt }: Props) {
   const [localJoined, setLocalJoined] = useState(joined);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [slackSecret, setSlackSecret] = useState(false); // egg #8
+  const onSlackPoke = useClickStreak(4, () => setSlackSecret(true));
 
   async function confirmJoined() {
     setSaving(true);
@@ -58,8 +61,10 @@ export function SlackCard({ inviteUrl, joined, joinedAt }: Props) {
     <div className="bg-[#4A154B] rounded-xl p-5 text-white">
       <div className="flex items-start gap-3 mb-3">
         <MessageSquare className="h-5 w-5 shrink-0 mt-0.5 text-purple-200" />
-        <div>
-          <h3 className="font-semibold">Join the cohort Slack</h3>
+        <div onClick={onSlackPoke}>
+          <h3 className="font-semibold cursor-default select-none">
+            {slackSecret ? "Signal acquired." : "Join the cohort Slack"}
+          </h3>
           <p className="text-sm text-purple-100 mt-1 leading-relaxed">
             Most of what happens outside the platform — announcements, office-hours,
             help from other participants — lives in Slack. Join before Stage 0 closes.

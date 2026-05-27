@@ -93,6 +93,12 @@ export default function FeedbackPage() {
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
+                  {/* egg #19 */}
+                  {content.toLowerCase().includes("this was hard") && (
+                    <p className="rounded-lg bg-accent/10 px-3 py-2 text-sm text-accent">
+                      Hard is allowed. Keep going.
+                    </p>
+                  )}
                   {/* Rating */}
                   <div>
                     <label className="block text-sm font-medium text-foreground mb-2">
