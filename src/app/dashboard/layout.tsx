@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { Sidebar } from "@/components/dashboard/sidebar";
+import { EasterEggs } from "@/components/dashboard/easter-eggs/EasterEggs";
 
 export default async function DashboardLayout({
   children,
@@ -59,6 +60,7 @@ export default async function DashboardLayout({
       <main className="flex-1 flex flex-col min-w-0">
         {children}
       </main>
+      <EasterEggs />
     </div>
   );
 }
