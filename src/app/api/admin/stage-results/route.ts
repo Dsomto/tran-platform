@@ -4,6 +4,8 @@ import { requireSuperAdmin } from "@/lib/auth";
 import { logger } from "@/lib/logger";
 import { certificateUrl } from "@/lib/certificate-link";
 import { recordAudit, auditMetaFromRequest } from "@/lib/audit";
+import { stageTerminalScores, combinedFinalScore } from "@/lib/stage-score";
+import { Prisma } from "@/generated/prisma";
 
 const STAGE_KEYS = [
   "STAGE_0",
@@ -124,6 +126,17 @@ export async function POST(request: NextRequest) {
     if (body?.action === "reset") {
       return await handleReset(request, admin, body);
     }
+    // Pending flow: sort graded reports into pending buckets on a cutoff, swap
+    // one intern between buckets (logged), or finalize (commit promote/eliminate).
+    if (body?.action === "apply-cutoff") {
+      return await handleApplyCutoff(request, admin, body);
+    }
+    if (body?.action === "swap") {
+      return await handleSwap(request, admin, body);
+    }
+    if (body?.action === "finalize") {
+      return await handleFinalize(request, admin, body);
+    }
 
     const { stage, passingScore, dryRun } = body ?? {};
 
@@ -173,7 +186,11 @@ export async function POST(request: NextRequest) {
     const rawOverrides = body?.overrides;
     const overrides = new Map<string, "pass" | "fail">();
     if (rawOverrides && typeof rawOverrides === "object") {
-      for (const [k, v] of Object.entries(rawOverrides)) {
+      const entries = Object.entries(rawOverrides);
+      if (entries.length > 1000) {
+        return Response.json({ error: "Too many overrides supplied" }, { status: 400 });
+      }
+      for (const [k, v] of entries) {
         if (typeof k === "string" && (v === "pass" || v === "fail")) {
           overrides.set(k, v);
         }
@@ -182,9 +199,30 @@ export async function POST(request: NextRequest) {
 
     const willPass: typeof graded = [];
     const willFail: typeof graded = [];
+    const appliedOverrides: {
+      internId: string;
+      reportId: string;
+      email: string;
+      fullName: string;
+      score: number;
+      thresholdOutcome: "pass" | "fail";
+      forcedOutcome: "pass" | "fail";
+    }[] = [];
     for (const r of graded) {
       const forced = overrides.get(r.intern.id);
-      const passes = forced ? forced === "pass" : (r.score ?? 0) >= threshold;
+      const thresholdOutcome: "pass" | "fail" = (r.score ?? 0) >= threshold ? "pass" : "fail";
+      if (forced && forced !== thresholdOutcome) {
+        appliedOverrides.push({
+          internId: r.intern.id,
+          reportId: r.id,
+          email: r.intern.user.email,
+          fullName: `${r.intern.user.firstName} ${r.intern.user.lastName}`.trim(),
+          score: r.score ?? 0,
+          thresholdOutcome,
+          forcedOutcome: forced,
+        });
+      }
+      const passes = forced ? forced === "pass" : thresholdOutcome === "pass";
       if (passes) willPass.push(r);
       else willFail.push(r);
     }
@@ -194,7 +232,7 @@ export async function POST(request: NextRequest) {
         dryRun: true,
         willPass: willPass.length,
         willFail: willFail.length,
-        overridesApplied: overrides.size,
+        overridesApplied: appliedOverrides.length,
       });
     }
 
@@ -311,6 +349,8 @@ export async function POST(request: NextRequest) {
         threshold: Math.round(threshold),
         passed: willPass.length,
         failed: willFail.length,
+        overridesApplied: appliedOverrides.length,
+        overrides: appliedOverrides,
       },
       ...auditMetaFromRequest(request),
     });
@@ -320,6 +360,7 @@ export async function POST(request: NextRequest) {
       passed: willPass.length,
       failed: willFail.length,
       threshold: Math.round(threshold),
+      overridesApplied: appliedOverrides.length,
     });
   } catch (error) {
     logger.error("publish_stage_results_failed", error);
@@ -420,6 +461,284 @@ async function handleReset(
     internsMovedBack,
     emailsCancelled: cancelled.count,
   });
+}
+
+// Apply a cutoff: sort every graded report for the stage into a pending bucket
+// based on the combined final score (0.8*report + 0.2*terminal%). Persists the
+// cutoff on the StageWindow. Re-running re-sorts everyone and overrides prior
+// manual swaps by design — the cutoff is the source of truth until finalize.
+async function handleApplyCutoff(
+  request: NextRequest,
+  admin: Awaited<ReturnType<typeof requireSuperAdmin>>,
+  body: { stage?: unknown; passingScore?: unknown }
+): Promise<Response> {
+  const stage = body.stage;
+  if (!isStageKey(stage)) {
+    return Response.json({ error: "Invalid stage" }, { status: 400 });
+  }
+  const threshold = Number(body.passingScore);
+  if (!Number.isFinite(threshold) || threshold < 0 || threshold > 100) {
+    return Response.json({ error: "passingScore must be 0-100" }, { status: 400 });
+  }
+
+  const divergentPending = await prisma.stageReport.count({
+    where: { stage, divergent: true },
+  });
+  if (divergentPending > 0) {
+    return Response.json(
+      {
+        error: `${divergentPending} report${divergentPending === 1 ? "" : "s"} for this stage still need a tiebreak. Resolve those before applying a cutoff.`,
+        divergentPending,
+      },
+      { status: 409 }
+    );
+  }
+
+  const reports = await prisma.stageReport.findMany({
+    where: { stage, status: { in: ["GRADED", "PENDING_PROMOTION", "PENDING_ELIMINATION"] } },
+    select: { id: true, internId: true, score: true },
+  });
+  if (reports.length === 0) {
+    return Response.json({ error: "No graded reports to sort for this stage" }, { status: 409 });
+  }
+
+  const { maxPoints, earnedByIntern } = await stageTerminalScores(stage);
+  const round = Math.round(threshold);
+  let pendingPromotion = 0;
+  let pendingElimination = 0;
+  for (const r of reports) {
+    const terminalPct =
+      maxPoints > 0 ? Math.round(((earnedByIntern.get(r.internId) ?? 0) / maxPoints) * 100) : null;
+    const finalScore = combinedFinalScore(r.score, terminalPct);
+    const status = finalScore >= round ? "PENDING_PROMOTION" : "PENDING_ELIMINATION";
+    await prisma.stageReport.update({
+      where: { id: r.id },
+      data: { status, terminalScore: terminalPct, finalScore },
+    });
+    if (status === "PENDING_PROMOTION") pendingPromotion++;
+    else pendingElimination++;
+  }
+
+  await prisma.stageWindow.upsert({
+    where: { stage },
+    create: { stage, passingScore: round, cutoffAppliedAt: new Date(), cutoffById: admin.id },
+    update: { passingScore: round, cutoffAppliedAt: new Date(), cutoffById: admin.id },
+  });
+
+  await recordAudit({
+    actor: admin,
+    action: "stage-results.apply-cutoff",
+    targetType: "STAGE_RESULTS",
+    targetId: stage,
+    details: { stage, threshold: round, pendingPromotion, pendingElimination, reSorted: reports.length },
+    ...auditMetaFromRequest(request),
+  });
+
+  return Response.json({ applied: true, threshold: round, pendingPromotion, pendingElimination });
+}
+
+// Swap one intern between the two pending buckets. Logged to StageDecisionLog.
+async function handleSwap(
+  request: NextRequest,
+  admin: Awaited<ReturnType<typeof requireSuperAdmin>>,
+  body: { stage?: unknown; internId?: unknown; reportId?: unknown; to?: unknown; reason?: unknown }
+): Promise<Response> {
+  const to = body.to;
+  if (to !== "promote" && to !== "eliminate") {
+    return Response.json({ error: "to must be 'promote' or 'eliminate'" }, { status: 400 });
+  }
+  const target = to === "promote" ? "PENDING_PROMOTION" : "PENDING_ELIMINATION";
+
+  const report =
+    typeof body.reportId === "string"
+      ? await prisma.stageReport.findUnique({
+          where: { id: body.reportId },
+          select: { id: true, internId: true, stage: true, status: true },
+        })
+      : isStageKey(body.stage) && typeof body.internId === "string"
+        ? await prisma.stageReport.findUnique({
+            where: { internId_stage: { internId: body.internId, stage: body.stage } },
+            select: { id: true, internId: true, stage: true, status: true },
+          })
+        : null;
+
+  if (!report) {
+    return Response.json({ error: "Report not found" }, { status: 404 });
+  }
+  if (report.status !== "PENDING_PROMOTION" && report.status !== "PENDING_ELIMINATION") {
+    return Response.json(
+      { error: "This report is not in a pending state. Apply a cutoff first." },
+      { status: 409 }
+    );
+  }
+  if (report.status === target) {
+    return Response.json({ swapped: false, alreadyThere: true, status: target });
+  }
+
+  const reason = typeof body.reason === "string" ? body.reason.slice(0, 500) : null;
+  await prisma.$transaction([
+    prisma.stageReport.update({ where: { id: report.id }, data: { status: target } }),
+    prisma.stageDecisionLog.create({
+      data: {
+        internId: report.internId,
+        stage: report.stage,
+        reportId: report.id,
+        fromStatus: report.status,
+        toStatus: target,
+        actorId: admin.id,
+        reason,
+      },
+    }),
+  ]);
+
+  await recordAudit({
+    actor: admin,
+    action: "stage-results.swap",
+    targetType: "STAGE_RESULTS",
+    targetId: report.stage,
+    details: { internId: report.internId, reportId: report.id, from: report.status, to: target, reason },
+    ...auditMetaFromRequest(request),
+  });
+
+  return Response.json({ swapped: true, status: target });
+}
+
+// Finalize: commit the pending buckets. Promotions → PASSED + advance stage +
+// congrats email; eliminations → FAILED + eliminate (isActive=false) + email.
+// Each intern is committed in its own transaction (status change + email queued
+// together), so a mid-run failure never drops a mail and re-running finalizes
+// only whoever is still pending — no double-sends.
+async function handleFinalize(
+  request: NextRequest,
+  admin: Awaited<ReturnType<typeof requireSuperAdmin>>,
+  body: { stage?: unknown }
+): Promise<Response> {
+  const stage = body.stage;
+  if (!isStageKey(stage)) {
+    return Response.json({ error: "Invalid stage" }, { status: 400 });
+  }
+
+  const pending = await prisma.stageReport.findMany({
+    where: { stage, status: { in: ["PENDING_PROMOTION", "PENDING_ELIMINATION"] } },
+    include: { intern: { include: { user: true } } },
+  });
+  if (pending.length === 0) {
+    return Response.json(
+      { error: "Nothing pending to finalize. Apply a cutoff first." },
+      { status: 409 }
+    );
+  }
+
+  const window = await prisma.stageWindow.findUnique({ where: { stage } });
+  const threshold = window?.passingScore ?? 0;
+  const stageNum = stage.replace("STAGE_", "");
+  const nextStage = `STAGE_${Number(stageNum) + 1}` as StageKey;
+  const origin = process.env.PUBLIC_APP_URL || "https://ubuntubridgeinitiatives.org";
+  const slackUrl = process.env.SLACK_CHANNEL_URL || "";
+
+  let promoted = 0;
+  let eliminated = 0;
+  for (const r of pending) {
+    const score = r.finalScore ?? r.score ?? 0;
+    if (r.status === "PENDING_PROMOTION") {
+      const certUrl = certificateUrl({ origin, reportId: r.id, internId: r.intern.id });
+      const ops: Prisma.PrismaPromise<unknown>[] = [
+        prisma.stageReport.update({ where: { id: r.id }, data: { status: "PASSED" } }),
+        prisma.emailQueueItem.create({
+          data: {
+            userId: r.intern.user.id,
+            toEmail: r.intern.user.email,
+            kind: "STAGE_PASSED",
+            subject: `Stage ${stageNum} — You've made it`,
+            body: renderResultEmail({
+              firstName: r.intern.user.firstName,
+              stageNumber: stageNum,
+              passed: true,
+              score,
+              feedback: r.feedback ?? "",
+              passingScore: threshold,
+              certUrl,
+              slackUrl,
+            }),
+            context: {
+              reportId: r.id,
+              stage,
+              finalScore: r.finalScore,
+              reportScore: r.score,
+              terminalScore: r.terminalScore,
+              passingScore: threshold,
+              certUrl,
+            },
+          },
+        }),
+      ];
+      // Advance only if still on this stage (don't regress someone already ahead).
+      if (isStageKey(nextStage) && r.intern.currentStage === stage) {
+        ops.push(
+          prisma.intern.update({ where: { id: r.intern.id }, data: { currentStage: nextStage } }),
+          prisma.stageHistory.create({
+            data: {
+              internId: r.intern.id,
+              fromStage: stage,
+              toStage: nextStage,
+              promotedBy: "stage-finalize",
+              reason: `Promoted with final ${score} (cutoff ${threshold})`,
+            },
+          })
+        );
+      }
+      await prisma.$transaction(ops);
+      promoted++;
+    } else {
+      // PENDING_ELIMINATION → FAILED + eliminate (terminal). Phase 4 will swap
+      // in the alumni-community / device-pitch email content.
+      await prisma.$transaction([
+        prisma.stageReport.update({ where: { id: r.id }, data: { status: "FAILED" } }),
+        prisma.intern.update({
+          where: { id: r.intern.id },
+          data: { isActive: false, eliminatedAt: new Date() },
+        }),
+        prisma.emailQueueItem.create({
+          data: {
+            userId: r.intern.user.id,
+            toEmail: r.intern.user.email,
+            kind: "STAGE_FAILED",
+            subject: `Stage ${stageNum} — Your results`,
+            body: renderResultEmail({
+              firstName: r.intern.user.firstName,
+              stageNumber: stageNum,
+              passed: false,
+              score,
+              feedback: r.feedback ?? "",
+              passingScore: threshold,
+              certUrl: null,
+              slackUrl,
+            }),
+            context: {
+              reportId: r.id,
+              stage,
+              finalScore: r.finalScore,
+              reportScore: r.score,
+              terminalScore: r.terminalScore,
+              passingScore: threshold,
+            },
+          },
+        }),
+      ]);
+      eliminated++;
+    }
+  }
+
+  await recordAudit({
+    actor: admin,
+    action: "stage-results.finalize",
+    targetType: "STAGE_RESULTS",
+    targetId: stage,
+    details: { stage, threshold, promoted, eliminated },
+    ...auditMetaFromRequest(request),
+  });
+
+  return Response.json({ finalized: true, promoted, eliminated, threshold });
 }
 
 function bucketHistogram(scores: number[]): { bucket: string; count: number }[] {

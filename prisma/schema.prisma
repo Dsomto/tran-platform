@@ -22,6 +22,8 @@ enum ReportStatus {
   SUBMITTED
   UNDER_REVIEW
   GRADED
+  PENDING_PROMOTION
+  PENDING_ELIMINATION
   PASSED
   FAILED
   LATE
@@ -374,6 +376,24 @@ model StageHistory {
   @@index([internId])
 }
 
+// ─── STAGE DECISION LOG (pending-bucket swaps) ────────────
+// Every manual move of an intern between Pending Promotion and Pending
+// Elimination is logged here (who, when, from→to, why). Audit-only.
+model StageDecisionLog {
+  id         String       @id @default(auto()) @map("_id") @db.ObjectId
+  internId   String       @db.ObjectId
+  stage      Stage
+  reportId   String?      @db.ObjectId
+  fromStatus ReportStatus
+  toStatus   ReportStatus
+  actorId    String?      @db.ObjectId
+  reason     String?
+  createdAt  DateTime     @default(now())
+
+  @@index([stage])
+  @@index([internId])
+}
+
 // ─── ANNOUNCEMENT ─────────────────────────────────────────
 
 model Announcement {
@@ -545,6 +565,12 @@ model StageReport {
   feedback           String?                       // combined feedback shown to the intern
   gradedAt           DateTime?
 
+  // Combined final score the cutoff is applied to = 0.8*report + 0.2*terminal%.
+  // Both are frozen when the cutoff is applied, so later activity can't shift a
+  // past decision; re-applying the cutoff recomputes them.
+  terminalScore      Int?                          // terminal-task % for this stage (0-100) at cutoff time
+  finalScore         Int?                          // combined 0-100 the cutoff sorts on
+
   // Set true when both graders submit and their scores diverge by more than
   // DIVERGENCE_THRESHOLD. The report stays UNDER_REVIEW and surfaces in the
   // super-admin tiebreak queue. Reset to false once tiebreak is applied.
@@ -596,7 +622,9 @@ model StageWindow {
   id           String      @id @default(auto()) @map("_id") @db.ObjectId
   stage        Stage       @unique
   status       StageStatus @default(CLOSED)
-  passingScore Int         @default(70)            // set at publish-results time
+  passingScore Int         @default(70)            // cutoff score; set when the cutoff is applied
+  cutoffAppliedAt DateTime?                         // set when graded reports are sorted into pending buckets
+  cutoffById      String?     @db.ObjectId          // admin who applied the cutoff (audit)
   openedAt     DateTime?
   openedById   String?     @db.ObjectId            // super admin who last opened (audit)
 
