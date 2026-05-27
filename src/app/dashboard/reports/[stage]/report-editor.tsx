@@ -15,6 +15,7 @@ import {
   Mail,
   ListChecks,
 } from "lucide-react";
+import { emitEggToast } from "@/components/dashboard/easter-eggs/hooks";
 
 interface InitialReport {
   id: string;
@@ -87,6 +88,18 @@ export function ReportEditor({
   const EXEC_MAX_CHARS = 5000;
   const charsApproachingLimit = execCharCount >= 4500;
   const charsOverLimit = execCharCount > EXEC_MAX_CHARS;
+
+  // egg #5: typing "root access" in the summary triggers a terminal-style nudge.
+  const rootAccessEgg = useRef(false);
+  useEffect(() => {
+    const has = execSummary.toLowerCase().includes("root access");
+    if (has && !rootAccessEgg.current) {
+      rootAccessEgg.current = true;
+      emitEggToast("permission denied. write better evidence.");
+    } else if (!has) {
+      rootAccessEgg.current = false;
+    }
+  }, [execSummary]);
 
   async function saveDraft(silent = false): Promise<boolean> {
     if (locked) return false;

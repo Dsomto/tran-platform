@@ -27,6 +27,22 @@ interface TeamEntry {
   memberCount: number;
 }
 
+// egg #7: click a rank to briefly render it as hex.
+function RankBadge({ rank, className }: { rank: number; className: string }) {
+  const [hex, setHex] = useState(false);
+  return (
+    <span
+      onClick={() => {
+        setHex(true);
+        setTimeout(() => setHex(false), 1500);
+      }}
+      className={`cursor-pointer ${className}`}
+    >
+      {hex ? `0x${rank.toString(16).toUpperCase()}` : rank}
+    </span>
+  );
+}
+
 export default function LeaderboardPage() {
   const [type, setType] = useState<"individual" | "team">("individual");
   const [individual, setIndividual] = useState<LeaderboardEntry[]>([]);
@@ -140,15 +156,14 @@ export default function LeaderboardPage() {
                     key={entry.id}
                     className="flex items-center gap-4 p-3 rounded-xl hover:bg-surface-hover transition-colors"
                   >
-                    <span
+                    <RankBadge
+                      rank={entry.rank}
                       className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
                         entry.rank <= 3
                           ? medalColors[entry.rank - 1]
                           : "bg-border-light text-muted"
                       }`}
-                    >
-                      {entry.rank}
-                    </span>
+                    />
                     <Avatar
                       firstName={entry.name.split(" ")[0]}
                       lastName={entry.name.split(" ")[1] || ""}

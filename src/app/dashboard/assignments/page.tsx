@@ -13,6 +13,7 @@ import {
   DoorOpen,
   FileText,
 } from "lucide-react";
+import { EggHoverNote } from "@/components/dashboard/easter-eggs/widgets";
 
 const STAGES = ["STAGE_0", "STAGE_1", "STAGE_2", "STAGE_3", "STAGE_4"] as const;
 type StageKey = (typeof STAGES)[number];
@@ -205,9 +206,9 @@ function StageCard({
               </span>
             )}
             {isLocked && !isPast && (
-              <span className="text-slate-600">
-                Waiting for admin to open this stage.
-              </span>
+              <EggHoverNote note="Awaiting clearance.">
+                <span className="text-slate-600">Waiting for admin to open this stage.</span>
+              </EggHoverNote>
             )}
             {!isLocked && !accessible && !isPast && (
               <span className="text-slate-600">

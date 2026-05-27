@@ -17,6 +17,7 @@ import {
   Trophy,
   Lock,
 } from "lucide-react";
+import { EggHoverNote, EggProgressGlow } from "@/components/dashboard/easter-eggs/widgets";
 
 type StageEnum = "STAGE_0" | "STAGE_1" | "STAGE_2" | "STAGE_3" | "STAGE_4";
 
@@ -221,8 +222,13 @@ export default async function DashboardPage() {
                 />
               ))}
             </div>
+            <EggProgressGlow value={stageNum >= 4 ? 100 : 0} className="block h-1.5 w-full -mt-1.5 mb-1" />
             <p className="text-[11px] font-mono text-muted-foreground mb-6">
-              Chapter {stageNum + 1} of 5
+              {stageNum > 0 ? (
+                <EggHoverNote note="You still remember the gate.">Chapter {stageNum + 1} of 5</EggHoverNote>
+              ) : (
+                <>Chapter {stageNum + 1} of 5</>
+              )}
             </p>
 
             {isStageOpen ? (
