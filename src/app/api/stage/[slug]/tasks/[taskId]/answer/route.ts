@@ -44,6 +44,12 @@ export async function POST(
     if (assignment.stage !== STAGE_SLUG_TO_ENUM[slug as StageSlug]) {
       return Response.json({ error: "Task belongs to a different stage" }, { status: 400 });
     }
+    if (assignment.isClosed) {
+      return Response.json(
+        { error: "This task is closed and no longer accepts answers." },
+        { status: 409 }
+      );
+    }
 
     // Auto-graded tasks lock once solved: re-answering a correctly-graded task
     // must not re-award points (the leaderboard would otherwise inflate).

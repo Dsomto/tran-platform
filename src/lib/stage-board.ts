@@ -10,7 +10,7 @@ import { prisma } from "@/lib/db";
 export async function getBoardData(internId: string, roomSlug: string) {
   const room = await prisma.room.findUnique({
     where: { slug: roomSlug },
-    include: { assignments: { orderBy: { order: "asc" } } },
+    include: { assignments: { where: { isClosed: false }, orderBy: { order: "asc" } } },
   });
 
   if (!room) {

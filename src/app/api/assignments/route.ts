@@ -17,8 +17,25 @@ export async function GET(request: NextRequest) {
     const track = url.searchParams.get("track");
 
     const where: Record<string, unknown> = {};
-    if (stage) where.stage = stage;
-    if (track) where.track = track;
+    const privileged = session.role === "ADMIN" || session.role === "SUPER_ADMIN";
+    if (privileged) {
+      // Admins manage assignments and must still see closed ones.
+      if (stage) where.stage = stage;
+      if (track) where.track = track;
+    } else {
+      // Interns only ever see OPEN assignments for the stage they're currently
+      // on, in their track (or untracked) — never other stages or closed tasks.
+      const intern = await prisma.intern.findUnique({
+        where: { userId: session.id },
+        select: { currentStage: true, track: true },
+      });
+      if (!intern) {
+        return Response.json({ assignments: [] });
+      }
+      where.isClosed = false;
+      where.stage = intern.currentStage;
+      where.OR = [{ track: null }, { track: intern.track }];
+    }
 
     const assignments = await prisma.assignment.findMany({
       where,

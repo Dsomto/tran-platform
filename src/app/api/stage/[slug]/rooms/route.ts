@@ -28,6 +28,7 @@ export async function GET(
       where: { stage: STAGE_SLUG_TO_ENUM[slug as StageSlug] },
       include: {
         assignments: {
+          where: { isClosed: false },
           orderBy: { order: "asc" },
           select: {
             id: true,
