@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { logger } from "@/lib/logger";
 import { rateLimit, rateLimitResponse, getClientKey, RATE_LIMITS } from "@/lib/rate-limit";
+import { stageRank } from "@/lib/stage-login";
 
 const STAGE_KEYS = [
   "STAGE_0",
@@ -64,12 +65,36 @@ export async function POST(request: NextRequest) {
 
     const intern = await prisma.intern.findUnique({ where: { userId: session.id } });
     if (!intern) return Response.json({ error: "Intern profile not found" }, { status: 404 });
+    if (!intern.isActive) {
+      return Response.json({ error: "Account is inactive" }, { status: 403 });
+    }
 
     const payload = await request.json();
     const { stage, executiveSummary, reportUrl, attachmentUrl } = payload ?? {};
 
     if (!isStageKey(stage)) {
       return Response.json({ error: "Invalid stage" }, { status: 400 });
+    }
+    // Interns may only draft for stages they have reached. This stops drafts
+    // sitting in the DB for stages a user has not unlocked yet.
+    if (stageRank(stage) > stageRank(intern.currentStage)) {
+      return Response.json(
+        { error: "You have not reached this stage yet" },
+        { status: 403 }
+      );
+    }
+    // The stage window must be OPEN for drafts too. A paused or closed stage
+    // shouldn't accept fresh drafts — submit is already gated, but blocking at
+    // draft-time stops a parallel POST race after results are published.
+    const window = await prisma.stageWindow.findUnique({
+      where: { stage },
+      select: { status: true },
+    });
+    if (!window || window.status !== "OPEN") {
+      return Response.json(
+        { error: "This stage is not currently accepting drafts." },
+        { status: 409 }
+      );
     }
     if (typeof executiveSummary !== "string" || !executiveSummary.trim()) {
       return Response.json({ error: "Executive summary is required" }, { status: 400 });

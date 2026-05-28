@@ -8,7 +8,12 @@ type LogMap = Record<string, string>;
 
 export default function LogViewer({ config, context, onAnswerChange }: WidgetProps) {
   const c = (config as { logs?: LogMap; instructions?: string }) ?? {};
-  const rawLogs = c.logs ?? { auth: "no logs configured" };
+  // Memoise so the first effect's deps array doesn't see a new object every
+  // render when c.logs is undefined.
+  const rawLogs = useMemo<LogMap>(
+    () => c.logs ?? { auth: "no logs configured" },
+    [c.logs]
+  );
 
   const [logs, setLogs] = useState<LogMap>(rawLogs);
   const [resolved, setResolved] = useState(false);
@@ -25,19 +30,22 @@ export default function LogViewer({ config, context, onAnswerChange }: WidgetPro
     return () => {
       cancelled = true;
     };
-  }, [rawLogs, context]);
+    // context is a stable prop; we depend on its substitution-relevant fields,
+    // not its identity, to avoid re-firing every parent render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rawLogs, context.internId, context.flagSalt]);
 
-  const tabs = Object.keys(logs);
+  const tabs = useMemo(() => Object.keys(logs), [logs]);
   const [active, setActive] = useState(tabs[0] ?? "auth");
   const [filter, setFilter] = useState("");
   const [scratch, setScratch] = useState("");
 
-  useEffect(() => {
-    if (!tabs.includes(active) && tabs[0]) setActive(tabs[0]);
-  }, [tabs, active]);
+  // Derive the effective active tab during render instead of correcting it
+  // with a setState effect — avoids the lint error and an extra render.
+  const effectiveActive = tabs.includes(active) ? active : (tabs[0] ?? active);
 
   const visible = useMemo(() => {
-    const body = logs[active] ?? "";
+    const body = logs[effectiveActive] ?? "";
     const lines = body.split("\n");
     if (!filter.trim()) return lines;
     try {
@@ -46,7 +54,7 @@ export default function LogViewer({ config, context, onAnswerChange }: WidgetPro
     } catch {
       return lines.filter((l) => l.toLowerCase().includes(filter.toLowerCase()));
     }
-  }, [active, filter, logs]);
+  }, [effectiveActive, filter, logs]);
 
   return (
     <div className="rounded-2xl border border-white/10 bg-neutral-950 text-white overflow-hidden">
@@ -56,7 +64,7 @@ export default function LogViewer({ config, context, onAnswerChange }: WidgetPro
             key={t}
             onClick={() => setActive(t)}
             className={`px-3 py-1.5 text-xs rounded-lg whitespace-nowrap ${
-              active === t ? "bg-white/10" : "text-white/60 hover:text-white hover:bg-white/5"
+              effectiveActive === t ? "bg-white/10" : "text-white/60 hover:text-white hover:bg-white/5"
             }`}
           >
             {t}.log

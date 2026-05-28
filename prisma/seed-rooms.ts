@@ -160,9 +160,10 @@ async function main() {
   for (const slug of Object.keys(ROOMS) as StageSlug[]) {
     const spec = ROOMS[slug];
     const tasks = await loadTasks(slug);
-    const totalFromTasks = tasks.reduce((s, t) => s + t.maxPoints, 0);
-    const totalPoints = totalFromTasks > 0 ? totalFromTasks : spec.totalPoints;
 
+    // Upsert the room WITHOUT a fresh totalPoints yet — we compute it from
+    // actual DB assignment rows after upserts/skips, so a skipped (submission-
+    // protected) assignment doesn't desync Room.totalPoints from reality.
     const room = await prisma.room.upsert({
       where: { slug: spec.slug },
       create: {
@@ -176,7 +177,7 @@ async function main() {
         debrief: spec.debrief,
         learningObjectives: spec.learningObjectives,
         themeColor: spec.themeColor,
-        totalPoints,
+        totalPoints: spec.totalPoints, // placeholder on create; recomputed below
         passThreshold: spec.passThreshold,
         isPublished: true,
         publishedAt: new Date(),
@@ -191,15 +192,20 @@ async function main() {
         debrief: spec.debrief,
         learningObjectives: spec.learningObjectives,
         themeColor: spec.themeColor,
-        totalPoints,
+        // totalPoints intentionally omitted here; recomputed at the end of this
+        // iteration from the actual assignment rows (including any that were
+        // skipped because they have submissions).
         passThreshold: spec.passThreshold,
         isPublished: true,
       },
     });
 
+    const FORCE_RESEED = process.env.FORCE_RESEED === "1";
+    let skippedAny = false;
     for (const t of tasks) {
       const existing = await prisma.assignment.findFirst({
         where: { roomId: room.id, order: t.order },
+        include: { _count: { select: { submissions: true } } },
       });
       const payload = {
         roomId: room.id,
@@ -218,14 +224,39 @@ async function main() {
         dueDate: null,
       };
       if (existing) {
+        // Safety: refuse to overwrite a task's content under intern work.
+        // A reseed that updates description/maxPoints/etc. mid-cohort silently
+        // rewrites the prompt under already-submitted answers. Require an
+        // explicit FORCE_RESEED=1 to override.
+        if (existing._count.submissions > 0 && !FORCE_RESEED) {
+          console.warn(
+            `[seed] SKIP ${slug} task ${t.order} "${t.title}" — has ${existing._count.submissions} submission(s). ` +
+              `Set FORCE_RESEED=1 to override, or use scripts/migrate-stage-content.ts.`
+          );
+          skippedAny = true;
+          continue;
+        }
         await prisma.assignment.update({ where: { id: existing.id }, data: payload });
       } else {
         await prisma.assignment.create({ data: payload });
       }
     }
 
+    // Recompute totalPoints from what's actually in the DB. Skipped assignments
+    // contribute their old maxPoints; upserted assignments contribute the new
+    // maxPoints. Either way the Room reflects the row totals graders see.
+    const actual = await prisma.assignment.findMany({
+      where: { roomId: room.id },
+      select: { maxPoints: true },
+    });
+    const dbTotal = actual.reduce((s, a) => s + a.maxPoints, 0) || spec.totalPoints;
+    if (dbTotal !== room.totalPoints) {
+      await prisma.room.update({ where: { id: room.id }, data: { totalPoints: dbTotal } });
+    }
+
     console.log(
-      `[seed] ${slug} → ${spec.title} · ${tasks.length} tasks · ${totalPoints} pts`
+      `[seed] ${slug} → ${spec.title} · ${tasks.length} task(s) in JSON · ${actual.length} in DB · ${dbTotal} pts` +
+        (skippedAny ? "  (some tasks skipped — see warnings above)" : "")
     );
   }
 }

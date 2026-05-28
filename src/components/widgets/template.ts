@@ -1,8 +1,11 @@
 import { computeFlagBrowser, deriveSecretBrowser } from "./flag-browser";
 import type { TaskContext } from "./types";
 
-const FLAG_RE = /\{FLAG\}/g;
-const SECRET_RE = /\{SECRET:([^:}]+)(?::(\d+))?\}/g;
+// Pattern source only — never .test()/.exec() against a shared /g regex,
+// because /g regexes are stateful (lastIndex) and alternate true/false on
+// repeat calls. We use .includes() for membership and build a fresh /g
+// regex per .replace() / per scan loop.
+const SECRET_RE_SRC = "\\{SECRET:([^:}]+)(?::(\\d+))?\\}";
 
 export async function resolveTemplate(input: string, ctx: TaskContext): Promise<string> {
   if (typeof input !== "string") return input;
@@ -10,15 +13,15 @@ export async function resolveTemplate(input: string, ctx: TaskContext): Promise<
 
   let out = input;
 
-  if (FLAG_RE.test(out)) {
+  if (out.includes("{FLAG}")) {
     if (ctx.flagSalt && ctx.internId) {
       const flag = await computeFlagBrowser(ctx.flagSalt, ctx.internId);
-      out = out.replace(FLAG_RE, flag);
+      out = out.replace(/\{FLAG\}/g, flag);
     }
   }
 
   const matches: RegExpExecArray[] = [];
-  const scanRe = new RegExp(SECRET_RE.source, "g");
+  const scanRe = new RegExp(SECRET_RE_SRC, "g");
   let m: RegExpExecArray | null;
   while ((m = scanRe.exec(out)) !== null) matches.push(m);
 

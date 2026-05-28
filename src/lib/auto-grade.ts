@@ -54,11 +54,32 @@ export function autoGradeSubmission(
       };
     }
     case "MULTIPLE_CHOICE": {
-      const idx = typeof answer.choiceIndex === "number" ? answer.choiceIndex : -1;
       if (assignment.correctIndex == null) {
         return { score: 0, status: lateStatus, feedback: null, autoGraded: false };
       }
-      const correct = idx === assignment.correctIndex;
+      // Shuffle-safe grading: prefer the submitted label and compare it to the
+      // canonical choice at the assignment's correctIndex. The client may have
+      // shuffled the displayed order, so the index alone is unreliable; the
+      // label is the durable identity. Fall back to index for legacy clients
+      // that don't send a label.
+      const submittedLabel =
+        typeof answer.choiceLabel === "string" ? answer.choiceLabel : null;
+      const choicesArray = Array.isArray(assignment.choices)
+        ? (assignment.choices as unknown[])
+        : null;
+      let correct = false;
+      if (
+        submittedLabel !== null &&
+        choicesArray !== null &&
+        assignment.correctIndex >= 0 &&
+        assignment.correctIndex < choicesArray.length &&
+        typeof choicesArray[assignment.correctIndex] === "string"
+      ) {
+        correct = submittedLabel === choicesArray[assignment.correctIndex];
+      } else {
+        const idx = typeof answer.choiceIndex === "number" ? answer.choiceIndex : -1;
+        correct = idx === assignment.correctIndex;
+      }
       return {
         score: correct ? assignment.maxPoints : 0,
         status: "GRADED",

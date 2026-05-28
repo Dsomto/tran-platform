@@ -103,6 +103,34 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Stage/track/window gates — mirror /api/assignments GET so an intern can't
+    // bypass visibility by POSTing directly with a known assignment id.
+    if (!intern.isActive) {
+      return Response.json({ error: "Account is inactive" }, { status: 403 });
+    }
+    if (assignment.stage !== intern.currentStage) {
+      return Response.json(
+        { error: "This assignment is not in your current stage." },
+        { status: 403 }
+      );
+    }
+    if (assignment.track && assignment.track !== intern.track) {
+      return Response.json(
+        { error: "This assignment is not in your track." },
+        { status: 403 }
+      );
+    }
+    const window = await prisma.stageWindow.findUnique({
+      where: { stage: assignment.stage },
+      select: { status: true },
+    });
+    if (!window || window.status !== "OPEN") {
+      return Response.json(
+        { error: "This stage is not currently accepting submissions." },
+        { status: 409 }
+      );
+    }
+
     const isLate = assignment.dueDate != null && new Date() > assignment.dueDate;
 
     // A graded submission is final — block resubmission so a new upload can't

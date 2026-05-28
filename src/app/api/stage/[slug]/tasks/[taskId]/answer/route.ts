@@ -51,6 +51,58 @@ export async function POST(
       );
     }
 
+    // URL gate for WRITEUP tasks that require an external submission link
+    // (Google Doc capstones in stages 2-4). The pad just holds the URL + a
+    // short abstract; without this check an intern could pass minWords with
+    // pure prose and never link the actual deliverable.
+    const wc = (assignment.widgetConfig as Record<string, unknown> | null) ?? null;
+    if (
+      assignment.kind === "WRITEUP" &&
+      wc !== null &&
+      wc.requiresUrl === true
+    ) {
+      const text =
+        typeof (answer as Record<string, unknown>).text === "string"
+          ? ((answer as Record<string, unknown>).text as string)
+          : "";
+      const urlMatch = text.match(/https?:\/\/[^\s<>"']+/);
+      if (!urlMatch) {
+        return Response.json(
+          {
+            error:
+              "Submission must include a public link (e.g. a Google Doc URL). Set Doc sharing to 'Anyone with the link → Viewer'.",
+          },
+          { status: 400 }
+        );
+      }
+      const allowedHosts = Array.isArray(wc.allowedUrlHosts)
+        ? (wc.allowedUrlHosts as unknown[]).filter(
+            (h): h is string => typeof h === "string"
+          )
+        : null;
+      if (allowedHosts && allowedHosts.length > 0) {
+        try {
+          const u = new URL(urlMatch[0]);
+          const ok = allowedHosts.some(
+            (h) => u.hostname === h || u.hostname.endsWith("." + h)
+          );
+          if (!ok) {
+            return Response.json(
+              {
+                error: `Link host not allowed. This task accepts links from: ${allowedHosts.join(", ")}.`,
+              },
+              { status: 400 }
+            );
+          }
+        } catch {
+          return Response.json(
+            { error: "Submitted link is not a valid URL." },
+            { status: 400 }
+          );
+        }
+      }
+    }
+
     // Auto-graded tasks lock once solved: re-answering a correctly-graded task
     // must not re-award points (the leaderboard would otherwise inflate).
     const existing = await prisma.submission.findUnique({

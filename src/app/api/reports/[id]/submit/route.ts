@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { logger } from "@/lib/logger";
 import { rateLimit, rateLimitResponse, getClientKey, RATE_LIMITS } from "@/lib/rate-limit";
+import { stageRank } from "@/lib/stage-login";
 
 export async function POST(
   req: NextRequest,
@@ -18,11 +19,23 @@ export async function POST(
     const { id } = await ctx.params;
     const intern = await prisma.intern.findUnique({ where: { userId: session.id } });
     if (!intern) return Response.json({ error: "Intern profile not found" }, { status: 404 });
+    if (!intern.isActive) {
+      return Response.json({ error: "Account is inactive" }, { status: 403 });
+    }
 
     const report = await prisma.stageReport.findUnique({ where: { id } });
     if (!report) return Response.json({ error: "Report not found" }, { status: 404 });
     if (report.internId !== intern.id) {
       return Response.json({ error: "Forbidden" }, { status: 403 });
+    }
+    // Reject submissions for stages the intern has not reached. The draft
+    // could have been created before currentStage was reset (or via the old,
+    // ungated POST), so we guard at submit too.
+    if (stageRank(report.stage) > stageRank(intern.currentStage)) {
+      return Response.json(
+        { error: "You have not reached this stage yet" },
+        { status: 403 }
+      );
     }
 
     // Terminal states cannot be re-submitted. A FAILED report means the stage

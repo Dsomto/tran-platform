@@ -25,11 +25,20 @@ export async function GET(request: NextRequest) {
     } else {
       // Interns only ever see OPEN assignments for the stage they're currently
       // on, in their track (or untracked) — never other stages or closed tasks.
+      // Also gate by StageWindow.status: closing the stage window must hide the
+      // assignments even if individual Assignment.isClosed flags weren't flipped.
       const intern = await prisma.intern.findUnique({
         where: { userId: session.id },
-        select: { currentStage: true, track: true },
+        select: { currentStage: true, track: true, isActive: true },
       });
-      if (!intern) {
+      if (!intern || !intern.isActive) {
+        return Response.json({ assignments: [] });
+      }
+      const window = await prisma.stageWindow.findUnique({
+        where: { stage: intern.currentStage },
+        select: { status: true },
+      });
+      if (!window || window.status !== "OPEN") {
         return Response.json({ assignments: [] });
       }
       where.isClosed = false;

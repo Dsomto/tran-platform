@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { WidgetProps } from "./types";
 import { resolveTemplate } from "./template";
 
@@ -66,7 +66,12 @@ function toArrayBuffer(u: Uint8Array): ArrayBuffer {
 }
 
 export default function CipherTools({ config, context, onAnswerChange }: WidgetProps) {
-  const presets = (config as Record<string, unknown>) ?? {};
+  // Memoise the cast so the deps array of the template-resolution effect below
+  // doesn't see a new presets object every render when config is stable.
+  const presets = useMemo(
+    () => (config as Record<string, unknown>) ?? {},
+    [config]
+  );
   const initialTab = (presets.initialTab as Tab) ?? "caesar";
   const [tab, setTab] = useState<Tab>(initialTab);
 

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { WidgetProps } from "./types";
 import { deriveSecretBrowser } from "./flag-browser";
+import { resolveTemplate } from "./template";
 
 /**
  * Canvas-based stego viewer.
@@ -114,7 +115,9 @@ export default function StegoViewer({ config, context, onAnswerChange }: WidgetP
       }
       canvas.width = 360;
       canvas.height = 200;
-      let message = c.stegoMessage ?? "";
+      // Resolve {FLAG} / {SECRET:salt} markers against this intern's context
+      // before embedding — keeps the hidden message per-intern.
+      let message = c.stegoMessage ? await resolveTemplate(c.stegoMessage, context) : "";
       if (c.derivedSecretSalt) {
         const secret = await deriveSecretBrowser(
           c.derivedSecretSalt,
@@ -129,7 +132,11 @@ export default function StegoViewer({ config, context, onAnswerChange }: WidgetP
     return () => {
       cancelled = true;
     };
-  }, [c.imageUrl, c.stegoMessage, c.derivedSecretSalt, c.derivedSecretLen, context.internId]);
+    // We depend on context.internId+flagSalt fields, not context's identity,
+    // to avoid re-firing every parent render. Suppressing the deps-array rule
+    // for that reason.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [c.imageUrl, c.stegoMessage, c.derivedSecretSalt, c.derivedSecretLen, context.internId, context.flagSalt]);
 
   function extract() {
     const canvas = canvasRef.current;
