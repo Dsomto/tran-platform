@@ -1,0 +1,186 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//TRAN//UBI Cohort 1 Schedule//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:TRAN — Cohort 1 schedule
+X-WR-TIMEZONE:Africa/Lagos
+X-WR-CALDESC:Cohort kicks off with a town hall Sat May 30. Each stage opens Monday\, submissions close Friday 18:00\, results out Sunday 18:00. Five stages\, then the laptop winner is decided one week after Stage 4.
+BEGIN:VTIMEZONE
+TZID:Africa/Lagos
+BEGIN:STANDARD
+DTSTART:19700101T000000
+TZOFFSETFROM:+0100
+TZOFFSETTO:+0100
+TZNAME:WAT
+END:STANDARD
+END:VTIMEZONE
+BEGIN:VEVENT
+UID:tran-townhall-kickoff@ubuntubridgeinitiatives.org
+DTSTAMP:20260528T120000Z
+SUMMARY:Cohort kickoff — Town hall (Stage 0 intro)
+DTSTART;TZID=Africa/Lagos:20260530T170000
+DTEND;TZID=Africa/Lagos:20260530T180000
+DESCRIPTION:Opening town hall. Stage 0 introduction\, cohort welcome\, expectations.
+END:VEVENT
+BEGIN:VEVENT
+UID:tran-stage-0-opens@ubuntubridgeinitiatives.org
+DTSTAMP:20260528T120000Z
+SUMMARY:Stage 0 opens
+DTSTART;TZID=Africa/Lagos:20260601T090000
+DTEND;TZID=Africa/Lagos:20260601T093000
+DESCRIPTION:Stage 0 tasks go live. Submissions accepted any time until Friday 18:00.
+END:VEVENT
+BEGIN:VEVENT
+UID:tran-stage-0-submission@ubuntubridgeinitiatives.org
+DTSTAMP:20260528T120000Z
+SUMMARY:Stage 0 — Submission deadline
+DTSTART;TZID=Africa/Lagos:20260605T180000
+DTEND;TZID=Africa/Lagos:20260605T183000
+DESCRIPTION:Last moment to submit your Stage 0 work. Submissions accepted any time before this.
+END:VEVENT
+BEGIN:VEVENT
+UID:tran-townhall-stage-1@ubuntubridgeinitiatives.org
+DTSTAMP:20260528T120000Z
+SUMMARY:Town hall — Stage 1 intro (Stage 0 wrap)
+DTSTART;TZID=Africa/Lagos:20260606T170000
+DTEND;TZID=Africa/Lagos:20260606T180000
+DESCRIPTION:Wrap-up of Stage 0 and introduction to Stage 1.
+END:VEVENT
+BEGIN:VEVENT
+UID:tran-stage-0-results@ubuntubridgeinitiatives.org
+DTSTAMP:20260528T120000Z
+SUMMARY:Stage 0 — Results
+DTSTART;TZID=Africa/Lagos:20260607T180000
+DTEND;TZID=Africa/Lagos:20260607T183000
+DESCRIPTION:Stage 0 promotion / elimination results published.
+END:VEVENT
+BEGIN:VEVENT
+UID:tran-stage-1-opens@ubuntubridgeinitiatives.org
+DTSTAMP:20260528T120000Z
+SUMMARY:Stage 1 opens
+DTSTART;TZID=Africa/Lagos:20260608T090000
+DTEND;TZID=Africa/Lagos:20260608T093000
+DESCRIPTION:Stage 1 tasks go live.
+END:VEVENT
+BEGIN:VEVENT
+UID:tran-stage-1-submission@ubuntubridgeinitiatives.org
+DTSTAMP:20260528T120000Z
+SUMMARY:Stage 1 — Submission deadline
+DTSTART;TZID=Africa/Lagos:20260612T180000
+DTEND;TZID=Africa/Lagos:20260612T183000
+DESCRIPTION:Last moment to submit your Stage 1 work.
+END:VEVENT
+BEGIN:VEVENT
+UID:tran-townhall-stage-2@ubuntubridgeinitiatives.org
+DTSTAMP:20260528T120000Z
+SUMMARY:Town hall — Stage 2 intro (Stage 1 wrap)
+DTSTART;TZID=Africa/Lagos:20260613T170000
+DTEND;TZID=Africa/Lagos:20260613T180000
+DESCRIPTION:Wrap-up of Stage 1 and introduction to Stage 2.
+END:VEVENT
+BEGIN:VEVENT
+UID:tran-stage-1-results@ubuntubridgeinitiatives.org
+DTSTAMP:20260528T120000Z
+SUMMARY:Stage 1 — Results
+DTSTART;TZID=Africa/Lagos:20260614T180000
+DTEND;TZID=Africa/Lagos:20260614T183000
+DESCRIPTION:Stage 1 promotion / elimination results published.
+END:VEVENT
+BEGIN:VEVENT
+UID:tran-stage-2-opens@ubuntubridgeinitiatives.org
+DTSTAMP:20260528T120000Z
+SUMMARY:Stage 2 opens
+DTSTART;TZID=Africa/Lagos:20260615T090000
+DTEND;TZID=Africa/Lagos:20260615T093000
+DESCRIPTION:Stage 2 tasks go live.
+END:VEVENT
+BEGIN:VEVENT
+UID:tran-stage-2-submission@ubuntubridgeinitiatives.org
+DTSTAMP:20260528T120000Z
+SUMMARY:Stage 2 — Submission deadline
+DTSTART;TZID=Africa/Lagos:20260619T180000
+DTEND;TZID=Africa/Lagos:20260619T183000
+DESCRIPTION:Last moment to submit your Stage 2 work.
+END:VEVENT
+BEGIN:VEVENT
+UID:tran-townhall-stage-3@ubuntubridgeinitiatives.org
+DTSTAMP:20260528T120000Z
+SUMMARY:Town hall — Stage 3 intro (Stage 2 wrap)
+DTSTART;TZID=Africa/Lagos:20260620T170000
+DTEND;TZID=Africa/Lagos:20260620T180000
+DESCRIPTION:Wrap-up of Stage 2 and introduction to Stage 3.
+END:VEVENT
+BEGIN:VEVENT
+UID:tran-stage-2-results@ubuntubridgeinitiatives.org
+DTSTAMP:20260528T120000Z
+SUMMARY:Stage 2 — Results
+DTSTART;TZID=Africa/Lagos:20260621T180000
+DTEND;TZID=Africa/Lagos:20260621T183000
+DESCRIPTION:Stage 2 promotion / elimination results published.
+END:VEVENT
+BEGIN:VEVENT
+UID:tran-stage-3-opens@ubuntubridgeinitiatives.org
+DTSTAMP:20260528T120000Z
+SUMMARY:Stage 3 opens
+DTSTART;TZID=Africa/Lagos:20260622T090000
+DTEND;TZID=Africa/Lagos:20260622T093000
+DESCRIPTION:Stage 3 tasks go live.
+END:VEVENT
+BEGIN:VEVENT
+UID:tran-stage-3-submission@ubuntubridgeinitiatives.org
+DTSTAMP:20260528T120000Z
+SUMMARY:Stage 3 — Submission deadline
+DTSTART;TZID=Africa/Lagos:20260626T180000
+DTEND;TZID=Africa/Lagos:20260626T183000
+DESCRIPTION:Last moment to submit your Stage 3 work.
+END:VEVENT
+BEGIN:VEVENT
+UID:tran-townhall-stage-4@ubuntubridgeinitiatives.org
+DTSTAMP:20260528T120000Z
+SUMMARY:Town hall — Stage 4 intro (Stage 3 wrap)
+DTSTART;TZID=Africa/Lagos:20260627T170000
+DTEND;TZID=Africa/Lagos:20260627T180000
+DESCRIPTION:Wrap-up of Stage 3 and introduction to Stage 4.
+END:VEVENT
+BEGIN:VEVENT
+UID:tran-stage-3-results@ubuntubridgeinitiatives.org
+DTSTAMP:20260528T120000Z
+SUMMARY:Stage 3 — Results
+DTSTART;TZID=Africa/Lagos:20260628T180000
+DTEND;TZID=Africa/Lagos:20260628T183000
+DESCRIPTION:Stage 3 promotion / elimination results published.
+END:VEVENT
+BEGIN:VEVENT
+UID:tran-stage-4-opens@ubuntubridgeinitiatives.org
+DTSTAMP:20260528T120000Z
+SUMMARY:Stage 4 opens
+DTSTART;TZID=Africa/Lagos:20260629T090000
+DTEND;TZID=Africa/Lagos:20260629T093000
+DESCRIPTION:Stage 4 tasks go live (capstone stage).
+END:VEVENT
+BEGIN:VEVENT
+UID:tran-stage-4-submission@ubuntubridgeinitiatives.org
+DTSTAMP:20260528T120000Z
+SUMMARY:Stage 4 — Submission deadline
+DTSTART;TZID=Africa/Lagos:20260703T180000
+DTEND;TZID=Africa/Lagos:20260703T183000
+DESCRIPTION:Last moment to submit your Stage 4 (capstone) work.
+END:VEVENT
+BEGIN:VEVENT
+UID:tran-stage-4-results@ubuntubridgeinitiatives.org
+DTSTAMP:20260528T120000Z
+SUMMARY:Stage 4 — Results
+DTSTART;TZID=Africa/Lagos:20260705T180000
+DTEND;TZID=Africa/Lagos:20260705T183000
+DESCRIPTION:Stage 4 promotion / elimination results published.
+END:VEVENT
+BEGIN:VEVENT
+UID:tran-laptop-winner@ubuntubridgeinitiatives.org
+DTSTAMP:20260528T120000Z
+SUMMARY:Laptop winner — decided
+DTSTART;TZID=Africa/Lagos:20260713T180000
+DTEND;TZID=Africa/Lagos:20260713T183000
+DESCRIPTION:Laptop winner decision\, the Monday a week after Stage 4 closes.
+END:VEVENT
+END:VCALENDAR
