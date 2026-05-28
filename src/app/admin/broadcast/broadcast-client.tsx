@@ -107,8 +107,9 @@ export function BroadcastClient() {
 
   const recipientCount = sendMode === "all" ? total : selected.size;
 
-  // When a template is picked, prefill the subject with its default and clear
-  // any required variable fields the admin must complete.
+  // When a template is picked, prefill the subject with its default, seed
+  // every variable from its `defaultValue` so the admin can preview right
+  // away and edit any field before sending.
   function pickTemplate(id: string) {
     if (!id) {
       setTemplateId("");
@@ -121,7 +122,7 @@ export function BroadcastClient() {
     setSubject(tpl.defaultSubject);
     setMessage(""); // template mode ignores the message textarea
     const seed: Record<string, string> = {};
-    for (const v of tpl.variables) seed[v.name] = "";
+    for (const v of tpl.variables) seed[v.name] = v.defaultValue ?? "";
     setTemplateVars(seed);
     setShowPreview(false);
   }
@@ -384,9 +385,14 @@ export function BroadcastClient() {
                 </div>
                 <p className="text-xs text-muted-foreground leading-relaxed">{tpl.description}</p>
                 <div className="mt-2 text-[11px] text-muted-foreground/70">
-                  {tpl.variables.length === 0
-                    ? "✓ No fields to fill — pre-loaded"
-                    : `${tpl.variables.length} field${tpl.variables.length === 1 ? "" : "s"} to fill`}
+                  {(() => {
+                    const filled = tpl.variables.filter((v) => v.defaultValue && v.defaultValue.length > 0).length;
+                    const total = tpl.variables.length;
+                    if (total === 0) return "✓ No fields — pre-loaded";
+                    if (filled === total) return `✓ ${total} field${total === 1 ? "" : "s"} — all pre-filled, editable`;
+                    if (filled > 0) return `${filled}/${total} pre-filled · ${total - filled} to fill`;
+                    return `${total} field${total === 1 ? "" : "s"} to fill`;
+                  })()}
                 </div>
               </button>
             );
@@ -454,7 +460,7 @@ export function BroadcastClient() {
               </div>
             ) : (
               <div className="mb-3 p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-xs text-emerald-800">
-                ✓ This template is pre-filled. No fields to complete — click <strong>Preview email</strong> to see it, then send.
+                ✓ This template has no fields — pre-loaded and ready. Preview, then send.
               </div>
             )}
             <p className="text-xs text-muted-foreground mb-3">

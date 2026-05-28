@@ -16,6 +16,8 @@ export type TemplateVariable = {
   placeholder: string;
   required: boolean;
   multiline?: boolean;
+  /** Pre-filled value when the template is picked. The admin can edit or clear it. */
+  defaultValue?: string;
 };
 
 export type NewsletterTemplate = {
@@ -62,8 +64,9 @@ const ANIMATIONS_STYLE = `
 
 // Branded sponsor block — designed distinct from the rest of the email.
 // Gold/amber gradient card with animated star, larger thank-you heading,
-// serif fallback for the heading to give it gravitas.
-function sponsorBlock(): string {
+// serif fallback for the heading to give it gravitas. Heading + body are
+// supplied by the caller so the admin can edit either through template vars.
+function sponsorBlock(args: { heading: string; bodyHtml: string }): string {
   return `
     <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:8px 0 16px;">
       <tr>
@@ -76,13 +79,10 @@ function sponsorBlock(): string {
                   &nbsp;&nbsp;Our Sponsor
                 </div>
                 <h3 style="margin:0 0 14px;font-size:24px;line-height:1.25;color:#451A03;font-weight:800;font-family:Georgia,'Times New Roman',serif;letter-spacing:-0.01em;">
-                  Thank you, Peter Ejiofor.
+                  ${args.heading}
                 </h3>
-                <p style="margin:0 0 12px;font-size:14.5px;color:#78350F;line-height:1.7;">
-                  This cohort exists because of <strong>Peter Ejiofor</strong>. Sponsorship at this scale — fully funded cybersecurity training for hundreds of Nigerians, no strings attached — is rare in Nigeria and rare anywhere in the world.
-                </p>
                 <p style="margin:0;font-size:14.5px;color:#78350F;line-height:1.7;">
-                  We do not take it for granted, and neither should you. When you finish this programme and someone asks how you got there, his name belongs in that sentence.
+                  ${args.bodyHtml}
                 </p>
               </td>
             </tr>
@@ -91,6 +91,24 @@ function sponsorBlock(): string {
       </tr>
     </table>
   `;
+}
+
+// Permits a tiny, fixed whitelist of HTML in admin-supplied text fields:
+// <strong>, <em>, <br>. Everything else (script tags, on-attributes, links)
+// is stripped/escaped. The sender is super-admin-only behind 2FA per
+// email-send-guard, but defence-in-depth keeps the trust boundary tight.
+function sanitiseTrustedSpan(input: string): string {
+  const escaped = input
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+  return escaped
+    .replace(/&lt;strong&gt;/gi, "<strong>")
+    .replace(/&lt;\/strong&gt;/gi, "</strong>")
+    .replace(/&lt;em&gt;/gi, "<em>")
+    .replace(/&lt;\/em&gt;/gi, "</em>")
+    .replace(/&lt;br\s*\/?&gt;/gi, "<br>")
+    .replace(/\n/g, "<br>");
 }
 
 function brandedHeader(args: { eyebrow: string; title: string; subtitle: string; bgColors?: string }): string {
@@ -112,9 +130,9 @@ function footer(): string {
   return `
     <tr>
       <td style="padding:22px 14px 8px;text-align:center;font-size:12px;color:#94A3B8;line-height:1.65;">
-        You're receiving this because you're part of Cohort 1 of the TRAN programme.<br>
+        You're receiving this because you're part of the Ubuntu Bridge Initiative cybersecurity internship cohort.<br>
         Questions? Reply to this email or ask in the cohort Slack.<br>
-        <span style="color:#CBD5E1;margin-top:6px;display:inline-block;">🛡️ Ubuntu Bridge Initiatives · Africa/Lagos</span>
+        <span style="color:#CBD5E1;margin-top:6px;display:inline-block;">🛡️ Ubuntu Bridge Initiative · Africa/Lagos</span>
       </td>
     </tr>
   `;
@@ -154,19 +172,128 @@ function shell(args: { previewText: string; headerHtml: string; bodyHtml: string
 const KICKOFF: NewsletterTemplate = {
   id: "cohort-kickoff",
   name: "Cohort Kickoff",
-  description: "Welcome at cohort start. Calendar download, login instructions, Slack invite, and the sponsor block. No variables — pre-filled and ready to send.",
+  description: "Welcome at cohort start. Calendar, login, Slack, sponsor block. All copy is pre-filled — edit any field before sending.",
   defaultSubject: "Cohort 1 starts Saturday — your kickoff pack, {First name}",
-  variables: [],
-  render: ({ firstName }) => {
+  variables: [
+    {
+      name: "intro",
+      label: "Opening paragraph (after 'Hi {First name},')",
+      placeholder: "You're in. Welcome to Cohort 1 of the Ubuntu Bridge Initiative cybersecurity internship…",
+      required: true,
+      multiline: true,
+      defaultValue: "You're in. Welcome to Cohort 1 of the Ubuntu Bridge Initiative cybersecurity internship. We kick off this Saturday with the cohort town hall, and Stage 0 opens Monday, June 1 at 09:00 WAT.",
+    },
+    {
+      name: "calendar_blurb",
+      label: "Calendar paragraph (above the blue button)",
+      placeholder: "Here is the calendar with every milestone…",
+      required: true,
+      multiline: true,
+      defaultValue: "Here is the calendar with every milestone for the next six weeks — town halls, stage opens, submission deadlines, results, and the laptop-winner decision. One click and 21 events drop straight into your phone or laptop:",
+    },
+    {
+      name: "cta_label",
+      label: "Calendar button text",
+      placeholder: "Add the cohort calendar",
+      required: true,
+      defaultValue: "Add the cohort calendar",
+    },
+    {
+      name: "key_date_1",
+      label: "Key date 1 — left column",
+      placeholder: "Saturday 17:00",
+      required: true,
+      defaultValue: "Saturday 17:00",
+    },
+    {
+      name: "key_date_1_desc",
+      label: "Key date 1 — right column",
+      placeholder: "Cohort kickoff town hall",
+      required: true,
+      defaultValue: "Cohort kickoff town hall",
+    },
+    {
+      name: "key_date_2",
+      label: "Key date 2 — left column",
+      placeholder: "Monday 09:00",
+      required: true,
+      defaultValue: "Monday 09:00",
+    },
+    {
+      name: "key_date_2_desc",
+      label: "Key date 2 — right column",
+      placeholder: "Stage 0 opens",
+      required: true,
+      defaultValue: "Stage 0 opens",
+    },
+    {
+      name: "key_date_3",
+      label: "Key date 3 — left column",
+      placeholder: "Fri 18:00",
+      required: true,
+      defaultValue: "Fri 18:00",
+    },
+    {
+      name: "key_date_3_desc",
+      label: "Key date 3 — right column",
+      placeholder: "Submission deadline (weekly)",
+      required: true,
+      defaultValue: "Submission deadline (weekly)",
+    },
+    {
+      name: "key_date_4",
+      label: "Key date 4 — left column",
+      placeholder: "Sun 18:00",
+      required: true,
+      defaultValue: "Sun 18:00",
+    },
+    {
+      name: "key_date_4_desc",
+      label: "Key date 4 — right column",
+      placeholder: "Results published (weekly)",
+      required: true,
+      defaultValue: "Results published (weekly)",
+    },
+    {
+      name: "signoff",
+      label: "Closing line (before sign-off)",
+      placeholder: "See you Saturday at the town hall.",
+      required: true,
+      defaultValue: "See you Saturday at the town hall.",
+    },
+    {
+      name: "sponsor_thanks_heading",
+      label: "Sponsor block heading",
+      placeholder: "Thank you, Peter Ejiofor.",
+      required: true,
+      defaultValue: "Thank you, Peter Ejiofor.",
+    },
+    {
+      name: "sponsor_body",
+      label: "Sponsor block body (one paragraph)",
+      placeholder: "This cohort exists because of Peter Ejiofor…",
+      required: true,
+      multiline: true,
+      defaultValue:
+        "This cohort exists because of <strong>Peter Ejiofor</strong>. Sponsorship at this scale — fully funded cybersecurity training for hundreds of Nigerians, no strings attached — is rare in Nigeria and rare anywhere in the world. We do not take it for granted, and neither should you. When you finish this programme and someone asks how you got there, his name belongs in that sentence.",
+    },
+  ],
+  render: ({ firstName, vars }) => {
+    const v = (k: string) => escapeHtml(vars[k] ?? "");
+    // sponsor_body intentionally allows the <strong>…</strong> default through:
+    // it's an admin-trusted field. We sanitise only `<` and `>` outside that
+    // narrow whitelist.
+    const sponsorBodyHtml = sanitiseTrustedSpan(vars.sponsor_body ?? "");
+
     const body = `
       <tr>
         <td style="background:white;padding:36px 30px 28px;border-radius:0 0 14px 14px;border:1px solid #E2E8F0;border-top:none;">
 
           <p style="margin:0 0 16px;font-size:15.5px;color:#0F172A;">Hi ${firstName},</p>
 
-          <p style="margin:0 0 18px;font-size:15.5px;color:#1E293B;">You're in. <strong>Cohort 1</strong> of TRAN — The Root Access Network — starts this <strong>Saturday with the kickoff town hall</strong>, and Stage 0 opens <strong>Monday, June 1 at 09:00 WAT</strong>.</p>
+          <p style="margin:0 0 18px;font-size:15.5px;color:#1E293B;">${v("intro")}</p>
 
-          <p style="margin:0 0 24px;font-size:15.5px;color:#1E293B;">Here is the calendar with every milestone for the next six weeks — town halls, stage opens, submission deadlines, results, and the laptop-winner decision. One click and 21 events drop straight into your phone or laptop:</p>
+          <p style="margin:0 0 24px;font-size:15.5px;color:#1E293B;">${v("calendar_blurb")}</p>
 
           <!-- Calendar CTA -->
           <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:0 0 28px;">
@@ -175,7 +302,7 @@ const KICKOFF: NewsletterTemplate = {
                 <a href="https://ubuntubridgeinitiatives.org/tran-cohort-schedule.ics"
                    class="ubi-cta-pulse"
                    style="display:inline-block;background:#2563EB;color:white;padding:15px 28px;border-radius:12px;text-decoration:none;font-weight:700;font-size:15px;box-shadow:0 4px 12px rgba(37,99,235,0.25);">
-                  📅&nbsp;&nbsp;Add the cohort calendar
+                  📅&nbsp;&nbsp;${v("cta_label")}
                 </a>
               </td>
             </tr>
@@ -187,10 +314,10 @@ const KICKOFF: NewsletterTemplate = {
               <td style="background:#EFF6FF;border-left:4px solid #2563EB;padding:18px 20px;border-radius:8px;">
                 <div style="font-size:11px;font-weight:800;color:#1D4ED8;letter-spacing:0.16em;text-transform:uppercase;margin-bottom:10px;">Key dates · Africa/Lagos (WAT)</div>
                 <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="font-size:14.5px;color:#1E293B;">
-                  <tr><td style="padding:3px 0;">📅 &nbsp;<strong>Saturday 17:00</strong></td><td style="padding:3px 0;">Cohort kickoff town hall</td></tr>
-                  <tr><td style="padding:3px 0;">🚀 &nbsp;<strong>Monday 09:00</strong></td><td style="padding:3px 0;">Stage 0 opens</td></tr>
-                  <tr><td style="padding:3px 0;">⏰ &nbsp;<strong>Fri 18:00</strong></td><td style="padding:3px 0;">Submission deadline (weekly)</td></tr>
-                  <tr><td style="padding:3px 0;">🏁 &nbsp;<strong>Sun 18:00</strong></td><td style="padding:3px 0;">Results published (weekly)</td></tr>
+                  <tr><td style="padding:3px 0;">📅 &nbsp;<strong>${v("key_date_1")}</strong></td><td style="padding:3px 0;">${v("key_date_1_desc")}</td></tr>
+                  <tr><td style="padding:3px 0;">🚀 &nbsp;<strong>${v("key_date_2")}</strong></td><td style="padding:3px 0;">${v("key_date_2_desc")}</td></tr>
+                  <tr><td style="padding:3px 0;">⏰ &nbsp;<strong>${v("key_date_3")}</strong></td><td style="padding:3px 0;">${v("key_date_3_desc")}</td></tr>
+                  <tr><td style="padding:3px 0;">🏁 &nbsp;<strong>${v("key_date_4")}</strong></td><td style="padding:3px 0;">${v("key_date_4_desc")}</td></tr>
                 </table>
               </td>
             </tr>
@@ -269,12 +396,12 @@ const KICKOFF: NewsletterTemplate = {
             </tr>
           </table>
 
-          ${sponsorBlock()}
+          ${sponsorBlock({ heading: v("sponsor_thanks_heading"), bodyHtml: sponsorBodyHtml })}
 
-          <p style="margin:28px 0 0;font-size:15.5px;color:#0F172A;font-weight:600;">See you Saturday at the town hall.</p>
+          <p style="margin:28px 0 0;font-size:15.5px;color:#0F172A;font-weight:600;">${v("signoff")}</p>
           <p style="margin:18px 0 0;font-size:14px;color:#475569;line-height:1.65;">
-            — The TRAN team<br>
-            <span style="color:#94A3B8;font-size:13px;">Ubuntu Bridge Initiatives</span>
+            — The UBI team<br>
+            <span style="color:#94A3B8;font-size:13px;">Ubuntu Bridge Initiative</span>
           </p>
 
         </td>
@@ -283,11 +410,11 @@ const KICKOFF: NewsletterTemplate = {
 
     return shell({
       title: "Cohort 1 starts Saturday — your kickoff pack",
-      previewText: "Town hall Saturday 17:00 WAT · Stage 0 opens Monday 09:00 · cohort calendar inside",
+      previewText: "Town hall Saturday · Stage 0 opens Monday · cohort calendar inside",
       headerHtml: brandedHeader({
-        eyebrow: "Ubuntu Bridge Initiatives",
+        eyebrow: "Ubuntu Bridge Initiative",
         title: "Cohort 1 starts Saturday",
-        subtitle: "TRAN — The Root Access Network",
+        subtitle: "UBI Cybersecurity Internship",
       }),
       bodyHtml: body,
     });
@@ -360,8 +487,8 @@ const STAGE_REMINDER: NewsletterTemplate = {
           </table>
 
           <p style="margin:0 0 0;font-size:14px;color:#475569;line-height:1.65;">
-            — The TRAN team<br>
-            <span style="color:#94A3B8;font-size:13px;">Ubuntu Bridge Initiatives</span>
+            — The UBI team<br>
+            <span style="color:#94A3B8;font-size:13px;">Ubuntu Bridge Initiative</span>
           </p>
 
         </td>
@@ -439,8 +566,8 @@ const PROGRAMME_UPDATE: NewsletterTemplate = {
           ${ctaHtml}
 
           <p style="margin:14px 0 0;font-size:14px;color:#475569;line-height:1.65;">
-            — The TRAN team<br>
-            <span style="color:#94A3B8;font-size:13px;">Ubuntu Bridge Initiatives</span>
+            — The UBI team<br>
+            <span style="color:#94A3B8;font-size:13px;">Ubuntu Bridge Initiative</span>
           </p>
 
         </td>
@@ -452,8 +579,8 @@ const PROGRAMME_UPDATE: NewsletterTemplate = {
       previewText: bodyText.slice(0, 140).replace(/\s+/g, " "),
       headerHtml: brandedHeader({
         eyebrow: "Programme update",
-        title: headline || "An update from TRAN",
-        subtitle: "Ubuntu Bridge Initiatives",
+        title: headline || "An update from UBI",
+        subtitle: "Ubuntu Bridge Initiative",
         bgColors: "linear-gradient(135deg,#0F766E 0%,#0891B2 50%,#0EA5E9 100%)",
       }),
       bodyHtml: body,
