@@ -463,10 +463,18 @@ export function BroadcastClient() {
                 ✓ This template has no fields — pre-loaded and ready. Preview, then send.
               </div>
             )}
-            <p className="text-xs text-muted-foreground mb-3">
-              The body is rendered from the designed template. Each recipient&apos;s
-              real name fills in for <span className="font-mono text-blue">{"{First name}"}</span> in both the subject and the body.
-            </p>
+            <div className="text-xs text-muted-foreground mb-3 leading-relaxed space-y-1">
+              <p>
+                The body is rendered from the designed template. Each recipient&apos;s
+                real name fills in for <span className="font-mono text-blue">{"{First name}"}</span> in both the subject and the body.
+              </p>
+              <p>
+                <strong>Links</strong> in any prose field: turn words into a link with{" "}
+                <span className="font-mono text-blue">{"[your words](https://link)"}</span>. Plain http(s) URLs become clickable on their own.{" "}
+                <strong>Emphasis:</strong> <span className="font-mono text-blue">{"<strong>bold</strong>"}</span> and{" "}
+                <span className="font-mono text-blue">{"<em>italic</em>"}</span> work too.
+              </p>
+            </div>
           </>
         ) : (
           <>

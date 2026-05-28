@@ -93,22 +93,46 @@ function sponsorBlock(args: { heading: string; bodyHtml: string }): string {
   `;
 }
 
-// Permits a tiny, fixed whitelist of HTML in admin-supplied text fields:
-// <strong>, <em>, <br>. Everything else (script tags, on-attributes, links)
-// is stripped/escaped. The sender is super-admin-only behind 2FA per
+// Renders admin-supplied text into safe HTML with a narrow rich-text feature
+// set:
+//   - `<strong>` and `<em>` and `<br>`  (inline emphasis the default copy uses)
+//   - `[label](https://url)`            (markdown-style links, http/https only)
+//   - bare `https://url`                (auto-linked)
+//   - `\n`                              (line break)
+// Everything else is HTML-escaped so script tags, on-attributes, javascript:
+// URIs etc. cannot slip through. The sender is super-admin-only behind 2FA per
 // email-send-guard, but defence-in-depth keeps the trust boundary tight.
-function sanitiseTrustedSpan(input: string): string {
-  const escaped = input
+function renderRichText(input: string): string {
+  // 1. Escape everything.
+  let out = input
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
-  return escaped
+
+  // 2. Un-escape a tiny whitelist of inline tags.
+  out = out
     .replace(/&lt;strong&gt;/gi, "<strong>")
     .replace(/&lt;\/strong&gt;/gi, "</strong>")
     .replace(/&lt;em&gt;/gi, "<em>")
     .replace(/&lt;\/em&gt;/gi, "</em>")
-    .replace(/&lt;br\s*\/?&gt;/gi, "<br>")
-    .replace(/\n/g, "<br>");
+    .replace(/&lt;br\s*\/?&gt;/gi, "<br>");
+
+  // 3. Linkify markdown links AND bare URLs in one pass. Only http(s) is
+  // accepted, so javascript: URIs cannot reach an `href`.
+  const LINK = /\[([^\]]+)\]\((https?:\/\/[^\s)"'<>]+)\)|(https?:\/\/[^\s)"'<>]+)/g;
+  out = out.replace(LINK, (_m, mdText, mdUrl, bareUrl) => {
+    if (mdUrl) {
+      return `<a href="${mdUrl}" style="color:#2563EB;text-decoration:underline;font-weight:600;" target="_blank" rel="noopener noreferrer">${mdText}</a>`;
+    }
+    // Bare URL — trim trailing sentence punctuation so a stop / comma after a
+    // URL doesn't get swallowed into the link.
+    const trail = bareUrl.match(/[.,;:!?]+$/)?.[0] ?? "";
+    const url = trail ? bareUrl.slice(0, -trail.length) : bareUrl;
+    return `<a href="${url}" style="color:#2563EB;text-decoration:underline;font-weight:600;" target="_blank" rel="noopener noreferrer">${url}</a>${trail}`;
+  });
+
+  // 4. Newlines become <br>.
+  return out.replace(/\n/g, "<br>");
 }
 
 function brandedHeader(args: { eyebrow: string; title: string; subtitle: string; bgColors?: string }): string {
@@ -293,11 +317,13 @@ const KICKOFF: NewsletterTemplate = {
     },
   ],
   render: ({ firstName, vars }) => {
+    // Plain HTML-escape for fields where a link would be confusing (button
+    // labels, table cells, headings) — keeps them literal text.
     const v = (k: string) => escapeHtml(vars[k] ?? "");
-    // sponsor_body intentionally allows the <strong>…</strong> default through:
-    // it's an admin-trusted field. We sanitise only `<` and `>` outside that
-    // narrow whitelist.
-    const sponsorBodyHtml = sanitiseTrustedSpan(vars.sponsor_body ?? "");
+    // Rich text — permits the inline whitelist + markdown / bare URL links.
+    // Use for prose fields (paragraphs, sign-off, sponsor body).
+    const rt = (k: string) => renderRichText(vars[k] ?? "");
+    const sponsorBodyHtml = renderRichText(vars.sponsor_body ?? "");
 
     const body = `
       <tr>
@@ -305,9 +331,9 @@ const KICKOFF: NewsletterTemplate = {
 
           <p style="margin:0 0 16px;font-size:15.5px;color:#0F172A;">Hi ${firstName},</p>
 
-          <p style="margin:0 0 18px;font-size:15.5px;color:#1E293B;">${v("intro")}</p>
+          <p style="margin:0 0 18px;font-size:15.5px;color:#1E293B;">${rt("intro")}</p>
 
-          <p style="margin:0 0 24px;font-size:15.5px;color:#1E293B;">${v("calendar_blurb")}</p>
+          <p style="margin:0 0 24px;font-size:15.5px;color:#1E293B;">${rt("calendar_blurb")}</p>
 
           <!-- Calendar CTA -->
           <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:0 0 28px;">
@@ -412,10 +438,10 @@ const KICKOFF: NewsletterTemplate = {
 
           ${sponsorBlock({ heading: v("sponsor_thanks_heading"), bodyHtml: sponsorBodyHtml })}
 
-          <p style="margin:28px 0 0;font-size:15.5px;color:#0F172A;font-weight:600;">${v("signoff")}</p>
+          <p style="margin:28px 0 0;font-size:15.5px;color:#0F172A;font-weight:600;">${rt("signoff")}</p>
           <p style="margin:18px 0 0;font-size:14px;color:#475569;line-height:1.65;">
-            ${v("signature_line_1")}<br>
-            <span style="color:#94A3B8;font-size:13px;">${v("signature_line_2")}</span>
+            ${rt("signature_line_1")}<br>
+            <span style="color:#94A3B8;font-size:13px;">${rt("signature_line_2")}</span>
           </p>
 
         </td>
@@ -476,7 +502,7 @@ const STAGE_REMINDER: NewsletterTemplate = {
             <tr>
               <td style="background:#FEF3C7;border-left:4px solid #F59E0B;padding:18px 20px;border-radius:8px;">
                 <div style="font-size:11px;font-weight:800;color:#92400E;letter-spacing:0.16em;text-transform:uppercase;margin-bottom:8px;">🎯 &nbsp;Where to focus</div>
-                <div style="font-size:15px;color:#78350F;line-height:1.65;">${vars.focus ?? ""}</div>
+                <div style="font-size:15px;color:#78350F;line-height:1.65;">${renderRichText(vars.focus ?? "")}</div>
               </td>
             </tr>
           </table>
@@ -503,8 +529,8 @@ const STAGE_REMINDER: NewsletterTemplate = {
           </table>
 
           <p style="margin:0 0 0;font-size:14px;color:#475569;line-height:1.65;">
-            ${escapeHtml(vars.signature_line_1 ?? "From your friend, Somto.")}<br>
-            <span style="color:#94A3B8;font-size:13px;">${escapeHtml(vars.signature_line_2 ?? "Head of Programs, TRAN")}</span>
+            ${renderRichText(vars.signature_line_1 ?? "From your friend, Somto.")}<br>
+            <span style="color:#94A3B8;font-size:13px;">${renderRichText(vars.signature_line_2 ?? "Head of Programs, TRAN")}</span>
           </p>
 
         </td>
@@ -547,9 +573,10 @@ const PROGRAMME_UPDATE: NewsletterTemplate = {
     const ctaUrl = vars.cta_url?.trim() ?? "";
 
     // Convert plain-text body to paragraphs. Blank line = paragraph break.
+    // Within each paragraph, markdown links and bare URLs are clickable.
     const paragraphs = bodyText
       .split(/\n\s*\n/)
-      .map((p) => escapeHtml(p.trim()).replace(/\n/g, "<br>"))
+      .map((p) => renderRichText(p.trim()))
       .filter((p) => p.length > 0)
       .map((p) => `<p style="margin:0 0 16px;font-size:15px;color:#1E293B;line-height:1.7;">${p}</p>`)
       .join("\n");
@@ -584,8 +611,8 @@ const PROGRAMME_UPDATE: NewsletterTemplate = {
           ${ctaHtml}
 
           <p style="margin:14px 0 0;font-size:14px;color:#475569;line-height:1.65;">
-            ${escapeHtml(vars.signature_line_1 ?? "From your friend, Somto.")}<br>
-            <span style="color:#94A3B8;font-size:13px;">${escapeHtml(vars.signature_line_2 ?? "Head of Programs, TRAN")}</span>
+            ${renderRichText(vars.signature_line_1 ?? "From your friend, Somto.")}<br>
+            <span style="color:#94A3B8;font-size:13px;">${renderRichText(vars.signature_line_2 ?? "Head of Programs, TRAN")}</span>
           </p>
 
         </td>
