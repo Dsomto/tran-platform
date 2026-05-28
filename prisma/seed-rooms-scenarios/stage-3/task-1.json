@@ -1,7 +1,7 @@
 {
   "order": 1,
   "title": "Triage the Compromised Workstation",
-  "description": "You are handed a shell on 10.0.1.87 — the workstation Tunde's team quarantined overnight. The memory dump is mounted at /evidence/mem/, the filesystem at /evidence/fs/, and the last 72h of shell history at /evidence/bash_history.\n\nYour brief:\n\n1. Locate the persistence mechanism The Griot left behind. It is not in /etc/cron.d/. It is not a systemd unit. It survives a reboot.\n\n2. Produce a hash of the first file the attacker executed after initial access. Submit it as the flag in the form TRAN{sha256...}.\n\n3. The persistence mechanism abuses a feature, not a bug. In your grader feedback, name the feature and the MITRE ATT&CK technique ID.\n\nConstraints: You may not run any command that writes to disk. Read-only forensic discipline — Tunde will check.",
+  "description": "You are handed a shell on 10.0.1.87 — the workstation Tunde's team quarantined overnight. The memory dump is mounted at `/evidence/mem/`, the filesystem at `/evidence/fs/`, the auth log at `/evidence/auth.log`, and the last 72h of shell history at `/evidence/bash_history`.\n\n**Your brief:**\n\n1. Locate the first file the attacker executed after initial access. The forensic toolchain has already produced a SHA-256 of it for you and left the result file under `/evidence/fs/`. Read it — its contents are your flag.\n\n2. While you are in here, take notes for the four writeups that follow: **persistence mechanism (task 2)**, **privilege escalation chain (task 3)**, **lateral movement & C2 (task 4)**, and the **full incident timeline (task 5)**. The **IR report (task 7)** synthesises everything.\n\n**Forensic discipline — read-only:** You may not run any command that writes to disk. Tunde will check.\n\n**Artefacts to record for downstream tasks (citations you will reuse):**\n- Memory dump first-exec record — `/evidence/mem/first-exec.log`.\n- Bash history entries by user — `/evidence/bash_history`.\n- Sudoers add-time and content — `/evidence/fs/etc/sudoers.d/...`.\n- Persistence script and the `.bashrc` modification — `/evidence/fs/var/lib/mc/.helper` and `/evidence/fs/home/o.adegoke/.bashrc`.\n- SSH initial-access source IP and timestamp — `/evidence/auth.log`.\n\nReference: NIST SP 800-86 (Computer Forensics); NIST SP 800-61r2 §3.3 (Containment, Eradication, Recovery — informs your read-only discipline); ACPO Good Practice Guide for Digital Evidence.",
   "maxPoints": 40,
   "kind": "FLAG",
   "widget": "WEB_TERMINAL",
@@ -27,10 +27,7 @@
         "salt": "stage-3-task-1-salt"
       }
     },
-    "hints": [
-      "The abused feature is in /etc/sudoers.d/. Think: what can `less` do?",
-      "The flag file is the sha256 of /var/lib/mc/.helper — presented to you once you locate it."
-    ]
+    "hints": []
   },
   "flagSalt": "stage-3-task-1-salt",
   "choices": null,

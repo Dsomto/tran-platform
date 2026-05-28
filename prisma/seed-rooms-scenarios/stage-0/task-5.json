@@ -1,7 +1,7 @@
 {
   "order": 5,
   "title": "Least privilege",
-  "description": "Amaka slides a ticket across the desk: Tunde spotted /home/intern/config/secrets.env with world-writable perms on the training host. That is exactly the kind of misconfiguration The Griot loves. First confirm the problem with `stat /home/intern/config/secrets.env`, then tighten it with `chmod 600 /home/intern/config/secrets.env`. Once the file is restricted to owner-only access, `cat` it to read the confirmation line Amaka stamped inside. That line is your flag.",
+  "description": "Amaka slides a ticket across the desk: Tunde spotted `/home/intern/config/secrets.env` with world-writable perms on the training host. That is exactly the kind of misconfiguration The Griot loves. Confirm the current mode, tighten it back to least privilege (owner read/write only — nothing for group, nothing for world), then read the confirmation line Amaka stamped inside. That line is your flag.\n\nSankofa's policy (see `/home/intern/config/README`): every `*.env` file must be owner-only. Anything looser is an audit finding.\n\nReference: NIST SP 800-53r5 AC-6 Least Privilege; CIS Linux Benchmark §6.1 (file permissions).",
   "maxPoints": 10,
   "kind": "FLAG",
   "widget": "WEB_TERMINAL",
@@ -11,13 +11,12 @@
     "welcome": [
       "Sankofa Digital training shell",
       "Amaka: permissions audit on /home/intern/config/secrets.env.",
-      "Run `stat` on it, then `chmod 600` to bring it back to least privilege.",
+      "Inspect the file's current mode, then bring it back to least privilege.",
       "Type `help` for supported commands."
     ],
     "hints": [
-      "Start with `stat /home/intern/config/secrets.env` to see the current mode.",
-      "World-writable (mode 666) means owner, group, and world can all write. Fix it with `chmod 600 /home/intern/config/secrets.env`.",
-      "After locking it down, `cat /home/intern/config/secrets.env` to read Amaka's confirmation line."
+      "What does the shell show you about a file's permissions when you ask politely?",
+      "Owner read+write with nothing for group or world is the target. Anything looser on a *.env file is a finding."
     ],
     "files": {
       "/home/intern/README.md": "Amaka: routine hardening drill. Every sensitive file on this host must be 600 (owner rw, nothing else).\nIf you ever see 666 on something with the word `secret` in it, fix it before you touch anything else.",

@@ -1,7 +1,7 @@
 {
   "order": 8,
   "title": "Operational Mistake",
-  "description": "Tunde: 'The Griot used AES-GCM properly on one file — real authenticated encryption, done right. The reason we got inside it is that they left the key and IV in a companion config. Rookie move. Recover the plaintext and follow what it tells you.'\n\nAmaka: 'I am not going to tell you which file holds what, or how to chain the tools. You have a shell. You have Cipher Tools in another tab. Use your head. When you find what the plaintext points to, open it and read.'",
+  "description": "Tunde: 'The Griot used AES-GCM properly on one file — real authenticated encryption, done right. The reason we got inside it is that they left the key and IV in a companion config. Rookie move. Recover the plaintext and follow what it tells you.'\n\nAmaka: 'I am not going to tell you which file holds what, or how to chain the tools. You have a shell. You have Cipher Tools in another tab. Use your head. When you find what the plaintext points to, open it and read.'\n\nIn the board brief, you will be asked to name this operational pattern (algorithm right, key handling wrong — \"the algorithm is not the asset; the key is\"). Take notes on which file leaked which key material.\n\nReference: NIST SP 800-38D (AES-GCM); NIST SP 800-57 Part 1r5 (Key Management — separation of secrets from artefacts); CWE-321 (Use of Hard-coded Cryptographic Key).",
   "maxPoints": 15,
   "kind": "FLAG",
   "widget": "WEB_TERMINAL",

@@ -1,7 +1,7 @@
 {
   "order": 1,
   "title": "First Contact",
-  "description": "Amaka opens a folder on the desk. 'The night of the breach, The Griot spent twelve minutes casing the perimeter before touching anything. Tunde's team pulled the raw reconnaissance artefacts from the network capture. They are in /recon/. Not all of them are complete — the attacker used staged scans. Read what is there, follow what it points to, and tell me how they got their first live data from this host.'\n\nYou have a shell. The answer is not in the first file you open.",
+  "description": "Amaka opens a folder on the desk. 'The night of the breach, The Griot spent twelve minutes casing the perimeter before touching anything. Tunde's team pulled the raw reconnaissance artefacts from the network capture. They are in /recon/. Not all of them are complete — the attacker used staged scans. Read what is there, follow what it points to, and tell me how they got their first live data from this host.'\n\nYou have a shell. The answer is not in the first file you open.\n\nIn the Stage 2 pentest finding (task 9) you will need to name which exposed service handed The Griot its first live data, and why. Take notes on what each scan revealed and which one was truncated.\n\nReference: MITRE ATT&CK T1595 Active Scanning; T1046 Network Service Discovery; OWASP Top 10 2021 A05 Security Misconfiguration.",
   "maxPoints": 12,
   "kind": "FLAG",
   "widget": "WEB_TERMINAL",

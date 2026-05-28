@@ -1,17 +1,17 @@
 {
   "order": 8,
-  "title": "Hash-ID it",
-  "description": "Amaka pins four hash samples from the incident bucket onto the whiteboard and waves you over. Before anyone cracks anything, she wants to know you can read a hash on sight — length, charset, and prefix are usually enough.\n\n  #1  5d41402abc4b2a76b9719d911017c592\n  #2  aaf4c61ddcc5e8a2dabede0f3b482cd9ea86f1a1\n  #3  $2b$12$R9h/cIPz0gi.URNNX3kh2OPST9/PgBkqquzi.Ss7KIUgO2t0jWMUW\n  #4  2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae\n\nAmaka taps the board next to sample #3: \"Which format is hash #3?\" Pick the algorithm from the options below.",
-  "maxPoints": 6,
-  "kind": "MULTIPLE_CHOICE",
-  "widget": "MCQ_QUIZ",
+  "title": "Read the hash on sight",
+  "description": "Amaka pins four hash samples from the incident bucket onto the whiteboard and waves you over. Before anyone cracks anything, she wants to know you can read a hash on sight — length, charset, and prefix are usually enough.\n\n  #1  `5d41402abc4b2a76b9719d911017c592`\n  #2  `aaf4c61ddcc5e8a2dabede0f3b482cd9ea86f1a1`\n  #3  `$2b$12$R9h/cIPz0gi.URNNX3kh2OPST9/PgBkqquzi.Ss7KIUgO2t0jWMUW`\n  #4  `2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae`\n\nWrite an analyst note (180+ words) that:\n\n1. Names the algorithm family for each of the four hashes.\n2. For each, explain *what gave it away* — length in characters, charset (hex vs base64-alphabet), and any leading marker like `$2b$` or `$argon2id$`. Specific numbers, not vibes.\n3. Ranks them by rotation urgency if these were live credentials, and justifies your top pick in one sentence (the slowest, most modern hash is *not* the most urgent — think about which one cracks fastest with a public rainbow table).\n4. Cites one external source you used to verify a marker. NIST FIPS 180-4 for SHA, the bcrypt paper / OpenWall docs, or the OWASP Password Storage Cheat Sheet all count. Name the document — \"wikipedia\" or \"stack overflow\" does not.\n\n*One mistake I almost made:* include a 30+ word section naming a specific moment you nearly got the algorithm wrong, and what corrected you. Vague \"I wasn't sure at first\" answers score zero on this section.\n\nSubmission: in-platform — Amaka grades these in the queue.\n\n---\n\n**Universal grading rule.** Generic answers fail. Every claim in your submission must be tied to specific evidence — an artefact from the lab (file path, log line, command output, payload, screenshot) **and** at least one external citation where research is relevant (NIST section number, MITRE technique ID, CVE, vendor advisory, ISO control ID, NDPA section). Claims without an attached artefact, timestamp, payload, standard section, or business constraint earn zero for that claim. Lab-only answers earn partial credit. External-only answers earn partial credit. Full credit requires both.",
+  "maxPoints": 12,
+  "kind": "WRITEUP",
+  "widget": "WRITEUP_PAD",
   "widgetConfig": {
-    "prompt": "Which format is hash #3?",
-    "choices": ["MD5", "SHA-1", "SHA-256", "bcrypt"],
-    "shuffle": false
+    "minWords": 180,
+    "maxChars": 20000,
+    "placeholder": "1. #1 is ... — telltale: length N characters, hex charset, no marker prefix.\n2. ...\n\n3. Rotation urgency (most urgent first): ...\n\n4. References: ...\n\n5. One mistake I almost made: ..."
   },
   "flagSalt": null,
-  "choices": ["MD5", "SHA-1", "SHA-256", "bcrypt"],
-  "correctIndex": 3,
-  "minWords": null
+  "choices": null,
+  "correctIndex": null,
+  "minWords": 180
 }

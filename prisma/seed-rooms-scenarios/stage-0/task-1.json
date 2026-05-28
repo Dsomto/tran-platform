@@ -1,7 +1,7 @@
 {
   "order": 1,
   "title": "Shell warmup",
-  "description": "Amaka: 'First task — settle into the SOC workstation. Open your home directory, find the intro folder, and read the README. The flag is printed at the bottom. Use ls and cat.'",
+  "description": "Amaka, leaning on the partition: \"First task — settle into the SOC workstation. There is a folder called `intro` under your home directory. Open the README inside, find the TRAN flag printed at the bottom, and hand it back.\"\n\nThe shell is real enough — type `help` if you need to see what the box supports. In your Stage 0 handover note (final task) you will document every command you actually ran. Amaka reads it.",
   "maxPoints": 8,
   "kind": "FLAG",
   "widget": "WEB_TERMINAL",
@@ -18,8 +18,7 @@
       }
     },
     "hints": [
-      "try `ls ~/intro/`",
-      "`cat ~/intro/README.md` prints the file"
+      "Standard Unix commands work — `help` lists what this shell supports."
     ]
   },
   "flagSalt": "stage-0-task-1-salt",

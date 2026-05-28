@@ -1,13 +1,13 @@
 {
   "order": 7,
   "title": "Classify the Chain",
-  "description": "Amaka has the full list of vulnerabilities confirmed during the investigation. Before the report goes to legal, the classification needs to be precise. The wrong label on a finding changes the remediation guidance and the risk score.\n\nReview what you observed across this investigation — the login bypass, the search field behaviour, the notes injection, the import feature — and identify the option below that correctly names every class of vulnerability in the order they were exploited.",
+  "description": "Amaka has the full list of vulnerabilities confirmed during the investigation. Before the report goes to legal, the classification needs to be precise. The wrong label on a finding changes the remediation guidance and the risk score.\n\nReview what you observed across this investigation — the login bypass, the search field behaviour, the notes injection, the import feature — and identify the option below that correctly names every class of vulnerability in the order they were exploited.\n\nReference: OWASP Top 10 2021 A03 Injection (CWE-89, CWE-79), A01 Broken Access Control, A10 Server-Side Request Forgery (CWE-918).",
   "maxPoints": 10,
   "kind": "MULTIPLE_CHOICE",
   "widget": "MCQ_QUIZ",
   "widgetConfig": {
     "choices": [
-      "SQL injection (login form) → reflected cross-site scripting (search field) → stored cross-site scripting (notes feature) → server-side request forgery (import feature)",
+      "SQL injection (login form, CWE-89) → reflected cross-site scripting (search field, CWE-79) → stored cross-site scripting (notes feature, CWE-79 stored variant) → server-side request forgery (import feature, CWE-918)",
       "CSRF (login form) → DOM-based XSS (search field) → stored XSS (notes feature) → open redirect (import feature)",
       "XML injection (login form) → reflected XSS (search field) → second-order XSS (notes feature) → blind SSRF (import feature)",
       "Command injection (login form) → reflected XSS (import field) → stored XSS (search field) → SSRF (notes feature)"
@@ -15,7 +15,7 @@
   },
   "flagSalt": null,
   "choices": [
-    "SQL injection (login form) → reflected cross-site scripting (search field) → stored cross-site scripting (notes feature) → server-side request forgery (import feature)",
+    "SQL injection (login form, CWE-89) → reflected cross-site scripting (search field, CWE-79) → stored cross-site scripting (notes feature, CWE-79 stored variant) → server-side request forgery (import feature, CWE-918)",
     "CSRF (login form) → DOM-based XSS (search field) → stored XSS (notes feature) → open redirect (import feature)",
     "XML injection (login form) → reflected XSS (search field) → second-order XSS (notes feature) → blind SSRF (import feature)",
     "Command injection (login form) → reflected XSS (import field) → stored XSS (search field) → SSRF (notes feature)"

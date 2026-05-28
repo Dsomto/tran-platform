@@ -1,7 +1,7 @@
 {
   "order": 2,
   "title": "The Directory That Answered",
-  "description": "Tunde drops three log files on the desk. 'The Griot did not guess the admin path. They ran a scan and the server answered. Everything you need to understand about what was exposed is in these logs. The interesting line is not where you expect it — read all three tabs.'\n\nAmaka: 'The HTTP access log runs over five hundred lines. Most of it is noise from legitimate users. Pay attention to the source address, the timestamps, and what the server returned.'",
+  "description": "Tunde drops three log files on the desk. 'The Griot did not guess the admin path. They ran a scan and the server answered. Everything you need to understand about what was exposed is in these logs. The interesting line is not where you expect it — read all three tabs.'\n\nAmaka: 'The HTTP access log runs over five hundred lines. Most of it is noise from legitimate users. Pay attention to the source address, the timestamps, and what the server returned. Two of the high-value finds on the ffuf output are real; one of the inline TRAN tokens on that tab is a decoy planted to mislead a careless analyst. Trust evidence over banners.'\n\nIn the pentest finding (task 9) you will need to name which exposed path actually changed the outcome of the breach, and which one is interesting but not load-bearing.\n\nReference: MITRE ATT&CK T1083 File and Directory Discovery; OWASP Top 10 2021 A05 Security Misconfiguration; CWE-538 (Insertion of Sensitive Information into Externally-Accessible File or Directory).",
   "maxPoints": 15,
   "kind": "FLAG",
   "widget": "LOG_VIEWER",

@@ -1,7 +1,7 @@
 {
   "order": 3,
   "title": "The Query That Should Not Exist",
-  "description": "Tunde: 'The .env they pulled had the database credentials in plaintext. But they were inside the login form before they even used those. We have the MySQL general query log from that night. One query in there should not be possible — it does not match any legitimate application flow. Find it.'\n\nAmaka: 'When you find the anomalous query, read what it returned. The server logged the first matched row. That row contains a field that is not plain text. Decode it — Cipher Tools in another browser tab handles that format — and follow where it points.'",
+  "description": "Tunde: 'The .env they pulled had the database credentials in plaintext. But they were inside the login form before they even used those. We have the MySQL general query log from that night. One query in there should not be possible — it does not match any legitimate application flow. Find it.'\n\nAmaka: 'When you find the anomalous query, read what it returned. The server logged the first matched row. Read it carefully — one field on that row is not plain text. Recover it and follow where it points.'\n\nIn the pentest finding (task 9) you will need to quote the exact anomalous query line and name the vulnerability class precisely (not \"a SQL bug\" — the specific class). Take notes on the timestamp and the malformed clause.\n\nReference: OWASP Top 10 2021 A03 Injection; CWE-89 (SQL Injection); MITRE ATT&CK T1190 Exploit Public-Facing Application.",
   "maxPoints": 15,
   "kind": "FLAG",
   "widget": "WEB_TERMINAL",

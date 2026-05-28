@@ -1,7 +1,7 @@
 {
   "order": 4,
   "title": "Authenticated or Not",
-  "description": "Amaka sets a scenario: 'Your bank is transmitting customer balance updates between two services over an encrypted channel. The team argues over which AES mode to use.'\n\nOne engineer proposes AES-CBC. A second proposes AES-GCM. A third says it doesn't matter as long as the key is strong. The fourth says to use ECB because it's simpler.\n\nWhich answer should the team take, and why? Read the options carefully — the distractors reflect real arguments you will hear in real rooms.",
+  "description": "Amaka sets a scenario: 'Your bank is transmitting customer balance updates between two services over an encrypted channel. The team argues over which AES mode to use.'\n\nOne engineer proposes AES-CBC. A second proposes AES-GCM. A third says it doesn't matter as long as the key is strong. The fourth says to use ECB because it's simpler.\n\nWhich answer should the team take, and why? Read the options carefully — the distractors reflect real arguments you will hear in real rooms.\n\nReference: NIST SP 800-38D (Galois/Counter Mode); NIST SP 800-38A (Block Cipher Modes); OWASP Cryptographic Storage Cheat Sheet.",
   "maxPoints": 10,
   "kind": "MULTIPLE_CHOICE",
   "widget": "MCQ_QUIZ",

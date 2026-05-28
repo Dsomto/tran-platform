@@ -1,7 +1,7 @@
 {
   "order": 3,
   "title": "Hash this",
-  "description": "Tunde Bakare dropped a scrap of evidence in /home/intern/evidence/q2_snapshot.txt — pulled straight from a compromised workstation. Open it up and hand the TRAN flag back to Amaka. Quick shell refresher: sha256sum <path> prints the SHA-256 hex digest of the file at <path> followed by the filename (useful for verifying an artefact hasn't been tampered with). For this drop, the flag is embedded directly inside the file, so cat the file to read it out.",
+  "description": "Tunde Bakare dropped a scrap of evidence in `/home/intern/evidence/q2_snapshot.txt` — pulled straight from a compromised workstation. Open it up and hand the TRAN flag back to Amaka.\n\nQuick shell refresher worth knowing: `sha256sum <path>` prints the SHA-256 hex digest of a file followed by the filename — useful for verifying an artefact hasn't been tampered with. You won't need it to solve this one, but it is the kind of integrity check you will reach for when the next intern asks you to prove the snapshot is unchanged from when Tunde pulled it.\n\nReference: NIST SP 800-92 §4.5 (log file integrity).",
   "maxPoints": 10,
   "kind": "FLAG",
   "widget": "WEB_TERMINAL",
@@ -17,12 +17,10 @@
         "kind": "flag",
         "salt": "stage-0-task-3-salt"
       },
-      "/home/intern/README.md": "Tunde left evidence under ~/evidence. cat the file to read it; sha256sum <path> prints the SHA-256 digest of any file if you want to verify integrity."
+      "/home/intern/README.md": "Tunde left evidence under ~/evidence. sha256sum <path> prints the SHA-256 digest of any file if you want to verify integrity."
     },
     "hints": [
-      "Try `ls ~/evidence/`",
-      "cat /home/intern/evidence/q2_snapshot.txt",
-      "sha256sum <path> gives you the SHA-256 of a file — handy for integrity checks"
+      "sha256sum <path> gives you the SHA-256 of a file — handy for integrity checks (NIST SP 800-92 §4.5)."
     ]
   },
   "flagSalt": "stage-0-task-3-salt",

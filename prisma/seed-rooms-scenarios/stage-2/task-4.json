@@ -1,7 +1,7 @@
 {
   "order": 4,
   "title": "What the Search Field Returned",
-  "description": "Tunde: 'Once inside the dashboard, The Griot tested every input field. The customer search returned something it should not have. The network capture shows they sent one request to that field and the response was different from any legitimate search result — the browser would have executed content that came back from the server.'\n\nAmaka: 'We have reconstructed the search endpoint in the lab. The server-side behaviour is identical to what was running on the night of the breach. Figure out what The Griot sent, and confirm the injection point exists.'",
+  "description": "Tunde: 'Once inside the dashboard, The Griot tested every input field. The customer search returned something it should not have. The network capture shows they sent one request to that field and the server rendered the value straight back into the response body without escaping.'\n\nAmaka: 'We have reconstructed the search endpoint in the lab. The server-side behaviour is identical to what was running on the night of the breach. Figure out what payload triggers the mishandling, confirm the injection point exists, and capture the flag the server emits when it does.'\n\nIn the pentest finding (task 9) you will need to name the precise vulnerability class — there are at least three related classes in the same family; only one matches what you confirm here. Take notes on the exact payload you sent and the response that came back.\n\nReference: OWASP Top 10 2021 A03 Injection; OWASP XSS Prevention Cheat Sheet; CWE-79 (Improper Neutralization of Input During Web Page Generation).",
   "maxPoints": 15,
   "kind": "FLAG",
   "widget": "VULN_APP_SIM",

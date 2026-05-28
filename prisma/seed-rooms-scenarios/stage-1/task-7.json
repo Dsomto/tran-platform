@@ -1,25 +1,13 @@
 {
   "order": 7,
   "title": "The Accepted Token",
-  "description": "Amaka hands you a captured JWT that The Griot used successfully against Sankofa's legacy admin API. The audit team wants to know what the root cause was.\n\n  eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJzdWIiOiJhZG1pbiIsInJvbGUiOiJzdXBlcl9hZG1pbiIsImlhdCI6MTcwMDAwMDAwMH0.\n\nDecode it yourself first if you need to — the tools are on your machine. Then pick the root cause. Be careful: three of the options describe real JWT weaknesses, but only one describes this specific token.",
-  "maxPoints": 12,
-  "kind": "MULTIPLE_CHOICE",
-  "widget": "MCQ_QUIZ",
-  "widgetConfig": {
-    "choices": [
-      "The header specifies alg=none, which some JWT libraries accept as a valid signature algorithm meaning no signature is verified at all — the server trusted the unsigned claims.",
-      "The signature is missing entirely, which any compliant JWT verifier would reject, so the root cause must be a logic bug elsewhere in the server.",
-      "The token uses HS256 with a weak shared secret that the attacker guessed, which is why the signature on the third segment verifies.",
-      "The token claims role=super_admin — the server should never have accepted that claim for a user whose account is only admin."
-    ]
-  },
+  "description": "Amaka hands you a captured JWT that The Griot used successfully against Sankofa's legacy admin API. The audit team wants to know what the root cause was, and they want it in writing.\n\n`eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJzdWIiOiJhZG1pbiIsInJvbGUiOiJzdXBlcl9hZG1pbiIsImlhdCI6MTcwMDAwMDAwMH0.`\n\nWrite an analyst note (220+ words) that:\n\n1. **Decodes all three segments.** Open Cipher Tools' Base64 tab and decode the header (1st segment) and the claims (2nd segment) yourself. Paste the decoded JSON for each into your writeup with a one-line explanation per field. Note the third segment is empty — explain why in one sentence (what is JWS supposed to put there; what does `alg:none` say about whether it is required).\n\n2. **Names the root cause precisely.** It is not \"weak crypto.\" It is not \"missing signature.\" Name the JWT library behavior that lets `alg: none` through, and explain in one paragraph why several real libraries used to accept it as a valid signature algorithm — the historical context of CVE-2015-9235 against `jsonwebtoken` and the original disclosure by Tim McLean.\n\n3. **Names what the application server got wrong.** The library's behavior is half the story — the server's verification logic also failed in a specific way. Explain that failure in one paragraph (the server called the library with no explicit algorithm allow-list, so the library's default-permissive behavior controlled the outcome).\n\n4. **Proposes the fix.** Two parts:\n   - Library config change — explicit allow-list of algorithms (`HS256`, `RS256`, never `none`).\n   - Architectural change — do not trust claims you have not verified. Name the specific claims in this token you would never blindly trust even with a valid signature (the `role` claim is the obvious one; explain why role decisions belong server-side against your own user store, not from the token).\n\n5. **Cites RFC 7519** by section number — the JOSE Working Group spec includes §6.1 \"Plaintext JWS\" — and at least one CVE or vendor advisory (CVE-2015-9235, CVE-2016-10555, or the Auth0 / Okta postmortems on alg confusion).\n\n6. **One mistake I almost made:** 30+ word section — the easy wrong answer here is \"`role: super_admin` should not be trusted\" as the root cause. That is *a* problem but not *the* root cause (the server would accept that claim even with a valid signature — separate failure). Explain why you nearly stopped there.\n\nSubmission: in-platform.\n\n**Compare-two-causes rule.** Name a second candidate root cause (the most defensible alternative — usually `role:super_admin` should not have been trusted), explain in 30+ words why the evidence supports your pick over that second candidate, and what would have to change for the second candidate to BECOME the cause (e.g. if the signature were valid, the role-claim trust would be the cause). Don't just dismiss the second candidate — work the comparison.\n\n---\n\n**Universal grading rule.** Generic answers fail. Every claim in your submission must be tied to specific evidence — an artefact from the lab (file path, log line, command output, payload, screenshot) **and** at least one external citation where research is relevant (NIST section number, MITRE technique ID, CVE, vendor advisory, ISO control ID, NDPA section). Claims without an attached artefact, timestamp, payload, standard section, or business constraint earn zero for that claim. Lab-only answers earn partial credit. External-only answers earn partial credit. Full credit requires both.",
+  "maxPoints": 18,
+  "kind": "WRITEUP",
+  "widget": "CIPHER_TOOLS",
+  "widgetConfig": {},
   "flagSalt": null,
-  "choices": [
-    "The header specifies alg=none, which some JWT libraries accept as a valid signature algorithm meaning no signature is verified at all — the server trusted the unsigned claims.",
-    "The signature is missing entirely, which any compliant JWT verifier would reject, so the root cause must be a logic bug elsewhere in the server.",
-    "The token uses HS256 with a weak shared secret that the attacker guessed, which is why the signature on the third segment verifies.",
-    "The token claims role=super_admin — the server should never have accepted that claim for a user whose account is only admin."
-  ],
-  "correctIndex": 0,
-  "minWords": null
+  "choices": null,
+  "correctIndex": null,
+  "minWords": 220
 }

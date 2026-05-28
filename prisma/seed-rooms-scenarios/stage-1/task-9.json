@@ -1,7 +1,7 @@
 {
   "order": 9,
   "title": "Integrity Without a Key",
-  "description": "A developer on Amaka's team proposes a design: every file uploaded to Sankofa's portal is stored alongside its SHA-256 hash, so the portal can detect if the stored copy is ever tampered with.\n\nAmaka: 'Stop. Tell me what is wrong with that design. It sounds right and it is not. Pick the option that names the gap.'",
+  "description": "A developer on Amaka's team proposes a design: every file uploaded to Sankofa's portal is stored alongside its SHA-256 hash, so the portal can detect if the stored copy is ever tampered with.\n\nAmaka: 'Stop. Tell me what is wrong with that design. It sounds right and it is not. Pick the option that names the gap.'\n\nReference: NIST FIPS 198-1 (HMAC); RFC 2104 (HMAC); OWASP Cryptographic Storage Cheat Sheet — Integrity section; CWE-353 (Missing Support for Integrity Check).",
   "maxPoints": 10,
   "kind": "MULTIPLE_CHOICE",
   "widget": "MCQ_QUIZ",

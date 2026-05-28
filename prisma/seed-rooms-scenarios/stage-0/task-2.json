@@ -1,7 +1,7 @@
 {
   "order": 2,
   "title": "Find the hidden file",
-  "description": "Amaka leans over your shoulder: real attackers never leave artefacts with obvious names. They prefix them with a dot so a casual `ls` skips right past. Navigate into /home/intern/evidence/archive/ and locate the .leak_manifest file The Griot stashed there. Its contents are the flag. Remember: plain `ls` won't show it.",
+  "description": "Amaka leans over your shoulder: real attackers never leave artefacts with obvious names. They make them blend in. Navigate into `/home/intern/evidence/archive/` and locate the manifest The Griot stashed there. Its contents are the flag.\n\nLook at the directory the way an investigator would — if your listing looks suspiciously clean, the listing flag is the problem, not the directory.",
   "maxPoints": 8,
   "kind": "FLAG",
   "widget": "WEB_TERMINAL",
@@ -14,9 +14,8 @@
       "Type `help` for supported commands."
     ],
     "hints": [
-      "Dotfiles are hidden from plain `ls` — try `ls -a`.",
-      "cd into /home/intern/evidence/archive and look again.",
-      "Once you see it, `cat` the file to read the flag."
+      "What does an attacker do to a filename so a casual listing skips past it?",
+      "Most shells suppress a class of names by default. Find the flag that changes that."
     ],
     "files": {
       "/home/intern/README.md": "Welcome, intern. Your evidence drops land under ~/evidence/.\nAmaka's rule: assume adversaries hide things in plain sight.",

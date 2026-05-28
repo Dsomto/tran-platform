@@ -1,7 +1,7 @@
 {
   "order": 8,
   "title": "The Right Remedy",
-  "description": "The engineering team submitted four proposed fixes for the SQL injection vulnerability in the login form. Amaka returns three of them with a red mark. One — and only one — actually resolves the root cause.\n\nThe vulnerability: the application builds its SQL query by concatenating user-supplied strings directly into the query text. The fix must address why the injection was possible in the first place, not just what characters the attacker used.",
+  "description": "The engineering team submitted four proposed fixes for the SQL injection vulnerability in the login form. Amaka returns three of them with a red mark. One — and only one — actually resolves the root cause.\n\nThe vulnerability: the application builds its SQL query by concatenating user-supplied strings directly into the query text. The fix must address why the injection was possible in the first place, not just what characters the attacker used.\n\nReference: OWASP Cheat Sheet — SQL Injection Prevention; CWE-89; NIST SP 800-53r5 SI-10 (Information Input Validation).",
   "maxPoints": 10,
   "kind": "MULTIPLE_CHOICE",
   "widget": "MCQ_QUIZ",

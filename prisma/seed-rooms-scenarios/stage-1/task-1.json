@@ -1,7 +1,7 @@
 {
   "order": 1,
   "title": "The Staging Drop",
-  "description": "Amaka drops a zip of files onto your workstation. 'Tunde grabbed these from The Griot's staging server before it went dark. Start poking around. Find what should not be there. The flag will make itself obvious when you read the right file.'\n\nShe leaves without telling you which file matters, what format the flag takes, or which commands to run. You have a shell. That is it.\n\nThe flag format for the whole programme is TRAN{...}. When you find yours, paste it in the answer box.",
+  "description": "Amaka drops a zip of files onto your workstation. 'Tunde grabbed these from The Griot's staging server before it went dark. Start poking around. Find what should not be there. The flag will make itself obvious when you read the right file.'\n\nShe leaves without telling you which file matters, what format the flag takes, or which commands to run. You have a shell. That is it.\n\nThe flag format for the whole programme is TRAN{...}. When you find yours, paste it in the answer box.\n\nIn your Stage 1 board brief (final task) you will name what made each artefact in this drop a red flag — the `.creds.bak` file, the base64-encoded `API_KEY` in `config.env`, the rate-limit gap visible in the intercept log. Take notes as you read; you will not get a second pass at this shell.\n\nReference: OWASP Top 10 2021 — A04 Insecure Design; CIS Critical Security Controls v8 §3 (Data Protection); CWE-540 (Inclusion of Sensitive Information in Source Code).",
   "maxPoints": 10,
   "kind": "FLAG",
   "widget": "WEB_TERMINAL",

@@ -1,16 +1,22 @@
 {
   "order": 1,
-  "title": "The Risk Register",
-  "description": "The board wants a risk register on the screen at 09:05, right after the chair's opening remarks. You have five slots. Each slot is one risk and must contain:\n\n  •  A risk statement — one sentence. What could fail, under what condition, with what consequence.\n  •  A likelihood score (1–5, with justification).\n  •  A business impact score (1–5, anchored in ₦, customer count, or regulatory exposure).\n  •  The single control that, if implemented, would most reduce this risk — named concretely (a product, a policy, a process — not a platitude).\n  •  The accountable owner by role — not by name.\n\nScoring: vague controls lose 4 pts each ('improve monitoring' is vague — 'deploy Wazuh agents on 100% of in-scope endpoints with 30-day retention' is concrete). Risks not traceable to evidence from Stages 1-3 lose 8 pts each. Use of the words 'robust', 'holistic', or 'synergies' is an automatic zero.\n\nStructure your answer as five numbered blocks. Use numerals for scores. Be brief — each risk fits inside 90 words.",
+  "title": "The Risk Register (Google Doc)",
+  "description": "The board wants a risk register on the screen at 09:05, right after the chair's opening remarks. You have **five slots**. Each slot is one risk and must contain:\n\n  •  A risk statement — one sentence. What could fail, under what condition, with what consequence.\n  •  A likelihood score (1–5) with a one-line justification anchored in evidence from Stages 1–3.\n  •  A business impact score (1–5) anchored in ₦, customer count, or regulatory exposure.\n  •  The single control that, if implemented, would most reduce this risk — named concretely (a product, a policy, a process — not a platitude).\n  •  The accountable owner by role — not by name.\n\n**Submission via Google Doc link.** A risk register is a table; it does not survive plain text. Create a Google Doc, set sharing to **'Anyone with the link → Viewer'** (we will not chase access requests), paste the URL below with a 50+ word abstract.\n\n**Required table columns:** `# | Risk statement | Likelihood (1-5 + justification) | Impact (1-5 + justification) | Control (concrete) | Owner role | Evidence cite (Stage X task Y)`\n\n**Scoring:**\n- Vague controls lose 4 pts each. 'Improve monitoring' is vague — 'Deploy Wazuh agents on 100% of in-scope endpoints with 30-day retention, alert on T1546.004 indicators' is concrete.\n- Risks not traceable to evidence from Stages 1–3 lose 8 pts each.\n- Use of the words 'robust', 'holistic', or 'synergies' is an automatic zero — the board has banned them.\n- Each risk row must fit inside 90 words (excluding the cite column).\n\n**Citation bar:**\n- One NIST SP 800-30r1 (Guide for Conducting Risk Assessments) reference for the likelihood/impact framing.\n- One ISO 27001:2022 Annex A control identifier per control column (e.g. `A.8.16 Monitoring activities`, `A.5.15 Access control`, `A.5.7 Threat intelligence`). Made-up Annex A IDs lose 4 pts each — the 2022 revision has exactly 93 controls; verify yours.\n- One NIST CSF 2.0 function/category for at least 3 of the 5 risks (`GV.OC-04`, `ID.RA-05`, `PR.AA-01`, `DE.CM-01`, `RS.MA-01`, `RC.RP-01`). Visit https://www.nist.gov/cyberframework to verify the 2.0 taxonomy (`GV` was added in Feb 2024 — do not use 1.1).\n\n**One mistake I almost made (in the Doc, 50+ words):** name a specific risk you nearly scored too low because you only thought about likelihood and forgot regulatory impact, or scored too high because you double-counted the same evidence across two risks.\n\n**Minimum 350 words in the Doc** (table + commentary + appendix). Paste link + 50+ word abstract below.\n\n---\n\n**Universal grading rule.** Generic answers fail. Every claim in your submission must be tied to specific evidence — an artefact from the lab (file path, log line, command output, payload, screenshot) **and** at least one external citation where research is relevant (NIST section number, MITRE technique ID, CVE, vendor advisory, ISO control ID, NDPA section). Claims without an attached artefact, timestamp, payload, standard section, or business constraint earn zero for that claim. Lab-only answers earn partial credit. External-only answers earn partial credit. Full credit requires both.",
   "maxPoints": 50,
   "kind": "WRITEUP",
   "widget": "WRITEUP_PAD",
   "widgetConfig": {
-    "placeholder": "1. Risk: ...\n   Likelihood: 4/5 — ...\n   Impact:     5/5 — ...\n   Control:    ...\n   Owner:      Head of Security Engineering\n\n2. ...",
-    "minWords": 300
+    "minWords": 50,
+    "maxChars": 5000,
+    "placeholder": "https://docs.google.com/document/d/...\n\nAbstract (50+ words):\nRegistered 5 risks against the Sankofa breach. Top risk: [risk] (L:5 × I:5 = 25). Lowest scored: [risk] (L:2 × I:3 = 6). Each control names an ISO 27001:2022 Annex A control ID and a NIST CSF 2.0 category. Highest-cost control to implement: [control + ₦ rough order of magnitude].",
+    "requiresUrl": true,
+    "allowedUrlHosts": [
+      "docs.google.com",
+      "drive.google.com"
+    ]
   },
   "flagSalt": null,
   "choices": null,
   "correctIndex": null,
-  "minWords": 300
+  "minWords": 50
 }
