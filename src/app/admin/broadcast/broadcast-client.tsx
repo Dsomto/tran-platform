@@ -1,10 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { Send, Loader2, Search, Users, Mail, Eye, EyeOff } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Send, Loader2, Search, Users, Mail, Eye, EyeOff, Sparkles, FileText } from "lucide-react";
 import { renderBroadcastEmail, personalizeText, firstNameOf } from "@/lib/broadcast-email";
 import { canSendEmails } from "@/lib/email-permissions";
 import { promptTotpCode } from "@/lib/totp-prompt";
+import { NEWSLETTER_TEMPLATES, renderTemplate, getTemplate } from "@/lib/newsletter-templates";
 
 interface Recipient {
   id: string;
@@ -40,6 +41,13 @@ export function BroadcastClient() {
   const [showPreview, setShowPreview] = useState(false);
   const [sending, setSending] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+
+  // Template mode — when set, the composer uses one of the designed
+  // newsletter templates from src/lib/newsletter-templates.ts instead of the
+  // plain-text composer below.
+  const [templateId, setTemplateId] = useState<string>("");
+  const [templateVars, setTemplateVars] = useState<Record<string, string>>({});
+  const activeTemplate = useMemo(() => (templateId ? getTemplate(templateId) ?? null : null), [templateId]);
   // Sending is locked to one account (see canSendEmails) regardless of role —
   // the co-super-admin can compose/preview but cannot send.
   const [allowedToSend, setAllowedToSend] = useState(false);
@@ -99,13 +107,42 @@ export function BroadcastClient() {
 
   const recipientCount = sendMode === "all" ? total : selected.size;
 
+  // When a template is picked, prefill the subject with its default and clear
+  // any required variable fields the admin must complete.
+  function pickTemplate(id: string) {
+    if (!id) {
+      setTemplateId("");
+      setTemplateVars({});
+      return;
+    }
+    const tpl = getTemplate(id);
+    if (!tpl) return;
+    setTemplateId(id);
+    setSubject(tpl.defaultSubject);
+    setMessage(""); // template mode ignores the message textarea
+    const seed: Record<string, string> = {};
+    for (const v of tpl.variables) seed[v.name] = "";
+    setTemplateVars(seed);
+    setShowPreview(false);
+  }
+
+  const missingTemplateVars = activeTemplate
+    ? activeTemplate.variables.filter((v) => v.required && !(templateVars[v.name]?.trim() ?? ""))
+    : [];
+
   async function send() {
-    if (recipientCount === 0 || !subject.trim() || !message.trim()) return;
+    if (recipientCount === 0 || !subject.trim()) return;
+    if (!activeTemplate && !message.trim()) return;
+    if (activeTemplate && missingTemplateVars.length > 0) {
+      setToast(`Fill the required template fields: ${missingTemplateVars.map((v) => v.label).join(", ")}.`);
+      return;
+    }
     const who =
       sendMode === "all"
         ? `all ${total} applicant${total === 1 ? "" : "s"} matching the current filters`
         : `the ${selected.size} hand-picked recipient${selected.size === 1 ? "" : "s"}`;
-    if (!confirm(`Send this newsletter to ${who}? It queues for delivery and sends in the background.`)) {
+    const what = activeTemplate ? `the "${activeTemplate.name}" template` : "this newsletter";
+    if (!confirm(`Send ${what} to ${who}? It queues for delivery and sends in the background.`)) {
       return;
     }
     const totpCode = promptTotpCode();
@@ -113,10 +150,13 @@ export function BroadcastClient() {
     setSending(true);
     setToast(null);
     try {
+      const baseFields = activeTemplate
+        ? { subject, templateId: activeTemplate.id, variables: templateVars }
+        : { subject, message };
       const payload =
         sendMode === "all"
-          ? { subject, message, totpCode, sendToAll: true, filters: { status, track, country, stage } }
-          : { subject, message, totpCode, applicationIds: Array.from(selected) };
+          ? { ...baseFields, totpCode, sendToAll: true, filters: { status, track, country, stage } }
+          : { ...baseFields, totpCode, applicationIds: Array.from(selected) };
       const res = await fetch("/api/admin/broadcast", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -132,6 +172,8 @@ export function BroadcastClient() {
         );
         setSubject("");
         setMessage("");
+        setTemplateId("");
+        setTemplateVars({});
         setShowPreview(false);
       }
     } catch {
@@ -142,7 +184,10 @@ export function BroadcastClient() {
   }
 
   const allChecked = recipients.length > 0 && selected.size === recipients.length;
-  const canSend = recipientCount > 0 && subject.trim() !== "" && message.trim() !== "";
+  const canSend =
+    recipientCount > 0 &&
+    subject.trim() !== "" &&
+    (activeTemplate ? missingTemplateVars.length === 0 : message.trim() !== "");
 
   return (
     <div className="p-6 md:p-10 max-w-5xl mx-auto w-full">
@@ -305,32 +350,136 @@ export function BroadcastClient() {
         )}
       </section>
 
+      {/* ───────── Templates ───────── */}
+      <section className="mb-4 bg-white border border-border rounded-xl p-4">
+        <div className="flex items-center gap-2 mb-1">
+          <Sparkles className="h-4 w-4 text-blue" />
+          <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+            Start from a designed template
+          </h2>
+        </div>
+        <p className="text-xs text-muted-foreground mb-3">
+          Pre-built HTML emails with the UBI design, accessible colours, subtle animations, and the sponsor block. Pick one to skip the plain-text composer.
+        </p>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {NEWSLETTER_TEMPLATES.map((tpl) => {
+            const isActive = templateId === tpl.id;
+            return (
+              <button
+                key={tpl.id}
+                onClick={() => pickTemplate(isActive ? "" : tpl.id)}
+                className={`text-left p-4 rounded-xl border-2 transition ${
+                  isActive
+                    ? "border-blue bg-blue/5 ring-2 ring-blue/20"
+                    : "border-border bg-white hover:border-blue/40 hover:bg-blue/[0.02]"
+                }`}
+              >
+                <div className="flex items-start justify-between gap-2 mb-1.5">
+                  <span className="text-sm font-bold text-foreground">{tpl.name}</span>
+                  {isActive && (
+                    <span className="text-[10px] font-bold text-blue bg-blue/10 px-2 py-0.5 rounded-full uppercase tracking-wide">
+                      Active
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground leading-relaxed">{tpl.description}</p>
+                <div className="mt-2 text-[11px] text-muted-foreground/70">
+                  {tpl.variables.length === 0
+                    ? "✓ No fields to fill — pre-loaded"
+                    : `${tpl.variables.length} field${tpl.variables.length === 1 ? "" : "s"} to fill`}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+        {activeTemplate && (
+          <button
+            onClick={() => pickTemplate("")}
+            className="mt-3 text-xs text-muted-foreground hover:text-foreground underline underline-offset-2"
+          >
+            ← back to plain-text composer
+          </button>
+        )}
+      </section>
+
       {/* Composer */}
       <section className="bg-white border border-border rounded-xl p-4">
-        <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-          Compose
-        </h2>
+        <div className="flex items-center gap-2 mb-3">
+          {activeTemplate ? (
+            <Sparkles className="h-4 w-4 text-blue" />
+          ) : (
+            <FileText className="h-4 w-4 text-muted-foreground" />
+          )}
+          <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+            {activeTemplate ? `Compose · ${activeTemplate.name}` : "Compose · plain text"}
+          </h2>
+        </div>
+
         <label className="block text-xs text-muted-foreground mb-1">Subject</label>
         <input
           value={subject}
           onChange={(e) => setSubject(e.target.value)}
-          placeholder="Newsletter subject"
+          placeholder={activeTemplate?.defaultSubject ?? "Newsletter subject"}
           className="w-full p-2 border border-border rounded-lg text-sm mb-3"
         />
-        <label className="block text-xs text-muted-foreground mb-1">Message</label>
-        <textarea
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          rows={8}
-          placeholder="Write your message. Plain text — line breaks are kept."
-          className="w-full p-2 border border-border rounded-lg text-sm mb-1.5 resize-y"
-        />
-        <p className="text-xs text-muted-foreground mb-3">
-          Tip: type <span className="font-mono text-blue">{"{First name}"}</span>{" "}
-          to drop in each recipient&apos;s real name. Turn words into a link with{" "}
-          <span className="font-mono text-blue">{"[your words](https://link)"}</span>{" "}
-          — plain URLs become clickable on their own.
-        </p>
+
+        {activeTemplate ? (
+          <>
+            {activeTemplate.variables.length > 0 ? (
+              <div className="mb-3 space-y-3">
+                {activeTemplate.variables.map((v) => (
+                  <div key={v.name}>
+                    <label className="block text-xs text-muted-foreground mb-1">
+                      {v.label}
+                      {v.required && <span className="text-red-500 ml-0.5">*</span>}
+                    </label>
+                    {v.multiline ? (
+                      <textarea
+                        value={templateVars[v.name] ?? ""}
+                        onChange={(e) => setTemplateVars((prev) => ({ ...prev, [v.name]: e.target.value }))}
+                        rows={4}
+                        placeholder={v.placeholder}
+                        className="w-full p-2 border border-border rounded-lg text-sm resize-y"
+                      />
+                    ) : (
+                      <input
+                        value={templateVars[v.name] ?? ""}
+                        onChange={(e) => setTemplateVars((prev) => ({ ...prev, [v.name]: e.target.value }))}
+                        placeholder={v.placeholder}
+                        className="w-full p-2 border border-border rounded-lg text-sm"
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="mb-3 p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-xs text-emerald-800">
+                ✓ This template is pre-filled. No fields to complete — click <strong>Preview email</strong> to see it, then send.
+              </div>
+            )}
+            <p className="text-xs text-muted-foreground mb-3">
+              The body is rendered from the designed template. Each recipient&apos;s
+              real name fills in for <span className="font-mono text-blue">{"{First name}"}</span> in both the subject and the body.
+            </p>
+          </>
+        ) : (
+          <>
+            <label className="block text-xs text-muted-foreground mb-1">Message</label>
+            <textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              rows={8}
+              placeholder="Write your message. Plain text — line breaks are kept."
+              className="w-full p-2 border border-border rounded-lg text-sm mb-1.5 resize-y"
+            />
+            <p className="text-xs text-muted-foreground mb-3">
+              Tip: type <span className="font-mono text-blue">{"{First name}"}</span>{" "}
+              to drop in each recipient&apos;s real name. Turn words into a link with{" "}
+              <span className="font-mono text-blue">{"[your words](https://link)"}</span>{" "}
+              — plain URLs become clickable on their own.
+            </p>
+          </>
+        )}
 
         {/* Recipients mode */}
         <div className="mb-3 rounded-lg border border-border p-3">
@@ -368,7 +517,7 @@ export function BroadcastClient() {
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <button
             onClick={() => setShowPreview((v) => !v)}
-            disabled={!subject.trim() || !message.trim()}
+            disabled={!subject.trim() || (!activeTemplate && !message.trim())}
             className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border border-border hover:bg-muted/50 disabled:opacity-40"
           >
             {showPreview ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -388,24 +537,32 @@ export function BroadcastClient() {
         {/* Preview */}
         {showPreview && (() => {
           const previewName = recipients[0] ? firstNameOf(recipients[0].fullName) : "Ada";
+          const previewBody = activeTemplate
+            ? renderTemplate({ templateId: activeTemplate.id, vars: templateVars, firstName: previewName })?.body ?? ""
+            : renderBroadcastEmail({ message: personalizeText(message, previewName) });
+          const previewSubject = activeTemplate
+            ? personalizeText(subject || activeTemplate.defaultSubject, previewName).replace(/\{\{(\w+)\}\}/g, (_m, k) => templateVars[k] ?? "")
+            : personalizeText(subject, previewName);
           return (
             <div className="mt-4 border border-border rounded-xl overflow-hidden">
               <div className="bg-muted/30 border-b border-border px-4 py-2.5 text-xs">
                 <div className="text-muted-foreground">
-                  How the email looks in the inbox. Merge fields are shown filled with a
-                  sample name (<strong className="text-foreground">{previewName}</strong>)
-                  — each recipient gets their own.
+                  How the email looks in the inbox. Merge fields show a sample name
+                  (<strong className="text-foreground">{previewName}</strong>) — each
+                  recipient gets their own. {activeTemplate && (
+                    <span className="text-blue font-medium">Template: {activeTemplate.name}.</span>
+                  )}
                 </div>
                 <div className="mt-1 text-foreground">
                   <span className="text-muted-foreground">Subject:</span>{" "}
-                  <strong>{personalizeText(subject, previewName).trim() || "(no subject)"}</strong>
+                  <strong>{previewSubject.trim() || "(no subject)"}</strong>
                 </div>
               </div>
               <iframe
                 title="Newsletter preview"
                 className="w-full bg-white"
-                style={{ height: 460, border: 0 }}
-                srcDoc={renderBroadcastEmail({ message: personalizeText(message, previewName) })}
+                style={{ height: 540, border: 0 }}
+                srcDoc={previewBody}
               />
             </div>
           );

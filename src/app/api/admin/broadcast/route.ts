@@ -5,6 +5,7 @@ import { guardEmailSend } from "@/lib/email-send-guard";
 import { logger } from "@/lib/logger";
 import { Prisma } from "@/generated/prisma";
 import { renderBroadcastEmail, personalizeText, firstNameOf } from "@/lib/broadcast-email";
+import { getTemplate, renderTemplate, NEWSLETTER_TEMPLATES } from "@/lib/newsletter-templates";
 
 // Newsletter / broadcast sender. Super-admin only.
 //
@@ -110,8 +111,47 @@ export async function POST(request: NextRequest) {
     const message = typeof body?.message === "string" ? body.message.trim() : "";
     const sendToAll = body?.sendToAll === true;
 
-    if (!subject) return Response.json({ error: "A subject is required." }, { status: 400 });
-    if (!message) return Response.json({ error: "A message is required." }, { status: 400 });
+    // Template mode: caller picks a pre-built designed template + variables.
+    // Bypasses the plain-text composer's HTML escape — template HTML is
+    // trusted source code, not user input. Variables go through escape inside
+    // the template's render fn where they're interpolated.
+    const templateId = typeof body?.templateId === "string" ? body.templateId.trim() : "";
+    const rawVars =
+      body?.variables && typeof body.variables === "object" && !Array.isArray(body.variables)
+        ? (body.variables as Record<string, unknown>)
+        : {};
+    const templateVars: Record<string, string> = {};
+    for (const [k, v] of Object.entries(rawVars)) {
+      if (typeof v === "string") templateVars[k] = v;
+    }
+    const useTemplate = templateId.length > 0;
+
+    if (useTemplate) {
+      const tpl = getTemplate(templateId);
+      if (!tpl) {
+        return Response.json(
+          { error: `Unknown template: ${templateId}. Known: ${NEWSLETTER_TEMPLATES.map((t) => t.id).join(", ")}.` },
+          { status: 400 }
+        );
+      }
+      for (const v of tpl.variables) {
+        if (v.required && !(templateVars[v.name]?.trim() ?? "")) {
+          return Response.json(
+            { error: `Template variable "${v.label}" is required.` },
+            { status: 400 }
+          );
+        }
+      }
+      // Subject may come from the admin, but template mode also allows the
+      // template's defaultSubject to fill in. Either is fine, but at least
+      // one must be present.
+      if (!subject && !tpl.defaultSubject) {
+        return Response.json({ error: "A subject is required." }, { status: 400 });
+      }
+    } else {
+      if (!subject) return Response.json({ error: "A subject is required." }, { status: 400 });
+      if (!message) return Response.json({ error: "A message is required." }, { status: 400 });
+    }
 
     // Resolve the recipient set — either everyone matching the filters, or an
     // explicitly picked list of application IDs.
@@ -159,9 +199,27 @@ export async function POST(request: NextRequest) {
     const userByEmail = new Map(users.map((u) => [u.email, u.id]));
 
     // Each recipient gets their own personalised copy — {First name} in the
-    // subject and message is filled with their actual name.
+    // subject and message is filled with their actual name. Template mode
+    // builds the HTML body via the template's render fn (trusted source);
+    // plain-text mode runs through escapeHtml + linkify inside renderBroadcastEmail.
     const rows: Prisma.EmailQueueItemCreateManyInput[] = applicants.map((a) => {
       const firstName = firstNameOf(a.fullName);
+
+      if (useTemplate) {
+        const rendered = renderTemplate({ templateId, vars: templateVars, firstName });
+        // rendered cannot be null at this point (validated above), but TS narrowing.
+        const finalSubject = subject || rendered?.subject || templateId;
+        return {
+          userId: userByEmail.get(a.email.toLowerCase()) ?? null,
+          kind: "GENERAL",
+          toEmail: a.email,
+          subject: personalizeText(finalSubject, firstName),
+          body: rendered?.body ?? "",
+          status: "PENDING",
+          context: { type: "broadcast", applicationId: a.id, templateId },
+        };
+      }
+
       return {
         userId: userByEmail.get(a.email.toLowerCase()) ?? null,
         kind: "GENERAL",
