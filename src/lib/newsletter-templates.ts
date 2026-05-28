@@ -277,6 +277,20 @@ const KICKOFF: NewsletterTemplate = {
       defaultValue:
         "This cohort exists because of <strong>Peter Ejiofor</strong>. Sponsorship at this scale — fully funded cybersecurity training for hundreds of Nigerians, no strings attached — is rare in Nigeria and rare anywhere in the world. We do not take it for granted, and neither should you. When you finish this programme and someone asks how you got there, his name belongs in that sentence.",
     },
+    {
+      name: "signature_line_1",
+      label: "Sign-off line 1 (your name + greeting)",
+      placeholder: "From your friend, Somto.",
+      required: true,
+      defaultValue: "From your friend, Somto.",
+    },
+    {
+      name: "signature_line_2",
+      label: "Sign-off line 2 (your title — appears smaller, lighter)",
+      placeholder: "Head of Programs, TRAN",
+      required: true,
+      defaultValue: "Head of Programs, TRAN",
+    },
   ],
   render: ({ firstName, vars }) => {
     const v = (k: string) => escapeHtml(vars[k] ?? "");
@@ -400,8 +414,8 @@ const KICKOFF: NewsletterTemplate = {
 
           <p style="margin:28px 0 0;font-size:15.5px;color:#0F172A;font-weight:600;">${v("signoff")}</p>
           <p style="margin:18px 0 0;font-size:14px;color:#475569;line-height:1.65;">
-            — The UBI team<br>
-            <span style="color:#94A3B8;font-size:13px;">Ubuntu Bridge Initiative</span>
+            ${v("signature_line_1")}<br>
+            <span style="color:#94A3B8;font-size:13px;">${v("signature_line_2")}</span>
           </p>
 
         </td>
@@ -433,6 +447,8 @@ const STAGE_REMINDER: NewsletterTemplate = {
     { name: "stage_name", label: "Stage short name", placeholder: "e.g. Ciphers & Secrets", required: true },
     { name: "deadline", label: "Submission deadline (free text)", placeholder: "e.g. Friday 14 June 18:00 WAT", required: true },
     { name: "focus", label: "One-line focus / advice for this stage", placeholder: "e.g. Don't skip the capstone — half the points are there.", required: true, multiline: true },
+    { name: "signature_line_1", label: "Sign-off line 1", placeholder: "From your friend, Somto.", required: true, defaultValue: "From your friend, Somto." },
+    { name: "signature_line_2", label: "Sign-off line 2 (smaller, lighter)", placeholder: "Head of Programs, TRAN", required: true, defaultValue: "Head of Programs, TRAN" },
   ],
   render: ({ firstName, vars }) => {
     const body = `
@@ -487,8 +503,8 @@ const STAGE_REMINDER: NewsletterTemplate = {
           </table>
 
           <p style="margin:0 0 0;font-size:14px;color:#475569;line-height:1.65;">
-            — The UBI team<br>
-            <span style="color:#94A3B8;font-size:13px;">Ubuntu Bridge Initiative</span>
+            ${escapeHtml(vars.signature_line_1 ?? "From your friend, Somto.")}<br>
+            <span style="color:#94A3B8;font-size:13px;">${escapeHtml(vars.signature_line_2 ?? "Head of Programs, TRAN")}</span>
           </p>
 
         </td>
@@ -521,6 +537,8 @@ const PROGRAMME_UPDATE: NewsletterTemplate = {
     { name: "body", label: "Body — main message (multi-paragraph; one blank line between paragraphs)", placeholder: "Write your message here. Line breaks are kept. One blank line creates a new paragraph.", required: true, multiline: true },
     { name: "cta_text", label: "CTA button text (optional)", placeholder: "e.g. RSVP for office hours", required: false },
     { name: "cta_url", label: "CTA button URL (optional)", placeholder: "https://...", required: false },
+    { name: "signature_line_1", label: "Sign-off line 1", placeholder: "From your friend, Somto.", required: true, defaultValue: "From your friend, Somto." },
+    { name: "signature_line_2", label: "Sign-off line 2 (smaller, lighter)", placeholder: "Head of Programs, TRAN", required: true, defaultValue: "Head of Programs, TRAN" },
   ],
   render: ({ firstName, vars }) => {
     const headline = vars.headline ?? "";
@@ -566,8 +584,8 @@ const PROGRAMME_UPDATE: NewsletterTemplate = {
           ${ctaHtml}
 
           <p style="margin:14px 0 0;font-size:14px;color:#475569;line-height:1.65;">
-            — The UBI team<br>
-            <span style="color:#94A3B8;font-size:13px;">Ubuntu Bridge Initiative</span>
+            ${escapeHtml(vars.signature_line_1 ?? "From your friend, Somto.")}<br>
+            <span style="color:#94A3B8;font-size:13px;">${escapeHtml(vars.signature_line_2 ?? "Head of Programs, TRAN")}</span>
           </p>
 
         </td>
