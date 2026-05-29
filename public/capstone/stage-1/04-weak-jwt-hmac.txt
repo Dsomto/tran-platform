@@ -1,0 +1,35 @@
+================================================================
+SANKOFA SOC — captured JWT (HS256), source: /legacy-admin/
+Tunde says: "I think the legacy admin app's HMAC secret is the
+same hard-coded string the dev posted in the 2021 wiki cleanup.
+If you can crack the signature locally, you can prove who else
+on the team should rotate everything they have ever signed."
+================================================================
+
+Token:
+
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOjEsInVzZXIiOiJhZG1pbiIsInJvbGUiOiJzdXBlcl9hZG1pbiIsImlhdCI6MTcxNjE5MjAwMH0.6Y7ZsRMHl-cQVTcMzz0FvVQRrTQyLwLJ8nN6ehMHvOg
+
+What Tunde wants from you:
+
+  1. Decode the header and the payload. Write down each claim.
+  2. Confirm the algorithm.
+  3. Crack the HMAC secret offline. Hashcat mode 16500 or
+     jwt_tool both work. Your in-platform Stage 1 task 7 walked
+     you through the JOSE spec; this is the practical version.
+  4. Once you have the secret, FORGE a token whose payload is
+     {"uid":3,"user":"amaka.eze","role":"super_admin","iat":<now>}
+     and prove the legacy-admin server would accept it.
+
+Hint: the secret is short, ASCII-only, and includes the
+year. It is in a dictionary that ships with kali.
+The /legacy-admin/login.php source you have in this stage's
+evidence pack hard-codes the same string — but cracking it
+here without peeking proves you can do it against a target
+you do not have source code for.
+
+Deliverable: in your report, paste:
+  - the decoded header + payload
+  - the recovered secret
+  - the forged token you produced
+  - the hashcat / jwt_tool command line you used

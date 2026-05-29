@@ -1,0 +1,17 @@
+ticket_id,opened_utc,closed_utc,opener,closer,severity,system,summary,disposition,notes
+SD-40798,2024-06-01T11:14:00Z,2024-06-01T11:31:00Z,siem-autocreate,o.adegoke,low,gateway-01,5x failed root SSH from 45.95.147.12; rate-limited by edge,resolved-no-action,edge fail2ban handled it
+SD-40805,2024-06-02T03:22:00Z,2024-06-02T08:01:00Z,siem-autocreate,o.adegoke,low,gateway-01,Brute force burst against admin/oracle/postgres from 45.95.147.12,resolved-no-action,same source as SD-40798. closed by reference
+SD-40811,2024-06-03T21:48:00Z,2024-06-04T08:11:00Z,user-report:o.adegoke,o.adegoke,low,corp-laptop,My SSH key got refused once this morning then worked. Maybe key cache?,resolved-no-action,no follow-up
+SD-40812,2024-06-04T07:55:00Z,2024-06-04T08:14:00Z,siem-autocreate,o.adegoke,medium,gateway-01,Accepted publickey for o.adegoke from non-corporate IP 185.220.101.9,probably nothing,user on leave; possibly VPN
+SD-40819,2024-06-04T02:14:30Z,2024-06-04T02:16:00Z,siem-autocreate,o.adegoke,medium,host-87,cron RELOAD outside change window — likely IT maintenance,resolved-no-action,closed as IT activity (IT confirmed no work)
+SD-40824,2024-06-04T02:31:55Z,2024-06-04T07:22:00Z,siem-autocreate,o.adegoke,high,host-87,Large tarball created in /tmp from customers.csv + transactions.csv,resolved-no-action,o.adegoke explained as personal backup test
+SD-40826,2024-06-04T03:01:30Z,2024-06-04T07:22:00Z,siem-autocreate,o.adegoke,critical,host-87,scp outbound to 185.220.101.9:/dropbox/,resolved-by-reference,bundled into SD-40824 disposition
+SD-40828,2024-06-04T05:11:00Z,2024-06-04T05:12:00Z,c.eze,o.adegoke,medium,vpn,My VPN cert renewal lapsed and I cannot reach gitlab from home,resolved-handed-to-IT,unrelated
+SD-40835,2024-06-05T03:14:30Z,2024-06-05T08:02:00Z,siem-autocreate,o.adegoke,medium,host-87,repeat of SD-40812 (same source 185.220.101.9),resolved-by-reference,closed under the original disposition
+SD-40837,2024-06-05T03:16:10Z,2024-06-05T08:02:00Z,siem-autocreate,o.adegoke,medium,host-87,sudo less /var/log/* used by o.adegoke,resolved-no-action,his sudoers exception per SD-40688
+SD-40688,2024-05-22T13:05:00Z,2024-05-22T13:42:00Z,user-report:o.adegoke,c.eze,low,host-87,Asking for sudo less on /var/log for triage. Temp 14d.,resolved-granted,Tunde was on PTO so c.eze approved
+SD-40842,2024-06-05T09:01:00Z,2024-06-05T09:14:00Z,siem-autocreate,o.adegoke,low,host-87,Firefox launched outside business hours,resolved-no-action,user-reported wifi reset
+SD-40855,2024-06-06T11:31:00Z,2024-06-06T11:42:00Z,c.eze,o.adegoke,medium,gateway-01,a.eze account showing in audit log this morning — she's been gone two months,resolved-handed-to-IT,marked for ldap cleanup
+SD-40861,2024-06-07T16:02:00Z,2024-06-07T17:13:00Z,user-report:adaeze.okonkwo,c.eze,high,corp-board-room,CEO says Friday's processing partner press release went out with a stale draft. Comms checking,resolved-by-comms,unrelated to security
+SD-40866,2024-06-08T03:55:00Z,2024-06-08T04:08:00Z,siem-autocreate,tunde.afolabi,critical,host-87,7 SIEM alerts on host-87 in 4 days — no ticket clusters them,quarantined,Tunde opened. Manually correlated to SD-40812. Host isolated nft input drop.
+SD-40912,2024-07-11T14:00:00Z,,amaka.eze,,high,gateway-01,Re-opening SD-40812. Tier 1 dismissal pattern across SD-40798/805/811/812/819/824/826/835/837 needs review,re-opened,assigned to incoming intern

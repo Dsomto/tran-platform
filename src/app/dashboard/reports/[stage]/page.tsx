@@ -37,6 +37,20 @@ const EVIDENCE_PACK: Record<
         "Four encoded strings from a forwarded message. Decode each, name the encoding, write down the plaintext. One of them names the threat actor.",
       bytes: 844,
     },
+    {
+      filename: "tier-1-ticket-history.csv",
+      url: "/capstone/stage-0/tier-1-ticket-history.csv",
+      description:
+        "Q2 SOC ticket history showing how SD-40812 was closed and which nearby alerts should have been correlated before dismissal.",
+      bytes: 3374,
+    },
+    {
+      filename: "sankofa-roster.csv",
+      url: "/capstone/stage-0/sankofa-roster.csv",
+      description:
+        "Employee roster with leave and offboarding dates; use it to test whether suspicious logins match real staff availability.",
+      bytes: 1323,
+    },
   ],
   STAGE_1: [
     {
@@ -60,6 +74,20 @@ const EVIDENCE_PACK: Record<
         "Three session tokens lifted from the staging server. Decode header + payload, identify at least one red flag per token (alg / lifecycle / privilege).",
       bytes: 1200,
     },
+    {
+      filename: "04-weak-jwt-hmac.txt",
+      url: "/capstone/stage-1/04-weak-jwt-hmac.txt",
+      description:
+        "HS256 token signed with the legacy admin hard-coded secret; crack it offline, forge the requested token, and cite the command you used.",
+      bytes: 1604,
+    },
+    {
+      filename: "05-layered-recon-note.txt",
+      url: "/capstone/stage-1/05-layered-recon-note.txt",
+      description:
+        "Three-layer encoded reconnaissance memo; peel base64, ROT13, and substitution layers, then report each intermediate output.",
+      bytes: 880,
+    },
   ],
   STAGE_2: [
     {
@@ -82,6 +110,20 @@ const EVIDENCE_PACK: Record<
       description:
         "Three JWTs captured from /legacy-admin/. Decode each, name the lifecycle / trust / signing failure. uid=1004 matches o.adegoke from Stage 0 / 3.",
       bytes: 1100,
+    },
+    {
+      filename: "04-import-xxe.xml",
+      url: "/capstone/stage-2/04-import-xxe.xml",
+      description:
+        "Recovered XML import body containing an XXE file-read attempt; connect the parser flaw to the matching HTTP capture behaviour.",
+      bytes: 1134,
+    },
+    {
+      filename: "05-exfil-sample.csv",
+      url: "/capstone/stage-2/05-exfil-sample.csv",
+      description:
+        "Redacted 20-row customer_pii export sample with placeholder identities and the affected-row count needed for impact statements.",
+      bytes: 2215,
     },
   ],
   STAGE_3: [
@@ -112,6 +154,20 @@ const EVIDENCE_PACK: Record<
       description:
         "9 ranked SIEM alerts on 10.0.1.87. Triage by severity, attach each rule to the matching artefact in the other three Stage 3 files.",
       bytes: 1200,
+    },
+    {
+      filename: "05-memory-strings.txt",
+      url: "/capstone/stage-3/05-memory-strings.txt",
+      description:
+        "Pre-parsed memory strings with environment variables, command fragments, encoded chunks, and red herrings to cross-check against the timeline.",
+      bytes: 2406,
+    },
+    {
+      filename: "06-netflow.csv",
+      url: "/capstone/stage-3/06-netflow.csv",
+      description:
+        "Netflow window around the breach; separate beacons and the scp transfer from DNS, NTP, and unrelated lateral traffic.",
+      bytes: 1989,
     },
   ],
   STAGE_4: [
@@ -145,6 +201,20 @@ const EVIDENCE_PACK: Record<
       url: "/capstone/stage-4/control-mapping-skeleton.csv",
       description:
         "8-row control-mapping skeleton — each observed weakness from Stages 1–3 mapped to NIST CSF 2.0 + ISO 27001:2022 Annex A + MITRE D3FEND.",
+    },
+    {
+      filename: "06-external-audit-findings.md",
+      url: "/capstone/stage-4/06-external-audit-findings.md",
+      description:
+        "External audit excerpt with three findings; accept, dispute, or defer each owner line using evidence from earlier stages.",
+      bytes: 1981,
+    },
+    {
+      filename: "07-board-minutes-excerpt.md",
+      url: "/capstone/stage-4/07-board-minutes-excerpt.md",
+      description:
+        "Board minutes excerpt listing resolved and open questions your memo, notification letter, and roadmap must anticipate.",
+      bytes: 1575,
     },
   ],
 };

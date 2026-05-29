@@ -1,0 +1,13 @@
+username,full_name,role,team,manager,start_date,status,on_leave_from,on_leave_to,notes
+amaka.eze,Amaka Eze,Head of Security,Security,adaeze.okonkwo,2015-03-01,active,,,Q2 2024 quarter lead
+tunde.afolabi,Tunde Afolabi,Threat Intel Lead,Security,amaka.eze,2018-09-12,active,,,
+c.eze,Chinwe Eze,SOC Tier 2 Analyst,Security,amaka.eze,2024-04-29,active,,,Started same week as Tier 1 hire she replaced
+o.adegoke,Olu Adegoke,Finance Analyst,Finance,ifeoma.bello,2023-11-13,active,2024-06-03,2024-06-07,Annual leave; cover by ifeoma.bello
+a.eze,Adaeze Eze,Junior Analyst,Compliance,(none),2023-08-01,offboarded,,,Left company 2024-04-12; account flagged for ldap purge
+adaeze.okonkwo,Adaeze Okonkwo,Chief Executive Officer,Executive,(board),2016-06-01,active,,,
+ifeoma.bello,Ifeoma Bello,Finance Manager,Finance,adaeze.okonkwo,2017-02-20,active,,,
+kofi.mensah,Kofi Mensah,Senior Engineer,Engineering,michael.tan,2019-11-04,active,,,
+michael.tan,Michael Tan,Head of Engineering,Engineering,adaeze.okonkwo,2017-06-15,active,,,
+sade.adekunle,Sade Adekunle,Head of Comms,Comms,adaeze.okonkwo,2020-01-12,active,,,
+yemi.okafor,Yemi Okafor,Comms Associate,Comms,sade.adekunle,2022-08-08,active,2024-05-20,2024-06-30,Parental leave
+jamal.bashir,Jamal Bashir,DPO,Compliance,adaeze.okonkwo,2021-04-19,active,,,Data Protection Officer (NDPC)

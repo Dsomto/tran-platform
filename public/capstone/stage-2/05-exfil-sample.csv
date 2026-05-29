@@ -1,0 +1,23 @@
+# REDACTED SAMPLE - names and emails are placeholders; real data is in the offline evidence locker.
+# Tunde: "Use this to quantify impact. The recovered customer_pii export matched 312 rows; the 20 placeholder rows below preserve field shape only."
+customer_id,full_name,email,account_no,account_balance_ngn,last_login_utc
+CUST-0007,Ada Test,ada.test@example.invalid,**********1407,245000.00,2024-06-03T18:22:11Z
+CUST-0019,Joe Sample,joe.sample@example.invalid,**********7712,91050.25,2024-06-02T09:13:44Z
+CUST-0023,Mina Placeholder,mina.placeholder@example.invalid,**********2289,12000.00,2024-06-01T21:04:02Z
+CUST-0041,Tola Demo,tola.demo@example.invalid,**********8830,450500.75,2024-06-03T06:44:29Z
+CUST-0058,Ravi Example,ravi.example@example.invalid,**********0194,320100.00,2024-05-31T14:18:35Z
+CUST-0062,Zara Trial,zara.trial@example.invalid,**********5620,8800.50,2024-06-04T00:02:17Z
+CUST-0074,Kemi Mock,kemi.mock@example.invalid,**********3316,150250.00,2024-06-02T22:40:09Z
+CUST-0088,Ben Dummy,ben.dummy@example.invalid,**********6042,73000.00,2024-06-01T08:15:51Z
+CUST-0095,Lina Example,lina.example@example.invalid,**********9125,199999.99,2024-06-03T11:27:38Z
+CUST-0106,Oscar Test,oscar.test@example.invalid,**********4781,6400.00,2024-05-30T19:55:46Z
+CUST-0112,Ngozi Sample,ngozi.sample@example.invalid,**********2033,50220.10,2024-06-04T01:12:33Z
+CUST-0137,Chen Placeholder,chen.placeholder@example.invalid,**********6904,810450.00,2024-06-02T04:10:15Z
+CUST-0150,Sade Demo,sade.demo@example.invalid,**********3459,22500.00,2024-06-03T16:03:08Z
+CUST-0166,Ibrahim Example,ibrahim.example@example.invalid,**********7770,122330.45,2024-06-01T12:59:01Z
+CUST-0181,Efe Trial,efe.trial@example.invalid,**********5018,98010.00,2024-06-03T23:41:26Z
+CUST-0204,Nia Mock,nia.mock@example.invalid,**********2187,7000.00,2024-05-29T07:22:50Z
+CUST-0219,Leo Dummy,leo.dummy@example.invalid,**********9311,364210.30,2024-06-02T13:34:18Z
+CUST-0240,Yara Example,yara.example@example.invalid,**********0844,17390.00,2024-06-04T02:05:49Z
+CUST-0288,Sam Test,sam.test@example.invalid,**********6257,950000.00,2024-06-03T05:05:05Z
+CUST-0312,Ife Sample,ife.sample@example.invalid,**********1190,41020.00,2024-06-01T17:36:57Z

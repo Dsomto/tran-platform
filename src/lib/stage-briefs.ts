@@ -249,9 +249,9 @@ export const STAGE_BRIEFS: Record<
       },
     ],
     sections: [
-      "What you observed in the Q2 auth log",
-      "What those observations imply about Sankofa's SOC posture",
-      "Recommended next steps for the Incident Committee",
+      "Suspicious-login evidence table (each row cites the auth log plus either the roster, encoded strings, or ticket history)",
+      "Tier-1 dismissal pattern (cite SD-40812 plus at least two other ticket IDs from the history CSV)",
+      "Business impact and recommended next steps for the Incident Committee (each recommendation cites at least two evidence files)",
     ],
   },
 
@@ -419,9 +419,9 @@ export const STAGE_BRIEFS: Record<
       },
     ],
     sections: [
-      "Cryptographic failures observed in The Griot's files",
-      "Why modern algorithms alone did not save Sankofa",
-      "Five controls the board should approve",
+      "Crypto failure mapping (each finding cites the relevant artefact file plus one external standard by section number: RFC, NIST, or FIPS)",
+      "Decoded artefact appendix (include plaintext, method, and intermediate outputs where the file has layers)",
+      "Five controls the board should approve (each control maps to at least two observed cryptographic failures)",
     ],
   },
 
@@ -577,10 +577,9 @@ export const STAGE_BRIEFS: Record<
       },
     ],
     sections: [
-      "Reconnaissance and initial foothold",
-      "The exploit chain — how findings link together",
-      "Findings table with CVSS scores",
-      "Remediation plan in priority order",
+      "Exploit chain with quantified impact (each bug class cites the source file line, the HTTP capture entry, and the affected customer count from the exfil sample)",
+      "Findings table with OWASP category, CVSS vector, and the evidence files that prove each finding",
+      "Remediation plan in priority order (each fix names the bug class, owner, and risk reduction per hour of effort)",
     ],
   },
 
@@ -756,10 +755,10 @@ export const STAGE_BRIEFS: Record<
       },
     ],
     sections: [
-      "Incident timeline (summarised)",
-      "Root cause — how they got in and why they stayed",
-      "Containment and eradication actions",
-      "Lessons learned and policy changes recommended",
+      "Incident timeline (every event row cites at least two of: process listing, syslog, SIEM CSV, netflow, memory strings; each row includes confidence H/M/L with rationale)",
+      "Root cause and persistence chain (cross-correlate login, process, filesystem, memory, and network evidence)",
+      "Containment, eradication, and IOC list (each IOC cites at least two independent artefacts where available)",
+      "Lessons learned and policy changes recommended (tie each change to a timeline failure and an evidence file)",
     ],
   },
 
@@ -932,12 +931,12 @@ export const STAGE_BRIEFS: Record<
       },
     ],
     sections: [
-      "One-paragraph situation summary — what the board reads first",
-      "Risk register entries arising from the incident",
-      "Control gaps against NIST CSF 2.0",
-      "Regulatory position (GDPR) and proposed notification",
-      "12-month remediation roadmap",
-      "Your track-selection rationale",
+      "One-paragraph situation summary - what the board reads first, with counts tied to Stage 2 and Stage 3 evidence",
+      "Regulatory + governance synthesis (NDPA letter cites the external audit findings and board minutes)",
+      "Risk register entries arising from the incident (row 1 must respond to board open question Q3)",
+      "Control gaps against NIST CSF 2.0 and ISO 27001:2022, with evidence from at least two stages per gap",
+      "12-month remediation roadmap tied to board questions, audit recommendations, owners, and cost bands",
+      "Your track-selection rationale, grounded in the evidence work you performed across all stages",
     ],
   },
 };
