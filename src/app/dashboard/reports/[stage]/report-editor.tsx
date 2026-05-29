@@ -14,6 +14,8 @@ import {
   ExternalLink,
   Mail,
   ListChecks,
+  Download,
+  FolderDown,
 } from "lucide-react";
 import { emitEggToast } from "@/components/dashboard/easter-eggs/hooks";
 
@@ -40,6 +42,18 @@ interface FolderItem {
   deliverable: string;
 }
 
+interface EvidenceFile {
+  filename: string;
+  /** URL the file is served from. Use `/capstone/stage-N/<file>` for the
+   *  in-app downloads we host under public/. */
+  url: string;
+  /** One-line description of what this file contains and what the intern
+   *  is expected to do with it. */
+  description: string;
+  /** Bytes — display only. Optional. */
+  bytes?: number;
+}
+
 interface Props {
   stage: string;
   stageLabel: string;
@@ -52,6 +66,10 @@ interface Props {
   reportTo: string;
   /** The files the stage expects in the submitted folder. */
   folderContents: FolderItem[];
+  /** Stage-specific evidence files the intern downloads to do the capstone.
+   *  Hosted in-app under public/capstone/stage-N/. Optional — empty / absent
+   *  means the stage has no downloadable input pack (legacy stages). */
+  evidencePack?: EvidenceFile[];
   initialReport: InitialReport | null;
   windowInfo: WindowInfo | null;
   locked: boolean;
@@ -66,6 +84,7 @@ export function ReportEditor({
   chapter,
   reportTo,
   folderContents,
+  evidencePack,
   initialReport,
   windowInfo,
   locked,
@@ -224,6 +243,54 @@ export function ReportEditor({
         </h1>
         <p className="text-muted-foreground mt-2 leading-relaxed max-w-3xl">{storyline}</p>
       </header>
+
+      {evidencePack && evidencePack.length > 0 && (
+        <section className="mb-6 rounded-xl border border-blue/30 bg-blue/[0.03] p-5">
+          <div className="flex items-center gap-2 mb-2">
+            <FolderDown className="h-4 w-4 text-blue" />
+            <h2 className="font-semibold text-foreground text-base">
+              Your evidence pack
+            </h2>
+            <span className="text-[11px] text-muted-foreground">
+              · {evidencePack.length} file{evidencePack.length === 1 ? "" : "s"} to download
+            </span>
+          </div>
+          <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
+            These are the artefacts the stage gives you. Download each one,
+            analyse it locally, and cite specific lines / paths / values
+            in your report. The grader will check that your claims tie back
+            to these files.
+          </p>
+          <ul className="space-y-1.5">
+            {evidencePack.map((f) => (
+              <li key={f.url} className="flex items-start gap-3 rounded-lg border border-border bg-white px-3 py-2.5">
+                <Download className="h-4 w-4 text-blue mt-0.5 shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <a
+                      href={f.url}
+                      download
+                      className="font-mono text-sm font-medium text-foreground hover:text-blue truncate"
+                    >
+                      {f.filename}
+                    </a>
+                    {typeof f.bytes === "number" && (
+                      <span className="text-[10px] text-muted-foreground tabular-nums">
+                        {f.bytes < 1024
+                          ? `${f.bytes} B`
+                          : `${(f.bytes / 1024).toFixed(1)} KB`}
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-xs text-muted-foreground leading-snug mt-0.5">
+                    {f.description}
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <section className="mb-6 rounded-xl border border-border bg-white p-5">
         <p className="text-[11px] font-mono uppercase tracking-[0.18em] text-muted-foreground mb-2">

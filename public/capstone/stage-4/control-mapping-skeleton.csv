@@ -1,0 +1,9 @@
+row,observed_weakness_from_stages_1_3,stage_task_evidence,nist_csf_2_0_function_category,iso_27001_2022_annex_a,mitre_d3fend_counter_technique
+1,Unauthenticated Elasticsearch index exposing customer PII,Stage 2 task 1 — scan-vuln.txt + es-intern_access.json,PR.DS-01,A.8.3 + A.8.24,D3-NTA (Network Traffic Analysis)
+2,Plaintext credentials and base64 'API key' in committed config files,Stage 1 task 1 + task 8 — config.env + .creds.bak,,,
+3,SQL injection in login form (evidence in MySQL general log),Stage 2 task 3 — mysql-general.log line 03:09:44,,,
+4,Reflected and stored XSS in admin dashboard,Stage 2 tasks 4 and 5 — search + notes endpoints,,,
+5,SSRF to cloud metadata service (IMDSv1 in use),Stage 2 task 6 — 169.254.169.254/latest/meta-data/,,,
+6,"Time-unlimited NOPASSWD: less /var/log/* sudoers grant",Stage 3 task 3 — /etc/sudoers.d/90-ops,,,
+7,Shell-config persistence in user .bashrc (not caught by crontab/systemd audits),Stage 3 task 2 — /home/o.adegoke/.bashrc,,,
+8,Periodic HTTPS beacon to non-allow-listed external domain,Stage 3 task 4 — gri0t-c2.dynamic-update.net:443,,,

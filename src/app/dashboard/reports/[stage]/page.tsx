@@ -14,6 +14,141 @@ function isStageKey(s: string): s is StageKey {
   return s in STAGE_BRIEFS;
 }
 
+// Stage capstone evidence packs — files hosted in /public/capstone/ and
+// served by Vercel as direct downloads. Filenames here must match the
+// committed files in public/capstone/stage-N/*. To add a file: drop it
+// in public/capstone/stage-N/ and append a row here.
+const EVIDENCE_PACK: Record<
+  StageKey,
+  { filename: string; url: string; description: string; bytes?: number }[]
+> = {
+  STAGE_0: [
+    {
+      filename: "auth-log-q2.txt",
+      url: "/capstone/stage-0/auth-log-q2.txt",
+      description:
+        "Sankofa gateway-01 /var/log/auth.log excerpt, 2024-06-03 → 06-05 UTC. The Q2 ticket Tier 1 closed as 'probably nothing' — find why Amaka re-opened it.",
+      bytes: 4400,
+    },
+    {
+      filename: "encoded-strings.txt",
+      url: "/capstone/stage-0/encoded-strings.txt",
+      description:
+        "Four encoded strings from a forwarded message. Decode each, name the encoding, write down the plaintext. One of them names the threat actor.",
+      bytes: 844,
+    },
+  ],
+  STAGE_1: [
+    {
+      filename: "01-aes-recipe.md",
+      url: "/capstone/stage-1/01-aes-recipe.md",
+      description:
+        "AES-CBC ciphertext + the key/IV the Griot left in config. Decrypt with CyberChef → recover the plaintext that names what they were after.",
+      bytes: 1400,
+    },
+    {
+      filename: "02-classical-cipher.txt",
+      url: "/capstone/stage-1/02-classical-cipher.txt",
+      description:
+        "Classical-cipher note Griot wrote to themselves. Identify the cipher, decrypt, write both the cipher name and the plaintext.",
+      bytes: 365,
+    },
+    {
+      filename: "03-jwts.txt",
+      url: "/capstone/stage-1/03-jwts.txt",
+      description:
+        "Three session tokens lifted from the staging server. Decode header + payload, identify at least one red flag per token (alg / lifecycle / privilege).",
+      bytes: 1200,
+    },
+  ],
+  STAGE_2: [
+    {
+      filename: "01-legacy-admin-login.php",
+      url: "/capstone/stage-2/01-legacy-admin-login.php",
+      description:
+        "/legacy-admin/login.php source recovered from prod. SQLi + MD5 password storage + open redirect + hand-rolled JWT scheme with alg:none honoured.",
+      bytes: 1700,
+    },
+    {
+      filename: "02-attacker-http-capture.txt",
+      url: "/capstone/stage-2/02-attacker-http-capture.txt",
+      description:
+        "Edge-proxy HTTP capture of the attacker's 02:14–02:31 UTC session. Map each request to the bug class in the PHP source. Tor exit 185.220.101.9.",
+      bytes: 2900,
+    },
+    {
+      filename: "03-legacy-admin-tokens.txt",
+      url: "/capstone/stage-2/03-legacy-admin-tokens.txt",
+      description:
+        "Three JWTs captured from /legacy-admin/. Decode each, name the lifecycle / trust / signing failure. uid=1004 matches o.adegoke from Stage 0 / 3.",
+      bytes: 1100,
+    },
+  ],
+  STAGE_3: [
+    {
+      filename: "01-process-listing.txt",
+      url: "/capstone/stage-3/01-process-listing.txt",
+      description:
+        "Volatility 3 linux.pslist output from workstation 10.0.1.87. Find the persistence chain (.bashrc → .helper → curl beacon to 185.220.101.9).",
+      bytes: 2700,
+    },
+    {
+      filename: "02-filesystem-index.txt",
+      url: "/capstone/stage-3/02-filesystem-index.txt",
+      description:
+        "find / -newer baseline output. Every file modified since rebuild — includes the rogue sudoers entry and the Griot's internal memo.",
+      bytes: 1700,
+    },
+    {
+      filename: "03-syslog.txt",
+      url: "/capstone/stage-3/03-syslog.txt",
+      description:
+        "/var/log/syslog covering 72h around the breach. EXECVE audit, sudo less invocations, cron RELOAD, tar + scp exfil to attacker@185.220.101.9.",
+      bytes: 1900,
+    },
+    {
+      filename: "04-siem-export.csv",
+      url: "/capstone/stage-3/04-siem-export.csv",
+      description:
+        "9 ranked SIEM alerts on 10.0.1.87. Triage by severity, attach each rule to the matching artefact in the other three Stage 3 files.",
+      bytes: 1200,
+    },
+  ],
+  STAGE_4: [
+    {
+      filename: "breach-notification-template.md",
+      url: "/capstone/stage-4/breach-notification-template.md",
+      description:
+        "NDPA 2023 Section 40 breach-notification skeleton. Fill every [BRACKETED] field from evidence collected across Stages 0–3.",
+      bytes: 2500,
+    },
+    {
+      filename: "risk-register-template.csv",
+      url: "/capstone/stage-4/risk-register-template.csv",
+      description:
+        "5-row risk register skeleton with NIST CSF 2.0 + ISO 27001:2022 Annex A columns. R-001 pre-filled as the worked example.",
+    },
+    {
+      filename: "board-memo-template.md",
+      url: "/capstone/stage-4/board-memo-template.md",
+      description:
+        "One-page board memo skeleton — title, three numbers, chart description, ask, speaking notes, anticipated questions, tradeoff decision.",
+    },
+    {
+      filename: "30-60-90-roadmap-template.md",
+      url: "/capstone/stage-4/30-60-90-roadmap-template.md",
+      description:
+        "30/60/90 remediation roadmap skeleton — action / owner / budget tier / Stage 1–3 evidence cite / CSF 2.0 / ISO 27001 columns + deferral list.",
+    },
+    {
+      filename: "control-mapping-skeleton.csv",
+      url: "/capstone/stage-4/control-mapping-skeleton.csv",
+      description:
+        "8-row control-mapping skeleton — each observed weakness from Stages 1–3 mapped to NIST CSF 2.0 + ISO 27001:2022 Annex A + MITRE D3FEND.",
+    },
+  ],
+};
+
 export default async function ReportEditorPage({
   params,
 }: {
@@ -87,6 +222,7 @@ export default async function ReportEditorPage({
         title: t.title,
         deliverable: t.deliverable,
       }))}
+      evidencePack={EVIDENCE_PACK[stage]}
       initialReport={
         existing
           ? {

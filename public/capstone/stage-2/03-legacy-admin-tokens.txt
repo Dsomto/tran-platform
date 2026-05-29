@@ -1,0 +1,20 @@
+================================================================
+ARTEFACT: legacy-admin-tokens.txt
+Three session tokens captured from /legacy-admin/ during the
+attacker's stay. Audit each one for the obvious flaw.
+================================================================
+
+[Token 1 — admin session, post-login]
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOjEsInJvbGUiOiJzdXBlcl9hZG1pbiJ9.b2sZxYqK4tHjNnWlMmRvQpCdEfGhIjLpMnOpQrStUvW
+
+[Token 2 — staff session, lifted from a separate request]
+eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJ1aWQiOjE5LCJyb2xlIjoiYWRtaW4iLCJleHAiOjk5OTk5OTk5OTl9.
+
+[Token 3 — issued to the intern user 'o.adegoke']
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOjEwMDQsInVzZXIiOiJvLmFkZWdva2UiLCJyb2xlIjoiaW50ZXJuIn0.fGhIjLpMnOpQrStUvWxYzAaBbCcDdEeFf01
+
+================================================================
+Hint: at least one of these is missing the lifecycle field most
+session tokens need. At least one trusts the client to say it is
+valid forever. At least one is signed with a guessable secret.
+================================================================

@@ -1,0 +1,6 @@
+id,risk_statement,likelihood_1_5,likelihood_rationale,impact_1_5,impact_rationale,control_concrete,owner_role,iso_27001_2022_annex_a,nist_csf_2_0_category,evidence_cite_stage_task
+R-001,"Adversary regains foothold via the same workstation persistence mechanism (.bashrc-sourced binary) if it is not removed and audited.",4,"The mechanism is present today and survives any single user re-login. Demonstrated working against o.adegoke (Stage 3 task 1).",4,"One workstation gives the attacker lateral movement to any internal service o.adegoke can reach — including the legacy admin app and the cloud metadata service.",Deploy Wazuh FIM agents on 100% of in-scope endpoints with rules for additions to ~/.bashrc / ~/.profile / .config/autostart/*.desktop and any new file under /var/lib/* outside a known package. 30-day retention.,Head of Security Engineering,A.8.7 + A.8.16,DE.CM-01,Stage 3 task 1 + task 2
+R-002,,,,,,,,,,
+R-003,,,,,,,,,,
+R-004,,,,,,,,,,
+R-005,,,,,,,,,,

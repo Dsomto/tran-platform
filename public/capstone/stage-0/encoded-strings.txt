@@ -1,0 +1,19 @@
+================================================================
+SANKOFA SOC — ENCODED STRINGS DROP
+Pulled from a forwarded message; decode each one and write down
+the encoding you used + the plaintext.
+================================================================
+
+[1]  c2Fua29mYS1zb2MtdGllci0xLWFsZXJ0LXBsYXlib29r
+
+[2]  73 61 6e 6b 6f 66 61 2d 73 65 63 75 72 69 74 79 2d 6f 70 73 2d 32 30 32 34
+
+[3]  %7B%22user%22%3A%22o.adegoke%22%2C%22event%22%3A%22suspicious-login%22%7D
+
+[4]  VGhlIEdyaW90IGlzIGFscmVhZHkgaW5zaWRlIHRoZSB3YWxscy4=
+
+================================================================
+Hint: there is one base64, one hex, one URL-encoded, and one final
+base64 for the longer message. Three are short labels; the fourth
+is a sentence Amaka wants you to read.
+================================================================

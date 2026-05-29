@@ -1,0 +1,8 @@
+================================================================
+ARTEFACT: classical-cipher.txt
+Recovered from The Griot's staging-server zip.
+The note appears to be addressed to themselves — a reminder.
+Identify the cipher, decrypt, write down both.
+================================================================
+
+GHAQR JNF EVTUG. GUR TEVBG VF NYERNQL VAFVQR.

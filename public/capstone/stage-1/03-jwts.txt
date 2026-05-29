@@ -1,0 +1,29 @@
+================================================================
+ARTEFACT: jwts.txt
+Three session tokens lifted from The Griot's staging server.
+For each, decode the header + payload at jwt.io and identify
+at least one red flag.
+================================================================
+
+[Token A]
+
+eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJzdWIiOiJhZG1pbiIsInJvbGUiOiJzdXBlcl9hZG1pbiIsImlhdCI6MTcwMDAwMDAwMH0.
+
+----------------------------------------------------------------
+
+[Token B]
+
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJvLmFkZWdva2UiLCJpYXQiOjE3MTYxOTIwMDAsInJvbGUiOiJpbnRlcm4ifQ.X7hXNk7L8Yk4ZcG8YH7p_XjWp1WkH5j6L9rFJ3jKzMQ
+
+----------------------------------------------------------------
+
+[Token C]
+
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjLmV6ZSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTcxNjE5MjAwMH0.aV3fPq8xR9gQyLpZmXkE7sH2nT5kRcW1bO4uYjDvNxA
+
+================================================================
+Hint:
+  Token A — what does the header say about the algorithm?
+  Token B — does anything about the lifecycle look missing?
+  Token C — read the payload very carefully. Who is this for?
+================================================================
