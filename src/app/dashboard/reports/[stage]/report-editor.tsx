@@ -58,7 +58,10 @@ interface Props {
   stage: string;
   stageLabel: string;
   stageSubtitle: string;
-  storyline: string;
+  /** All paragraphs of the stage's mission brief — the in-fiction storyline
+   *  plus the explicit enumeration of evidence files. We show the whole
+   *  thing so the brief on this page is self-contained, not a one-line tease. */
+  missionBrief: string[];
   sectionHints: string[];
   /** Chapter number, 1-5. */
   chapter: number;
@@ -79,7 +82,7 @@ export function ReportEditor({
   stage,
   stageLabel,
   stageSubtitle,
-  storyline,
+  missionBrief,
   sectionHints,
   chapter,
   reportTo,
@@ -241,7 +244,13 @@ export function ReportEditor({
           {stageLabel} Report
           <span className="text-muted-foreground font-normal"> — {stageSubtitle}</span>
         </h1>
-        <p className="text-muted-foreground mt-2 leading-relaxed max-w-3xl">{storyline}</p>
+        <div className="mt-2 max-w-3xl space-y-3">
+          {missionBrief.map((paragraph, i) => (
+            <p key={i} className="text-muted-foreground leading-relaxed">
+              {paragraph}
+            </p>
+          ))}
+        </div>
       </header>
 
       {evidencePack && evidencePack.length > 0 && (

@@ -283,7 +283,7 @@ export default async function ReportEditorPage({
       stage={stage}
       stageLabel={brief.label}
       stageSubtitle={brief.subtitle}
-      storyline={brief.missionBrief[0] ?? ""}
+      missionBrief={brief.missionBrief}
       sectionHints={brief.sections}
       chapter={story.chapter}
       reportTo={story.reportTo}

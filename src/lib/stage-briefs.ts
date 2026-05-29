@@ -95,6 +95,7 @@ export const STAGE_BRIEFS: Record<
       "Sankofa Digital is a 600-person fintech with a SOC bench of four. Last quarter one of their analysts — the one you are replacing — flagged a login that came from an unusual IP, wrote \"probably nothing\" in the ticket, and closed it. Amaka Eze, Head of Security, does not think it was nothing. She has asked you to read the evidence and tell her whether she should be worried.",
       "Your platform work for this stage has walked you through the basics: the CIA triad, AAA, basic Linux, hashing, encoding, how a SIEM reads logs, and the ISC2 Code of Ethics. This report is where you show you can apply them — not recite them.",
       "You are writing to the Sankofa Digital Incident Committee. Three people. None of them touch a keyboard for a living. Make the report readable in under fifteen minutes.",
+      "Your evidence pack has four files. auth-log-q2.txt is the gateway-01 SSH log from 3–5 June; somewhere in it is the login that should have been escalated. encoded-strings.txt is a forwarded message with four encoded payloads; one of them names the threat actor. tier-1-ticket-history.csv is sixteen Q2 SOC tickets showing how the alerts around the breach were closed — the dismissal pattern is what re-opened the case. sankofa-roster.csv is the staff directory with leave and offboarding dates; use it to test whether suspicious activity matches real staff availability.",
     ],
     cast: [
       {
@@ -263,6 +264,7 @@ export const STAGE_BRIEFS: Record<
       "Amaka's suspicion was right. The analyst you replaced closed the ticket because they could not read what they were looking at. Tunde, the threat-intel lead, has since pulled a zip off a staging server the attacker (\"The Griot\") abandoned. It contains configs, session tokens, one image, and a handful of \"notes\" files — all either encrypted, encoded, or otherwise obscured. Sloppily, in places.",
       "The board now knows Sankofa was compromised during Q2. They want to know two things. First: what was in the files. Second, and more importantly: which cryptographic decisions inside Sankofa's own stack made this kind of sloppiness survive for three months without detection.",
       "This report is addressed to Amaka and the board. Half of it is a post-mortem of The Griot's choices. Half of it is a control set Sankofa should adopt so the next Griot has no easy layer to hide behind.",
+      "Your evidence pack has five files. 01-aes-recipe.md is an AES-CBC ciphertext with the key and IV the Griot left in the staging config — decrypt to recover the target name. 02-classical-cipher.txt is a Griot note to themselves; identify the cipher and decode it. 03-jwts.txt is three session tokens — each has a different failure (alg, lifecycle, privilege). 04-weak-jwt-hmac.txt is an HS256 token signed with the legacy admin's hard-coded secret; crack it offline and forge a token. 05-layered-recon-note.txt is a three-layer encoded reconnaissance memo; peel each layer and report the intermediate plaintext at every step.",
     ],
     cast: [
       {
@@ -433,6 +435,7 @@ export const STAGE_BRIEFS: Record<
       "The decrypted files point at a path: sankofa.internal/legacy-admin/. It is a Django app from 2019 that was supposed to be decommissioned two years ago. Tunde confirms it is still online and publicly reachable.",
       "You are writing a pentest-style findings report for Sankofa's Head of Engineering. The goal is not to showboat — it is to tell the team exactly what's broken, how an attacker would chain the weaknesses, and what to fix first. You have a week. The team has two.",
       "You will not run any scans against real infrastructure. Every weakness you need to analyse is in the source-code snippets, HTTP captures, and sample tokens in the resources. You read them in the browser, no install needed.",
+      "Your evidence pack has five files. 01-legacy-admin-login.php is the recovered login source — SQLi, MD5 password storage, open redirect, and a hand-rolled JWT verifier that honours alg:none. 02-attacker-http-capture.txt is the edge-proxy capture of the attacker's 02:14–02:31 UTC session; map each request to the bug class in the source. 03-legacy-admin-tokens.txt is three JWTs from the same app, each showing a different failure. 04-import-xxe.xml is an XML import body containing an XXE file-read attempt — connect the parser flaw to the matching HTTP capture line. 05-exfil-sample.csv is a redacted twenty-row sample of what the attacker exfiltrated; use it to quantify impact for the CVSS scoring here and the NDPA letter in Stage 4.",
     ],
     cast: [
       {
@@ -591,6 +594,7 @@ export const STAGE_BRIEFS: Record<
       "The Griot did get in through /legacy-admin/. They pivoted sideways to a finance analyst's workstation (10.0.1.87) and sat there for 72 hours before Tunde noticed the beacon traffic and quarantined the box.",
       "You have been handed the forensic artefacts: the pre-parsed memory-process listing, a filesystem index, 72 hours of syslog + auth.log, and a SIEM export. Everything is plain text — open it in your editor or Google Docs, no Volatility install required.",
       "Your job is to produce three things the CISO takes to legal tomorrow: a clean incident timeline, an IOC list, and a list of MITRE ATT&CK techniques the adversary used. The timeline is the primary artefact — legal reads it first. Do not invent details. Every sentence traces to a line in the evidence.",
+      "Your evidence pack has six files. 01-process-listing.txt is Volatility 3 linux.pslist output from 10.0.1.87; find the persistence chain (.bashrc → .helper → curl beacon to 185.220.101.9). 02-filesystem-index.txt is every file modified since rebuild — includes the rogue sudoers entry and the Griot's internal memo. 03-syslog.txt is 72 hours of syslog with EXECVE audit, sudo less invocations, the cron RELOAD trick, and the tar+scp exfil. 04-siem-export.csv is nine ranked SIEM alerts; triage by severity and attach each rule to the artefact that proves it. 05-memory-strings.txt is pre-parsed strings from the memory dump — environment variables, command fragments, encoded chunks, and a lot of noise to filter through. 06-netflow.csv is netflow records around the breach window; separate the beacons and the scp transfer from DNS, NTP, and unrelated lateral traffic.",
     ],
     cast: [
       {
@@ -767,9 +771,10 @@ export const STAGE_BRIEFS: Record<
     label: "Stage 4",
     subtitle: "Governance & Risk — The Debrief",
     missionBrief: [
-      "Tomorrow at 09:00 you are in front of Sankofa's board. Three members: the Chair, the CFO, and an independent director who used to chair a bank. They do not care about MITRE ATT&CK technique IDs. They care about three things: did customer PII leave the building, are we in breach of GDPR, and what does the next twelve months of security spend need to look like.",
+      "Tomorrow at 09:00 you are in front of Sankofa's board. Three members: the Chair, the CFO, and an independent director who used to chair a bank. They do not care about MITRE ATT&CK technique IDs. They care about three things: did customer PII leave the building, are we in breach of GDPR/NDPA, and what does the next twelve months of security spend need to look like.",
       "This is the capstone. You are no longer a technical analyst — you are the voice the board hears. Every artefact you submit lives on the record. Every number gets quoted back at you.",
       "When the chair signs off on your package, you are no longer a candidate. You pick your specialist track — SOC, Ethical Hacking, or GRC — and the next chapter of your work is the one you chose.",
+      "Your evidence pack has seven files. Five are templates you complete: breach-notification-template.md (NDPA Section 40 skeleton with bracketed fields), risk-register-template.csv (five-row register with NIST CSF 2.0 + ISO 27001:2022 Annex A columns; R-001 worked as an example), board-memo-template.md (one-page slide memo — title, three numbers, ask, tradeoff), 30-60-90-roadmap-template.md (nine-row roadmap plus a mandatory deferral list), and control-mapping-skeleton.csv (eight-row mapping across NIST CSF 2.0, ISO 27001:2022 Annex A, and MITRE D3FEND). Two are inputs you must explicitly respond to: 06-external-audit-findings.md (three KPMG-style findings on the IR response — accept, dispute, or defer each), and 07-board-minutes-excerpt.md (board questions you must answer head-on in the memo and the NDPA letter).",
     ],
     cast: [
       {
