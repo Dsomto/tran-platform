@@ -658,21 +658,29 @@ export function getTemplate(id: string): NewsletterTemplate | undefined {
 // Renders a template's subject + body with both the admin-supplied variables
 // and the per-recipient first name substituted. `{First name}` (any casing)
 // in the subject also gets replaced.
+//
+// `adminSubject` lets the API route pass through what the super admin typed
+// (or kept as default) instead of always re-deriving from tpl.defaultSubject —
+// otherwise `{{var}}` tokens in an admin-kept subject never resolve.
 export function renderTemplate(args: {
   templateId: string;
   vars: Record<string, string>;
   firstName: string;
+  adminSubject?: string;
 }): { subject: string; body: string } | null {
   const tpl = getTemplate(args.templateId);
   if (!tpl) return null;
 
-  const subjectWithVars = substituteVars(tpl.defaultSubject, args.vars);
+  const sourceSubject = args.adminSubject ?? tpl.defaultSubject;
+  const subjectWithVars = substituteVars(sourceSubject, args.vars);
   const subject = substituteFirstName(subjectWithVars, args.firstName);
 
-  // The body's `{First name}` tokens are inserted via the render function
-  // directly (firstName arg), so the template author writes ${firstName} in
-  // the JSX-like template. Variables are substituted by the render fn too.
-  const body = tpl.render({ firstName: args.firstName, vars: args.vars });
+  // Templates interpolate `firstName` directly into HTML (`Hi ${firstName},`).
+  // Escape it once here so a stray `<` in an applicant's full name cannot reach
+  // the rendered email as live markup. Defence in depth — the application form
+  // should already sanitise, but this is the last gate before SMTP.
+  const safeFirstName = escapeHtml(args.firstName);
+  const body = tpl.render({ firstName: safeFirstName, vars: args.vars });
 
   return { subject, body };
 }

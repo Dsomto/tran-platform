@@ -206,14 +206,23 @@ export async function POST(request: NextRequest) {
       const firstName = firstNameOf(a.fullName);
 
       if (useTemplate) {
-        const rendered = renderTemplate({ templateId, vars: templateVars, firstName });
-        // rendered cannot be null at this point (validated above), but TS narrowing.
-        const finalSubject = subject || rendered?.subject || templateId;
+        // Pass the admin-edited subject through to renderTemplate so its
+        // {{var}} + {First name} substitution applies to whatever the admin
+        // actually typed (or kept as default). Previously the subject path
+        // bypassed substituteVars, so a kept-default subject like
+        // "Stage {{stage}} closes Friday — {First name}, …" went out with
+        // {{stage}} as literal text.
+        const rendered = renderTemplate({
+          templateId,
+          vars: templateVars,
+          firstName,
+          adminSubject: subject || undefined,
+        });
         return {
           userId: userByEmail.get(a.email.toLowerCase()) ?? null,
           kind: "GENERAL",
           toEmail: a.email,
-          subject: personalizeText(finalSubject, firstName),
+          subject: rendered?.subject ?? subject,
           body: rendered?.body ?? "",
           status: "PENDING",
           context: { type: "broadcast", applicationId: a.id, templateId },
