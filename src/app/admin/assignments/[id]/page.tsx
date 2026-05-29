@@ -91,7 +91,6 @@ export default async function StageDetailPage({
   }));
 
   const status = (stageWindow?.status ?? "CLOSED") as "OPEN" | "PAUSED" | "CLOSED";
-  const passingScore = stageWindow?.passingScore ?? null;
 
   return (
     <div className="min-h-screen">
@@ -107,7 +106,6 @@ export default async function StageDetailPage({
           stage={stage}
           stageName={STAGE_NAMES[stage]}
           initialStatus={status}
-          initialPassingScore={passingScore}
           accessRows={accessRows}
           submissions={submissions}
         />

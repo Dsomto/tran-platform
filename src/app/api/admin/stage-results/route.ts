@@ -161,21 +161,21 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST: publish results — bulk promote/fail graded reports based on a threshold.
-// Queues a result email for every graded report. Idempotent-ish: re-running
-// with the same threshold is safe; re-running with a different threshold
-// re-evaluates and enqueues again (so use with care).
+// POST: stage-results action dispatcher.
+//
+// All publishing flows through the audited cutoff -> pending -> swap -> finalize
+// path. The legacy direct-publish branch (POST with no `action` field, which
+// used report.score instead of the 0.8*report + 0.2*terminal% combined score,
+// and skipped the pending review step) has been removed — it gave a different
+// outcome for the same intern depending on which path the admin hit.
 export async function POST(request: NextRequest) {
   try {
     const admin = await requireSuperAdmin();
     const body = await request.json();
 
-    // Reset: undo a publish so the stage can be re-published.
     if (body?.action === "reset") {
       return await handleReset(request, admin, body);
     }
-    // Pending flow: sort graded reports into pending buckets on a cutoff, swap
-    // one intern between buckets (logged), or finalize (commit promote/eliminate).
     if (body?.action === "apply-cutoff") {
       return await handleApplyCutoff(request, admin, body);
     }
@@ -186,232 +186,15 @@ export async function POST(request: NextRequest) {
       return await handleFinalize(request, admin, body);
     }
 
-    const { stage, passingScore, dryRun } = body ?? {};
-
-    if (!isStageKey(stage)) {
-      return Response.json({ error: "Invalid stage" }, { status: 400 });
-    }
-    const threshold = Number(passingScore);
-    if (!Number.isFinite(threshold) || threshold < 0 || threshold > 100) {
-      return Response.json({ error: "passingScore must be 0-100" }, { status: 400 });
-    }
-
-    // Block publishing if any reports for this stage are still waiting on a
-    // super-admin tiebreak — otherwise those interns silently miss the
-    // results email and stay stuck on UNDER_REVIEW.
-    const divergentPending = await prisma.stageReport.count({
-      where: { stage, divergent: true },
-    });
-    if (divergentPending > 0) {
-      return Response.json(
-        {
-          error: `${divergentPending} report${divergentPending === 1 ? "" : "s"} for this stage still need a tiebreak. Resolve those before publishing.`,
-          divergentPending,
-        },
-        { status: 409 }
-      );
-    }
-
-    const graded = await prisma.stageReport.findMany({
-      where: { stage, status: "GRADED" },
-      include: {
-        intern: {
-          include: { user: true },
-        },
+    return Response.json(
+      {
+        error:
+          "Unknown action. Use action='apply-cutoff' | 'swap' | 'finalize' | 'reset'. The legacy direct-publish path was removed; publishing goes through the cutoff/pending/finalize flow on /admin/stage-results.",
       },
-    });
-
-    if (graded.length === 0) {
-      return Response.json({ error: "No graded reports to publish for this stage" }, { status: 409 });
-    }
-
-    // Per-intern overrides — supplied from the review UI when an admin swaps
-    // individuals between the threshold-derived buckets. Shape:
-    //   { overrides: { "<internId>": "pass" | "fail" } }
-    // Any internId listed forces that outcome regardless of score; everyone
-    // else falls through the threshold comparison below. Audit-logged with
-    // the publish action so the override decision is recoverable.
-    const rawOverrides = body?.overrides;
-    const overrides = new Map<string, "pass" | "fail">();
-    if (rawOverrides && typeof rawOverrides === "object") {
-      const entries = Object.entries(rawOverrides);
-      if (entries.length > 1000) {
-        return Response.json({ error: "Too many overrides supplied" }, { status: 400 });
-      }
-      for (const [k, v] of entries) {
-        if (typeof k === "string" && (v === "pass" || v === "fail")) {
-          overrides.set(k, v);
-        }
-      }
-    }
-
-    const willPass: typeof graded = [];
-    const willFail: typeof graded = [];
-    const appliedOverrides: {
-      internId: string;
-      reportId: string;
-      email: string;
-      fullName: string;
-      score: number;
-      thresholdOutcome: "pass" | "fail";
-      forcedOutcome: "pass" | "fail";
-    }[] = [];
-    for (const r of graded) {
-      const forced = overrides.get(r.intern.id);
-      const thresholdOutcome: "pass" | "fail" = (r.score ?? 0) >= threshold ? "pass" : "fail";
-      if (forced && forced !== thresholdOutcome) {
-        appliedOverrides.push({
-          internId: r.intern.id,
-          reportId: r.id,
-          email: r.intern.user.email,
-          fullName: `${r.intern.user.firstName} ${r.intern.user.lastName}`.trim(),
-          score: r.score ?? 0,
-          thresholdOutcome,
-          forcedOutcome: forced,
-        });
-      }
-      const passes = forced ? forced === "pass" : thresholdOutcome === "pass";
-      if (passes) willPass.push(r);
-      else willFail.push(r);
-    }
-
-    if (dryRun) {
-      return Response.json({
-        dryRun: true,
-        willPass: willPass.length,
-        willFail: willFail.length,
-        overridesApplied: appliedOverrides.length,
-      });
-    }
-
-    // Upsert the stage window so future reads see the threshold.
-    await prisma.stageWindow.upsert({
-      where: { stage },
-      create: {
-        stage,
-        passingScore: Math.round(threshold),
-      },
-      update: { passingScore: Math.round(threshold) },
-    });
-
-    const stageNum = stage.replace("STAGE_", "");
-    const nextStage = `STAGE_${Number(stageNum) + 1}` as StageKey;
-    const origin = process.env.PUBLIC_APP_URL || "https://ubuntubridgeinitiatives.org";
-    const slackUrl = process.env.SLACK_CHANNEL_URL || "";
-
-    // Promote passers and queue pass emails.
-    for (const r of willPass) {
-      await prisma.stageReport.update({
-        where: { id: r.id },
-        data: { status: "PASSED" },
-      });
-      // Advance intern currentStage if this was their current stage (don't regress).
-      if (isStageKey(nextStage) && r.intern.currentStage === stage) {
-        await prisma.intern.update({
-          where: { id: r.intern.id },
-          data: { currentStage: nextStage },
-        });
-        await prisma.stageHistory.create({
-          data: {
-            internId: r.intern.id,
-            fromStage: stage,
-            toStage: nextStage,
-            promotedBy: "stage-publish",
-            reason: `Passed with score ${r.score} (threshold ${Math.round(threshold)})`,
-          },
-        });
-      }
-
-      const certUrl = certificateUrl({
-        origin,
-        reportId: r.id,
-        internId: r.intern.id,
-      });
-
-      await prisma.emailQueueItem.create({
-        data: {
-          userId: r.intern.user.id,
-          toEmail: r.intern.user.email,
-          kind: "STAGE_PASSED",
-          subject: `Stage ${stageNum} — You've made it`,
-          body: renderResultEmail({
-            firstName: r.intern.user.firstName,
-            stageNumber: stageNum,
-            passed: true,
-            score: r.score ?? 0,
-            feedback: r.feedback ?? "",
-            passingScore: Math.round(threshold),
-            certUrl,
-            slackUrl,
-          }),
-          context: {
-            reportId: r.id,
-            stage,
-            score: r.score,
-            passingScore: Math.round(threshold),
-            certUrl,
-          },
-        },
-      });
-    }
-
-    // Fail others and queue fail emails.
-    for (const r of willFail) {
-      await prisma.stageReport.update({
-        where: { id: r.id },
-        data: { status: "FAILED" },
-      });
-      await prisma.emailQueueItem.create({
-        data: {
-          userId: r.intern.user.id,
-          toEmail: r.intern.user.email,
-          kind: "STAGE_FAILED",
-          subject: `Stage ${stageNum} — Your results`,
-          body: renderResultEmail({
-            firstName: r.intern.user.firstName,
-            stageNumber: stageNum,
-            passed: false,
-            score: r.score ?? 0,
-            feedback: r.feedback ?? "",
-            passingScore: Math.round(threshold),
-            certUrl: null,
-            slackUrl,
-          }),
-          context: {
-            reportId: r.id,
-            stage,
-            score: r.score,
-            passingScore: Math.round(threshold),
-          },
-        },
-      });
-    }
-
-    await recordAudit({
-      actor: admin,
-      action: "stage-results.publish",
-      targetType: "STAGE_RESULTS",
-      targetId: stage,
-      details: {
-        stage,
-        threshold: Math.round(threshold),
-        passed: willPass.length,
-        failed: willFail.length,
-        overridesApplied: appliedOverrides.length,
-        overrides: appliedOverrides,
-      },
-      ...auditMetaFromRequest(request),
-    });
-
-    return Response.json({
-      published: true,
-      passed: willPass.length,
-      failed: willFail.length,
-      threshold: Math.round(threshold),
-      overridesApplied: appliedOverrides.length,
-    });
+      { status: 400 }
+    );
   } catch (error) {
-    logger.error("publish_stage_results_failed", error);
+    logger.error("stage_results_dispatch_failed", error);
     return Response.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -454,7 +237,12 @@ async function handleReset(
     data: { status: "GRADED" },
   });
 
-  // 2. Drop result emails for this stage still waiting to send.
+  // 2. Drop result emails for this stage still waiting to send. We filter by
+  // `kind` AND the subject prefix written by handleFinalize. MongoDB+Prisma
+  // doesn't expose nested-JSON `path` filters, so we cannot match on
+  // context.stage directly. KEEP THIS IN SYNC with the subject format in
+  // handleFinalize ("Stage N — …"); changing the format there without
+  // updating this query will leave a re-publish double-emailing anyone.
   const stageNum = stage.replace("STAGE_", "");
   const cancelled = await prisma.emailQueueItem.deleteMany({
     where: {
@@ -544,7 +332,7 @@ async function handleApplyCutoff(
 
   const reports = await prisma.stageReport.findMany({
     where: { stage, status: { in: ["GRADED", "PENDING_PROMOTION", "PENDING_ELIMINATION"] } },
-    select: { id: true, internId: true, score: true },
+    select: { id: true, internId: true, score: true, status: true },
   });
   if (reports.length === 0) {
     return Response.json({ error: "No graded reports to sort for this stage" }, { status: 409 });
@@ -554,17 +342,39 @@ async function handleApplyCutoff(
   const round = Math.round(threshold);
   let pendingPromotion = 0;
   let pendingElimination = 0;
+  // A re-applied cutoff can flip a report whose bucket was previously set by an
+  // explicit handleSwap. Record each such flip as a StageDecisionLog row so the
+  // audit trail names the cutoff-re-application as the cause, not a phantom.
+  const swapOverrides: Prisma.StageDecisionLogCreateManyInput[] = [];
   for (const r of reports) {
     const terminalPct =
       maxPoints > 0 ? Math.round(((earnedByIntern.get(r.internId) ?? 0) / maxPoints) * 100) : null;
     const finalScore = combinedFinalScore(r.score, terminalPct);
-    const status = finalScore >= round ? "PENDING_PROMOTION" : "PENDING_ELIMINATION";
+    const newStatus = finalScore >= round ? "PENDING_PROMOTION" : "PENDING_ELIMINATION";
+    const prevStatus = r.status;
+    if (
+      (prevStatus === "PENDING_PROMOTION" || prevStatus === "PENDING_ELIMINATION") &&
+      prevStatus !== newStatus
+    ) {
+      swapOverrides.push({
+        internId: r.internId,
+        stage,
+        reportId: r.id,
+        fromStatus: prevStatus,
+        toStatus: newStatus,
+        actorId: admin.id,
+        reason: `Re-bucketed by cutoff re-application (threshold ${round}; finalScore ${finalScore}).`,
+      });
+    }
     await prisma.stageReport.update({
       where: { id: r.id },
-      data: { status, terminalScore: terminalPct, finalScore },
+      data: { status: newStatus, terminalScore: terminalPct, finalScore },
     });
-    if (status === "PENDING_PROMOTION") pendingPromotion++;
+    if (newStatus === "PENDING_PROMOTION") pendingPromotion++;
     else pendingElimination++;
+  }
+  if (swapOverrides.length > 0) {
+    await prisma.stageDecisionLog.createMany({ data: swapOverrides });
   }
 
   await prisma.stageWindow.upsert({
@@ -578,11 +388,24 @@ async function handleApplyCutoff(
     action: "stage-results.apply-cutoff",
     targetType: "STAGE_RESULTS",
     targetId: stage,
-    details: { stage, threshold: round, pendingPromotion, pendingElimination, reSorted: reports.length },
+    details: {
+      stage,
+      threshold: round,
+      pendingPromotion,
+      pendingElimination,
+      reSorted: reports.length,
+      swapOverridesUndone: swapOverrides.length,
+    },
     ...auditMetaFromRequest(request),
   });
 
-  return Response.json({ applied: true, threshold: round, pendingPromotion, pendingElimination });
+  return Response.json({
+    applied: true,
+    threshold: round,
+    pendingPromotion,
+    pendingElimination,
+    swapOverridesUndone: swapOverrides.length,
+  });
 }
 
 // Swap one intern between the two pending buckets. Logged to StageDecisionLog.
@@ -720,8 +543,24 @@ async function handleFinalize(
           },
         }),
       ];
-      // Advance only if still on this stage (don't regress someone already ahead).
-      if (isStageKey(nextStage) && r.intern.currentStage === stage) {
+      // Advance only if still on this stage (don't regress someone already
+      // ahead). STAGE_4 promotion is the foundation graduation — no STAGE_5
+      // Room exists, so don't move currentStage; flip `Intern.finalist`
+      // instead so the dashboard / downstream selection can recognise them.
+      if (stage === "STAGE_4") {
+        ops.push(
+          prisma.intern.update({ where: { id: r.intern.id }, data: { finalist: true } }),
+          prisma.stageHistory.create({
+            data: {
+              internId: r.intern.id,
+              fromStage: stage,
+              toStage: stage,
+              promotedBy: "stage-finalize",
+              reason: `Graduated foundation (final ${score}, cutoff ${threshold})`,
+            },
+          })
+        );
+      } else if (isStageKey(nextStage) && r.intern.currentStage === stage) {
         ops.push(
           prisma.intern.update({ where: { id: r.intern.id }, data: { currentStage: nextStage } }),
           prisma.stageHistory.create({

@@ -7,7 +7,6 @@ import {
   CheckCircle2,
   XCircle,
   Loader2,
-  Send,
   Lock,
   LockOpen,
   Pause,
@@ -45,7 +44,6 @@ interface Props {
   stage: string;
   stageName: string;
   initialStatus: Status;
-  initialPassingScore: number | null;
   accessRows: AccessRow[];
   submissions: ReportRow[];
 }
@@ -54,7 +52,6 @@ export function StageAdminPanel({
   stage,
   stageName,
   initialStatus,
-  initialPassingScore,
   accessRows,
   submissions,
 }: Props) {
@@ -120,33 +117,31 @@ export function StageAdminPanel({
         }}
       />
 
-      {/* ── Publish results — only useful once grading has happened ── */}
+      {/* ── Publish results — moved to /admin/stage-results ── */}
       <section className="bg-white border border-border rounded-xl p-5 mb-6">
         <div className="flex items-center gap-2 mb-2">
           <TrendingUp className="w-4 h-4 text-blue" />
           <h2 className="text-sm font-semibold text-foreground">Publish results</h2>
         </div>
         <p className="text-xs text-muted-foreground mb-4">
-          Look at the grade distribution, pick where the passing line goes,
-          publish. Passers move to the next stage; everyone graded gets an
-          email. This is a one-way action.
+          Publishing has moved to the dedicated{" "}
+          <Link href={`/admin/stage-results?stage=${stage}`} className="text-blue font-medium hover:underline">
+            Stage Results
+          </Link>{" "}
+          page — apply a cutoff, review the two pending buckets, swap individuals if needed, then finalize. The old one-click publish skipped the audited swap step and is no longer available.
         </p>
         {counts.graded === 0 && !published ? (
           <p className="text-xs text-muted-foreground italic">
             No graded reports yet. The grading bench picks these up at{" "}
-            <a href="/admin/reports" className="text-blue hover:underline">
-              /admin/reports
-            </a>{" "}
-            — once at least one is graded, you can publish.
+            <Link href="/admin/reports" className="text-blue hover:underline">/admin/reports</Link>.
           </p>
         ) : (
-          <PublishResults
-            stage={stage}
-            stageNum={stageNum}
-            submissions={submissions}
-            initialPassingScore={initialPassingScore}
-            published={published}
-          />
+          <Link
+            href={`/admin/stage-results?stage=${stage}`}
+            className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-lg bg-blue text-white hover:opacity-90"
+          >
+            Open Stage {stageNum} results page →
+          </Link>
         )}
       </section>
 
@@ -486,183 +481,10 @@ function StatusPill({ status }: { status: Status }) {
   );
 }
 
-// ── Publish results — histogram + slider + publish ──────
-
-function PublishResults({
-  stage,
-  stageNum,
-  submissions,
-  initialPassingScore,
-  published,
-}: {
-  stage: string;
-  stageNum: string;
-  submissions: ReportRow[];
-  initialPassingScore: number | null;
-  published: boolean;
-}) {
-  const router = useRouter();
-  const [threshold, setThreshold] = useState<number>(initialPassingScore ?? 70);
-  const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
-  const [result, setResult] = useState<string | null>(null);
-
-  // Only graded reports (not drafts / submitted-but-ungraded) count.
-  const graded = submissions.filter((s) => s.score != null);
-
-  // Histogram in 10-point buckets: [0-9], [10-19], … [90-100].
-  const buckets = useMemo(() => {
-    const arr = Array.from({ length: 10 }, (_, i) => ({
-      from: i * 10,
-      to: i === 9 ? 100 : i * 10 + 9,
-      count: 0,
-    }));
-    for (const s of graded) {
-      const score = Math.max(0, Math.min(100, s.score ?? 0));
-      const idx = score === 100 ? 9 : Math.floor(score / 10);
-      arr[idx].count += 1;
-    }
-    return arr;
-  }, [graded]);
-
-  const maxBucket = Math.max(1, ...buckets.map((b) => b.count));
-  const passing = graded.filter((s) => (s.score ?? 0) >= threshold).length;
-  const failing = graded.length - passing;
-  // Reports stuck on a divergent reviewer split — must be tiebroken before
-  // publish, otherwise they silently miss the results email.
-  const divergentPending = submissions.filter((s) => s.divergent).length;
-
-  async function publish() {
-    if (divergentPending > 0) {
-      setErr(
-        `${divergentPending} report${divergentPending === 1 ? "" : "s"} for this stage need a super-admin tiebreak first. Resolve those on /admin/reports before publishing.`
-      );
-      return;
-    }
-    if (!confirm(`Publish Stage ${stageNum} results with passing score ${threshold}?\n\n${passing} pass · ${failing} below threshold. This is one-way.`)) return;
-    setBusy(true);
-    setErr(null);
-    setResult(null);
-    try {
-      const res = await fetch("/api/admin/stage-results", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ stage, passingScore: threshold }),
-      });
-      const j = await res.json();
-      if (!res.ok) {
-        setErr(j.error || "Publish failed");
-      } else {
-        setResult(`Published. ${j.passed} passed · ${j.failed} did not. Emails queued.`);
-        router.refresh();
-      }
-    } catch {
-      setErr("Network error");
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  return (
-    <div>
-      {/* Histogram */}
-      <div className="mb-4">
-        <div className="flex items-end gap-1 h-28">
-          {buckets.map((b) => {
-            const pct = (b.count / maxBucket) * 100;
-            const passes = b.from >= threshold || (b.from + 9 >= threshold && b.from + 9 - threshold > 5);
-            const isMixed = b.from < threshold && b.to >= threshold;
-            return (
-              <div key={b.from} className="flex-1 flex flex-col items-center gap-1">
-                <span className="text-[10px] tabular-nums text-muted-foreground h-3">
-                  {b.count > 0 ? b.count : ""}
-                </span>
-                <div
-                  className={`w-full rounded-t transition-colors ${
-                    isMixed
-                      ? "bg-amber-400"
-                      : passes
-                        ? "bg-emerald-500"
-                        : "bg-rose-400"
-                  }`}
-                  style={{ height: `${pct}%`, minHeight: b.count > 0 ? 2 : 0 }}
-                  title={`${b.from}-${b.to}: ${b.count} graded`}
-                />
-              </div>
-            );
-          })}
-        </div>
-        <div className="flex gap-1 mt-1">
-          {buckets.map((b) => (
-            <div key={b.from} className="flex-1 text-center text-[9.5px] font-mono text-muted-foreground">
-              {b.from}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Slider + counts */}
-      <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-4 items-center mb-4">
-        <div>
-          <label className="text-xs text-muted-foreground block mb-1.5">
-            Passing score: <strong className="text-foreground">{threshold}</strong>{" "}
-            <span className="text-muted-foreground">/ 100</span>
-          </label>
-          <input
-            type="range"
-            min={0}
-            max={100}
-            step={1}
-            value={threshold}
-            onChange={(e) => setThreshold(Number(e.target.value))}
-            disabled={published || busy}
-            className="w-full"
-          />
-        </div>
-        <div className="flex gap-2">
-          <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded bg-emerald-50 text-emerald-800 border border-emerald-200">
-            {passing} pass
-          </span>
-          <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded bg-rose-50 text-rose-800 border border-rose-200">
-            {failing} below
-          </span>
-        </div>
-      </div>
-
-      {divergentPending > 0 && !published && (
-        <div className="mb-3 p-3 bg-amber-50 border border-amber-300 rounded-lg text-sm text-amber-900">
-          <strong>{divergentPending} report{divergentPending === 1 ? "" : "s"} need a tiebreak.</strong>
-          {" "}Two reviewers disagreed by more than 15 points. Resolve these on
-          {" "}<Link href="/admin/reports" className="underline font-medium">/admin/reports</Link>
-          {" "}before publishing — divergent reports are excluded from the publish run.
-        </div>
-      )}
-      {err && (
-        <div className="mb-3 p-3 bg-rose-50 border border-rose-200 rounded-lg text-sm text-rose-800">
-          {err}
-        </div>
-      )}
-      {result && (
-        <div className="mb-3 p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-sm text-emerald-900">
-          {result}
-        </div>
-      )}
-
-      <button
-        onClick={publish}
-        disabled={busy || published || graded.length === 0 || divergentPending > 0}
-        className="inline-flex items-center gap-1.5 px-5 py-2 text-sm font-semibold rounded-lg bg-blue text-white hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
-        {published
-          ? "Already published"
-          : divergentPending > 0
-          ? `Resolve ${divergentPending} tiebreak${divergentPending === 1 ? "" : "s"} first`
-          : `Publish at ${threshold}/100`}
-      </button>
-    </div>
-  );
-}
+// PublishResults removed — the direct-publish path on /api/admin/stage-results
+// was a backdoor that bypassed the cutoff/pending/swap/finalize audit flow and
+// used a different scoring formula (report.score only, not the 80/20 combined
+// finalScore). All publishing now goes through /admin/stage-results.
 
 function Stat({
   icon: Icon,
