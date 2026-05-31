@@ -325,7 +325,11 @@ export default function PlayPage() {
         .map((s) => (s === "correct" ? "🟩" : s === "present" ? "🟨" : "⬛"))
         .join("")
     );
-    const text = `🔐 CyberWordle #${dayNum} ${gameStatus === "won" ? guesses.length : "X"}/${MAX_GUESSES}\n\n${rows.join("\n")}\n\nPlay at ubinitiative.org/play`;
+    // Use the live origin (https://ubuntubridgeinitiatives.org in prod, the
+    // preview URL in branch deploys, localhost in dev) so the shared link
+    // always points at the same host the player is on.
+    const origin = typeof window !== "undefined" ? window.location.origin : "https://ubuntubridgeinitiatives.org";
+    const text = `🔐 CyberWordle #${dayNum} ${gameStatus === "won" ? guesses.length : "X"}/${MAX_GUESSES}\n\n${rows.join("\n")}\n\nPlay at ${origin}/play`;
     navigator.clipboard.writeText(text);
     showToast("Copied to clipboard!");
   }
