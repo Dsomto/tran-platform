@@ -8,7 +8,6 @@ import { SlackCard } from "@/components/dashboard/slack-card";
 import { stageUrl, type StageSlug } from "@/lib/stage-routes";
 import { formatDate, stageToNumber, trackLabel } from "@/lib/utils";
 import {
-  ArrowUpRight,
   Clock,
   DoorOpen,
   FileText,
@@ -45,11 +44,48 @@ export default async function DashboardPage() {
     where: { userId: session.id },
   });
 
-  // ── Pre-intern states: application pending / not approved / not applied ──
+  // ── Pre-intern states ──────────────────────────────────────────────
+  // A User row exists (they could log in) but no Intern row. Three real
+  // cases:
+  //   1. Approved PublicApplication — Intern row never got created
+  //      (partial failure in onboardApprovedApplicant). They ARE accepted;
+  //      the data layer just didn't finish. Direct them to support; the
+  //      `repair-orphaned-interns.ts` script also converges this.
+  //   2. Pending/rejected PublicApplication — admin hasn't approved yet
+  //      or did not. Be specific.
+  //   3. No PublicApplication on record AT ALL — somehow has a User
+  //      account without applying. Cohort 1 applications are closed; do
+  //      not link to /apply, that page just shows the "closed" banner
+  //      and confuses people.
+  //
+  // We match PublicApplication by email (not userId — PublicApplication
+  // has no userId column).
   if (!intern) {
-    const app = await prisma.application.findUnique({
-      where: { userId: session.id },
+    const app = await prisma.publicApplication.findUnique({
+      where: { email: session.email.toLowerCase() },
+      select: { status: true },
     });
+    const isApprovedButOrphaned = app?.status === "approved";
+    const isPending = app?.status === "pending";
+    const isRejected = app?.status === "rejected";
+    const hasNoApp = !app;
+
+    const title = isApprovedButOrphaned
+      ? "Your account isn't fully set up"
+      : isPending
+        ? "Application under review"
+        : isRejected
+          ? "Application not approved"
+          : "No application on file";
+
+    const body = isApprovedButOrphaned
+      ? "We approved your application but the final setup step didn't complete on our end. Refresh this page in a few minutes. If it's still here, email cyberops@ethnoscyber.com with your full name and we'll fix it manually — usually within an hour."
+      : isPending
+        ? "We'll email you the moment a decision is made. No need to refresh."
+        : isRejected
+          ? "Your application was not approved for this cohort."
+          : "We don't have an application linked to this email. Applications for the current cohort are closed; if you believe this is an error, message cyberops@ethnoscyber.com.";
+
     return (
       <>
         <Topbar
@@ -63,28 +99,12 @@ export default async function DashboardPage() {
             <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
               <Clock className="w-8 h-8 text-primary" />
             </div>
-            <h2 className="text-xl font-bold text-foreground mb-2">
-              {app
-                ? app.status === "PENDING"
-                  ? "Application under review"
-                  : "Application not approved"
-                : "No application yet"}
-            </h2>
-            <p className="text-sm text-muted mb-6">
-              {app
-                ? app.status === "PENDING"
-                  ? "We'll email you the moment a decision is made."
-                  : "Your application was not approved for this cohort."
-                : "Submit your application to begin."}
-            </p>
-            {!app && (
-              <Link
-                href="/apply"
-                className="inline-flex items-center gap-2 bg-blue text-white px-6 py-3 rounded-xl font-semibold text-sm"
-              >
-                Apply now
-                <ArrowUpRight className="w-4 h-4" />
-              </Link>
+            <h2 className="text-xl font-bold text-foreground mb-2">{title}</h2>
+            <p className="text-sm text-muted mb-2 leading-relaxed">{body}</p>
+            {hasNoApp && (
+              <p className="text-xs text-muted/70 mt-3">
+                Signed in as <span className="font-mono">{session.email}</span>
+              </p>
             )}
           </Card>
         </div>
