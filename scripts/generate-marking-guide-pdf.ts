@@ -12,12 +12,16 @@ const PDFDocument = require("pdfkit");
  *     npx tsx scripts/generate-marking-guide-pdf.ts
  *
  * Reads:   marking-guides/<stage>.md
- * Writes:  whatever OUT points at (created if needed).
+ * Writes:  whatever OUT points at (parent dir is created if missing).
  *
- * Same typography as the intern brief PDF (Times body, Helvetica
- * headings, brand stripe). One visual change: bright red "FOR GRADERS
- * ONLY" badge in the letterhead so it never gets confused with the
- * intern-facing brief.
+ * This is a deliberate near-copy of scripts/generate-stage-brief-pdf.ts,
+ * preserving its layout maths exactly — the earlier divergent rewrite
+ * produced 8 trailing blank pages and I'd rather not chase that bug a
+ * second time. Only differences from the brief generator:
+ *   1. Source/destination paths (configurable via env).
+ *   2. Top stripe + accent rule colour = red (graders-only signal).
+ *   3. Letterhead text says "FOR GRADERS ONLY · DO NOT FORWARD TO INTERNS"
+ *      and the footer says "CONFIDENTIAL · ... Marking Guide".
  */
 
 const STAGE = (process.env.STAGE ?? "").trim();
@@ -45,13 +49,12 @@ mkdirSync(path.dirname(pdfPath), { recursive: true });
 const md = readFileSync(mdPath, "utf-8");
 
 const COLOR = {
-  brand: "#1E40AF",
-  brandSoft: "#3B82F6",
-  warn: "#B91C1C",
+  brand: "#B91C1C",        // red — overridden vs the brief generator's blue
+  brandSoft: "#EF4444",
   text: "#111827",
   muted: "#64748B",
   rule: "#D1D5DB",
-  tableHead: "#EEF2F7",
+  tableHead: "#FEF2F2",    // very-light red tint
   tableBorder: "#CBD5E1",
 };
 const FONT = {
@@ -71,7 +74,7 @@ const SIZE = {
   small: 9,
   micro: 8,
 };
-const MARGINS = { top: 80, bottom: 60, left: 62, right: 62 };
+const MARGINS = { top: 74, bottom: 60, left: 62, right: 62 };
 const PAGE_W = 595.28;
 const PAGE_H = 841.89;
 const CONTENT_W = PAGE_W - MARGINS.left - MARGINS.right;
@@ -94,29 +97,30 @@ let isFirstPage = true;
 
 function letterhead() {
   doc.save();
-  // Warning stripe across the top to make it visually obvious this is a
-  // grader-only document, not the intern-facing brief.
-  doc.rect(0, 0, PAGE_W, 6).fillColor(COLOR.warn).fill();
   if (isFirstPage) {
+    // Red stripe across the top — visually different from the brief PDF
+    doc.rect(0, 0, PAGE_W, 6).fillColor(COLOR.brand).fill();
+    // "UBI" wordmark + label
     doc.font(FONT.head).fontSize(13).fillColor(COLOR.brand)
       .text("UBI", MARGINS.left, 28, { lineBreak: false });
     doc.font(FONT.headLight).fontSize(7.5).fillColor(COLOR.muted)
       .text("UBUNTU BRIDGE INITIATIVE", MARGINS.left + 30, 32, { lineBreak: false, characterSpacing: 0.6 });
-    doc.font(FONT.head).fontSize(8).fillColor(COLOR.warn)
+    doc.font(FONT.headLight).fontSize(7.5).fillColor(COLOR.brand)
       .text("FOR GRADERS ONLY · DO NOT FORWARD TO INTERNS", MARGINS.left, 32, {
-        width: CONTENT_W, align: "right", characterSpacing: 0.4,
+        width: CONTENT_W, align: "right",
       });
-    doc.moveTo(MARGINS.left, 52).lineTo(MARGINS.left + CONTENT_W, 52)
+    doc.moveTo(MARGINS.left, 50).lineTo(MARGINS.left + CONTENT_W, 50)
       .strokeColor(COLOR.rule).lineWidth(0.4).stroke();
     isFirstPage = false;
   } else {
+    // Slim continuation header
     doc.font(FONT.headLight).fontSize(7.5).fillColor(COLOR.muted)
       .text(`UBI · ${STAGE_LABEL} · Marking Guide`, MARGINS.left, 32, { lineBreak: false, characterSpacing: 0.4 });
-    doc.font(FONT.head).fontSize(7.5).fillColor(COLOR.warn)
+    doc.font(FONT.headLight).fontSize(7.5).fillColor(COLOR.brand)
       .text("FOR GRADERS ONLY", MARGINS.left, 32, {
-        width: CONTENT_W, align: "right", characterSpacing: 0.4,
+        width: CONTENT_W, align: "right",
       });
-    doc.moveTo(MARGINS.left, 50).lineTo(MARGINS.left + CONTENT_W, 50)
+    doc.moveTo(MARGINS.left, 48).lineTo(MARGINS.left + CONTENT_W, 48)
       .strokeColor(COLOR.rule).lineWidth(0.3).stroke();
   }
   doc.restore();
@@ -192,7 +196,13 @@ function renderTable(rows: string[][]) {
       const h = doc.heightOfString(cell.trim(), { width: colW - 2 * cellPadX });
       return Math.max(20, h + 2 * cellPadY);
     });
-    const rowH = Math.max(...cellHs);
+    // Padding fudge — give pdfkit a few extra points of vertical headroom
+    // so the cell text() call NEVER overflows the rowH we planned. Without
+    // this, marginal-fit cells trigger pdfkit's auto-pagination on the
+    // text() call, which produces orphan trailing blank pages because the
+    // outer loop has already accounted for the row but the page tree has
+    // grown by one.
+    const rowH = Math.max(...cellHs) + 4;
     ensureSpace(rowH + 6);
     const y = doc.y;
     if (isHead) {
@@ -212,12 +222,35 @@ function renderTable(rows: string[][]) {
         .font(font)
         .fontSize(size)
         .fillColor(COLOR.text)
-        .text(row[cIdx].trim(), x, y + cellPadY, { width: colW - 2 * cellPadX });
+        // height constraint forbids pdfkit from auto-paginating this cell.
+        // If the text didn't fit it would be clipped, but heightOfString
+        // above already sized rowH to accommodate it.
+        .text(row[cIdx].trim(), x, y + cellPadY, {
+          width: colW - 2 * cellPadX,
+          height: rowH - 2 * cellPadY,
+        });
     }
     doc.y = y + rowH;
   }
   doc.x = MARGINS.left;
   doc.moveDown(0.35);
+}
+
+function renderBlockquote(text: string) {
+  ensureSpace(SIZE.body * 2);
+  const startY = doc.y;
+  const padX = 14;
+  const padY = 4;
+  const runs = runsForLine(text, SIZE.body, FONT.italic);
+  doc.x = MARGINS.left + padX;
+  doc.font(FONT.italic).fontSize(SIZE.body);
+  const h = doc.heightOfString(text.replace(/[*`]/g, ""), { width: CONTENT_W - padX });
+  doc.rect(MARGINS.left, startY, 2.5, h + padY * 2).fillColor(COLOR.brandSoft).fill();
+  doc.y = startY + padY;
+  renderRuns(runs, { width: CONTENT_W - padX, xStart: MARGINS.left + padX, color: COLOR.text });
+  doc.x = MARGINS.left;
+  doc.y = startY + h + padY * 2;
+  doc.moveDown(0.5);
 }
 
 const lines = md.split("\n");
@@ -245,6 +278,12 @@ function flushTable() {
 
 for (const raw of lines) {
   const line = raw.replace(/\s+$/, "");
+  if (line.startsWith("> ")) {
+    flushPara();
+    flushTable();
+    renderBlockquote(line.slice(2));
+    continue;
+  }
   if (line.startsWith("|") && line.endsWith("|") && line.includes("|", 1)) {
     flushPara();
     tableRows.push(line.slice(1, -1).split("|").map((c) => c.trim()));
@@ -264,7 +303,7 @@ for (const raw of lines) {
     doc.font(FONT.head).fontSize(SIZE.h1).fillColor(COLOR.text).text(line.slice(2), MARGINS.left, doc.y, { width: CONTENT_W });
     doc.moveDown(0.15);
     const ruleY = doc.y;
-    doc.rect(MARGINS.left, ruleY, 44, 2).fillColor(COLOR.warn).fill();
+    doc.rect(MARGINS.left, ruleY, 44, 2).fillColor(COLOR.brand).fill();
     doc.y = ruleY + 6;
     doc.moveDown(0.25);
     continue;
@@ -334,26 +373,26 @@ for (const raw of lines) {
 flushPara();
 flushTable();
 
+// Footer loop. Critical: pdfkit's text(string, x, y, {width, align}) call
+// pattern silently auto-paginates whenever it suspects the text might
+// overflow the page bottom (it inspects the lineBreak default, which is
+// true). Even for a single-line label like "12 / 36", that auto-pagination
+// kicks in here and produces orphan trailing blank pages. The fix is
+// lineBreak: false — pdfkit will never insert pages mid-line — plus
+// manual centering via widthOfString so we can drop the width/align
+// options that were triggering it.
 const range = doc.bufferedPageRange();
 for (let i = range.start; i < range.start + range.count; i++) {
   doc.switchToPage(i);
-  doc
-    .font(FONT.headLight)
-    .fontSize(7.5)
-    .fillColor(COLOR.muted)
-    .text(`${i + 1} / ${range.count}`, MARGINS.left, PAGE_H - 42, {
-      width: CONTENT_W,
-      align: "center",
-    });
-  doc
-    .fontSize(7)
-    .fillColor(COLOR.warn)
-    .text(
-      `CONFIDENTIAL · UBI ${STAGE_LABEL} Marking Guide · For graders only`,
-      MARGINS.left,
-      PAGE_H - 28,
-      { width: CONTENT_W, align: "center", characterSpacing: 0.3 }
-    );
+  doc.font(FONT.headLight).fontSize(7.5).fillColor(COLOR.muted);
+  const pageLabel = `${i + 1} / ${range.count}`;
+  const pageLabelW = doc.widthOfString(pageLabel);
+  doc.text(pageLabel, (PAGE_W - pageLabelW) / 2, PAGE_H - 42, { lineBreak: false });
+
+  doc.fontSize(7).fillColor(COLOR.brand);
+  const footerLabel = `CONFIDENTIAL · UBI ${STAGE_LABEL} Marking Guide · For graders only`;
+  const footerLabelW = doc.widthOfString(footerLabel);
+  doc.text(footerLabel, (PAGE_W - footerLabelW) / 2, PAGE_H - 28, { lineBreak: false });
 }
 
 doc.end();
