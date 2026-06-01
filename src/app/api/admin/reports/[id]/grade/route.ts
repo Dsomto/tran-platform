@@ -24,7 +24,7 @@ export async function POST(
 
     const { id } = await ctx.params;
     const body = await request.json();
-    const { score, feedback } = body ?? {};
+    const { score, feedback, aiFlagged: rawAiFlagged, aiFlagReason: rawAiFlagReason } = body ?? {};
 
     if (typeof score !== "number" || !Number.isFinite(score)) {
       return Response.json({ error: "Score must be a number" }, { status: 400 });
@@ -38,6 +38,26 @@ export async function POST(
     }
     if (feedback.length > 10000) {
       return Response.json({ error: "Feedback too long (max 10,000 chars)" }, { status: 400 });
+    }
+
+    // AI-flag validation. Both fields are optional — undefined means the
+    // form didn't include them (e.g., an older client). If aiFlagged is
+    // true, aiFlagReason must be a non-trivial string. If aiFlagged is
+    // false, aiFlagReason is dropped (null) so we don't keep stale text
+    // from a previous flagged-then-unflagged grade.
+    const aiFlagged = rawAiFlagged === true;
+    let aiFlagReason: string | null = null;
+    if (aiFlagged) {
+      if (typeof rawAiFlagReason !== "string" || rawAiFlagReason.trim().length < 15) {
+        return Response.json(
+          { error: "AI flag requires a reason (at least 15 characters) naming the paragraph or citation." },
+          { status: 400 }
+        );
+      }
+      if (rawAiFlagReason.length > 2000) {
+        return Response.json({ error: "AI flag reason too long (max 2,000 chars)" }, { status: 400 });
+      }
+      aiFlagReason = rawAiFlagReason.trim();
     }
 
     const report = await prisma.stageReport.findUnique({
@@ -66,7 +86,13 @@ export async function POST(
     const nowGrade = myGrade
       ? await prisma.reportGrade.update({
           where: { id: myGrade.id },
-          data: { score: intScore, feedback: trimmedFeedback, gradedAt: new Date() },
+          data: {
+            score: intScore,
+            feedback: trimmedFeedback,
+            gradedAt: new Date(),
+            aiFlagged,
+            aiFlagReason,
+          },
         })
       : await prisma.reportGrade.create({
           data: {
@@ -75,6 +101,8 @@ export async function POST(
             score: intScore,
             feedback: trimmedFeedback,
             gradedAt: new Date(),
+            aiFlagged,
+            aiFlagReason,
           },
         });
 
@@ -127,6 +155,7 @@ export async function POST(
         internId: report.internId,
         bothInPlace,
         divergent,
+        aiFlagged,
         gradeRowId: nowGrade.id,
       },
       ...auditMetaFromRequest(request),

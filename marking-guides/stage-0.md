@@ -97,13 +97,19 @@ These do NOT trigger the penalty:
 - A few uncited sentences. Real writing has filler; that costs them on citation discipline, not on the AI penalty.
 - Use of standard frameworks (NIST CSF, MITRE ATT&CK) — provided the citations are real. The brief tells them to use these.
 
-### What to write on the flag
+### How to flag — where the form lives
 
-If you flag AI use, write 2–3 sentences in the grader notes naming the specific paragraph that triggered it. Example:
+At the bottom of the grading form (the same page where you enter the score and feedback) there is an amber-bordered box:
 
-> *Flagging D3 page 2. The "three layers of risk" paragraph cites "NIST SP 800-53 control AC-12.1" but AC-12 has no .1 sub-control in 800-53 rev 5. Also, the paragraph structure (opener, three bullets, closing restatement) matches three other paragraphs in D3.*
+> **☐ Flag this submission for suspected AI generation**
 
-A super-admin will look at the flag, the submission, and the other grader's score, and decide whether to apply the -20.
+Tick the checkbox. A "Reason for flag" textbox appears below it. Write 2–3 sentences naming the specific paragraph or citation that triggered the flag. Example:
+
+> *D3 page 2 cites "NIST SP 800-53 AC-12.1" but AC-12 has no .1 sub-control in 800-53 rev 5 — the citation is fabricated. Also, three paragraphs in D3 share the same opener-bullets-restatement structure.*
+
+The reason field requires at least 15 characters and is for super-admin eyes only — the intern never sees it. Save your grade with the checkbox ticked and the reason filled in; that is the entire flag mechanism.
+
+The -20 penalty is **not** applied automatically. When both graders tick the box on the same report, a super-admin reviews the submission, your reasons, and the other grader's reasons, and decides whether to apply the deduction. You do not need to do anything else.
 
 ---
 
@@ -476,7 +482,7 @@ You submit. The second grader has no idea you scored 92 until they submit. They 
 4. Open the grading rubric at `/admin/grading/STAGE_0/<internCode>` and enter scores per section using the scoring tables in this guide.
 5. Add a 50–100 word grader note. Required. Format: one strength, one weakness, the row or page you re-read first.
 6. Submit. Your score is hidden from the second grader until they also submit.
-7. If you flagged AI use: do NOT apply the -20 penalty yourself. Set the AI flag on the form and write your reasoning in the notes. A super-admin reviews.
+7. If you flagged AI use: tick the "Flag this submission for suspected AI generation" checkbox at the bottom of the grading form and write at least one specific reason in the box that appears. Do NOT apply the -20 penalty yourself. A super-admin reviews flagged submissions and decides.
 
 ## Edge cases — what to do when things are weird
 

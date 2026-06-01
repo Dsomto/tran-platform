@@ -9,6 +9,8 @@ interface Props {
   canGrade: boolean;
   currentScore: number | null;
   currentFeedback: string | null;
+  currentAiFlagged: boolean;
+  currentAiFlagReason: string | null;
   status: string;
   alreadyGraded: boolean; // this grader has already submitted their grade
 }
@@ -18,12 +20,16 @@ export function GradeForm({
   canGrade,
   currentScore,
   currentFeedback,
+  currentAiFlagged,
+  currentAiFlagReason,
   status,
   alreadyGraded,
 }: Props) {
   const router = useRouter();
   const [score, setScore] = useState<string>(currentScore != null ? String(currentScore) : "");
   const [feedback, setFeedback] = useState(currentFeedback ?? "");
+  const [aiFlagged, setAiFlagged] = useState<boolean>(currentAiFlagged);
+  const [aiFlagReason, setAiFlagReason] = useState<string>(currentAiFlagReason ?? "");
   const [submitting, setSubmitting] = useState(false);
   const [releasing, setReleasing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -39,12 +45,23 @@ export function GradeForm({
       setError("Write at least a short paragraph of feedback — participants rely on it.");
       return;
     }
+    if (aiFlagged && aiFlagReason.trim().length < 15) {
+      setError(
+        "If you're flagging this for AI use, write at least one specific reason (~15+ chars). Name the paragraph or the fabricated citation that triggered the flag."
+      );
+      return;
+    }
     setSubmitting(true);
     try {
       const res = await fetch(`/api/admin/reports/${reportId}/grade`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ score: scoreNum, feedback }),
+        body: JSON.stringify({
+          score: scoreNum,
+          feedback,
+          aiFlagged,
+          aiFlagReason: aiFlagged ? aiFlagReason.trim() : null,
+        }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -154,6 +171,40 @@ export function GradeForm({
             className="w-full min-h-[200px] p-3 border border-border rounded-lg font-mono text-sm"
             placeholder="Your feedback…"
           />
+        </div>
+
+        <div className="border border-amber-300 bg-amber-50 rounded-lg p-3">
+          <label className="flex items-start gap-2.5 text-sm font-medium text-amber-900 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={aiFlagged}
+              onChange={(e) => setAiFlagged(e.target.checked)}
+              className="mt-0.5 h-4 w-4 rounded border-amber-400 text-amber-700"
+            />
+            <span>
+              Flag this submission for suspected AI generation
+              <span className="block text-xs font-normal text-amber-800 mt-0.5">
+                The -20 penalty is NOT applied automatically. When both graders flag, a super-admin reviews and decides.
+              </span>
+            </span>
+          </label>
+          {aiFlagged && (
+            <div className="mt-3 pl-7">
+              <label className="block text-xs font-semibold text-amber-900 mb-1 uppercase tracking-wide">
+                Reason for flag
+                <span className="ml-2 font-normal text-amber-700">({aiFlagReason.length} chars · minimum 15)</span>
+              </label>
+              <p className="text-xs text-amber-800 mb-2">
+                Name the specific paragraph, fabricated citation, or pattern that triggered the flag. This goes to the super-admin reviewer, not to the intern.
+              </p>
+              <textarea
+                value={aiFlagReason}
+                onChange={(e) => setAiFlagReason(e.target.value)}
+                className="w-full min-h-[80px] p-2 border border-amber-300 rounded-md text-sm bg-white"
+                placeholder="e.g. D3 page 2 cites NIST SP 800-53 AC-12.1 which doesn't exist in rev 5; same paragraph structure repeats three times."
+              />
+            </div>
+          )}
         </div>
 
         {error && (

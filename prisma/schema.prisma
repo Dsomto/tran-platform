@@ -606,6 +606,14 @@ model ReportGrade {
   claimedAt   DateTime    @default(now())
   gradedAt    DateTime?
 
+  // AI-use flag. Each grader independently ticks the box and writes a
+  // short reason if they suspect the deliverable was AI-generated. The
+  // -20 penalty is NOT applied here — when both grader flags are set, a
+  // super-admin reviews on /admin/reports/<id> and may apply it manually.
+  // False is the default; existing rows without the field read as false.
+  aiFlagged    Boolean   @default(false)
+  aiFlagReason String?
+
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 

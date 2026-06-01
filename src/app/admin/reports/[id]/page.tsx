@@ -157,6 +157,8 @@ export default async function GradePage({
         canGrade={canGrade && !report.divergent}
         currentScore={myGrade?.score ?? null}
         currentFeedback={myGrade?.feedback ?? null}
+        currentAiFlagged={myGrade?.aiFlagged ?? false}
+        currentAiFlagReason={myGrade?.aiFlagReason ?? null}
         status={report.status}
         alreadyGraded={!!myGrade?.gradedAt}
       />
