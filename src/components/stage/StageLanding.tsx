@@ -167,21 +167,27 @@ export function StageLanding({
           </div>
         </div>
 
+        <p className={`${theme.mutedTextClass} text-[12.5px] mb-3`}>
+          Two tracks. Do them in any order — open the desk tasks, work on the
+          capstone, or jump between. Both count toward this chapter.
+        </p>
         <div className="flex flex-wrap gap-3">
           <Link
             href={boardHref}
             className={`${theme.ctaBgClass} ${theme.ctaHoverClass} inline-flex items-center gap-2 px-7 py-3.5 rounded-full text-sm font-bold uppercase tracking-[0.15em] text-white shadow-lg transition-opacity`}
           >
-            Open the mission board
+            <ListChecks className="w-4 h-4" />
+            Open the desk tasks
             <ArrowRight className="w-4 h-4" />
           </Link>
-          <a
-            href={capstoneHref}
-            className={`inline-flex items-center gap-2 px-6 py-3.5 rounded-full text-sm font-semibold border ${theme.dividerClass} ${theme.bodyTextClass} hover:bg-white/5 transition-colors`}
+          <Link
+            href={submitHref}
+            className={`${theme.ctaBgClass} ${theme.ctaHoverClass} inline-flex items-center gap-2 px-7 py-3.5 rounded-full text-sm font-bold uppercase tracking-[0.15em] text-white shadow-lg transition-opacity`}
           >
             <FolderOpen className="w-4 h-4" />
-            Review the capstone brief
-          </a>
+            Open the capstone
+            <ArrowRight className="w-4 h-4" />
+          </Link>
           <PrintBriefButton
             className={`inline-flex items-center gap-2 px-6 py-3.5 rounded-full text-sm font-semibold border ${theme.dividerClass} ${theme.bodyTextClass} hover:bg-white/5 transition-colors`}
           />
@@ -367,23 +373,27 @@ export function StageLanding({
         </p>
 
         <div className="flex flex-wrap gap-3 mb-8">
-          <a
-            href={brief.resourcesDriveUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={`${theme.ctaBgClass} ${theme.ctaHoverClass} inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-bold uppercase tracking-[0.15em] text-white shadow-lg transition-opacity`}
-          >
-            <FolderOpen className="w-4 h-4" />
-            Open your data folder
-            <ArrowRight className="w-4 h-4" />
-          </a>
-          <Link
-            href={submitHref}
-            className={`inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold border ${theme.dividerClass} ${theme.bodyTextClass} hover:bg-white/5 transition-colors`}
-          >
-            <ArrowRight className="w-4 h-4" />
-            Go to the submission page
-          </Link>
+          {brief.resourcesDriveUrl.startsWith("/") ? (
+            <Link
+              href={brief.resourcesDriveUrl}
+              className={`${theme.ctaBgClass} ${theme.ctaHoverClass} inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-bold uppercase tracking-[0.15em] text-white shadow-lg transition-opacity`}
+            >
+              <FolderOpen className="w-4 h-4" />
+              Open your evidence pack
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          ) : (
+            <a
+              href={brief.resourcesDriveUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`${theme.ctaBgClass} ${theme.ctaHoverClass} inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-bold uppercase tracking-[0.15em] text-white shadow-lg transition-opacity`}
+            >
+              <FolderOpen className="w-4 h-4" />
+              Open your data folder
+              <ArrowRight className="w-4 h-4" />
+            </a>
+          )}
           <PrintBriefButton
             className={`inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold border ${theme.dividerClass} ${theme.bodyTextClass} hover:bg-white/5 transition-colors`}
           />

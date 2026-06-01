@@ -72,22 +72,24 @@ Open every file before you write. Cite by line number (`auth-log-q2.txt:14`) or 
 
 ---
 
-## D4 — Operator essay (exactly 2 pages)
+## D4 — Judgment essay (exactly 2 pages)
 
-**Purpose.** Two short prompts, neither with a single correct answer. Both ask for your judgment, your reasoning, and your own work on Stage 0 — none of which a chatbot can ghostwrite. Specific answers anchored in what you saw in the evidence pack succeed. Generic answers fail.
+**Purpose.** Two short prompts. Neither has a single correct answer. Both ask for your judgment, your reasoning, and your own work on Stage 0 — none of which a chatbot can ghostwrite. Specific answers anchored in what you saw in the evidence pack succeed. Generic answers fail.
 
-### Part A — SSH password vs publickey: which is safer, in your experience? (1 page, 350–450 words)
+### Part A — The ethics call (1 page, 350–450 words)
 
-The SD-40812 event was an attacker logging in via **publickey acceptance** from a TOR exit IP. Most hardening guides argue publickey auth is safer than passwords because it removes phishing and weak-password risk. Your own D1 evidence shows publickey was the vector here.
+You are the new Tier-1 analyst. After finishing your D1 evidence table you realise the threat actor named in `encoded-strings.txt` is the same actor active in tickets your predecessor closed as *"probably nothing"*. You raise it with your direct manager. He says:
 
-Argue your position. If you were Amaka tomorrow, which auth method would you deploy on Sankofa's bastion hosts — and why? Address all four:
+> *"Just close it. The senior VP whose account is involved is in board meetings all week, and we are not going to spoil his quarter."*
 
-- What you saw in `auth-log-q2.txt` that informs your choice.
-- What could have prevented SD-40812 under your recommended setup.
-- What your position assumes about the threat model (insider key theft? phished password? lost laptop? state-level actor?).
-- The operational cost of your recommendation — engineer time, helpdesk volume, lockout risk, key rotation overhead.
+Write your response. Address all four:
 
-Cite at least one external source: a NIST SP 800-53 control family, vendor hardening guidance, CVE, or an advisory. There is no single correct answer. Graders look at whether your reasoning is grounded in the evidence and whether you name the trade-off you are choosing.
+- What you would do — concretely, step by step in the next 24 hours.
+- What you would NOT do, and why.
+- The ISC2 Code of Ethics canon (by name) that applies, and how. You do not need to quote it verbatim — name the canon and explain its relevance.
+- Who you would escalate to next, in what order, and what you would actually say in the message.
+
+There is no single correct answer. Graders look at whether your reasoning shows you understood the trade-off — career risk vs. duty of care — rather than reciting policy. A grader should be able to tell, from this page, that you have actually read the ISC2 Code of Ethics rather than paraphrasing it.
 
 ### Part B — The scenario (1 page, 300–400 words)
 

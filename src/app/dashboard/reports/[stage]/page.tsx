@@ -27,8 +27,8 @@ const EVIDENCE_PACK: Record<
       filename: "00-mission-brief.pdf",
       url: "/capstone/stage-0/00-mission-brief.pdf",
       description:
-        "READ THIS FIRST. Stage 0 capstone brief — four deliverables: D1 evidence table, D2 dismissal pattern, D3 business impact (each 3–5 pages), plus D4 operator essay (SSH password vs publickey + an open-ended scenario, 2 pages). Citation bar and submission instructions included. 9 pages.",
-      bytes: 16072,
+        "READ THIS FIRST. Stage 0 capstone brief — four deliverables: D1 evidence table, D2 dismissal pattern, D3 business impact (each 3–5 pages), plus D4 judgment essay (an ethics call + an open-ended SIEM-alert scenario, 2 pages). Citation bar and submission instructions included. 9 pages.",
+      bytes: 16033,
     },
     {
       filename: "auth-log-q2.txt",

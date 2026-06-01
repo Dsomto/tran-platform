@@ -193,43 +193,35 @@ export const STAGE_BRIEFS: Record<
     ],
     practicalTasks: [
       {
-        id: "log-triage",
-        title: "Triage the Q2 auth log",
+        id: "d1-evidence-table",
+        title: "D1 — Suspicious-login evidence table",
         description:
-          "Open the auth log excerpt in the resources. One of the connections comes from 185.220.101.9 — look that IP up on AbuseIPDB or VirusTotal and record what it is. Then in a Google Doc (or Microsoft Word) build a table listing every line you consider suspicious, one row per line. For each line say why it stands out (wrong time, wrong geo, wrong user, wrong pattern). Rank the rows from most to least concerning. Tables inside a Doc are fine — do not use Google Sheets.",
-        deliverable: "auth-log-triage (Google Doc or MS Word, with a table inside)",
+          "3–5 pages. Page 1 is methodology + your H/M/L confidence definitions (one example each). Pages 2–4 are the table itself — 8–12 rows, one per suspicious event, each citing ≥ 2 corroborating files, with one short paragraph of analyst commentary under every row. Mandatory rows: the SD-40812 publickey accept from 185.220.101.9, the next-day repeat (SD-40835), one row that names the threat actor (decoded from encoded-strings.txt), and the a.eze account appearing post-offboarding. Page 5 = pattern summary, the row a grader should reread first, and your next investigative step. Full structure inside the mission brief PDF.",
+        deliverable: "D1 — Suspicious-login evidence table (PDF or DOCX, 3–5 pages, table inside)",
       },
       {
-        id: "cve-triage",
-        title: "CIA-triad triage of 10 CVEs",
+        id: "d2-dismissal-pattern",
+        title: "D2 — Tier-1 dismissal pattern analysis",
         description:
-          "Pick any ten recent CVEs from the NVD. For each one, state in one sentence which leg of the CIA triad is primarily violated (Confidentiality, Integrity, Availability, or a combination) and why. Build this as a table inside a Google Doc or a Microsoft Word document.",
-        deliverable: "cve-triage (Google Doc or MS Word, table with columns: CVE ID · one-line description · primary CIA leg · reasoning)",
+          "3–5 pages. Name the pattern that ties SD-40812 to ≥ 3 other Q2 tickets in tier-1-ticket-history.csv. Quote each dismissed ticket's `disposition` and `notes` columns verbatim. Per-ticket walkthrough across 2 pages — what SIEM raised, what the dismissal said, what was missed, what it cost. Root-cause page names the single-analyst-coverage problem with column evidence. Close with Tunde's escalation (SD-40866) as the break-point, and ONE concrete procedural recommendation — e.g., dual signature within 4 hours for any MEDIUM+ dismissed as resolved-by-reference. Full structure inside the mission brief PDF.",
+        deliverable: "D2 — Tier-1 dismissal pattern (PDF or DOCX, 3–5 pages)",
       },
       {
-        id: "encoding-decode",
-        title: "Decode four encoded strings",
+        id: "d3-business-impact",
+        title: "D3 — Business impact and next steps",
         description:
-          "Open CyberChef in the browser. Use it to decode the four strings in the resources (a mix of base64, hex, and URL encoding). Write down the plaintext, the encoding you used, and one sentence on how you figured it out.",
-        deliverable: "encoding-walkthrough (Google Doc with the four strings, their plaintexts, and your reasoning)",
+          "3–5 pages addressed to three non-technical executives. Page 1: headline finding (\"Sankofa Digital was compromised in Q2 2024 by…\") + a one-paragraph situation summary the chair will quote back. Page 2: what's at risk, what we know about the attacker, what we cannot yet rule out — plus one external reference (NIST CSF function, MITRE technique by name, ISO control area). Pages 3–4: three 72-hour actions, one paragraph each (verb-first, owner role, hour-precise deadline, ≥ 2 evidence cites, the one risk it does NOT close). Page 5: systemic recommendation (policy / process, not tools or hiring) + evidence appendix. Full structure inside the mission brief PDF.",
+        deliverable: "D3 — Business impact + next steps (PDF or DOCX, 3–5 pages)",
       },
       {
-        id: "suspicious-login-playbook",
-        title: "\"Suspicious login\" mini-playbook",
+        id: "d4-judgment-essay",
+        title: "D4 — Judgment essay (the AI-proof one)",
         description:
-          "Write a one-page procedure a new SOC analyst can follow when a SIEM alert fires on an unusual login. Cover: what data to pull, what questions to ask the user, when to escalate, and when to close the ticket. Plain language, step-by-step.",
-        deliverable: "suspicious-login-playbook (Google Doc, 1 page max)",
-      },
-      {
-        id: "ethics-stance",
-        title: "Ethics stance — the right thing vs the easy thing",
-        description:
-          "Your manager tells you to \"just close\" an alert that looks real but would create work for a senior VP. Write a 200-word response explaining what you would do, referencing the relevant ISC2 Code of Ethics canon.",
-        deliverable: "ethics-stance (Google Doc)",
+          "Exactly 2 pages. Two prompts. Neither has a single correct answer — both ask for YOUR judgment. Part A (1 pg, 350–450 words) — Ethics. Your manager says: \"Just close the ticket. The senior VP whose account is involved is in board meetings all week and we are not spoiling his quarter.\" Write your response: what you would do, what you would NOT do, the ISC2 Code of Ethics canon (by name) that applies, and who you would escalate to next and in what order. Part B (1 pg, 300–400 words) — Scenario. At 04:47 WAT you receive a SIEM alert for o.adegoke (Ops Manager, offboarding pending, key revocation pending) authenticating via publickey from a Lagos residential ISP. 30 minutes before handover. What do you do? Walk through investigation order, escalation timing, what you chose NOT to do, and your handover note. Two graders flag generic / AI-traceable answers as not submitted.",
+        deliverable: "D4 — Judgment essay (PDF or DOCX, exactly 2 pages)",
       },
     ],
-    resourcesDriveUrl:
-      "https://drive.google.com/drive/folders/1xtbdjXFxReUcqaHp_eEMyoFpHCQ9gYYm?usp=drive_link",
+    resourcesDriveUrl: "/dashboard/reports/STAGE_0",
     resources: [
       {
         label: "CyberChef — in-browser encoder/decoder",
@@ -250,9 +242,11 @@ export const STAGE_BRIEFS: Record<
       },
     ],
     sections: [
-      "Suspicious-login evidence table (each row cites the auth log plus either the roster, encoded strings, or ticket history)",
-      "Tier-1 dismissal pattern (cite SD-40812 plus at least two other ticket IDs from the history CSV)",
-      "Business impact and recommended next steps for the Incident Committee (each recommendation cites at least two evidence files)",
+      "D1 — Suspicious-login evidence table: 8–12 rows, each citing ≥ 2 files; threat actor named",
+      "D2 — Tier-1 dismissal pattern: SD-40812 plus ≥ 3 other ticket IDs, with verbatim disposition + notes quotes",
+      "D3 — Business impact + next steps: headline finding, three 72-hour actions, one systemic policy recommendation",
+      "D4 — Judgment essay: an ethics call (manager pressuring you to drop the case) + an open-ended SIEM alert scenario, both AI-resistant",
+      "Citation discipline: every claim ties to a file / line / ticket plus an external reference (NIST, MITRE, ISO, CVE, ISC2, NDPA) where research applies",
     ],
   },
 
