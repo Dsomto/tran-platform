@@ -2,17 +2,40 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AtSign, Lock, ShieldCheck } from "lucide-react";
 
+// Only honour ?next= when it's a same-origin relative path. Blocks
+// open-redirect attacks (?next=https://evil.example/phish).
+function safeNext(raw: string | null): string | null {
+  if (!raw) return null;
+  if (!raw.startsWith("/")) return null;
+  if (raw.startsWith("//")) return null;
+  return raw;
+}
+
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const nextPath = safeNext(searchParams.get("next"));
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [challenge, setChallenge] = useState<string | null>(null);
   const [code, setCode] = useState("");
+
+  function postLoginRedirect(role: string) {
+    if (nextPath) {
+      router.push(nextPath);
+      return;
+    }
+    if (role === "ADMIN" || role === "SUPER_ADMIN") {
+      router.push("/admin");
+    } else {
+      router.push("/dashboard");
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -42,11 +65,7 @@ export default function LoginPage() {
         return;
       }
 
-      if (data.user.role === "ADMIN" || data.user.role === "SUPER_ADMIN") {
-        router.push("/admin");
-      } else {
-        router.push("/dashboard");
-      }
+      postLoginRedirect(data.user.role);
     } catch {
       setError("Something went wrong. Please try again.");
     } finally {
@@ -70,11 +89,7 @@ export default function LoginPage() {
         setError(data.error || "Incorrect code");
         return;
       }
-      if (data.user.role === "ADMIN" || data.user.role === "SUPER_ADMIN") {
-        router.push("/admin");
-      } else {
-        router.push("/dashboard");
-      }
+      postLoginRedirect(data.user.role);
     } catch {
       setError("Something went wrong. Please try again.");
     } finally {

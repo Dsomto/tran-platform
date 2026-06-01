@@ -141,7 +141,13 @@ export function ReportEditor({
       });
       const data = await res.json();
       if (!res.ok) {
-        if (!silent) setError(data.error || "Failed to save");
+        if (!silent) {
+          setError(
+            res.status === 401
+              ? "__SESSION_EXPIRED__"
+              : data.error || "Failed to save"
+          );
+        }
         return false;
       }
       setReportId(data.report.id);
@@ -186,7 +192,11 @@ export function ReportEditor({
       const res = await fetch(`/api/reports/${reportId}/submit`, { method: "POST" });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "Failed to submit");
+        setError(
+          res.status === 401
+            ? "__SESSION_EXPIRED__"
+            : data.error || "Failed to submit"
+        );
         setSubmitting(false);
         return;
       }
@@ -497,7 +507,20 @@ export function ReportEditor({
           />
         </section>
 
-        {error && (
+        {error === "__SESSION_EXPIRED__" ? (
+          <div className="flex flex-wrap items-center gap-3 p-3 bg-amber-50 border border-amber-300 rounded-lg text-sm text-amber-900">
+            <span className="flex-1 min-w-[220px] leading-relaxed">
+              Your session has expired. Log in again to save and submit — your
+              draft text is still here in this tab and will not be lost.
+            </span>
+            <a
+              href={`/login?next=${encodeURIComponent(typeof window !== "undefined" ? window.location.pathname : "/dashboard")}`}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs whitespace-nowrap"
+            >
+              Log in again
+            </a>
+          </div>
+        ) : error && (
           <div className="p-3 bg-rose-50 border border-rose-200 rounded-lg text-sm text-rose-800">
             {error}
           </div>

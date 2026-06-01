@@ -84,7 +84,16 @@ export default function TaskPageClient(props: TaskPageProps) {
       });
       const j = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setErr(j.error ?? "Submission failed");
+        // 401 with reason=no-session means the cookie-backed session
+        // expired while the intern was on the page. Surface it as a
+        // clear, actionable message rather than the raw "no-session"
+        // string the API returns — and let TaskPage's error render
+        // detect the sentinel so it can show a "Log in" CTA.
+        if (res.status === 401) {
+          setErr("__SESSION_EXPIRED__");
+        } else {
+          setErr(j.error ?? "Submission failed");
+        }
       } else {
         setResult({ score: j.score ?? null, status: j.status ?? "SUBMITTED", feedback: j.feedback ?? null });
         router.refresh();
@@ -177,7 +186,20 @@ export default function TaskPageClient(props: TaskPageProps) {
             {uploadUrl ? `Attached: ${uploadUrl}` : "Use the upload widget above to attach your file."}
           </div>
         )}
-        {err && (
+        {err === "__SESSION_EXPIRED__" ? (
+          <div className="flex flex-wrap items-center gap-3 text-sm text-amber-200 bg-amber-500/10 rounded-lg p-3 border border-amber-500/30">
+            <span className="flex-1 min-w-[200px]">
+              Your session has expired. Log in again to submit your answer — your
+              typed answer is still in the box, so you won&apos;t lose it.
+            </span>
+            <a
+              href={`/login?next=${encodeURIComponent(typeof window !== "undefined" ? window.location.pathname : "/dashboard")}`}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-amber-500/90 hover:bg-amber-500 text-black font-semibold text-xs"
+            >
+              Log in again
+            </a>
+          </div>
+        ) : err && (
           <div className="text-sm text-red-300 bg-red-500/10 rounded-lg p-2.5 border border-red-500/20">{err}</div>
         )}
         {result && (
