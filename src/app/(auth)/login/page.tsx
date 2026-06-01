@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -16,7 +16,17 @@ function safeNext(raw: string | null): string | null {
   return raw;
 }
 
+// useSearchParams() must be inside a Suspense boundary at the page level
+// or Next.js refuses to statically prerender this route.
 export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginPageInner />
+    </Suspense>
+  );
+}
+
+function LoginPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const nextPath = safeNext(searchParams.get("next"));
