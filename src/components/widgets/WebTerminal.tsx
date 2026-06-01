@@ -87,6 +87,7 @@ export default function WebTerminal({ config, context, onAnswerChange }: WidgetP
   const [pastIdx, setPastIdx] = useState<number>(-1);
   const [flagCache, setFlagCache] = useState<string | null>(null);
   const endRef = useRef<HTMLDivElement>(null);
+  const scrollerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -101,7 +102,14 @@ export default function WebTerminal({ config, context, onAnswerChange }: WidgetP
   }, [context.flagSalt, context.internId]);
 
   useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: "smooth" });
+    // Scroll the terminal's own container, NOT the page. element.scrollIntoView()
+    // on mobile can scroll the document body instead of the nearest overflow:auto
+    // ancestor, which jumps the viewport past the terminal down to the answer
+    // input below — exactly the "press Enter and it carries me to the submission"
+    // bug interns reported on phones. Setting scrollTop directly on the scroller
+    // keeps the scroll local to the terminal in every browser.
+    const el = scrollerRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
   }, [history]);
 
   async function resolveFileContents(entry: FileEntry): Promise<string> {
@@ -302,7 +310,10 @@ export default function WebTerminal({ config, context, onAnswerChange }: WidgetP
         <span className="w-3 h-3 rounded-full bg-emerald-500/80" />
         <span className="ml-4">sankofa-shell · {context.internCode}</span>
       </div>
-      <div className="p-4 h-[420px] overflow-y-auto leading-6">
+      <div
+        ref={scrollerRef}
+        className="p-4 h-[300px] sm:h-[420px] overflow-y-auto leading-6 overscroll-contain"
+      >
         {history.map((line, i) => (
           <div key={i} className="whitespace-pre-wrap break-words">{line}</div>
         ))}
@@ -313,9 +324,11 @@ export default function WebTerminal({ config, context, onAnswerChange }: WidgetP
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={onKey}
+            enterKeyHint="send"
             className="flex-1 bg-transparent outline-none text-emerald-100 caret-emerald-400"
-            autoFocus
             spellCheck={false}
+            autoCorrect="off"
+            autoCapitalize="off"
             autoComplete="off"
           />
         </div>
