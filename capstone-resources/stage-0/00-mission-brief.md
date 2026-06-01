@@ -72,31 +72,41 @@ Open every file before you write. Cite by line number (`auth-log-q2.txt:14`) or 
 
 ---
 
-## D4 — Required reading and personal reflections (exactly 2 pages)
+## D4 — Operator essay (exactly 2 pages)
 
-**Purpose.** Stage 0 assumes background knowledge a junior SOC analyst needs to operate. This deliverable proves you did the reading and that you understood what the artefacts in front of you meant — in your own words, anchored to your specific findings. It is the part of the capstone that an AI tool cannot write for you.
+**Purpose.** Two short prompts, neither with a single correct answer. Both ask for your judgment, your reasoning, and your own work on Stage 0 — none of which a chatbot can ghostwrite. Specific answers anchored in what you saw in the evidence pack succeed. Generic answers fail.
 
-**What to study (a syllabus, not a checklist).** The exact sources you cite are your choice; these are the topic areas to cover so your D1–D3 work is grounded.
-- SSH publickey vs password auth: how publickey acceptance works, how keys are added or stolen, why the SD-40812 acceptance signature matters.
-- TOR exit nodes and ASN reputation: what `185.220.101.x` represents, how analysts triage traffic from anonymising infrastructure.
-- Exfiltration over legitimate tools: scp, rsync, archive-then-transfer patterns; why "expected protocol, unexpected destination" is the harder detection.
-- Tier-1 SOC operating model: ticket triage, dispositions, escalation criteria, single-analyst-coverage failure modes.
-- One framework chosen by you (NIST CSF function names, MITRE ATT&CK tactic IDs, ISO 27001 control area, NDPA section, ISC2 CBK domain). Read the actual document, not a summary.
+### Part A — SSH password vs publickey: which is safer, in your experience? (1 page, 350–450 words)
 
-**Structure.**
+The SD-40812 event was an attacker logging in via **publickey acceptance** from a TOR exit IP. Most hardening guides argue publickey auth is safer than passwords because it removes phishing and weak-password risk. Your own D1 evidence shows publickey was the vector here.
 
-*Page 1 — Required reading log.* Five sources you actually read. One row each: title · author or publisher · what specifically you got from it (one sentence) · where it shows up in D1, D2, or D3 (cite the deliverable page or finding). No bare URLs — every entry needs the title and what you took from it.
+Argue your position. If you were Amaka tomorrow, which auth method would you deploy on Sankofa's bastion hosts — and why? Address all four:
 
-*Page 2 — Five things you learned.* Numbered list. Each item is one short paragraph. The pattern for every item:
-1. State the thing in one sentence.
-2. Cite the moment in your own analysis where it changed how you thought (file path, line number, ticket ID, or a row from your D1 table).
-3. Name what you will do differently next time because of it.
+- What you saw in `auth-log-q2.txt` that informs your choice.
+- What could have prevented SD-40812 under your recommended setup.
+- What your position assumes about the threat model (insider key theft? phished password? lost laptop? state-level actor?).
+- The operational cost of your recommendation — engineer time, helpdesk volume, lockout risk, key rotation overhead.
 
-Examples of what counts: a misconception you held when you started Stage 0; a heuristic you now apply because of one specific row in your evidence table; a process habit you adopted because of how SD-40812 was originally closed. Examples of what does NOT count: "Cybersecurity is important", "I learned about NIST", or anything that could apply to any cohort or any case.
+Cite at least one external source: a NIST SP 800-53 control family, vendor hardening guidance, CVE, or an advisory. There is no single correct answer. Graders look at whether your reasoning is grounded in the evidence and whether you name the trade-off you are choosing.
 
-**Citation bar.** Every reading-log row names the source. Every reflection cites a specific file, line, ticket, or finding from YOUR own D1–D3 work. A reflection a grader cannot trace to your analysis is treated as missing.
+### Part B — The scenario (1 page, 300–400 words)
 
-**Honesty rule.** Generic summaries that read like a chatbot produced them are marked as failing this deliverable. Two graders read every D4 independently; if both flag it as generic or untraceable, it earns nothing regardless of the technical work. The reflections are the part of this capstone that must be yours, in your voice, tied to evidence only you handled.
+At 04:47 WAT on a Tuesday, you (Tier-1 analyst on the night shift) receive this alert from the SIEM:
+
+> User `o.adegoke` (Operations Manager) just authenticated via publickey from a residential ISP in Lagos. Her last successful login was 18:30 yesterday from the office. She is not on the on-call roster. Her offboarding ticket SD-40901 is open with the note *"departure date 30 June, key revocation pending"*.
+
+You have 30 minutes before shift handover. **What do you do?**
+
+Walk through your reasoning end to end. There is no single correct answer. Graders look for:
+
+- What you investigated first, and why — the order matters.
+- Who you escalated to and at what point — and what specifically triggered the escalation.
+- What you chose NOT to do, and why. Did you lock her account? Contact her directly? Involve HR? Open a fresh ticket, or append to SD-40901?
+- What you wrote in the handover note for the next shift.
+
+Reference what your D1 and D2 work taught you about Sankofa's specific operating context. A grader reading this page should be able to tell it was written by someone who actually worked through Stage 0 — not by someone who could have been handed the scenario in isolation.
+
+**Honesty rule.** Two graders read every D4 independently. If both flag the writing as generic or untraceable to your own evidence work, D4 is treated as not submitted.
 
 ---
 
