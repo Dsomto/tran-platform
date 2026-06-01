@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { cookies } from "next/headers";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";
-import { getSession, hashPassword, createTokenForUser, SESSION_MAX_AGE_SECONDS } from "@/lib/auth";
+import { getSession, hashPassword, createTokenForUser, SESSION_MAX_AGE_SECONDS, sessionCookieOptions } from "@/lib/auth";
 import { rateLimit, rateLimitResponse, RATE_LIMITS } from "@/lib/rate-limit";
 import { logger } from "@/lib/logger";
 
@@ -94,13 +94,7 @@ export async function POST(request: NextRequest) {
     // stays signed in. All OTHER sessions for this user are now invalid.
     const fresh = await createTokenForUser(user.id);
     const cookieStore = await cookies();
-    cookieStore.set("session-token", fresh, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: SESSION_MAX_AGE_SECONDS,
-      path: "/",
-    });
+    cookieStore.set("session-token", fresh, sessionCookieOptions(SESSION_MAX_AGE_SECONDS));
 
     logger.info("password_changed", { userId: user.id });
     return Response.json({ ok: true });

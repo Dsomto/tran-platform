@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/db";
-import { createTokenForUser, SESSION_MAX_AGE_SECONDS } from "@/lib/auth";
+import { createTokenForUser, SESSION_MAX_AGE_SECONDS, sessionCookieOptions } from "@/lib/auth";
 import type { SessionUser } from "@/lib/auth";
 import { verifyChallenge } from "@/lib/login-challenge";
 import { verifyTotp } from "@/lib/totp";
@@ -56,13 +56,7 @@ export async function POST(request: NextRequest) {
     });
 
     const cookieStore = await cookies();
-    cookieStore.set("session-token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: SESSION_MAX_AGE_SECONDS,
-      path: "/",
-    });
+    cookieStore.set("session-token", token, sessionCookieOptions(SESSION_MAX_AGE_SECONDS));
 
     return Response.json({ user: sessionUser });
   } catch (error) {

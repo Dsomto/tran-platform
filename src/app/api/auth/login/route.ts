@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { login, SESSION_MAX_AGE_SECONDS } from "@/lib/auth";
+import { login, SESSION_MAX_AGE_SECONDS, sessionCookieOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { cookies } from "next/headers";
 import { signChallenge } from "@/lib/login-challenge";
@@ -60,13 +60,7 @@ export async function POST(request: NextRequest) {
     }
 
     const cookieStore = await cookies();
-    cookieStore.set("session-token", result.token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: SESSION_MAX_AGE_SECONDS,
-      path: "/",
-    });
+    cookieStore.set("session-token", result.token, sessionCookieOptions(SESSION_MAX_AGE_SECONDS));
 
     return Response.json({ user: result.user });
   } catch (error) {

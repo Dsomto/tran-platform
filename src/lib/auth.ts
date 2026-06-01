@@ -31,6 +31,39 @@ export async function verifyPassword(
 // page load; idle users lose access after an hour.
 export const SESSION_MAX_AGE_SECONDS = 60 * 60;
 
+// Cookie domain so the session-token is sent on every stage subdomain
+// (stage-0.X, stage-1.X, …) as well as the apex host. Without this attribute
+// the cookie is host-only — an intern who logs in at the apex and then opens
+// a task on stage-0.X gets a no-session 401 from the API there because the
+// browser never sends the cookie. Reads COOKIE_DOMAIN as an explicit
+// override; otherwise derives from PUBLIC_APP_URL. Returns undefined on
+// localhost / IP literals so dev stays host-only.
+function sessionCookieDomain(): string | undefined {
+  const override = process.env.COOKIE_DOMAIN?.trim();
+  if (override) return override.startsWith(".") ? override : `.${override}`;
+  const url = process.env.PUBLIC_APP_URL?.trim();
+  if (!url) return undefined;
+  try {
+    const host = new URL(url).hostname;
+    if (host === "localhost" || /^[\d.]+$/.test(host)) return undefined;
+    return host.startsWith(".") ? host : `.${host}`;
+  } catch {
+    return undefined;
+  }
+}
+
+export function sessionCookieOptions(maxAge: number) {
+  const domain = sessionCookieDomain();
+  const base = {
+    httpOnly: true as const,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax" as const,
+    maxAge,
+    path: "/",
+  };
+  return domain ? { ...base, domain } : base;
+}
+
 // Token payload carries `v` (token version). On every getSession we look up
 // the user's current tokenVersion from the DB; if it doesn't match, the
 // cookie is stale (e.g. user reset their password / disabled 2FA / was
@@ -130,13 +163,7 @@ async function refreshSessionIfStale(
     const payload: SessionTokenPayload = { ...user, v: tokenVersion };
     const fresh = jwt.sign(payload, jwtSecret(), { expiresIn: SESSION_MAX_AGE_SECONDS });
     const cookieStore = await cookies();
-    cookieStore.set("session-token", fresh, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: SESSION_MAX_AGE_SECONDS,
-      path: "/",
-    });
+    cookieStore.set("session-token", fresh, sessionCookieOptions(SESSION_MAX_AGE_SECONDS));
   } catch {
     // If refresh fails for any reason, keep the existing token.
   }
