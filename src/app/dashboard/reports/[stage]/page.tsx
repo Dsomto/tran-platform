@@ -24,6 +24,13 @@ const EVIDENCE_PACK: Record<
 > = {
   STAGE_0: [
     {
+      filename: "00-mission-brief.md",
+      url: "/capstone/stage-0/00-mission-brief.md",
+      description:
+        "READ THIS FIRST. Full deliverable spec for Stage 0: structure, citation bar, scoring rubric, anti-examples. ~2,200 words. Every other file in this pack is named here with its role.",
+      bytes: 13832,
+    },
+    {
       filename: "auth-log-q2.txt",
       url: "/capstone/stage-0/auth-log-q2.txt",
       description:
