@@ -65,7 +65,7 @@ Read it from inside your own terminal output, copy it (including the `TRAN{...}`
 
 ### Can I screenshot the terminal for my own notes?
 
-For your own use, yes. **Do not share those screenshots publicly** (Twitter, GitHub, public Discord, etc.) — that's a confidentiality breach. The only thing OK to share publicly is the mission brief PDF.
+For your own use, yes. **Do not share screenshots of the platform itself** (terminal output, dashboard, the desk tasks UI) publicly — that's a confidentiality breach. Sharing your own written capstone deliverables on LinkedIn and the rest is allowed with PII scrubbed (see "Can I show my capstone on LinkedIn or GitHub?" below).
 
 ## Capstone (the four deliverables)
 
@@ -92,9 +92,29 @@ That goes **on the platform**, not in the Drive folder. There's a field on the s
 
 Off-platform, in Google Docs or Microsoft Word. The platform does not have a writing editor for the capstone. You write in Docs/Word, put each of the four documents in one shared Drive folder, set sharing to "Anyone with the link → Viewer", and paste the folder URL into the submission box.
 
-### Can I show my capstone on GitHub?
+### Can I show my capstone on LinkedIn or GitHub?
 
-Per the official notice: **The capstone brief PDF (the instructions document) is the only thing you may share publicly.** Your own deliverables, the evidence pack files, and anything else is confidential. Don't post your D1–D4 to GitHub, Twitter, LinkedIn, or anywhere outside the platform.
+**Yes — with PII scrubbed first.** Sharing parts of your D1–D4 for portfolio purposes is encouraged. Before you post, replace every piece of personally identifiable information with a generic label:
+
+- Replace employee names (Amaka Eze, Tunde Afolabi, `o.adegoke`, `a.eze`, etc.) with role labels: "Head of Security", "Threat Intel Lead", "Operations Manager", "former employee account".
+- Replace ticket IDs (SD-40812, SD-40835, SD-40866, SD-40901) with generic placeholders: `[TICKET-A]`, `[TICKET-B]`, etc.
+- Replace the company name **Sankofa Digital** with something like `[FINTECH-CLIENT]` or "a Nigerian fintech client".
+- Keep technical content — the IP `185.220.101.9` is a public TOR exit node, that's fine. NIST / MITRE / ISO references are fine.
+
+What you may NOT share publicly even with scrubbing:
+
+- The raw evidence pack files themselves (`auth-log-q2.txt`, `encoded-strings.txt`, `tier-1-ticket-history.csv`, `sankofa-roster.csv`).
+- Screenshots of the platform UI (terminal, dashboard, task pages).
+- Other interns' work.
+- Your flag values or anything that would help a peer copy your answer.
+
+What you may share as-is:
+
+- The mission brief PDF (it's already public).
+- Your own scrubbed D1–D4 excerpts.
+- The high-level methodology and what you learned.
+
+Why scrub? The scenario uses fictional Nigerian names that could be mistaken for real people. Scrubbing protects against accidental defamation and keeps cohort-specific findings private until programme results publish.
 
 ### How is the capstone graded?
 
@@ -216,7 +236,7 @@ Ask in the channel; someone usually has notes. The mission brief PDF + this FAQ 
 
 - **Search before you ask.** This FAQ probably answers your question. Read it first.
 - **Tag the right person.** Program Managers (Bernie, Somto) for programme questions. #technical-issues for bugs. The main channel is for general discussion.
-- **Don't share screenshots of your work or other people's work.** That's a breach.
+- **Sharing parts of your capstone publicly is allowed** with PII scrubbed (see "Can I show my capstone on LinkedIn or GitHub?" above). Sharing screenshots of the platform itself, the evidence pack files, or other interns' work is not.
 - **Don't share flag values with peers.** Per-intern flags mean theirs won't match yours — sharing just gets you both flagged for collusion.
 
-— *UBI Programme Team*
+— *Somto, Program Head*
