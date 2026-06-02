@@ -6,14 +6,41 @@ Compiled from questions actually asked in the channel. If your question isn't he
 
 ## The basics
 
-### Where are the tasks vs the capstone?
+### The most important thing: tasks and capstone are NOT the same
 
-Every stage has **two tracks** and you can work on them in any order:
+This is the #1 source of confusion. Read this twice.
 
-1. **Desk tasks** — 10 short tasks (Shell warmup, Find the hidden file, Hash this, etc.) inside the platform. Each one is auto-graded the moment you submit it. Open them via the "Open the desk tasks" button on the Stage 0 page.
-2. **Capstone** — four written deliverables (D1, D2, D3, D4) that you build off-platform in Google Docs or Microsoft Word, drop into one shared Drive folder, and submit the folder link on the platform. Open via the "Open the capstone" button.
+Every stage has **two completely separate tracks** that you must do BOTH of. Doing the desk tasks does NOT cover the capstone. Writing the capstone does NOT cover the desk tasks. They are different work and both count toward your stage score.
 
-Both tracks count for the stage. You can start with either. You can switch back and forth.
+| | Desk tasks | Capstone |
+|---|---|---|
+| What it is | 10 small tasks inside the platform | 4 written deliverables (D1–D4) you build off-platform |
+| Where you work | In the browser, on each task page | In Google Docs / Word, then a Drive folder |
+| What you submit | One answer per task (a flag, a multiple-choice, or a short writeup) | One Google Drive folder link + a 75-word executive summary |
+| When it's graded | Flags + MCQs: instant. Writeups: after Stage 0 closes Friday. | After Stage 0 closes Friday. Results Sunday 18:00 WAT. |
+| Where you find it | "Open the desk tasks" button | "Open the capstone" button |
+
+### How to see the desk tasks (the 10 small ones) — click by click
+
+1. Log in at `ubuntubridgeinitiatives.org/login`.
+2. You land on your **dashboard**. Find the Stage 0 card.
+3. Click **"Enter Stage 0"**. This takes you to the Stage 0 landing page on the `stage-0.ubuntubridgeinitiatives.org` subdomain.
+4. On the landing page, near the top, you'll see two big side-by-side buttons. Click the left one: **"Open the desk tasks"**.
+5. You're now on the **mission board**, which shows 10 numbered task cards (01 Shell warmup, 02 Find the hidden file, 03 Hash this, …, 10 Password-policy critique).
+6. Click any task card to open it. Read the briefing, use the widget (terminal, log viewer, etc.) to find the answer, type it into the answer box at the bottom, click **Submit**.
+
+### How to see the capstone (the 4 deliverables) — click by click
+
+1. Log in at `ubuntubridgeinitiatives.org/login`.
+2. From your **dashboard** Stage 0 card, click **"Submit report"** — OR — from the Stage 0 landing page, click the right-hand big button: **"Open the capstone"**.
+3. You're now on the **capstone page** at `/dashboard/reports/STAGE_0`.
+4. At the top of that page there is a section called **"Your evidence pack"** with 5 downloadable files. The first one — **`00-mission-brief.pdf`** — is the instructions for the capstone. **READ THIS PDF FIRST**. It describes D1, D2, D3, D4 in detail.
+5. Below the evidence pack you'll see the submission form. The form has two fields:
+   - **Your executive summary** (75 words, typed directly into the form)
+   - **A Drive folder link** (paste a shareable Google Drive folder URL containing your four documents — D1.pdf, D2.pdf, D3.pdf, D4.pdf)
+6. Click **Submit report** at the bottom. You can come back and re-submit until Stage 0 closes Friday.
+
+You can switch back and forth between the desk tasks and the capstone freely — do them in any order. But you must complete both to be considered for promotion.
 
 ### "Stage" and "Chapter" — what's the difference?
 
