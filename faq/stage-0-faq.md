@@ -135,12 +135,19 @@ Yes. Three different options depending on what you need:
 
 → `https://ubuntubridgeinitiatives.org/help/stage-0-templates.pdf`
 
-**3. Worked sample reports — read these before you write yours.** Four sample deliverables written for a **different fictional company** (BlueWave Telecom, Q4 2023 — not Sankofa). They show you the writing style, citation density, and structure of a full-marks submission, without giving away any Sankofa answers.
+**3. Full sample reports — one PDF per deliverable, beginning to end.** These read like a real intern's finished submission, complete with a title block, author, date, intern code, and all the actual analysis content. They are written for a **different fictional company** (BlueWave Telecom, Q4 2023 — not Sankofa) so you can study the form, length, and writing style of a full-marks deliverable without seeing any Sankofa answers.
 
-- Read in browser: `https://ubuntubridgeinitiatives.org/help/stage-0-samples.pdf`
-- Or download to dissect in Word: `https://ubuntubridgeinitiatives.org/help/stage-0-samples.docx`
+- D1 sample (4 pages): `https://ubuntubridgeinitiatives.org/help/samples/stage-0-d1-sample-report.pdf`
+- D2 sample: `https://ubuntubridgeinitiatives.org/help/samples/stage-0-d2-sample-report.pdf`
+- D3 sample: `https://ubuntubridgeinitiatives.org/help/samples/stage-0-d3-sample-report.pdf`
+- D4 sample (2 pages): `https://ubuntubridgeinitiatives.org/help/samples/stage-0-d4-sample-report.pdf`
 
-**Copy the form, not the content.** A row about `102.215.13.4` (BlueWave's threat-actor IP) in a Sankofa submission will be flagged. The samples are for studying structure only.
+Or all four combined into one document if you prefer reading them together:
+
+- Combined PDF: `https://ubuntubridgeinitiatives.org/help/stage-0-samples.pdf`
+- Combined DOCX (to dissect in Word): `https://ubuntubridgeinitiatives.org/help/stage-0-samples.docx`
+
+**Copy the form, not the content.** A row about `102.215.13.4` (BlueWave's threat-actor IP) appearing in a Sankofa submission will be flagged for AI/collusion review and that section will earn zero. The samples are for studying structure only.
 
 ### Can I show my capstone on LinkedIn or GitHub?
 
