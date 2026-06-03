@@ -119,6 +119,14 @@ That goes **on the platform**, not in the Drive folder. There's a field on the s
 
 Off-platform, in Google Docs or Microsoft Word. The platform does not have a writing editor for the capstone. You write in Docs/Word, put each of the four documents in one shared Drive folder, set sharing to "Anyone with the link → Viewer", and paste the folder URL into the submission box.
 
+### Is there a template I can follow?
+
+Yes. A scaffold for all four deliverables — exact headings, sub-headings, table structure, word counts, and `[BRACKETED]` prompts you replace with your own writing — is hosted at:
+
+→ `https://ubuntubridgeinitiatives.org/help/stage-0-templates.pdf`
+
+It does not contain the answers (you still have to do the analysis), but it shows you the shape of a full-marks submission. Copy the structure into your own Doc, replace the brackets with your work, and you are done.
+
 ### Can I show my capstone on LinkedIn or GitHub?
 
 **Yes — with PII scrubbed first.** Sharing parts of your D1–D4 for portfolio purposes is encouraged. Before you post, replace every piece of personally identifiable information with a generic label:
