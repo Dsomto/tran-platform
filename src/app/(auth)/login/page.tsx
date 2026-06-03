@@ -42,6 +42,8 @@ function LoginPageInner() {
     }
     if (role === "ADMIN" || role === "SUPER_ADMIN") {
       router.push("/admin");
+    } else if (role === "GRADER") {
+      router.push("/admin/reports");
     } else {
       router.push("/dashboard");
     }

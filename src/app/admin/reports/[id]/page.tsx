@@ -106,6 +106,70 @@ export default async function GradePage({
         </div>
       </section>
 
+      {/* Graders need the marking guide + the original evidence pack files to
+          verify the intern's citations during grading. Hardcoded to STAGE_0
+          for the current cohort; when STAGE_1+ open, add a stage→resources
+          map and look it up by report.stage. */}
+      {report.stage === "STAGE_0" && (
+        <section className="mb-6 bg-amber-50 border border-amber-300 rounded-xl p-5">
+          <h2 className="text-sm font-semibold text-amber-900 mb-3 uppercase tracking-wide">
+            Grading resources
+          </h2>
+
+          <div className="mb-4">
+            <a
+              href="/grading/006fdacc-d42b-491c-bb29-8e2f74015fbb/stage-0-marking-guide.pdf"
+              target="_blank"
+              rel="noreferrer noopener"
+              className="inline-flex items-center gap-1.5 text-amber-900 underline font-semibold text-sm hover:text-amber-950"
+            >
+              Open the Stage 0 marking guide (PDF, graders only) →
+            </a>
+            <p className="text-xs text-amber-800/80 mt-0.5">
+              The full rubric, per-deliverable scoring bands, AI-use signals, and worked grading example. Keep this open in a tab while you grade.
+            </p>
+          </div>
+
+          <div>
+            <p className="text-xs font-semibold text-amber-900 uppercase tracking-wide mb-2">
+              Evidence pack — for verifying the intern&apos;s citations
+            </p>
+            <ul className="space-y-1.5 text-sm">
+              <li>
+                <a href="/capstone/stage-0/00-mission-brief.pdf" target="_blank" rel="noreferrer noopener" className="text-amber-800 underline hover:text-amber-950 font-mono text-xs">
+                  00-mission-brief.pdf
+                </a>
+                <span className="text-xs text-amber-800/80"> — the brief the intern read</span>
+              </li>
+              <li>
+                <a href="/capstone/stage-0/auth-log-q2.txt" target="_blank" rel="noreferrer noopener" className="text-amber-800 underline hover:text-amber-950 font-mono text-xs">
+                  auth-log-q2.txt
+                </a>
+                <span className="text-xs text-amber-800/80"> — the SSH auth log (D1 citations resolve here by line number)</span>
+              </li>
+              <li>
+                <a href="/capstone/stage-0/encoded-strings.txt" target="_blank" rel="noreferrer noopener" className="text-amber-800 underline hover:text-amber-950 font-mono text-xs">
+                  encoded-strings.txt
+                </a>
+                <span className="text-xs text-amber-800/80"> — four encoded payloads; one decodes to the threat-actor name (D1 row 3)</span>
+              </li>
+              <li>
+                <a href="/capstone/stage-0/tier-1-ticket-history.csv" target="_blank" rel="noreferrer noopener" className="text-amber-800 underline hover:text-amber-950 font-mono text-xs">
+                  tier-1-ticket-history.csv
+                </a>
+                <span className="text-xs text-amber-800/80"> — Q2 SOC tickets (D2 verbatim quotes resolve here)</span>
+              </li>
+              <li>
+                <a href="/capstone/stage-0/sankofa-roster.csv" target="_blank" rel="noreferrer noopener" className="text-amber-800 underline hover:text-amber-950 font-mono text-xs">
+                  sankofa-roster.csv
+                </a>
+                <span className="text-xs text-amber-800/80"> — staff offboarding dates (D1 row 4 corroboration)</span>
+              </li>
+            </ul>
+          </div>
+        </section>
+      )}
+
       {report.attachmentUrl && (
         <section className="mb-6 bg-white border border-border rounded-xl p-5">
           <h2 className="text-sm font-semibold text-foreground mb-2 uppercase tracking-wide">
