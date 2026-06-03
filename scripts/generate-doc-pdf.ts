@@ -58,8 +58,8 @@ const FONT = {
   headLight: "Helvetica",
   mono: "Courier",
 };
-const SIZE = { h1: 21, h2: 13.5, h3: 10.5, body: 10, small: 9, micro: 8 };
-const MARGINS = { top: 74, bottom: 60, left: 62, right: 62 };
+const SIZE = { h1: 22, h2: 14.5, h3: 11.5, body: 11, small: 9.5, micro: 8 };
+const MARGINS = { top: 78, bottom: 64, left: 70, right: 70 };
 const PAGE_W = 595.28;
 const PAGE_H = 841.89;
 const CONTENT_W = PAGE_W - MARGINS.left - MARGINS.right;
@@ -215,8 +215,8 @@ function flushPara() {
   ensureSpace(SIZE.body * 1.6);
   doc.x = MARGINS.left;
   const runs = runsForLine(text, SIZE.body);
-  renderRuns(runs, { width: CONTENT_W, lineGap: 1.2 });
-  doc.moveDown(0.35);
+  renderRuns(runs, { width: CONTENT_W, lineGap: 2 });
+  doc.moveDown(0.5);
 }
 
 function flushTable() { if (tableRows.length === 0) return; renderTable(tableRows); tableRows = []; }
