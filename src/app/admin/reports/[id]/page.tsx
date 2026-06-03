@@ -26,6 +26,28 @@ export default async function GradePage({
   });
   if (!report) notFound();
 
+  // Writeup desk-task submissions for the same intern + stage. These are
+  // tasks 8, 9, 10 on Stage 0 (Read the hash on sight, Ethics dilemma,
+  // Password-policy critique) — short writeups that auto-grading cannot
+  // judge, so a human grader needs to read them alongside the capstone.
+  // Any future writeup tasks added to this stage will be picked up
+  // automatically by the kind=WRITEUP filter.
+  const writeupSubmissions = await prisma.submission.findMany({
+    where: {
+      internId: report.internId,
+      assignment: {
+        stage: report.stage,
+        kind: "WRITEUP",
+      },
+    },
+    include: {
+      assignment: {
+        select: { title: true, order: true, maxPoints: true, kind: true },
+      },
+    },
+    orderBy: { assignment: { order: "asc" } },
+  });
+
   const isAdmin = session.role === "ADMIN" || session.role === "SUPER_ADMIN";
   const isSuper = session.role === "SUPER_ADMIN";
   const myGrade = report.grades.find((g) => g.graderId === session.id);
@@ -99,12 +121,68 @@ export default async function GradePage({
 
       <section className="mb-6 bg-white border border-border rounded-xl p-5">
         <h2 className="text-sm font-semibold text-foreground mb-2 uppercase tracking-wide">
-          Executive summary
+          Executive summary (75-word, from the platform)
         </h2>
         <div className="whitespace-pre-wrap text-foreground/90 leading-relaxed">
           {report.executiveSummary}
         </div>
       </section>
+
+      {writeupSubmissions.length > 0 && (
+        <section className="mb-6 bg-white border border-border rounded-xl p-5">
+          <h2 className="text-sm font-semibold text-foreground mb-2 uppercase tracking-wide">
+            Desk-task writeups ({writeupSubmissions.length})
+          </h2>
+          <p className="text-xs text-muted-foreground mb-4 leading-relaxed">
+            On Stage 0 these are tasks 08 (Read the hash on sight), 09 (Ethics dilemma), and 10 (Password-policy critique). They are submitted on the platform and graded by you — not by the capstone graders separately. Score them as part of this intern&apos;s overall Stage 0 performance.
+          </p>
+          <div className="space-y-4">
+            {writeupSubmissions.map((s) => (
+              <article key={s.id} className="border border-border/70 rounded-lg p-4 bg-slate-50/50">
+                <div className="flex items-start justify-between gap-3 mb-2">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-sm font-semibold text-foreground">
+                      Task {String(s.assignment.order ?? 0).padStart(2, "0")} · {s.assignment.title}
+                    </h3>
+                    <div className="text-[11px] font-mono text-muted-foreground mt-0.5">
+                      max {s.assignment.maxPoints} pts
+                      {s.submittedAt && (
+                        <> · submitted {new Date(s.submittedAt).toLocaleString()}</>
+                      )}
+                    </div>
+                  </div>
+                  <span
+                    className={`shrink-0 inline-flex items-center text-[10px] font-mono uppercase tracking-wide px-2 py-0.5 rounded border ${
+                      s.status === "GRADED"
+                        ? "bg-emerald-100 text-emerald-800 border-emerald-300"
+                        : s.status === "LATE"
+                          ? "bg-rose-100 text-rose-800 border-rose-300"
+                          : "bg-amber-100 text-amber-800 border-amber-300"
+                    }`}
+                  >
+                    {s.status}
+                    {s.score !== null && s.score !== undefined && <> · {s.score}/{s.assignment.maxPoints}</>}
+                  </span>
+                </div>
+                {s.content ? (
+                  <div className="mt-2 text-sm text-foreground/90 whitespace-pre-wrap leading-relaxed bg-white border border-border/60 rounded p-3 max-h-[420px] overflow-y-auto">
+                    {s.content}
+                  </div>
+                ) : (
+                  <p className="mt-2 text-xs italic text-muted-foreground">
+                    No content stored. (The intern may have used an attachment-only widget; check the attachment URL if one is on the StageReport.)
+                  </p>
+                )}
+                {s.feedback && (
+                  <div className="mt-2 text-xs text-foreground/70 italic">
+                    Auto-feedback: {s.feedback}
+                  </div>
+                )}
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Graders need the marking guide + the original evidence pack files to
           verify the intern's citations during grading. Hardcoded to STAGE_0
