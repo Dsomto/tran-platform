@@ -121,11 +121,26 @@ Off-platform, in Google Docs or Microsoft Word. The platform does not have a wri
 
 ### Is there a template I can follow?
 
-Yes. A scaffold for all four deliverables — exact headings, sub-headings, table structure, word counts, and `[BRACKETED]` prompts you replace with your own writing — is hosted at:
+Yes. Three different options depending on what you need:
+
+**1. Editable Word templates (DOCX) — recommended.** Download, open in Microsoft Word or Google Docs (File → Open → upload .docx), fill in the placeholders, save as PDF or DOCX, drop into your Drive folder.
+
+- D1 — Suspicious-login evidence table: `https://ubuntubridgeinitiatives.org/help/templates/stage-0-d1-template.docx`
+- D2 — Tier-1 dismissal pattern: `https://ubuntubridgeinitiatives.org/help/templates/stage-0-d2-template.docx`
+- D3 — Business impact + next steps: `https://ubuntubridgeinitiatives.org/help/templates/stage-0-d3-template.docx`
+- D4 — Judgment essay: `https://ubuntubridgeinitiatives.org/help/templates/stage-0-d4-template.docx`
+- All four in one file: `https://ubuntubridgeinitiatives.org/help/templates/stage-0-templates.docx`
+
+**2. Combined reference PDF.** Same content as the templates above, in one PDF you can read on any device without downloading Word.
 
 → `https://ubuntubridgeinitiatives.org/help/stage-0-templates.pdf`
 
-It does not contain the answers (you still have to do the analysis), but it shows you the shape of a full-marks submission. Copy the structure into your own Doc, replace the brackets with your work, and you are done.
+**3. Worked sample reports — read these before you write yours.** Four sample deliverables written for a **different fictional company** (BlueWave Telecom, Q4 2023 — not Sankofa). They show you the writing style, citation density, and structure of a full-marks submission, without giving away any Sankofa answers.
+
+- Read in browser: `https://ubuntubridgeinitiatives.org/help/stage-0-samples.pdf`
+- Or download to dissect in Word: `https://ubuntubridgeinitiatives.org/help/stage-0-samples.docx`
+
+**Copy the form, not the content.** A row about `102.215.13.4` (BlueWave's threat-actor IP) in a Sankofa submission will be flagged. The samples are for studying structure only.
 
 ### Can I show my capstone on LinkedIn or GitHub?
 
