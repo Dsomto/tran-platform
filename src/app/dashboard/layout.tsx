@@ -20,6 +20,14 @@ export default async function DashboardLayout({
     redirect("/admin");
   }
 
+  // Graders have no intern dashboard. Without this redirect they fall through
+  // into every /dashboard/* sub-page (announcements, leaderboard, assignments,
+  // reports, settings) — each looks up an Intern row that doesn't exist for
+  // graders and renders blank. They go to /admin/reports, their actual queue.
+  if (session.role === "GRADER") {
+    redirect("/admin/reports");
+  }
+
   // First-login password change: as long as PublicApplication.loginPassword
   // is set (the plaintext temp password we generated and emailed), the intern
   // is still on the temp password. Send them to /change-password until they
