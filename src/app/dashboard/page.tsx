@@ -40,10 +40,11 @@ export default async function DashboardPage() {
   const session = await getSession();
   if (!session) redirect("/login");
 
-  // Graders, admins, and super-admins do not have intern dashboards. Without
-  // this redirect, they fall through to the pre-intern card below ("No
-  // application on file"), which is the bug graders were reporting — they
-  // see "applications closed" copy meant for unfamiliar email addresses.
+  // Role-based redirects are now enforced in src/app/dashboard/layout.tsx,
+  // which covers /dashboard AND every /dashboard/* sub-route. Keep these as
+  // defense in depth — if the layout is ever bypassed (e.g., a future
+  // route group reshuffle), this page still won't render the intern card
+  // for graders/admins.
   if (session.role === "GRADER") redirect("/admin/reports");
   if (session.role === "ADMIN" || session.role === "SUPER_ADMIN") redirect("/admin");
 
