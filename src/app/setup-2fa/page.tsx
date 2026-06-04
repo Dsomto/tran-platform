@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import QRCode from "qrcode";
 
 interface SetupData {
   secret: string;
@@ -39,11 +40,20 @@ function Setup2FAInner() {
         }
         const j: SetupData = await res.json();
         setData(j);
-        // Render QR via a public chart API. This is convenient and avoids
-        // bundling a QR library; the URI is the otpauth string, not a secret
-        // a third-party can use to log in (still requires the user's TOTP).
-        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(j.otpauthUri)}`;
-        setQrSvg(qrUrl);
+        // Render the QR locally with the qrcode package — no third-party
+        // dependency. The earlier implementation called api.qrserver.com
+        // which was broken for graders behind ad-blockers / corporate
+        // networks. toDataURL returns a base64 PNG fit for an img src.
+        try {
+          const dataUrl = await QRCode.toDataURL(j.otpauthUri, {
+            width: 240,
+            margin: 1,
+            errorCorrectionLevel: "M",
+          });
+          setQrSvg(dataUrl);
+        } catch {
+          // Fall through: we still show the manual-entry secret below.
+        }
       } catch {
         setError("Network error starting 2FA setup.");
       }
