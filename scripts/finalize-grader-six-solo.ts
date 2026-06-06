@@ -28,7 +28,8 @@ import { PrismaClient } from "../src/generated/prisma";
 
 const prisma = new PrismaClient();
 const COMMIT = process.env.COMMIT === "1";
-const PASS_MARK = 70;
+// Pass mark is read from StageWindow.passingScore at runtime, not hardcoded.
+let PASS_MARK = 70;
 
 function distillForIntern(feedback: string, score: number): string {
   // Find the first sentence that names a specific concrete gap or strength.
@@ -74,6 +75,15 @@ function distillForIntern(feedback: string, score: number): string {
     console.error("Grader Six account not found");
     process.exit(2);
   }
+
+  // Read the real cutoff from the StageWindow so the pass/fail wording
+  // matches whatever super-admin has set on STAGE_0.
+  const stageWindow = await prisma.stageWindow.findFirst({
+    where: { stage: "STAGE_0" },
+    select: { passingScore: true },
+  });
+  PASS_MARK = stageWindow?.passingScore ?? 70;
+  console.log(`Live pass mark for STAGE_0: ${PASS_MARK}/100\n`);
 
   const grades = await prisma.reportGrade.findMany({
     where: {

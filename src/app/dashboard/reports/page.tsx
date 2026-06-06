@@ -3,6 +3,7 @@ import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { FileText, Clock, CheckCircle2, XCircle, AlertTriangle, Award } from "lucide-react";
 import { certificateShareSig } from "@/lib/certificate-link";
+import { isReportResultReleased } from "@/lib/report-visibility";
 
 const STAGE_META: Record<string, { label: string; subtitle: string }> = {
   STAGE_0: { label: "Stage 0", subtitle: "Foundations" },
@@ -63,6 +64,7 @@ export default async function ReportsPage() {
           const meta = STAGE_META[stage];
           const isOpen = w?.status === "OPEN";
           const isClosed = (w?.status ?? "CLOSED") === "CLOSED";
+          const resultReleased = isReportResultReleased(r?.status);
 
           return (
             <div
@@ -77,7 +79,7 @@ export default async function ReportsPage() {
                   </h2>
                   <div className="mt-2 flex items-center gap-2 text-sm flex-wrap">
                     <StatusPill status={r?.status ?? "NONE"} divergent={r?.divergent ?? false} />
-                    {r?.score != null && !r?.divergent && (
+                    {resultReleased && r?.score != null && !r?.divergent && (
                       <span className="text-muted-foreground">
                         Score: <strong className="text-foreground">{r.score}</strong>
                         {w && <span> / {w.passingScore} pass</span>}
@@ -89,7 +91,7 @@ export default async function ReportsPage() {
                       Your two reviewers disagreed on this report. The programme team is reviewing — you&apos;ll get a final score once they&apos;re done.
                     </p>
                   )}
-                  {r?.feedback && !r?.divergent && (
+                  {resultReleased && r?.feedback && !r?.divergent && (
                     <details className="mt-3 text-sm">
                       <summary className="cursor-pointer text-blue font-medium">
                         Grader feedback
@@ -121,7 +123,15 @@ export default async function ReportsPage() {
                       href={`/dashboard/reports/${stage}`}
                       className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg bg-blue text-white hover:opacity-90"
                     >
-                      {r ? (r.status === "PASSED" ? "View" : "Edit") : isOpen ? "Start report" : "View"}
+                      {r
+                        ? resultReleased
+                          ? "View"
+                          : r.status === "DRAFT" && isOpen
+                            ? "Edit"
+                            : "View"
+                        : isOpen
+                          ? "Start report"
+                          : "View"}
                     </Link>
                   )}
                 </div>
@@ -150,7 +160,9 @@ function StatusPill({ status, divergent }: { status: string; divergent: boolean 
     DRAFT: { label: "Draft", color: "bg-amber-50 text-amber-700 border border-amber-200", icon: Clock },
     SUBMITTED: { label: "Submitted — awaiting review", color: "bg-blue/10 text-blue border border-blue/30", icon: Clock },
     UNDER_REVIEW: { label: "Under review", color: "bg-blue/10 text-blue border border-blue/30", icon: Clock },
-    GRADED: { label: "Graded — awaiting cohort publish", color: "bg-purple-50 text-purple-700 border border-purple-200", icon: CheckCircle2 },
+    GRADED: { label: "Result pending release", color: "bg-purple-50 text-purple-700 border border-purple-200", icon: CheckCircle2 },
+    PENDING_PROMOTION: { label: "Result pending release", color: "bg-purple-50 text-purple-700 border border-purple-200", icon: Clock },
+    PENDING_ELIMINATION: { label: "Result pending release", color: "bg-purple-50 text-purple-700 border border-purple-200", icon: Clock },
     PASSED: { label: "Passed", color: "bg-emerald-50 text-emerald-700 border border-emerald-200", icon: CheckCircle2 },
     FAILED: { label: "Not passed", color: "bg-rose-50 text-rose-700 border border-rose-200", icon: XCircle },
     LATE: { label: "Late", color: "bg-slate-100 text-slate-700 border border-slate-200", icon: AlertTriangle },

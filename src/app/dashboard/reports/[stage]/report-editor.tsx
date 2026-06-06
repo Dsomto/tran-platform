@@ -31,17 +31,6 @@ interface InitialReport {
   submittedAt: string | null;
 }
 
-interface WindowInfo {
-  passingScore: number;
-  isOpen: boolean;
-  /** ISO timestamp at which the cutoff was applied — that's when scores +
-   *  feedback become visible to interns. Null means cutoff has not been
-   *  applied yet, so score and feedback on the report are hidden from the
-   *  intern even if they exist in the DB. (Field is named after the upstream
-   *  trigger: StageWindow.cutoffAppliedAt.) */
-  publishedAt: string | null;
-}
-
 interface FolderItem {
   id: string;
   title: string;
@@ -80,7 +69,6 @@ interface Props {
    *  means the stage has no downloadable input pack (legacy stages). */
   evidencePack?: EvidenceFile[];
   initialReport: InitialReport | null;
-  windowInfo: WindowInfo | null;
   locked: boolean;
 }
 
@@ -95,7 +83,6 @@ export function ReportEditor({
   folderContents,
   evidencePack,
   initialReport,
-  windowInfo,
   locked,
 }: Props) {
   const router = useRouter();
@@ -390,7 +377,7 @@ export function ReportEditor({
       </section>
 
 
-      {initialReport?.feedback && windowInfo?.publishedAt && (
+      {initialReport?.feedback && (
         <div className="mb-5 p-4 bg-amber-50 border border-amber-200 rounded-lg">
           <div className="flex items-center gap-2 mb-2 text-amber-900 font-semibold">
             <AlertTriangle className="h-4 w-4" />
@@ -409,7 +396,7 @@ export function ReportEditor({
 
       {locked && (
         <div className="mb-5 p-4 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700">
-          This report is locked — either you have passed this stage or the submission window has closed.
+          This report is locked — either this stage result has been released or the submission window has closed.
         </div>
       )}
 

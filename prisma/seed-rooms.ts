@@ -222,6 +222,8 @@ async function main() {
         correctIndex: t.correctIndex ?? null,
         minWords: t.minWords ?? null,
         dueDate: null,
+        isClosed: false,
+        closedAt: null,
       };
       if (existing) {
         // Safety: refuse to overwrite a task's content under intern work.
@@ -242,11 +244,29 @@ async function main() {
       }
     }
 
+    // If a room task was removed from the JSON source, close the existing DB
+    // assignment so old seeded rows don't keep appearing on the mission board.
+    const taskOrders = new Set(tasks.map((t) => t.order));
+    const staleTasks = await prisma.assignment.findMany({
+      where: { roomId: room.id, isClosed: false },
+      select: { id: true, order: true, title: true },
+    });
+    for (const stale of staleTasks) {
+      if (stale.order != null && taskOrders.has(stale.order)) continue;
+      await prisma.assignment.update({
+        where: { id: stale.id },
+        data: { isClosed: true, closedAt: new Date() },
+      });
+      console.warn(
+        `[seed] CLOSE ${slug} task ${stale.order ?? "?"} "${stale.title}" — no longer present in JSON.`
+      );
+    }
+
     // Recompute totalPoints from what's actually in the DB. Skipped assignments
     // contribute their old maxPoints; upserted assignments contribute the new
     // maxPoints. Either way the Room reflects the row totals graders see.
     const actual = await prisma.assignment.findMany({
-      where: { roomId: room.id },
+      where: { roomId: room.id, isClosed: false },
       select: { maxPoints: true },
     });
     const dbTotal = actual.reduce((s, a) => s + a.maxPoints, 0) || spec.totalPoints;

@@ -139,7 +139,12 @@ function StageCard({
   const statusLabel = (() => {
     if (reportStatus === "PASSED") return { label: "Passed", tone: "emerald" as const };
     if (reportStatus === "FAILED") return { label: "Did not pass", tone: "rose" as const };
-    if (reportStatus === "GRADED") return { label: "Graded", tone: "blue" as const };
+    if (
+      reportStatus === "GRADED" ||
+      reportStatus === "PENDING_PROMOTION" ||
+      reportStatus === "PENDING_ELIMINATION"
+    )
+      return { label: "Result pending release", tone: "blue" as const };
     if (reportStatus === "SUBMITTED" || reportStatus === "UNDER_REVIEW")
       return { label: "In review", tone: "amber" as const };
     if (reportStatus === "DRAFT") return { label: "Draft saved", tone: "slate" as const };
@@ -246,8 +251,8 @@ function StageCard({
               ? "Continue draft"
               : reportStatus === "SUBMITTED" || reportStatus === "UNDER_REVIEW"
                 ? "View submission"
-                : reportStatus === "GRADED" || reportStatus === "PASSED" || reportStatus === "FAILED"
-                  ? "View feedback"
+                : reportStatus === "PASSED" || reportStatus === "FAILED"
+                  ? "View result"
                   : "Submit report"}
           </Link>
         </div>

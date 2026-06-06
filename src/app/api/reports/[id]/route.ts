@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { logger } from "@/lib/logger";
+import { redactUnreleasedReportResult } from "@/lib/report-visibility";
 
 export async function GET(
   _req: NextRequest,
@@ -21,7 +22,7 @@ export async function GET(
       return Response.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    return Response.json({ report });
+    return Response.json({ report: redactUnreleasedReportResult(report) });
   } catch (error) {
     logger.error("get_report_failed", error);
     return Response.json({ error: "Internal server error" }, { status: 500 });

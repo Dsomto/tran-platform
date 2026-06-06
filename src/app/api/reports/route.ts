@@ -4,6 +4,7 @@ import { getSession } from "@/lib/auth";
 import { logger } from "@/lib/logger";
 import { rateLimit, rateLimitResponse, getClientKey, RATE_LIMITS } from "@/lib/rate-limit";
 import { stageRank } from "@/lib/stage-login";
+import { redactUnreleasedReportResult } from "@/lib/report-visibility";
 
 const STAGE_KEYS = [
   "STAGE_0",
@@ -48,7 +49,7 @@ export async function GET() {
       },
     });
 
-    return Response.json({ reports });
+    return Response.json({ reports: reports.map(redactUnreleasedReportResult) });
   } catch (error) {
     logger.error("list_reports_failed", error);
     return Response.json({ error: "Internal server error" }, { status: 500 });

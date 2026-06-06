@@ -6,6 +6,7 @@ import { prisma } from "@/lib/db";
 import { STAGE_BRIEFS } from "@/lib/stage-briefs";
 import { STAGE_STORIES } from "@/lib/stage-story";
 import type { StageSlug } from "@/lib/stage-routes";
+import { isReportResultReleased, publicReportStatus } from "@/lib/report-visibility";
 import { ReportEditor } from "./report-editor";
 
 type StageKey = keyof typeof STAGE_BRIEFS;
@@ -252,7 +253,7 @@ export default async function ReportEditorPage({
   const brief = STAGE_BRIEFS[stage];
   const stageStatus = window?.status ?? "CLOSED";
   const isOpen = stageStatus === "OPEN";
-  const isPassed = existing?.status === "PASSED";
+  const resultReleased = isReportResultReleased(existing?.status);
 
   // Server-side gate: if the admin hasn't opened this stage, the intern
   // can't see the report editor — even if they guess the URL.
@@ -307,24 +308,15 @@ export default async function ReportEditorPage({
               executiveSummary: existing.executiveSummary,
               reportUrl: existing.reportUrl,
               attachmentUrl: existing.attachmentUrl,
-              status: existing.status,
+              status: publicReportStatus(existing.status),
               version: existing.version,
-              score: existing.score,
-              feedback: existing.feedback,
+              score: resultReleased ? existing.score : null,
+              feedback: resultReleased ? existing.feedback : null,
               submittedAt: existing.submittedAt ? existing.submittedAt.toISOString() : null,
             }
           : null
       }
-      windowInfo={
-        window
-          ? {
-              passingScore: window.passingScore,
-              isOpen,
-              publishedAt: window.cutoffAppliedAt ? window.cutoffAppliedAt.toISOString() : null,
-            }
-          : null
-      }
-      locked={isPassed || !isOpen}
+      locked={resultReleased || !isOpen}
     />
   );
 }

@@ -156,7 +156,12 @@ export default async function DashboardPage() {
     if (!report) return { text: "Not started", tone: "muted" as const };
     if (report.status === "PASSED") return { text: "Passed", tone: "emerald" as const };
     if (report.status === "FAILED") return { text: "Did not pass", tone: "rose" as const };
-    if (report.status === "GRADED") return { text: "Graded", tone: "blue" as const };
+    if (
+      report.status === "GRADED" ||
+      report.status === "PENDING_PROMOTION" ||
+      report.status === "PENDING_ELIMINATION"
+    )
+      return { text: "Result pending release", tone: "blue" as const };
     if (report.status === "SUBMITTED" || report.status === "UNDER_REVIEW")
       return { text: "In review", tone: "amber" as const };
     if (report.status === "DRAFT") return { text: "Draft saved", tone: "slate" as const };
@@ -284,10 +289,8 @@ export default async function DashboardPage() {
                     ? "Continue draft"
                     : report?.status === "SUBMITTED" || report?.status === "UNDER_REVIEW"
                       ? "View submission"
-                      : report?.status === "GRADED" ||
-                          report?.status === "PASSED" ||
-                          report?.status === "FAILED"
-                        ? "View feedback"
+                      : report?.status === "PASSED" || report?.status === "FAILED"
+                        ? "View result"
                         : "Submit report"}
                 </Link>
                 <span
