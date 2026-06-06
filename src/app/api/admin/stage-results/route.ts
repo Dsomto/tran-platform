@@ -32,6 +32,7 @@ type PendingRow = {
   reportScore: number;
   terminalScore: number | null;
   finalScore: number;
+  feedback: string | null;
 };
 
 // GET: summarise the state of a stage's reports — status counts + score distribution.
@@ -88,6 +89,7 @@ export async function GET(request: NextRequest) {
         score: true,
         terminalScore: true,
         finalScore: true,
+        feedback: true,
         intern: {
           select: { id: true, user: { select: { firstName: true, lastName: true, email: true } } },
         },
@@ -109,6 +111,7 @@ export async function GET(request: NextRequest) {
         reportScore: r.score ?? 0,
         terminalScore: r.terminalScore,
         finalScore: r.finalScore ?? 0,
+        feedback: r.feedback,
       });
       pending = {
         cutoff: win?.passingScore ?? null,
@@ -182,6 +185,9 @@ export async function POST(request: NextRequest) {
     if (body?.action === "swap") {
       return await handleSwap(request, admin, body);
     }
+    if (body?.action === "update-score") {
+      return await handleUpdateScore(request, admin, body);
+    }
     if (body?.action === "finalize") {
       return await handleFinalize(request, admin, body);
     }
@@ -189,7 +195,7 @@ export async function POST(request: NextRequest) {
     return Response.json(
       {
         error:
-          "Unknown action. Use action='apply-cutoff' | 'swap' | 'finalize' | 'reset'. The legacy direct-publish path was removed; publishing goes through the cutoff/pending/finalize flow on /admin/stage-results.",
+          "Unknown action. Use action='apply-cutoff' | 'swap' | 'update-score' | 'finalize' | 'reset'. The legacy direct-publish path was removed; publishing goes through the cutoff/pending/finalize flow on /admin/stage-results.",
       },
       { status: 400 }
     );
@@ -472,6 +478,121 @@ async function handleSwap(
   });
 
   return Response.json({ swapped: true, status: target });
+}
+
+// Update a pending report's score (and optionally its feedback). Recomputes
+// the combined final score against the current StageWindow cutoff and re-buckets
+// the report into PENDING_PROMOTION / PENDING_ELIMINATION accordingly. Logged
+// to StageDecisionLog when the new score flips the bucket, so the audit trail
+// names the score change as the cause.
+async function handleUpdateScore(
+  request: NextRequest,
+  admin: Awaited<ReturnType<typeof requireSuperAdmin>>,
+  body: { reportId?: unknown; score?: unknown; feedback?: unknown; reason?: unknown }
+): Promise<Response> {
+  if (typeof body.reportId !== "string") {
+    return Response.json({ error: "reportId is required" }, { status: 400 });
+  }
+  const newScore = Number(body.score);
+  if (!Number.isFinite(newScore) || newScore < 0 || newScore > 100) {
+    return Response.json({ error: "score must be 0-100" }, { status: 400 });
+  }
+  const newFeedback =
+    typeof body.feedback === "string" ? body.feedback : undefined;
+  const reason =
+    typeof body.reason === "string" ? body.reason.slice(0, 500) : null;
+
+  const report = await prisma.stageReport.findUnique({
+    where: { id: body.reportId },
+    select: {
+      id: true,
+      internId: true,
+      stage: true,
+      status: true,
+      score: true,
+      feedback: true,
+      terminalScore: true,
+    },
+  });
+  if (!report) {
+    return Response.json({ error: "Report not found" }, { status: 404 });
+  }
+  if (
+    report.status !== "PENDING_PROMOTION" &&
+    report.status !== "PENDING_ELIMINATION"
+  ) {
+    return Response.json(
+      { error: "This report is not in a pending state. Apply a cutoff first." },
+      { status: 409 }
+    );
+  }
+
+  const round = Math.round(newScore);
+  const win = await prisma.stageWindow.findUnique({
+    where: { stage: report.stage },
+    select: { passingScore: true },
+  });
+  const cutoff = win?.passingScore ?? 0;
+  const finalScore = combinedFinalScore(round, report.terminalScore);
+  const newStatus =
+    finalScore >= cutoff ? "PENDING_PROMOTION" : "PENDING_ELIMINATION";
+
+  const flipped = newStatus !== report.status;
+  const ops: Prisma.PrismaPromise<unknown>[] = [
+    prisma.stageReport.update({
+      where: { id: report.id },
+      data: {
+        score: round,
+        finalScore,
+        status: newStatus,
+        ...(newFeedback !== undefined ? { feedback: newFeedback } : {}),
+      },
+    }),
+  ];
+  if (flipped) {
+    ops.push(
+      prisma.stageDecisionLog.create({
+        data: {
+          internId: report.internId,
+          stage: report.stage,
+          reportId: report.id,
+          fromStatus: report.status,
+          toStatus: newStatus,
+          actorId: admin.id,
+          reason: reason ?? `Score updated to ${round} (final ${finalScore}, cutoff ${cutoff}).`,
+        },
+      })
+    );
+  }
+  await prisma.$transaction(ops);
+
+  await recordAudit({
+    actor: admin,
+    action: "stage-results.update-score",
+    targetType: "STAGE_RESULTS",
+    targetId: report.stage,
+    details: {
+      reportId: report.id,
+      internId: report.internId,
+      previousScore: report.score,
+      newScore: round,
+      finalScore,
+      previousStatus: report.status,
+      newStatus,
+      feedbackChanged: newFeedback !== undefined && newFeedback !== report.feedback,
+      reason,
+    },
+    ...auditMetaFromRequest(request),
+  });
+
+  return Response.json({
+    updated: true,
+    reportId: report.id,
+    score: round,
+    finalScore,
+    status: newStatus,
+    flipped,
+  });
 }
 
 // Finalize: commit the pending buckets. Promotions → PASSED + advance stage +

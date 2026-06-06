@@ -16,6 +16,7 @@ import {
   UserCheck,
   Megaphone,
   BarChart3,
+  ArrowLeftRight,
   Award,
   FileText,
   Gavel,
@@ -69,6 +70,7 @@ const adminLinks = [
   { href: "/admin/assignments", label: "Assignments", icon: BookOpen },
   { href: "/admin/reports", label: "Grading Queue", icon: Gavel },
   { href: "/admin/stage-results", label: "Stage Results", icon: BarChart3 },
+  { href: "/admin/stage-results/review", label: "Result Review", icon: ArrowLeftRight },
   { href: "/admin/scholarships", label: "Scholarships", icon: Heart },
   { href: "/admin/announcements", label: "Announcements", icon: Megaphone },
   { href: "/admin/leaderboard", label: "Leaderboard", icon: BarChart3 },
@@ -91,6 +93,7 @@ export function Sidebar({ role, userName }: SidebarProps) {
     if (q) return pathname === p && `tab=${tab}` === q;
     if (p === "/admin/applicants")
       return pathname === p && tab !== "recommended" && tab !== "waitlisted";
+    if (p === "/admin/stage-results") return pathname === p;
     if (p === "/dashboard" || p === "/admin") return pathname === p;
     return pathname === p || pathname.startsWith(p);
   }

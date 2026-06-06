@@ -153,10 +153,19 @@ export function StageResultsPanel() {
       const data = await post({ action: "apply-cutoff", stage, passingScore: t });
       if (data) {
         setResult(
-          `Cutoff ${data.threshold} applied. ${data.pendingPromotion} pending promotion, ${data.pendingElimination} pending elimination.`
+          `Cutoff ${data.threshold} applied. ${data.pendingPromotion} pending pass, ${data.pendingElimination} pending fail. Opening review tab…`
         );
         setPreview(null);
         await loadSummary(stage);
+        // Open the per-intern review tab in a new browser tab so the admin can
+        // adjust scores and feedback row-by-row without leaving this dashboard.
+        if (typeof window !== "undefined") {
+          window.open(
+            `/admin/stage-results/review?stage=${stage}`,
+            "_blank",
+            "noopener,noreferrer"
+          );
+        }
       }
     } finally {
       setBusy(null);
@@ -238,8 +247,8 @@ export function StageResultsPanel() {
         );
       }
     };
-    push(pending.promotion, "Promotion");
-    push(pending.elimination, "Elimination");
+    push(pending.promotion, "Pass");
+    push(pending.elimination, "Fail");
     const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -259,9 +268,9 @@ export function StageResultsPanel() {
           <h1 className="text-2xl font-bold text-foreground">Stage Results</h1>
         </div>
         <p className="text-muted-foreground text-sm max-w-2xl">
-          Grade reports, then set a cutoff to sort everyone into Pending Promotion / Pending
-          Elimination on their final score (80% report + 20% terminal). Review, swap individuals if
-          needed, then finalize to promote and eliminate.
+          Grade reports, then set a cutoff to sort everyone into pending pass / pending fail on
+          their final score (80% report + 20% terminal). Review, swap individuals if needed, then
+          finalize to release results.
         </p>
       </header>
 
@@ -425,6 +434,15 @@ export function StageResultsPanel() {
                       <Download className="h-4 w-4" />
                       CSV
                     </button>
+                    <a
+                      href={`/admin/stage-results/review?stage=${stage}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg border border-border hover:bg-muted/50"
+                    >
+                      <ArrowLeftRight className="h-4 w-4" />
+                      Review & adjust
+                    </a>
                     <button
                       onClick={finalize}
                       disabled={busy != null}
@@ -439,18 +457,18 @@ export function StageResultsPanel() {
 
               <section className="mt-4 grid md:grid-cols-2 gap-4">
                 <PendingColumn
-                  title="Pending promotion"
+                  title="Pending pass"
                   tone="emerald"
                   rows={pending.promotion}
-                  actionLabel="Move to elimination"
+                  actionLabel="Move to fail"
                   disabled={busy != null}
                   onSwap={(row) => swap(row, "eliminate")}
                 />
                 <PendingColumn
-                  title="Pending elimination"
+                  title="Pending fail"
                   tone="rose"
                   rows={pending.elimination}
-                  actionLabel="Move to promotion"
+                  actionLabel="Move to pass"
                   disabled={busy != null}
                   onSwap={(row) => swap(row, "promote")}
                 />
