@@ -320,7 +320,7 @@ export default async function ReportEditorPage({
           ? {
               passingScore: window.passingScore,
               isOpen,
-              publishedAt: window.publishedAt ? window.publishedAt.toISOString() : null,
+              publishedAt: window.cutoffAppliedAt ? window.cutoffAppliedAt.toISOString() : null,
             }
           : null
       }

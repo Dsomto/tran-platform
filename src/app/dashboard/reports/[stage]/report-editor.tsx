@@ -32,11 +32,13 @@ interface InitialReport {
 }
 
 interface WindowInfo {
-  passingScore: number | null;
+  passingScore: number;
   isOpen: boolean;
-  /** ISO timestamp at which scores+feedback became visible to interns.
-   *  Null means results have not been published yet — score and feedback
-   *  on the report are hidden from the intern even if they exist in the DB. */
+  /** ISO timestamp at which the cutoff was applied — that's when scores +
+   *  feedback become visible to interns. Null means cutoff has not been
+   *  applied yet, so score and feedback on the report are hidden from the
+   *  intern even if they exist in the DB. (Field is named after the upstream
+   *  trigger: StageWindow.cutoffAppliedAt.) */
   publishedAt: string | null;
 }
 
