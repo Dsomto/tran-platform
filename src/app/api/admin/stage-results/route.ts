@@ -33,6 +33,7 @@ type PendingRow = {
   terminalScore: number | null;
   finalScore: number;
   feedback: string | null;
+  reportUrl: string | null;
 };
 
 // GET: summarise the state of a stage's reports — status counts + score distribution.
@@ -90,6 +91,7 @@ export async function GET(request: NextRequest) {
         terminalScore: true,
         finalScore: true,
         feedback: true,
+        reportUrl: true,
         intern: {
           select: { id: true, user: { select: { firstName: true, lastName: true, email: true } } },
         },
@@ -112,6 +114,7 @@ export async function GET(request: NextRequest) {
         terminalScore: r.terminalScore,
         finalScore: r.finalScore ?? 0,
         feedback: r.feedback,
+        reportUrl: r.reportUrl,
       });
       pending = {
         cutoff: win?.passingScore ?? null,

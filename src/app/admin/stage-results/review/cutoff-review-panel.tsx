@@ -23,6 +23,7 @@ interface PendingRow {
   terminalScore: number | null;
   finalScore: number;
   feedback: string | null;
+  reportUrl: string | null;
 }
 
 interface Pending {
@@ -458,6 +459,20 @@ function RowFragment({
         <td className="px-4 py-2.5">
           <div className="text-sm text-foreground">{row.fullName}</div>
           <div className="text-[11px] font-mono text-muted-foreground">{row.email}</div>
+          {row.reportUrl ? (
+            <a
+              href={row.reportUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 mt-1 text-[11px] text-blue hover:underline"
+            >
+              Open submission ↗
+            </a>
+          ) : (
+            <span className="inline-block mt-1 text-[11px] text-muted-foreground italic">
+              No submission link
+            </span>
+          )}
         </td>
         <td className="px-3 py-2.5 text-right">
           <input
