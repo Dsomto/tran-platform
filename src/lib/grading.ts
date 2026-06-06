@@ -3,7 +3,7 @@
 // Two graders score every report. If their scores differ by more than this
 // many points, the report does NOT auto-average. It is flagged divergent
 // and routed to the super-admin tiebreak queue.
-export const DIVERGENCE_THRESHOLD = 15;
+export const DIVERGENCE_THRESHOLD = 10;
 
 // Per-grader cap on simultaneous open claims. Prevents one grader from
 // vacuuming the queue and starving the other 9.
