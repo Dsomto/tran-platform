@@ -92,8 +92,15 @@ function distillForIntern(feedback: string, score: number): string {
     },
   });
 
+  // Include GRADED too so we can backfill: if the cover message was generated
+  // with the old format that included "Your final score is N/100" we need to
+  // rewrite it. The OVERWRITE env var opts in to this re-write.
+  const overwrite = process.env.OVERWRITE === "1";
   const eligible = grades.filter(
-    (g) => g.report.status === "SUBMITTED" || g.report.status === "UNDER_REVIEW",
+    (g) =>
+      g.report.status === "SUBMITTED" ||
+      g.report.status === "UNDER_REVIEW" ||
+      (overwrite && g.report.status === "GRADED"),
   );
 
   console.log(`Found ${grades.length} grades by Grader Six total.`);
