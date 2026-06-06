@@ -27,11 +27,19 @@ export default async function AdminReportsPage() {
     take: 100,
   });
 
+  // Second-grader slot is reserved for super-admin. Non-super-admin graders
+  // only see reports nobody has touched (grades.length === 0). Super-admins
+  // see both the empty queue and any report sitting with one grade waiting
+  // for a second, which is how they end up grading the back half of the
+  // queue.
   const claimable = candidates.filter(
-    (r) =>
-      r.grades.length < 2 &&
-      !r.grades.some((g) => g.graderId === session.id) &&
-      !r.skippedByGraderIds.includes(session.id)
+    (r) => {
+      if (r.grades.length >= 2) return false;
+      if (r.grades.some((g) => g.graderId === session.id)) return false;
+      if (r.skippedByGraderIds.includes(session.id)) return false;
+      if (r.grades.length === 1 && session.role !== "SUPER_ADMIN") return false;
+      return true;
+    }
   );
   const queue = claimable.slice(0, 25);
   const pendingCount = claimable.length;

@@ -41,6 +41,16 @@ export async function POST(
     if (report.grades.length >= 2) {
       return Response.json({ error: "This report already has two graders" }, { status: 409 });
     }
+    // Second-grader slot is reserved for super-admin. Once any grader has
+    // taken the first slot, only a super-admin can take the second. Regular
+    // graders get a friendly explanation. (Super-admins remain unconstrained
+    // on the first slot too — they grade like anyone else when zero are on.)
+    if (report.grades.length === 1 && session!.role !== "SUPER_ADMIN") {
+      return Response.json(
+        { error: "This report already has one grader. The second grade is reserved for the programme head." },
+        { status: 409 }
+      );
+    }
     if (report.skippedByGraderIds.includes(session!.id)) {
       return Response.json(
         { error: "You marked this report as a conflict of interest. Another grader will pick it up." },
