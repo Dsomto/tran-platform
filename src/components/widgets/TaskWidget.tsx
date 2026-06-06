@@ -14,6 +14,7 @@ const FileDownload = dynamic(() => import("./FileDownload"), { ssr: false });
 const DiagramUpload = dynamic(() => import("./DiagramUpload"), { ssr: false });
 const McqQuiz = dynamic(() => import("./McqQuiz"), { ssr: false });
 const WriteupPad = dynamic(() => import("./WriteupPad"), { ssr: false });
+const LegacyAdminApi = dynamic(() => import("./LegacyAdminApi"), { ssr: false });
 const NoneWidget = dynamic(() => import("./NoneWidget"), { ssr: false });
 
 export type TaskWidgetProps = WidgetProps & { kind: WidgetKind };
@@ -41,6 +42,8 @@ export default function TaskWidget(props: TaskWidgetProps) {
       return <McqQuiz {...rest} />;
     case "WRITEUP_PAD":
       return <WriteupPad {...rest} />;
+    case "LEGACY_ADMIN_API":
+      return <LegacyAdminApi {...rest} />;
     case "NONE":
     default:
       return <NoneWidget {...rest} />;

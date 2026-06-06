@@ -116,7 +116,8 @@ export default function TaskPageClient(props: TaskPageProps) {
     props.widgetKind === "VULN_APP_SIM" ||
     props.widgetKind === "CIPHER_TOOLS" ||
     props.widgetKind === "PORT_SCANNER" ||
-    props.widgetKind === "STEGO_VIEWER";
+    props.widgetKind === "STEGO_VIEWER" ||
+    props.widgetKind === "LEGACY_ADMIN_API";
 
   return (
     <article className="space-y-6">

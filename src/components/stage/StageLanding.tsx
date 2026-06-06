@@ -32,6 +32,7 @@ import {
 } from "@/lib/stage-story";
 import { PrintBriefButton } from "./PrintBriefButton";
 import { StageJourneyMap } from "./StageJourneyMap";
+import { CommsFeed } from "./CommsFeed";
 
 interface Props {
   brief: StageBrief;
@@ -101,6 +102,11 @@ export function StageLanding({
             {story.previously}
           </p>
         </section>
+      )}
+
+      {/* ── Channel-style messages from the cast (Stage 1+) ──── */}
+      {brief.commsThread && brief.commsThread.length > 0 && (
+        <CommsFeed theme={theme} thread={brief.commsThread} firstName={firstName} />
       )}
 
       {/* ── Hero — the internal briefing packet ───────────── */}

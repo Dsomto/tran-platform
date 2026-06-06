@@ -81,22 +81,22 @@ export const STAGE_STORIES: Record<StageSlug, StageStory> = {
     chapter: 2,
     office: "Cryptography Lab · Floor 6 — Sankofa Digital HQ",
     previously:
-      "In Chapter 1 you read the Q2 auth log and told the Incident Committee the unusual login was real. The board now knows Sankofa was breached.",
+      "In Chapter 1 your Q2 auth-log analysis convinced the Incident Committee the SD-40812 login was real, and your D2 dismissal-pattern walkthrough drove the SOC restructure. The board now knows Sankofa was breached, and they funded this chapter's emergency cryptography audit on the strength of your report.",
     deskNote: {
       from: "Tunde Afolabi",
       role: "Threat Intel Lead",
       lines: [
-        "{firstName} — Tunde. I run threat intel. I pull the artefacts; you read them. That's the deal.",
-        "There is a zip on the shared drive. I lifted it off a staging server The Griot abandoned before it went dark — configs, session tokens, an image, a handful of \"notes\". All of it encrypted or encoded, and in places done badly. Bad is good. Bad is where we get in.",
-        "The board wants two answers: what was in those files, and which of our own cryptographic decisions let this sit unnoticed for three months. The mission board walks you through the first. The capstone is where you write the second.",
-        "We were three days late catching the beacon. Don't make it five.",
+        "{firstName} — Tunde. We are not strangers any more. Your D2 walkthrough is what got us this room.",
+        "There is a zip on the shared drive. I lifted it off a staging server The Griot abandoned forty-eight hours after the public-IP block went live. Configs, session tokens, an image, a handful of \"notes\". All of it encrypted or encoded, and in places done badly. Bad is good. Bad is where we get in.",
+        "The board wants two answers. First: what was in those files. The mission board walks you through the decryptions one at a time. Second: which of our own cryptographic decisions let this sit unnoticed for three months. That is the capstone, addressed to Amaka and to Dr. Folake Bello, who you will meet on Friday.",
+        "One of the decrypted notes will point at a door we should have closed two years ago. When it does, do not chase it; flag it and bring it to me. Chapter 3 starts there. We were three days late catching the beacon. Don't make it five.",
       ],
     },
     tasksTeach:
-      "Decryption, cipher identification, JWT auditing — the hands-on reps behind the crypto post-mortem the board is waiting on.",
-    reportTo: "Amaka and the Sankofa Digital board",
+      "Decryption, cipher identification, JWT auditing and forgery — the hands-on reps behind the crypto post-mortem the board is waiting on, plus one chained exploit that proves the legacy-admin door is real.",
+    reportTo: "Amaka, Dr. Folake Bello, and the Sankofa Digital board",
     cliffhanger:
-      "Your post-mortem named the rot. One decrypted note pointed somewhere specific — sankofa.internal/legacy-admin/, a 2019 app that should have died two years ago. Chapter 3 is a war room.",
+      "Your post-mortem named the rot, and your forged token unlocked the door. One decrypted note pointed somewhere specific — sankofa.internal/legacy-admin/, a 2019 app that should have died two years ago. You walked through it. Chapter 3 is a war room and Bayo will not enjoy the conversation.",
   },
 
   "stage-2": {

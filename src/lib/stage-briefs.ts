@@ -59,6 +59,25 @@ export interface CastMember {
   greeting?: string;
 }
 
+/** A single message in the channel-style thread that opens Stage 1+ landings.
+ *  Renders as a Slack-style entry: name, role, timestamp, body. Each entry
+ *  feels like a colleague reacting to the intern's prior-chapter work. */
+export interface CommsMessage {
+  /** Display name (e.g., "Amaka Eze"). */
+  from: string;
+  /** Role (shown muted under the name, e.g., "Head of Security"). */
+  role: string;
+  /** Relative timestamp string ("Mon 09:14"). */
+  time: string;
+  /** Paragraphs — single-string or array. May contain {firstName}. */
+  body: string;
+  /** Optional alignment for left-rule colour: ally/peer/adversary/external. */
+  alignment?: "ally" | "peer" | "adversary" | "external";
+  /** "pinned" floats to the top with a pin icon. "redacted" renders the body
+   *  in a grey muted style with a redacted note. "regular" is the default. */
+  kind?: "pinned" | "regular" | "redacted";
+}
+
 export interface StageBrief {
   label: string;
   subtitle: string;
@@ -81,6 +100,11 @@ export interface StageBrief {
   resources: StageResource[];
   /** Sections the grader expects to see referenced in the executive summary. */
   sections: string[];
+  /** Channel-style messages the intern sees at the top of the landing.
+   *  Stage 0 omits it (no prior chapter to react to). Stage 1+ uses it to
+   *  acknowledge the intern's prior work, set the personal stakes, and
+   *  seed cliffhangers for the next chapter. Undefined = section hidden. */
+  commsThread?: CommsMessage[];
 }
 
 export const STAGE_BRIEFS: Record<
@@ -255,10 +279,57 @@ export const STAGE_BRIEFS: Record<
     label: "Stage 1",
     subtitle: "Applied Cryptography — Ciphers & Secrets",
     missionBrief: [
-      "Amaka's suspicion was right. The analyst you replaced closed the ticket because they could not read what they were looking at. Tunde, the threat-intel lead, has since pulled a zip off a staging server the attacker (\"The Griot\") abandoned. It contains configs, session tokens, one image, and a handful of \"notes\" files — all either encrypted, encoded, or otherwise obscured. Sloppily, in places.",
-      "The board now knows Sankofa was compromised during Q2. They want to know two things. First: what was in the files. Second, and more importantly: which cryptographic decisions inside Sankofa's own stack made this kind of sloppiness survive for three months without detection.",
-      "This report is addressed to Amaka and the board. Half of it is a post-mortem of The Griot's choices. Half of it is a control set Sankofa should adopt so the next Griot has no easy layer to hide behind.",
-      "Your evidence pack has five files. 01-aes-recipe.md is an AES-CBC ciphertext with the key and IV the Griot left in the staging config — decrypt to recover the target name. 02-classical-cipher.txt is a Griot note to themselves; identify the cipher and decode it. 03-jwts.txt is three session tokens — each has a different failure (alg, lifecycle, privilege). 04-weak-jwt-hmac.txt is an HS256 token signed with the legacy admin's hard-coded secret; crack it offline and forge a token. 05-layered-recon-note.txt is a three-layer encoded reconnaissance memo; peel each layer and report the intermediate plaintext at every step.",
+      "Your Stage 0 report changed something. Amaka took the dismissal-pattern argument from your D2 straight to the board on Friday morning. The board approved an emergency cryptography audit before lunch on the same day. That audit is this stage. You are the analyst they want reading the artefacts because you are the one who proved the SOC was looking at the wrong slice of the problem.",
+      "Tunde lifted a zip off a staging server The Griot abandoned forty-eight hours after the public-IP block went live. The Griot moved fast and left things sloppy on the way out: an AES-CBC ciphertext with the key sitting in the same staging config, an HS256 JWT signed with what looks like a five-character secret, a classical-cipher note to themselves, three operational session tokens (each broken in a different way), and a three-layer encoded reconnaissance memo. None of it is hard. All of it tells you something about how the attacker thinks.",
+      "The board wants two answers from this chapter. First, what was in those files — the desk tasks walk you through the decryptions one at a time. Second, and this is the report that goes to Amaka and the board: which cryptographic decisions inside Sankofa's own stack let The Griot's sloppiness survive three months unread. The post-mortem half of your capstone names the rot. The controls half names five things Sankofa must change so the next Griot does not get a soft landing.",
+      "Dr. Folake Bello arrived on Tuesday. The board brought her in specifically because your D3 systemic recommendation about quarterly access reviews matched what she would have proposed. She wants your second opinion on the controls list, not the other way around. Bayo Ogunyemi is the engineer whose systems carry most of the bad crypto. He will push back on every control you propose unless you make the cost of NOT doing it concrete. He owes you drinks; he already said so.",
+      "Your evidence pack has five files. 01-aes-recipe.md is an AES-CBC ciphertext with the key and IV the Griot left in the staging config — decrypt to recover the target name. 02-classical-cipher.txt is a Griot note to themselves; identify the cipher and decode it. 03-jwts.txt is three session tokens — each has a different failure (alg, lifecycle, privilege). 04-weak-jwt-hmac.txt is an HS256 token signed with the legacy admin's hard-coded secret; crack it offline and forge a token. 05-layered-recon-note.txt is a three-layer encoded reconnaissance memo; peel each layer and report the intermediate plaintext at every step. One of these decryptions points specifically at a system that should have died two years ago. The cliffhanger to Chapter 3 is in that pointer; you will find it when you find it.",
+    ],
+    commsThread: [
+      {
+        from: "Amaka Eze",
+        role: "Head of Security",
+        time: "Mon 09:14",
+        kind: "pinned",
+        alignment: "ally",
+        body: "{firstName} — formal note. Your Stage 0 report is in the case file. SD-40812 is now logged as a confirmed Q2 breach event, not a 'probably nothing'. Every artefact you flag from this chapter on will be treated as actionable evidence. Thank you for the work. You earned this seat.",
+      },
+      {
+        from: "Tunde Afolabi",
+        role: "Threat Intel Lead",
+        time: "Mon 11:02",
+        alignment: "ally",
+        body: "{firstName} — Tunde. Your D2 walkthrough of the single-analyst pattern got read out loud in the board meeting yesterday. Bayo was not happy. Good. We needed that. I pulled The Griot's staging zip overnight; it is on the shared drive. You are the one reading it. Brief incoming.",
+      },
+      {
+        from: "Dr. Folake Bello",
+        role: "External cryptography consultant",
+        time: "Tue 08:41",
+        alignment: "external",
+        body: "Dr. Folake Bello. Eight years at the central bank's CSO office. The board brought me in this morning because your D3 systemic recommendation about quarterly access reviews mapped exactly to what I would have written. I read your report on the flight. I want your second opinion on the controls list, not the other way around. We meet Friday.",
+      },
+      {
+        from: "Bayo Ogunyemi",
+        role: "Head of Engineering",
+        time: "Tue 16:30",
+        alignment: "peer",
+        body: "I disagree with your D2 dismissal-pattern recommendation. I will implement it. You owe me drinks. Welcome to Floor 6 — desk is the one with the bad chair.",
+      },
+      {
+        from: "Adaeze Eze",
+        role: "Comms",
+        time: "Wed 07:55",
+        alignment: "external",
+        body: "FYI — the Q2 disclosure ran on TechCabal and Zikoko Money this morning. Customer-trust score dropped four points overnight. Friday all-hands has been pulled forward. Whatever you are about to write, it lands in front of the board with that context.",
+      },
+      {
+        from: "intercepted-archive",
+        role: "from SD-40912 attachment, sender unverified",
+        time: "Wed 23:58",
+        kind: "redacted",
+        alignment: "adversary",
+        body: "[message body redacted by security per SD-40912 — re-opened by Amaka pending crypto audit. See Chapter 3.]",
+      },
     ],
     cast: [
       {

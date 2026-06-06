@@ -9,7 +9,8 @@ export type WidgetKind =
   | "FILE_DOWNLOAD"
   | "DIAGRAM_UPLOAD"
   | "MCQ_QUIZ"
-  | "WRITEUP_PAD";
+  | "WRITEUP_PAD"
+  | "LEGACY_ADMIN_API";
 
 export type TaskContext = {
   internId: string;           // database Intern.id — used for per-intern HMAC
