@@ -32,8 +32,12 @@ interface InitialReport {
 }
 
 interface WindowInfo {
-  passingScore: number;
+  passingScore: number | null;
   isOpen: boolean;
+  /** ISO timestamp at which scores+feedback became visible to interns.
+   *  Null means results have not been published yet — score and feedback
+   *  on the report are hidden from the intern even if they exist in the DB. */
+  publishedAt: string | null;
 }
 
 interface FolderItem {
@@ -384,7 +388,7 @@ export function ReportEditor({
       </section>
 
 
-      {initialReport?.feedback && (
+      {initialReport?.feedback && windowInfo?.publishedAt && (
         <div className="mb-5 p-4 bg-amber-50 border border-amber-200 rounded-lg">
           <div className="flex items-center gap-2 mb-2 text-amber-900 font-semibold">
             <AlertTriangle className="h-4 w-4" />
