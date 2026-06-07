@@ -1,9 +1,14 @@
 import crypto from "crypto";
 import { cronSecret, jwtSecret } from "./secrets";
 
-function documentSigningSecret(): string {
+function unique(values: string[]): string[] {
+  return Array.from(new Set(values));
+}
+
+function documentSigningSecrets(): string[] {
+  const secrets: string[] = [];
   try {
-    return cronSecret();
+    secrets.push(cronSecret());
   } catch (error) {
     if (process.env.NODE_ENV === "production") {
       console.error(
@@ -11,28 +16,42 @@ function documentSigningSecret(): string {
         error
       );
     }
-    return jwtSecret();
   }
+  secrets.push(jwtSecret());
+  return unique(secrets);
+}
+
+function documentSigningSecret(): string {
+  return documentSigningSecrets()[0];
+}
+
+function shortHmac(secret: string, value: string, length: number): string {
+  return crypto.createHmac("sha256", secret).update(value).digest("hex").slice(0, length);
+}
+
+function validShareSig(scope: string, reportId: string, internId: string, sig: string | null): boolean {
+  if (!sig) return false;
+  const value = `${scope}:${reportId}:${internId}`;
+  return documentSigningSecrets().some((secret) => shortHmac(secret, value, 16) === sig);
 }
 
 // Share signature that goes in the certificate URL. Not a full secret —
 // just enough to stop unauthenticated scraping. The recipient has the link
 // via email, or can access via their logged-in dashboard.
 export function certificateShareSig(reportId: string, internId: string): string {
-  return crypto
-    .createHmac("sha256", documentSigningSecret())
-    .update(`share:${reportId}:${internId}`)
-    .digest("hex")
-    .slice(0, 16);
+  return shortHmac(documentSigningSecret(), `share:${reportId}:${internId}`, 16);
+}
+
+export function isValidCertificateShareSig(
+  reportId: string,
+  internId: string,
+  sig: string | null
+): boolean {
+  return validShareSig("share", reportId, internId, sig);
 }
 
 export function certificateIdFor(reportId: string): string {
-  return crypto
-    .createHmac("sha256", documentSigningSecret())
-    .update(`cert:${reportId}`)
-    .digest("hex")
-    .slice(0, 12)
-    .toUpperCase();
+  return shortHmac(documentSigningSecret(), `cert:${reportId}`, 12).toUpperCase();
 }
 
 // Build the full download URL for an email.
@@ -50,20 +69,19 @@ export function certificateUrl(opts: {
 // ("letter") so a leaked certificate sig cannot be reused on the letter URL
 // and vice versa.
 export function letterShareSig(reportId: string, internId: string): string {
-  return crypto
-    .createHmac("sha256", documentSigningSecret())
-    .update(`letter:${reportId}:${internId}`)
-    .digest("hex")
-    .slice(0, 16);
+  return shortHmac(documentSigningSecret(), `letter:${reportId}:${internId}`, 16);
+}
+
+export function isValidLetterShareSig(
+  reportId: string,
+  internId: string,
+  sig: string | null
+): boolean {
+  return validShareSig("letter", reportId, internId, sig);
 }
 
 export function letterIdFor(reportId: string): string {
-  return crypto
-    .createHmac("sha256", documentSigningSecret())
-    .update(`letter-id:${reportId}`)
-    .digest("hex")
-    .slice(0, 12)
-    .toUpperCase();
+  return shortHmac(documentSigningSecret(), `letter-id:${reportId}`, 12).toUpperCase();
 }
 
 export function letterUrl(opts: {
@@ -79,20 +97,19 @@ export function letterUrl(opts: {
 // Different scope so a leaked sig from cert or discontinuation letter cannot
 // reuse on this endpoint.
 export function passLetterShareSig(reportId: string, internId: string): string {
-  return crypto
-    .createHmac("sha256", documentSigningSecret())
-    .update(`pass-letter:${reportId}:${internId}`)
-    .digest("hex")
-    .slice(0, 16);
+  return shortHmac(documentSigningSecret(), `pass-letter:${reportId}:${internId}`, 16);
+}
+
+export function isValidPassLetterShareSig(
+  reportId: string,
+  internId: string,
+  sig: string | null
+): boolean {
+  return validShareSig("pass-letter", reportId, internId, sig);
 }
 
 export function passLetterIdFor(reportId: string): string {
-  return crypto
-    .createHmac("sha256", documentSigningSecret())
-    .update(`pass-letter-id:${reportId}`)
-    .digest("hex")
-    .slice(0, 12)
-    .toUpperCase();
+  return shortHmac(documentSigningSecret(), `pass-letter-id:${reportId}`, 12).toUpperCase();
 }
 
 export function passLetterUrl(opts: {

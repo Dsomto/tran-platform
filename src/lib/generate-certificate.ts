@@ -1,5 +1,11 @@
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const PDFDocument = require("pdfkit");
+// pdfkit ships CommonJS — Next.js's production bundler wraps it as
+// { default: PDFDocument } even though Node CJS interop hands back the class
+// directly. Without this normalisation `new PDFDocument()` throws "C is not
+// a constructor" on Vercel (works locally because tsx + Node's native CJS
+// loader skips the wrap). Resolve once at module load.
+// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-explicit-any
+const pdfkitMod: any = require("pdfkit");
+const PDFDocument = pdfkitMod.default || pdfkitMod;
 
 // What the intern actually did, in plain language. Short labels so the
 // list reads like a teacher wrote it on the back of a marking sheet, not

@@ -1,5 +1,9 @@
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const PDFDocument = require("pdfkit");
+// pdfkit ships CommonJS — Next.js's production bundler wraps it as
+// { default: PDFDocument }. Without this normalisation `new PDFDocument()`
+// throws "C is not a constructor" on Vercel.
+// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-explicit-any
+const pdfkitMod: any = require("pdfkit");
+const PDFDocument = pdfkitMod.default || pdfkitMod;
 
 // Formal letter shipped to interns who did not meet the passing threshold at
 // the end of a stage. Same single-page A4 portrait shape every internship

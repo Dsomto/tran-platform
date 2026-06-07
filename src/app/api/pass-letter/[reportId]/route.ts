@@ -2,7 +2,10 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { logger } from "@/lib/logger";
 import { generatePassLetter } from "@/lib/generate-pass-letter";
-import { passLetterShareSig, passLetterIdFor } from "@/lib/certificate-link";
+import { isValidPassLetterShareSig, passLetterIdFor } from "@/lib/certificate-link";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 const STAGE_LABEL: Record<string, string> = {
   STAGE_0: "Stage 0 — Foundations",
@@ -38,8 +41,7 @@ export async function GET(
       );
     }
 
-    const expectedSig = passLetterShareSig(report.id, report.intern.id);
-    if (sig !== expectedSig) {
+    if (!isValidPassLetterShareSig(report.id, report.intern.id, sig)) {
       return Response.json({ error: "Invalid or missing signature" }, { status: 403 });
     }
 
