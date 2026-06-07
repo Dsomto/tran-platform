@@ -94,6 +94,7 @@ export async function GET(request: NextRequest) {
         finalScore: true,
         feedback: true,
         reportUrl: true,
+        attachmentUrl: true,
         qaVerified: true,
         qaVerifiedAt: true,
         intern: {
@@ -118,7 +119,10 @@ export async function GET(request: NextRequest) {
         terminalScore: r.terminalScore,
         finalScore: r.finalScore ?? 0,
         feedback: r.feedback,
-        reportUrl: r.reportUrl,
+        // Some interns left reportUrl blank and uploaded their work via the
+        // attachment field instead. Fall back so the review tab still surfaces
+        // a clickable link instead of "No submission link".
+        reportUrl: r.reportUrl ?? r.attachmentUrl ?? null,
         qaVerified: r.qaVerified === true,
         qaVerifiedAt: r.qaVerifiedAt ? r.qaVerifiedAt.toISOString() : null,
       });
