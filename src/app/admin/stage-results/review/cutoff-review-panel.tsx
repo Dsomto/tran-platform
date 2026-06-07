@@ -8,6 +8,7 @@ import {
   CheckCircle2,
   ChevronDown,
   ChevronRight,
+  ExternalLink,
   Loader2,
   RotateCcw,
   Save,
@@ -464,9 +465,11 @@ function RowFragment({
               href={row.reportUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 mt-1 text-[11px] text-blue hover:underline"
+              className="mt-1 inline-flex max-w-xl items-start gap-1 text-[11px] text-blue hover:underline"
+              title={row.reportUrl}
             >
-              Open submission ↗
+              <ExternalLink className="mt-0.5 h-3 w-3 shrink-0" />
+              <span className="break-all">Drive URL: {row.reportUrl}</span>
             </a>
           ) : (
             <span className="inline-block mt-1 text-[11px] text-muted-foreground italic">
