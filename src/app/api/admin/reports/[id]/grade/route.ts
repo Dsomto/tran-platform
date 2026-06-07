@@ -4,6 +4,7 @@ import { getSession, isGrader } from "@/lib/auth";
 import { logger } from "@/lib/logger";
 import { recordAudit, auditMetaFromRequest } from "@/lib/audit";
 import { combineFeedback, isDivergent, averageScore } from "@/lib/grading";
+import { isSoloGradingEnabled } from "@/lib/system-settings";
 
 // Two-grader flow: this grader fills in their own ReportGrade row.
 //
@@ -12,6 +13,11 @@ import { combineFeedback, isDivergent, averageScore } from "@/lib/grading";
 //     flagged divergent and stays UNDER_REVIEW for super-admin tiebreak.
 //   - otherwise, the average score and combined feedback are written onto
 //     StageReport and status flips to GRADED.
+//
+// Solo-grading mode (SystemSetting.soloGradingEnabled = true): the first
+// submitted grade finalises the report immediately — status flips to GRADED
+// with that grader's score and feedback, no waiting for grader 2 of 2, no
+// divergence tiebreak. Standard two-grader flow returns when the flag is off.
 export async function POST(
   request: NextRequest,
   ctx: { params: Promise<{ id: string }> }
@@ -115,9 +121,31 @@ export async function POST(
     );
     const bothInPlace = allGrades.length === 2 && submittedGrades.length === 2;
 
+    const solo = await isSoloGradingEnabled();
+
     let updated = report;
     let divergent = false;
-    if (bothInPlace) {
+    let finalisedSolo = false;
+    if (solo && submittedGrades.length >= 1) {
+      // Solo mode: this single grade is the final answer. Pick the most
+      // recent submitted grade (this one — nowGrade) for the canonical
+      // score/feedback, ignore the slow two-grader average.
+      const final =
+        submittedGrades.find((g) => g.id === nowGrade.id) ??
+        submittedGrades[submittedGrades.length - 1];
+      updated = await prisma.stageReport.update({
+        where: { id: report.id },
+        data: {
+          status: "GRADED",
+          score: final.score!,
+          feedback: final.feedback!,
+          gradedAt: new Date(),
+          divergent: false,
+        },
+        include: { grades: true },
+      }) as never;
+      finalisedSolo = true;
+    } else if (bothInPlace) {
       const [a, b] = submittedGrades;
       divergent = isDivergent(a.score!, b.score!);
       if (divergent) {
@@ -155,6 +183,7 @@ export async function POST(
         internId: report.internId,
         bothInPlace,
         divergent,
+        finalisedSolo,
         aiFlagged,
         gradeRowId: nowGrade.id,
       },
@@ -165,6 +194,7 @@ export async function POST(
       report: updated,
       bothInPlace,
       divergent,
+      finalisedSolo,
       gradesSoFar: allGrades.length,
     });
   } catch (error) {

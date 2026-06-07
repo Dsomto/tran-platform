@@ -740,6 +740,11 @@ model SystemSetting {
   applicationsClosesAt     DateTime?                      // if set+past, form is closed regardless of applicationsOpen
   applicationsClosedNote   String?                        // custom message shown when closed
 
+  // Temporary single-grader mode. When true, the first submitted grade
+  // finalises the report (no grader 2 of 2, no divergence tiebreak).
+  // Default false preserves the standard two-grader flow.
+  soloGradingEnabled       Boolean   @default(false)
+
   updatedAt                DateTime  @updatedAt
   updatedById              String?   @db.ObjectId
 }

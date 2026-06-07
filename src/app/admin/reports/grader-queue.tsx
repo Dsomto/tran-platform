@@ -59,6 +59,7 @@ interface Props {
   passedToday: number;
   failedToday: number;
   isSuper: boolean;
+  soloGrading: boolean;
 }
 
 export function GraderQueue({
@@ -70,6 +71,7 @@ export function GraderQueue({
   passedToday,
   failedToday,
   isSuper,
+  soloGrading,
 }: Props) {
   const router = useRouter();
   const [claimingId, setClaimingId] = useState<string | null>(null);
@@ -158,9 +160,16 @@ export function GraderQueue({
           <div className="flex items-center gap-3 mb-1">
             <Gavel className="h-6 w-6 text-blue" />
             <h1 className="text-2xl font-bold text-foreground">Grading Queue</h1>
+            {soloGrading && (
+              <span className="text-[11px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300 font-medium">
+                Single-grader mode
+              </span>
+            )}
           </div>
           <p className="text-muted-foreground text-sm max-w-2xl">
-            Every report is graded independently by two graders. Final score is the average — unless you and the other grader disagree by more than 15 points, in which case a super admin steps in. You will not see the other grader&apos;s feedback until you submit yours.
+            {soloGrading
+              ? "Single-grader mode is on. The score you submit finalises the report — there is no grader 2 of 2 and no divergence tiebreak. Turn this off before resuming the two-grader flow."
+              : "Every report is graded independently by two graders. Final score is the average — unless you and the other grader disagree by more than 15 points, in which case a super admin steps in. You will not see the other grader's feedback until you submit yours."}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -249,6 +258,7 @@ export function GraderQueue({
               <Row
                 key={r.id}
                 report={r}
+                soloGrading={soloGrading}
                 action={
                   <Link
                     href={`/admin/reports/${r.id}`}
@@ -278,6 +288,7 @@ export function GraderQueue({
               <Row
                 key={r.id}
                 report={r}
+                soloGrading={soloGrading}
                 action={
                   <div className="flex items-center gap-2">
                     <button
@@ -486,15 +497,24 @@ function statusBadge(status: string): string {
   }
 }
 
-function Row({ report, action }: { report: QueueItem; action: React.ReactNode }) {
+function Row({
+  report,
+  action,
+  soloGrading,
+}: {
+  report: QueueItem;
+  action: React.ReactNode;
+  soloGrading?: boolean;
+}) {
   const stageNum = report.stage.replace("STAGE_", "");
   const when = report.submittedAt ? new Date(report.submittedAt) : null;
-  const slotLabel =
-    report.gradeCount === 0
+  const slotLabel = soloGrading
+    ? "Needs grading"
+    : report.gradeCount === 0
       ? "Needs grader 1 of 2"
       : report.gradeCount === 1
-      ? "Needs grader 2 of 2"
-      : "Two graders assigned";
+        ? "Needs grader 2 of 2"
+        : "Two graders assigned";
   return (
     <div className="p-4 flex items-center justify-between gap-4 flex-wrap">
       <div className="min-w-0">

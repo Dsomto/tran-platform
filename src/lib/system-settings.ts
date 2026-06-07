@@ -55,6 +55,31 @@ export async function getApplicationState(): Promise<ApplicationState> {
   return { ...w, isAcceptingApplications: isOpen, reason, secondsUntilOpen };
 }
 
+// Single-grader mode. When on, /api/admin/reports/[id]/grade auto-finalises
+// the report after the first submitted grade (no grader 2 of 2, no tiebreak).
+// Off by default — flip on temporarily when a single super-admin needs to
+// drain a queue solo.
+export async function isSoloGradingEnabled(): Promise<boolean> {
+  const row = await prisma.systemSetting.findUnique({
+    where: { key: "singleton" },
+    select: { soloGradingEnabled: true },
+  });
+  return row?.soloGradingEnabled === true;
+}
+
+export async function setSoloGrading(enabled: boolean, updatedById?: string): Promise<boolean> {
+  await prisma.systemSetting.upsert({
+    where: { key: "singleton" },
+    create: {
+      key: "singleton",
+      soloGradingEnabled: enabled,
+      updatedById,
+    },
+    update: { soloGradingEnabled: enabled, updatedById },
+  });
+  return enabled;
+}
+
 export async function setApplicationWindow(
   patch: Partial<ApplicationWindow>,
   updatedById?: string

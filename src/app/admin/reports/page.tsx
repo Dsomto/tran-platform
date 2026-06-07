@@ -1,14 +1,18 @@
 import { requireGrader } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { isSoloGradingEnabled } from "@/lib/system-settings";
 import { GraderQueue } from "./grader-queue";
 
 export default async function AdminReportsPage() {
   const session = await requireGrader();
   const isSuper = session.role === "SUPER_ADMIN";
+  const solo = await isSoloGradingEnabled();
 
   // Two-grader claimable queue: status SUBMITTED or UNDER_REVIEW, not divergent,
   // fewer than 2 graders, this grader not already on it, this grader has not
-  // skipped it for conflict-of-interest.
+  // skipped it for conflict-of-interest. In solo mode the second-grader slot
+  // doesn't exist, so reports with any existing grade are already finalised
+  // and drop out of the candidate set.
   const candidates = await prisma.stageReport.findMany({
     where: {
       status: { in: ["SUBMITTED", "UNDER_REVIEW"] },
@@ -24,24 +28,29 @@ export default async function AdminReportsPage() {
         },
       },
     },
-    take: 100,
+    // Super-admin draining the whole cohort manually needs to see every row,
+    // so widen the cap. Peer graders keep the modest cap so the queue stays
+    // scannable.
+    take: isSuper ? 1000 : 100,
   });
 
   // Second-grader slot is reserved for super-admin. Non-super-admin graders
   // only see reports nobody has touched (grades.length === 0). Super-admins
   // see both the empty queue and any report sitting with one grade waiting
-  // for a second, which is how they end up grading the back half of the
-  // queue.
+  // for a second. In solo mode the second slot is disabled — any existing
+  // grade means the report is final and drops out of the queue.
   const claimable = candidates.filter(
     (r) => {
       if (r.grades.length >= 2) return false;
       if (r.grades.some((g) => g.graderId === session.id)) return false;
       if (r.skippedByGraderIds.includes(session.id)) return false;
-      if (r.grades.length === 1 && session.role !== "SUPER_ADMIN") return false;
+      if (solo && r.grades.length >= 1) return false;
+      if (!solo && r.grades.length === 1 && session.role !== "SUPER_ADMIN") return false;
       return true;
     }
   );
-  const queue = claimable.slice(0, 25);
+  // Super-admin in solo mode wants the whole list scrollable, so don't slice.
+  const queue = isSuper ? claimable : claimable.slice(0, 25);
   const pendingCount = claimable.length;
 
   const myUnfinished = await prisma.reportGrade.findMany({
@@ -144,6 +153,7 @@ export default async function AdminReportsPage() {
       passedToday={passedToday}
       failedToday={failedToday}
       isSuper={isSuper}
+      soloGrading={solo}
     />
   );
 }
