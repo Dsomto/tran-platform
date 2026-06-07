@@ -1,8 +1,8 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { logger } from "@/lib/logger";
-import { generateStageCertificate } from "@/lib/generate-certificate";
-import { certificateShareSig, certificateIdFor } from "@/lib/certificate-link";
+import { generateDiscontinuationLetter } from "@/lib/generate-discontinuation-letter";
+import { letterShareSig, letterIdFor } from "@/lib/certificate-link";
 
 const STAGE_LABEL: Record<string, string> = {
   STAGE_0: "Stage 0 — Foundations",
@@ -13,6 +13,8 @@ const STAGE_LABEL: Record<string, string> = {
   STAGE_5: "Stage 5 — Track Specialisation",
 };
 
+// Discontinuation letter download. Mirrors the certificate route exactly —
+// HMAC-signed URL, gated on report.status === "FAILED", PDF response.
 export async function GET(
   request: NextRequest,
   ctx: { params: Promise<{ reportId: string }> }
@@ -24,21 +26,19 @@ export async function GET(
 
     const report = await prisma.stageReport.findUnique({
       where: { id: reportId },
-      include: {
-        intern: { include: { user: true } },
-      },
+      include: { intern: { include: { user: true } } },
     });
     if (!report) {
-      return Response.json({ error: "Certificate not found" }, { status: 404 });
+      return Response.json({ error: "Letter not found" }, { status: 404 });
     }
-    if (report.status !== "PASSED") {
+    if (report.status !== "FAILED") {
       return Response.json(
-        { error: "Certificate is only available for passed reports" },
+        { error: "This letter is only available for finalised eliminated results." },
         { status: 403 }
       );
     }
 
-    const expectedSig = certificateShareSig(report.id, report.intern.id);
+    const expectedSig = letterShareSig(report.id, report.intern.id);
     if (sig !== expectedSig) {
       return Response.json({ error: "Invalid or missing signature" }, { status: 403 });
     }
@@ -48,22 +48,32 @@ export async function GET(
       report.intern.user.email;
     const stageLabel = STAGE_LABEL[report.stage] ?? report.stage;
 
+    // StageWindow.passingScore is the threshold at the time of finalize.
     const win = await prisma.stageWindow.findUnique({
       where: { stage: report.stage },
       select: { passingScore: true },
     });
-    const pdf = await generateStageCertificate({
+    const passingScore = win?.passingScore ?? 70;
+
+    // Effective discontinuation date is computed from finalizedAt (set when
+    // the admin clicked Finalize) so the PDF reads the same date the email
+    // already promised. Falls back to gradedAt if finalizedAt is missing
+    // (older reports finalised before the field was added).
+    const issuedAt = report.finalizedAt ?? report.gradedAt ?? new Date();
+    const effectiveDate = new Date(issuedAt.getTime() + 2 * 24 * 60 * 60 * 1000);
+
+    const pdf = await generateDiscontinuationLetter({
       fullName,
       stageLabel,
-      stageKey: report.stage,
       score: report.finalScore ?? report.score ?? 0,
-      passingScore: win?.passingScore ?? 70,
-      issuedAt: report.gradedAt ?? new Date(),
-      certId: certificateIdFor(report.id),
+      passingScore,
+      issuedAt,
+      effectiveDate,
+      letterId: letterIdFor(report.id),
     });
 
     const safeName = fullName.replace(/[^A-Za-z0-9\s-]/g, "").replace(/\s+/g, "-");
-    const filename = `UBI-Certificate-${safeName}-${report.stage}.pdf`;
+    const filename = `UBI-Letter-${safeName}-${report.stage}.pdf`;
 
     return new Response(pdf as unknown as BodyInit, {
       status: 200,
@@ -74,7 +84,7 @@ export async function GET(
       },
     });
   } catch (error) {
-    logger.error("certificate_generate_failed", error);
+    logger.error("letter_generate_failed", error);
     return Response.json({ error: "Internal server error" }, { status: 500 });
   }
 }

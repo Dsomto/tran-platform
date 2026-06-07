@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireSuperAdmin } from "@/lib/auth";
 import { logger } from "@/lib/logger";
-import { certificateUrl } from "@/lib/certificate-link";
+import { certificateUrl, letterUrl, passLetterUrl } from "@/lib/certificate-link";
 import { recordAudit, auditMetaFromRequest } from "@/lib/audit";
 import { stageTerminalScores, combinedFinalScore } from "@/lib/stage-score";
 import { Prisma } from "@/generated/prisma";
@@ -207,11 +207,14 @@ export async function POST(request: NextRequest) {
     if (body?.action === "finalize") {
       return await handleFinalize(request, admin, body);
     }
+    if (body?.action === "finalize-non-submitters") {
+      return await handleFinalizeNonSubmitters(request, admin, body);
+    }
 
     return Response.json(
       {
         error:
-          "Unknown action. Use action='apply-cutoff' | 'swap' | 'update-score' | 'toggle-qa-verified' | 'finalize' | 'reset'. The legacy direct-publish path was removed; publishing goes through the cutoff/pending/finalize flow on /admin/stage-results.",
+          "Unknown action. Use action='apply-cutoff' | 'swap' | 'update-score' | 'toggle-qa-verified' | 'finalize' | 'finalize-non-submitters' | 'reset'. The legacy direct-publish path was removed; publishing goes through the cutoff/pending/finalize flow on /admin/stage-results.",
       },
       { status: 400 }
     );
@@ -654,6 +657,116 @@ async function handleToggleQaVerified(
   });
 }
 
+// Process the non-submitter tier — active interns still sitting on this stage
+// who never submitted a Stage X capstone at all. They get a softer email
+// inviting them to keep coming to town halls + their account is deactivated
+// alongside the failed cohort.
+//
+// Idempotent: re-running checks for an existing pending no-submission email
+// from this run (same kind + subject) and skips anyone already queued.
+async function handleFinalizeNonSubmitters(
+  request: NextRequest,
+  admin: Awaited<ReturnType<typeof requireSuperAdmin>>,
+  body: { stage?: unknown }
+): Promise<Response> {
+  const stage = body.stage;
+  if (!isStageKey(stage)) {
+    return Response.json({ error: "Invalid stage" }, { status: 400 });
+  }
+  const stageNum = stage.replace("STAGE_", "");
+  const subject = `Stage ${stageNum} — A note on your submission`;
+
+  // Anyone still active on this stage with no StageReport row for the stage.
+  const internsOnStage = await prisma.intern.findMany({
+    where: { isActive: true, currentStage: stage },
+    include: { user: { select: { id: true, firstName: true, lastName: true, email: true } } },
+  });
+  const internIdsWithReport = new Set(
+    (await prisma.stageReport.findMany({ where: { stage }, select: { internId: true } })).map(
+      (r) => r.internId
+    )
+  );
+  const nonSubmitters = internsOnStage.filter((i) => !internIdsWithReport.has(i.id));
+
+  // Skip anyone already queued the same subject (idempotent re-run).
+  const alreadyQueuedUserIds = new Set(
+    (
+      await prisma.emailQueueItem.findMany({
+        where: {
+          subject,
+          status: { in: ["PENDING", "SENT"] },
+          userId: { in: nonSubmitters.map((i) => i.user.id) },
+        },
+        select: { userId: true },
+      })
+    )
+      .map((e) => e.userId)
+      .filter((id): id is string => id !== null)
+  );
+
+  let emailed = 0;
+  let deactivated = 0;
+  for (const intern of nonSubmitters) {
+    const skipEmail = alreadyQueuedUserIds.has(intern.user.id);
+    const ops: Prisma.PrismaPromise<unknown>[] = [
+      prisma.intern.update({
+        where: { id: intern.id },
+        data: { isActive: false, eliminatedAt: new Date() },
+      }),
+      // Mirror PublicApplication.stageStatus — auth.ts uses THIS field as
+      // the login gate. Without it a non-submitter with a fresh password
+      // can still log in until their JWT expires.
+      prisma.publicApplication.updateMany({
+        where: { email: intern.user.email.toLowerCase() },
+        data: { stageStatus: "eliminated" },
+      }),
+    ];
+    if (!skipEmail) {
+      ops.push(
+        prisma.emailQueueItem.create({
+          data: {
+            userId: intern.user.id,
+            toEmail: intern.user.email,
+            kind: "GENERAL",
+            subject,
+            body: renderNoSubmissionEmail({
+              firstName: intern.user.firstName,
+              stageNumber: stageNum,
+            }),
+            context: { stage, reason: "non-submission-deactivation" },
+          },
+        })
+      );
+    }
+    await prisma.$transaction(ops);
+    deactivated++;
+    if (!skipEmail) emailed++;
+  }
+
+  await recordAudit({
+    actor: admin,
+    action: "stage-results.finalize-non-submitters",
+    targetType: "STAGE_RESULTS",
+    targetId: stage,
+    details: {
+      stage,
+      candidates: nonSubmitters.length,
+      deactivated,
+      emailed,
+      skippedAlreadyQueued: alreadyQueuedUserIds.size,
+    },
+    ...auditMetaFromRequest(request),
+  });
+
+  return Response.json({
+    finalized: true,
+    candidates: nonSubmitters.length,
+    deactivated,
+    emailed,
+    skippedAlreadyQueued: alreadyQueuedUserIds.size,
+  });
+}
+
 // Finalize: commit the pending buckets. Promotions → PASSED + advance stage +
 // congrats email; eliminations → FAILED + eliminate (isActive=false) + email.
 // Each intern is committed in its own transaction (status change + email queued
@@ -692,24 +805,32 @@ async function handleFinalize(
   for (const r of pending) {
     const score = r.finalScore ?? r.score ?? 0;
     if (r.status === "PENDING_PROMOTION") {
-      const certUrl = certificateUrl({ origin, reportId: r.id, internId: r.intern.id });
+      const certUrlValue = certificateUrl({ origin, reportId: r.id, internId: r.intern.id });
+      const passLetterUrlValue = passLetterUrl({ origin, reportId: r.id, internId: r.intern.id });
+      const feedbackUrl = `${origin.replace(/\/$/, "")}/dashboard/reports`;
+      const issuedAt = new Date();
       const ops: Prisma.PrismaPromise<unknown>[] = [
-        prisma.stageReport.update({ where: { id: r.id }, data: { status: "PASSED" } }),
+        prisma.stageReport.update({
+          where: { id: r.id },
+          data: { status: "PASSED", finalizedAt: issuedAt },
+        }),
         prisma.emailQueueItem.create({
           data: {
             userId: r.intern.user.id,
             toEmail: r.intern.user.email,
             kind: "STAGE_PASSED",
-            subject: `Stage ${stageNum} — You've made it`,
+            subject: `You're in. Stage ${Number(stageNum) + 1} opens Monday.`,
             body: renderResultEmail({
               firstName: r.intern.user.firstName,
               stageNumber: stageNum,
               passed: true,
               score,
-              feedback: r.feedback ?? "",
               passingScore: threshold,
-              certUrl,
+              certUrl: certUrlValue,
+              letterPdfUrl: passLetterUrlValue,
+              feedbackUrl,
               slackUrl,
+              issuedAt,
             }),
             context: {
               reportId: r.id,
@@ -718,7 +839,8 @@ async function handleFinalize(
               reportScore: r.score,
               terminalScore: r.terminalScore,
               passingScore: threshold,
-              certUrl,
+              certUrl: certUrlValue,
+              passLetterUrl: passLetterUrlValue,
             },
           },
         }),
@@ -757,29 +879,52 @@ async function handleFinalize(
       await prisma.$transaction(ops);
       promoted++;
     } else {
-      // PENDING_ELIMINATION → FAILED + eliminate (terminal). Phase 4 will swap
-      // in the alumni-community / device-pitch email content.
+      // PENDING_ELIMINATION → FAILED + eliminate (terminal). Email now offers
+      // the discontinuation letter (PDF) + a feedback dashboard link. Feedback
+      // text itself is no longer inlined in the email.
+      const letterPdfUrl = letterUrl({ origin, reportId: r.id, internId: r.intern.id });
+      const feedbackUrl = `${origin.replace(/\/$/, "")}/dashboard/reports`;
+      const issuedAt = new Date();
+      // Credentials wind down 2 days after the result email. This matches the
+      // GRACE_MS in scripts/cron/purge-eliminated so the user-facing promise
+      // and the actual hard-delete clock are the same. finalizedAt is the
+      // single source of truth — both the email and the letter PDF compute
+      // effectiveDate from it.
+      const effectiveDate = new Date(issuedAt.getTime() + 2 * 24 * 60 * 60 * 1000);
       await prisma.$transaction([
-        prisma.stageReport.update({ where: { id: r.id }, data: { status: "FAILED" } }),
+        prisma.stageReport.update({
+          where: { id: r.id },
+          data: { status: "FAILED", finalizedAt: issuedAt },
+        }),
         prisma.intern.update({
           where: { id: r.intern.id },
           data: { isActive: false, eliminatedAt: new Date() },
+        }),
+        // Mirror PublicApplication.stageStatus — auth.ts uses THIS field as the
+        // login-gate signal. Without this mirror an eliminated intern can still
+        // sign in with a fresh password until their session expires naturally.
+        prisma.publicApplication.updateMany({
+          where: { email: r.intern.user.email.toLowerCase() },
+          data: { stageStatus: "eliminated" },
         }),
         prisma.emailQueueItem.create({
           data: {
             userId: r.intern.user.id,
             toEmail: r.intern.user.email,
             kind: "STAGE_FAILED",
-            subject: `Stage ${stageNum} — Your results`,
+            subject: `Stage ${stageNum} — your result`,
             body: renderResultEmail({
               firstName: r.intern.user.firstName,
               stageNumber: stageNum,
               passed: false,
               score,
-              feedback: r.feedback ?? "",
               passingScore: threshold,
               certUrl: null,
+              letterPdfUrl,
+              feedbackUrl,
               slackUrl,
+              issuedAt,
+              effectiveDate,
             }),
             context: {
               reportId: r.id,
@@ -788,6 +933,7 @@ async function handleFinalize(
               reportScore: r.score,
               terminalScore: r.terminalScore,
               passingScore: threshold,
+              letterPdfUrl,
             },
           },
         }),
@@ -821,102 +967,258 @@ function bucketHistogram(scores: number[]): { bucket: string; count: number }[] 
   return buckets.map((bucket, i) => ({ bucket, count: counts[i] }));
 }
 
+// Compute the next Monday from a reference date. Used to say "Stage N opens
+// Monday" in result emails — keeps the line correct without hardcoding.
+function nextMondayLabel(from: Date): string {
+  const d = new Date(from);
+  const dow = d.getUTCDay();
+  // 1 = Monday. If today is Monday, push to next Monday (7 days) so we don't
+  // claim something opens today.
+  const delta = dow === 1 ? 7 : (1 - dow + 7) % 7 || 7;
+  d.setUTCDate(d.getUTCDate() + delta);
+  return d.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" });
+}
+
+// Shared chrome: a clean letterhead with a 6px coloured accent strip,
+// readable typography, and a real human sign-off block. Used by every
+// programme-office email so they all look like they came from the same desk.
+function emailShell(opts: {
+  accent: string; // hex, used for the left strip + small accents
+  body: string;
+  signOff?: string;
+}): string {
+  const { accent, body, signOff } = opts;
+  return `
+    <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;max-width:600px;margin:0 auto;background:#F1F5F9;padding:32px 16px;color:#0F172A;">
+      <div style="background:white;border-radius:14px;overflow:hidden;box-shadow:0 1px 2px rgba(15,23,42,0.06),0 8px 24px rgba(15,23,42,0.06);">
+        <div style="display:flex;align-items:stretch;">
+          <div style="width:6px;background:${accent};flex-shrink:0;"></div>
+          <div style="padding:28px 32px 12px 32px;flex:1;">
+            <div style="font-size:11px;font-weight:700;letter-spacing:0.12em;color:#64748B;text-transform:uppercase;margin-bottom:2px;">
+              Ubuntu Bridge Initiative
+            </div>
+            <div style="font-size:11px;color:#94A3B8;">Cybersecurity Internship · Cohort 1</div>
+          </div>
+        </div>
+        <div style="padding:8px 32px 32px 38px;">
+          ${body}
+          ${signOff ?? defaultSignOff()}
+        </div>
+      </div>
+      <p style="text-align:center;color:#94A3B8;font-size:11px;margin:18px 0 0;">
+        Sent from the programme office · TRAN, The Root Access Network
+      </p>
+    </div>
+  `;
+}
+
+function defaultSignOff(): string {
+  return `
+    <div style="margin-top:28px;padding-top:20px;border-top:1px solid #E2E8F0;">
+      <p style="margin:0;color:#0F172A;font-size:14px;line-height:1.7;">
+        — Okoma &amp; Quadri<br/>
+        <span style="color:#64748B;font-size:13px;">Programme office, TRAN</span>
+      </p>
+    </div>`;
+}
+
+function ctaButton(href: string, label: string, bg: string): string {
+  return `
+    <a href="${href}" style="display:inline-block;background:${bg};color:white;padding:11px 24px;border-radius:8px;font-size:14px;font-weight:600;text-decoration:none;letter-spacing:0.01em;">
+      ${label}
+    </a>`;
+}
+
+// Result email. Feedback is NOT embedded — interns get a link to view it on
+// their dashboard. Pass version mentions the Stage N+1 Monday opening, points
+// at the cert + Slack. Fail version offers the discontinuation letter and is
+// honest about the call.
 function renderResultEmail(opts: {
   firstName: string;
   stageNumber: string;
   passed: boolean;
   score: number;
-  feedback: string;
   passingScore: number;
   certUrl: string | null;
+  letterPdfUrl: string | null;
+  feedbackUrl: string;
   slackUrl: string;
+  issuedAt?: Date;
+  effectiveDate?: Date;
 }): string {
   const {
     firstName,
     stageNumber,
     passed,
     score,
-    feedback,
     passingScore,
     certUrl,
+    letterPdfUrl,
+    feedbackUrl,
     slackUrl,
+    issuedAt = new Date(),
+    effectiveDate,
   } = opts;
-  const headline = passed
-    ? `Congratulations — you've passed Stage ${stageNumber}.`
-    : `Your Stage ${stageNumber} results are in.`;
-  const cta = passed
-    ? `Stage ${Number(stageNumber) + 1} is now open to you. Log in to continue.`
-    : `You did not meet the passing threshold for this stage. Your grader's feedback is below.`;
-  const safeFeedback = feedback
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/\n/g, "<br/>");
+  const nextStageNum = Number(stageNumber) + 1;
+  const mondayLabel = nextMondayLabel(issuedAt);
 
-  const certBlock =
-    passed && certUrl
-      ? `
-        <div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:10px;padding:16px;margin:20px 0;text-align:center;">
-          <p style="margin:0 0 10px;color:#1E40AF;font-size:14px;font-weight:600;">Your certificate of completion is ready</p>
-          <p style="margin:0 0 14px;color:#1E3A8A;font-size:13px;">Download a signed PDF with your name for this stage.</p>
-          <a href="${certUrl}" style="display:inline-block;background:#2563EB;color:white;padding:10px 22px;border-radius:9999px;font-size:13px;font-weight:600;text-decoration:none;">
-            Download certificate (PDF)
-          </a>
-        </div>`
-      : "";
+  if (passed) {
+    const body = `
+      <h1 style="font-size:26px;font-weight:700;line-height:1.25;margin:18px 0 6px;color:#0F172A;">
+        You're in, ${firstName}. <br/>
+        Stage ${nextStageNum} opens ${mondayLabel}.
+      </h1>
+      <p style="font-size:15px;line-height:1.65;color:#334155;margin:0 0 22px;">
+        Your Stage ${stageNumber} capstone is graded and you made the cohort cutoff.
+        The Stage ${nextStageNum} brief drops in your inbox on Sunday evening with the
+        reading list and your first exercise. Block out time on Monday afternoon to
+        read it properly — Stage ${nextStageNum} moves quicker than Stage ${stageNumber} did.
+      </p>
 
-  const slackBlock =
-    passed && slackUrl
-      ? `
-        <div style="border-top:1px solid #E2E8F0;margin-top:20px;padding-top:20px;">
-          <p style="margin:0 0 10px;color:#334155;font-size:14px;">
-            <strong>Join the cohort channel.</strong> This is where announcements, mentor office-hours, and cohort help happen.
-          </p>
-          <a href="${slackUrl}" style="display:inline-block;background:#4A154B;color:white;padding:9px 18px;border-radius:9999px;font-size:13px;font-weight:600;text-decoration:none;">
-            Join the Slack channel
-          </a>
-        </div>`
-      : "";
-
-  // For eliminated participants: a warm community note. No links here — the
-  // alumni-community / device-pitch details go out in a separate follow-up email.
-  const communityBlock = !passed
-    ? `
-        <div style="border-top:1px solid #E2E8F0;margin-top:20px;padding-top:20px;">
-          <p style="margin:0;color:#334155;font-size:14px;line-height:1.7;">
-            This isn't the end of the road. You remain part of the UBI community — we'll be in
-            touch by email about alumni opportunities, including the chance to pitch for device
-            and equipment support. Thank you for the work and effort you put in.
-          </p>
-        </div>`
-    : "";
-
-  return `
-    <div style="font-family:'Segoe UI',sans-serif;max-width:600px;margin:0 auto;background:#F8FAFC;padding:40px 20px;">
-      <div style="background:linear-gradient(135deg,#2563EB,#0891B2);padding:32px;border-radius:16px;text-align:center;color:white;">
-        <h1 style="margin:0 0 8px;font-size:24px;font-weight:700;">UBI</h1>
-        <p style="margin:0;font-size:13px;opacity:0.9;">Ubuntu Bridge Initiative</p>
-      </div>
-      <div style="background:white;padding:32px;border-radius:16px;margin-top:20px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
-        <h2 style="color:#0F172A;margin:0 0 16px;">Hi ${firstName},</h2>
-        <p style="color:#334155;line-height:1.7;margin:0 0 16px;">${headline}</p>
-        <div style="background:${passed ? "#F0FDF4" : "#FEF2F2"};border-left:4px solid ${passed ? "#16A34A" : "#DC2626"};padding:16px 20px;border-radius:0 8px 8px 0;margin:20px 0;">
-          <p style="margin:0;color:#0F172A;font-size:14px;line-height:1.6;">
-            <strong>Your score:</strong> ${score} / 100 &nbsp;·&nbsp; <strong>Passing:</strong> ${passingScore}
-          </p>
+      <div style="display:flex;gap:14px;align-items:baseline;margin:0 0 28px;padding:16px 18px;background:#ECFDF5;border:1px solid #A7F3D0;border-radius:10px;">
+        <div style="font-size:34px;font-weight:700;color:#047857;line-height:1;">${score}</div>
+        <div style="font-size:13px;color:#065F46;line-height:1.4;">
+          <strong>out of 100</strong><br/>
+          passing mark was ${passingScore}
         </div>
-        ${certBlock}
-        <h3 style="color:#0F172A;margin:24px 0 8px;font-size:16px;">Grader feedback</h3>
-        <div style="color:#475569;line-height:1.7;font-size:14px;background:#F8FAFC;border-radius:8px;padding:16px;">${safeFeedback}</div>
-        <p style="color:#475569;line-height:1.7;margin:24px 0 0;">${cta}</p>
-        ${slackBlock}
-        ${communityBlock}
       </div>
-      <p style="text-align:center;color:#94A3B8;font-size:12px;margin-top:24px;">
-        Ubuntu Bridge Initiative · ubuntubridgeinitiatives.org
+
+      <p style="font-size:14px;line-height:1.7;color:#334155;margin:0 0 10px;font-weight:600;">
+        Two things to do this weekend:
+      </p>
+      <ol style="font-size:14px;line-height:1.75;color:#334155;margin:0 0 22px;padding-left:20px;">
+        <li style="margin-bottom:6px;">
+          <strong>Grab your certificate.</strong> It's signed and has a verification
+          code on it. Save the PDF; we can reissue if you lose the file.
+        </li>
+        <li>
+          <strong>Join the cohort Slack.</strong> Most of the practical help,
+          mentor office hours, and back-and-forth happens there, not on the
+          dashboard.
+        </li>
+      </ol>
+
+      <div style="margin:0 0 18px;">
+        ${certUrl ? ctaButton(certUrl, "Download your certificate", "#2563EB") : ""}
+        ${slackUrl ? `&nbsp;&nbsp;${ctaButton(slackUrl, "Join the cohort Slack", "#4A154B")}` : ""}
+      </div>
+
+      <p style="font-size:13px;line-height:1.6;color:#64748B;margin:24px 0 0;">
+        Your reviewer's full notes on the capstone are on your dashboard —
+        <a href="${feedbackUrl}" style="color:#2563EB;text-decoration:none;font-weight:600;">open them here</a>.
+        Worth reading even though you passed; there are usually one or two
+        notes in there you'll want for Stage ${nextStageNum}.
+      </p>
+    `;
+    return emailShell({ accent: "#10B981", body });
+  }
+
+  // FAIL — honest, no soft-pedalling, but warm.
+  const effectiveLabel = effectiveDate
+    ? effectiveDate.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })
+    : "";
+  const body = `
+    <h1 style="font-size:24px;font-weight:700;line-height:1.3;margin:18px 0 6px;color:#0F172A;">
+      Hi ${firstName},
+    </h1>
+    <p style="font-size:15px;line-height:1.65;color:#334155;margin:0 0 18px;">
+      We've finished marking your Stage ${stageNumber} submission. You scored ${score}
+      against a passing mark of ${passingScore}, so you didn't make this
+      cohort's cutoff.
+    </p>
+    <p style="font-size:14px;line-height:1.7;color:#475569;margin:0 0 22px;">
+      Saying it plain isn't easy — but it's better than soft-pedalling and
+      wasting your time. The reviewer's full notes are on your dashboard.
+      Read them if you can. There are usually one or two things in there
+      worth knowing regardless of what's next.
+    </p>
+
+    <div style="display:flex;gap:14px;align-items:baseline;margin:0 0 22px;padding:16px 18px;background:#FEF2F2;border:1px solid #FECACA;border-radius:10px;">
+      <div style="font-size:34px;font-weight:700;color:#B91C1C;line-height:1;">${score}</div>
+      <div style="font-size:13px;color:#7F1D1D;line-height:1.4;">
+        <strong>out of 100</strong><br/>
+        passing mark was ${passingScore}
+      </div>
+    </div>
+
+    <div style="margin:0 0 22px;padding:18px 20px;background:#F8FAFC;border-radius:10px;">
+      <p style="margin:0 0 10px;font-size:13px;font-weight:700;color:#0F172A;letter-spacing:0.02em;text-transform:uppercase;">
+        What happens now
+      </p>
+      <ul style="margin:0;padding-left:20px;font-size:14px;line-height:1.7;color:#334155;">
+        <li style="margin-bottom:6px;">
+          Your dashboard credentials wind down ${effectiveLabel ? `on ${effectiveLabel}` : "in two days"}.
+          Until then, pull anything you want off — feedback, drafts, references.
+        </li>
+        <li style="margin-bottom:6px;">
+          A formal end-of-programme letter (PDF below) for your records,
+          signed by the programme office.
+        </li>
+        <li>
+          You're still on our list for town halls, alumni events, and the
+          device-pitch programme. None of that goes away.
+        </li>
+      </ul>
+    </div>
+
+    <div style="margin:0 0 18px;">
+      ${letterPdfUrl ? ctaButton(letterPdfUrl, "Download the letter (PDF)", "#0F172A") : ""}
+      &nbsp;&nbsp;
+      ${ctaButton(feedbackUrl, "Open my reviewer feedback", "#2563EB")}
+    </div>
+
+    <p style="font-size:14px;line-height:1.7;color:#334155;margin:24px 0 0;">
+      Thank you for the work you put in. Finishing and submitting at all
+      puts you ahead of most. Look after yourself.
+    </p>
+  `;
+  return emailShell({ accent: "#DC2626", body });
+}
+
+// Soft no-submission email — honest, doesn't lecture, doesn't moralise.
+// They didn't show up. We say so, we deactivate the account, we leave the
+// door open for the public stuff.
+function renderNoSubmissionEmail(opts: {
+  firstName: string;
+  stageNumber: string;
+}): string {
+  const { firstName, stageNumber } = opts;
+  const body = `
+    <h1 style="font-size:24px;font-weight:700;line-height:1.3;margin:18px 0 6px;color:#0F172A;">
+      Hi ${firstName},
+    </h1>
+    <p style="font-size:15px;line-height:1.65;color:#334155;margin:0 0 18px;">
+      We didn't receive a Stage ${stageNumber} submission from you before
+      the deadline. As a result, your dashboard account will close out as
+      part of this cycle's results.
+    </p>
+    <p style="font-size:14px;line-height:1.7;color:#475569;margin:0 0 22px;">
+      We get it — life happens, deadlines slip, sometimes the work just
+      doesn't come together. We're not here to lecture. One honest note
+      though: in any programme like this — anywhere, not just with us —
+      putting up the work, even imperfect work, is most of the battle.
+      The interns who shipped something half-done are still in the
+      programme. Worth remembering for the next thing you apply to,
+      wherever that is.
+    </p>
+
+    <div style="margin:0 0 22px;padding:18px 20px;background:#F0F9FF;border-left:4px solid #0284C7;border-radius:0 8px 8px 0;">
+      <p style="margin:0 0 6px;font-size:14px;font-weight:700;color:#0C4A6E;">
+        You're still on our list for town halls.
+      </p>
+      <p style="margin:0;font-size:13px;line-height:1.65;color:#075985;">
+        Those are open to anyone who's been part of any cohort. Drop in
+        when one comes up — come listen, ask questions, see what people
+        are building.
       </p>
     </div>
+
+    <p style="font-size:14px;line-height:1.7;color:#334155;margin:24px 0 0;">
+      Thank you for the interest you showed. We hope to see you on the
+      other side.
+    </p>
   `;
+  return emailShell({ accent: "#475569", body });
 }
 
 // On Vercel Pro: 5-minute budget. Publishing a cohort of 500 interns fans

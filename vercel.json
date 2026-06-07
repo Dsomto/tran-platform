@@ -2,7 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "crons": [
     {
-      "path": "/api/cron/email-drain?limit=300",
+      "path": "/api/cron/email-drain?limit=100",
       "schedule": "*/5 * * * *"
     },
     {

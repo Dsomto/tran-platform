@@ -54,7 +54,7 @@ export function StageResultsPanel() {
   const [loading, setLoading] = useState(false);
   const [cutoff, setCutoff] = useState("60");
   const [preview, setPreview] = useState<{ willPass: number; willFail: number } | null>(null);
-  const [busy, setBusy] = useState<null | "preview" | "apply" | "finalize" | "swap" | "reset">(null);
+  const [busy, setBusy] = useState<null | "preview" | "apply" | "finalize" | "swap" | "reset" | "nosubs">(null);
   const [result, setResult] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [moveInternsBack, setMoveInternsBack] = useState(false);
@@ -199,6 +199,30 @@ export function StageResultsPanel() {
       if (data) {
         setResult(
           `Finalized. ${data.promoted} promoted, ${data.eliminated} eliminated. Emails queued.`
+        );
+        await loadSummary(stage);
+      }
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function finalizeNonSubmitters() {
+    const msg =
+      `Process non-submitters for Stage ${stage.replace("STAGE_", "")}?\n\n` +
+      "Every active intern still on this stage who never submitted a capstone will:\n" +
+      "  • Get the soft 'did not submit' email\n" +
+      "  • Be deactivated (isActive=false)\n\n" +
+      "Re-running is idempotent — anyone already emailed is skipped.";
+    if (!confirm(msg)) return;
+    setError(null);
+    setResult(null);
+    setBusy("nosubs");
+    try {
+      const data = await post({ action: "finalize-non-submitters", stage });
+      if (data) {
+        setResult(
+          `Non-submitters processed. ${data.deactivated} deactivated, ${data.emailed} emailed (${data.skippedAlreadyQueued} already queued).`
         );
         await loadSummary(stage);
       }
@@ -443,6 +467,15 @@ export function StageResultsPanel() {
                       <ArrowLeftRight className="h-4 w-4" />
                       Review & adjust
                     </a>
+                    <button
+                      onClick={finalizeNonSubmitters}
+                      disabled={busy != null}
+                      title="Email + deactivate every active intern still on this stage who never submitted a capstone"
+                      className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg border border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100 disabled:opacity-50"
+                    >
+                      {busy === "nosubs" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                      Process non-submitters
+                    </button>
                     <button
                       onClick={finalize}
                       disabled={busy != null}

@@ -574,6 +574,11 @@ model StageReport {
   qaVerifiedAt       DateTime?
   qaVerifiedById     String?       @db.ObjectId
 
+  // Set when handleFinalize commits status -> PASSED or FAILED. Used as the
+  // single source of truth for the "effective date" the email and the letter
+  // PDF both display so they cannot drift.
+  finalizedAt        DateTime?
+
   // Set true when both graders submit and their scores diverge by more than
   // DIVERGENCE_THRESHOLD. The report stays UNDER_REVIEW and surfaces in the
   // super-admin tiebreak queue. Reset to false once tiebreak is applied.

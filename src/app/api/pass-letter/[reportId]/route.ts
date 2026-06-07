@@ -1,8 +1,8 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { logger } from "@/lib/logger";
-import { generateStageCertificate } from "@/lib/generate-certificate";
-import { certificateShareSig, certificateIdFor } from "@/lib/certificate-link";
+import { generatePassLetter } from "@/lib/generate-pass-letter";
+import { passLetterShareSig, passLetterIdFor } from "@/lib/certificate-link";
 
 const STAGE_LABEL: Record<string, string> = {
   STAGE_0: "Stage 0 — Foundations",
@@ -13,6 +13,8 @@ const STAGE_LABEL: Record<string, string> = {
   STAGE_5: "Stage 5 — Track Specialisation",
 };
 
+// Pass / achievement letter download. Mirrors the certificate route — HMAC
+// signed URL, gated on PASSED status.
 export async function GET(
   request: NextRequest,
   ctx: { params: Promise<{ reportId: string }> }
@@ -24,21 +26,19 @@ export async function GET(
 
     const report = await prisma.stageReport.findUnique({
       where: { id: reportId },
-      include: {
-        intern: { include: { user: true } },
-      },
+      include: { intern: { include: { user: true } } },
     });
     if (!report) {
-      return Response.json({ error: "Certificate not found" }, { status: 404 });
+      return Response.json({ error: "Letter not found" }, { status: 404 });
     }
     if (report.status !== "PASSED") {
       return Response.json(
-        { error: "Certificate is only available for passed reports" },
+        { error: "Achievement letter is only available for passed reports." },
         { status: 403 }
       );
     }
 
-    const expectedSig = certificateShareSig(report.id, report.intern.id);
+    const expectedSig = passLetterShareSig(report.id, report.intern.id);
     if (sig !== expectedSig) {
       return Response.json({ error: "Invalid or missing signature" }, { status: 403 });
     }
@@ -47,23 +47,27 @@ export async function GET(
       `${report.intern.user.firstName} ${report.intern.user.lastName}`.trim() ||
       report.intern.user.email;
     const stageLabel = STAGE_LABEL[report.stage] ?? report.stage;
-
     const win = await prisma.stageWindow.findUnique({
       where: { stage: report.stage },
       select: { passingScore: true },
     });
-    const pdf = await generateStageCertificate({
+
+    const stageNum = Number(report.stage.replace("STAGE_", ""));
+    const nextKey = `STAGE_${stageNum + 1}`;
+    const nextStageLabel = STAGE_LABEL[nextKey];
+
+    const pdf = await generatePassLetter({
       fullName,
       stageLabel,
-      stageKey: report.stage,
       score: report.finalScore ?? report.score ?? 0,
       passingScore: win?.passingScore ?? 70,
       issuedAt: report.gradedAt ?? new Date(),
-      certId: certificateIdFor(report.id),
+      letterId: passLetterIdFor(report.id),
+      nextStageLabel,
     });
 
     const safeName = fullName.replace(/[^A-Za-z0-9\s-]/g, "").replace(/\s+/g, "-");
-    const filename = `UBI-Certificate-${safeName}-${report.stage}.pdf`;
+    const filename = `UBI-Letter-${safeName}-${report.stage}.pdf`;
 
     return new Response(pdf as unknown as BodyInit, {
       status: 200,
@@ -74,7 +78,7 @@ export async function GET(
       },
     });
   } catch (error) {
-    logger.error("certificate_generate_failed", error);
+    logger.error("pass_letter_generate_failed", error);
     return Response.json({ error: "Internal server error" }, { status: 500 });
   }
 }

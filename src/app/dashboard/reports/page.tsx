@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { FileText, Clock, CheckCircle2, XCircle, AlertTriangle, Award } from "lucide-react";
-import { certificateShareSig } from "@/lib/certificate-link";
+import { FileText, Clock, CheckCircle2, XCircle, AlertTriangle, Award, FileSignature } from "lucide-react";
+import { certificateShareSig, letterShareSig, passLetterShareSig } from "@/lib/certificate-link";
 import { isReportResultReleased } from "@/lib/report-visibility";
 
 const STAGE_META: Record<string, { label: string; subtitle: string }> = {
@@ -104,14 +104,36 @@ export default async function ReportsPage() {
                 </div>
                 <div className="flex gap-2 shrink-0 flex-wrap">
                   {r?.status === "PASSED" && (
+                    <>
+                      <a
+                        href={`/api/certificate/${r.id}?sig=${certificateShareSig(r.id, intern.id)}`}
+                        target="_blank"
+                        rel="noreferrer noopener"
+                        className="inline-flex items-center gap-1.5 justify-center px-3 py-2 text-sm font-medium rounded-lg border border-blue/30 bg-blue/5 text-blue hover:bg-blue/10"
+                      >
+                        <Award className="h-4 w-4" />
+                        Certificate
+                      </a>
+                      <a
+                        href={`/api/pass-letter/${r.id}?sig=${passLetterShareSig(r.id, intern.id)}`}
+                        target="_blank"
+                        rel="noreferrer noopener"
+                        className="inline-flex items-center gap-1.5 justify-center px-3 py-2 text-sm font-medium rounded-lg border border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100"
+                      >
+                        <FileSignature className="h-4 w-4" />
+                        Achievement letter
+                      </a>
+                    </>
+                  )}
+                  {r?.status === "FAILED" && (
                     <a
-                      href={`/api/certificate/${r.id}?sig=${certificateShareSig(r.id, intern.id)}`}
+                      href={`/api/letter/${r.id}?sig=${letterShareSig(r.id, intern.id)}`}
                       target="_blank"
                       rel="noreferrer noopener"
-                      className="inline-flex items-center gap-1.5 justify-center px-3 py-2 text-sm font-medium rounded-lg border border-blue/30 bg-blue/5 text-blue hover:bg-blue/10"
+                      className="inline-flex items-center gap-1.5 justify-center px-3 py-2 text-sm font-medium rounded-lg border border-slate-300 bg-slate-50 text-slate-800 hover:bg-slate-100"
                     >
-                      <Award className="h-4 w-4" />
-                      Certificate
+                      <FileSignature className="h-4 w-4" />
+                      End-of-programme letter
                     </a>
                   )}
                   {isClosed && !r ? (
