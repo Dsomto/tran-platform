@@ -310,7 +310,11 @@ export default async function ReportEditorPage({
               attachmentUrl: existing.attachmentUrl,
               status: publicReportStatus(existing.status),
               version: existing.version,
-              score: resultReleased ? existing.score : null,
+              // Use finalScore (the combined 0.8*report + 0.2*terminal score)
+              // when present so the dashboard matches what the result email
+              // and certificate display. Fall back to score for legacy rows
+              // that finalised before finalScore was computed.
+              score: resultReleased ? (existing.finalScore ?? existing.score) : null,
               feedback: resultReleased ? existing.feedback : null,
               submittedAt: existing.submittedAt ? existing.submittedAt.toISOString() : null,
             }

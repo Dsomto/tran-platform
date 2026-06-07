@@ -79,9 +79,9 @@ export default async function ReportsPage() {
                   </h2>
                   <div className="mt-2 flex items-center gap-2 text-sm flex-wrap">
                     <StatusPill status={r?.status ?? "NONE"} divergent={r?.divergent ?? false} />
-                    {resultReleased && r?.score != null && !r?.divergent && (
+                    {resultReleased && !r?.divergent && (r?.finalScore ?? r?.score) != null && (
                       <span className="text-muted-foreground">
-                        Score: <strong className="text-foreground">{r.score}</strong>
+                        Score: <strong className="text-foreground">{r?.finalScore ?? r?.score}</strong>
                         {w && <span> / {w.passingScore} pass</span>}
                       </span>
                     )}
