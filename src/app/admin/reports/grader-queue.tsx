@@ -12,6 +12,9 @@ import {
   AlertTriangle,
   ShieldAlert,
   RotateCcw,
+  Users,
+  ExternalLink,
+  Search,
 } from "lucide-react";
 
 interface QueueItem {
@@ -36,10 +39,22 @@ interface TiebreakItem {
   scores: number[]; // the two grader scores, redacted of identity
 }
 
+interface SubmissionItem {
+  id: string;
+  stage: string;
+  status: string;
+  score: number | null;
+  submittedAt: string | null;
+  submissionUrl: string | null;
+  internName: string;
+  internEmail: string;
+}
+
 interface Props {
   queue: QueueItem[];
   mine: QueueItem[];
   tiebreak: TiebreakItem[];
+  allSubmissions: SubmissionItem[];
   pendingCount: number;
   passedToday: number;
   failedToday: number;
@@ -50,6 +65,7 @@ export function GraderQueue({
   queue,
   mine,
   tiebreak,
+  allSubmissions,
   pendingCount,
   passedToday,
   failedToday,
@@ -61,6 +77,9 @@ export function GraderQueue({
   const [releasingStale, setReleasingStale] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
+  const [submitterSearch, setSubmitterSearch] = useState("");
+  const [stageFilter, setStageFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
 
   async function claim(id: string) {
     setClaimingId(id);
@@ -291,8 +310,180 @@ export function GraderQueue({
           </div>
         )}
       </section>
+
+      {isSuper && allSubmissions.length > 0 && (
+        <AllSubmissions
+          rows={allSubmissions}
+          search={submitterSearch}
+          onSearch={setSubmitterSearch}
+          stageFilter={stageFilter}
+          onStageFilter={setStageFilter}
+          statusFilter={statusFilter}
+          onStatusFilter={setStatusFilter}
+        />
+      )}
     </div>
   );
+}
+
+function AllSubmissions({
+  rows,
+  search,
+  onSearch,
+  stageFilter,
+  onStageFilter,
+  statusFilter,
+  onStatusFilter,
+}: {
+  rows: SubmissionItem[];
+  search: string;
+  onSearch: (v: string) => void;
+  stageFilter: string;
+  onStageFilter: (v: string) => void;
+  statusFilter: string;
+  onStatusFilter: (v: string) => void;
+}) {
+  const stages = Array.from(new Set(rows.map((r) => r.stage))).sort();
+  const statuses = Array.from(new Set(rows.map((r) => r.status))).sort();
+  const q = search.trim().toLowerCase();
+  const filtered = rows.filter((r) => {
+    if (stageFilter !== "all" && r.stage !== stageFilter) return false;
+    if (statusFilter !== "all" && r.status !== statusFilter) return false;
+    if (q && !r.internName.toLowerCase().includes(q) && !r.internEmail.toLowerCase().includes(q)) {
+      return false;
+    }
+    return true;
+  });
+
+  return (
+    <section className="mt-10">
+      <h2 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+        <Users className="h-4 w-4 text-blue" />
+        All submissions ({filtered.length}
+        {filtered.length !== rows.length ? ` of ${rows.length}` : ""})
+      </h2>
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        <div className="flex items-center gap-2 flex-1 min-w-[200px]">
+          <Search className="h-4 w-4 text-muted-foreground" />
+          <input
+            type="text"
+            placeholder="Search name or email"
+            value={search}
+            onChange={(e) => onSearch(e.target.value)}
+            className="flex-1 p-2 border border-border rounded-lg text-sm"
+          />
+        </div>
+        <select
+          value={stageFilter}
+          onChange={(e) => onStageFilter(e.target.value)}
+          className="p-2 border border-border rounded-lg text-sm bg-white"
+        >
+          <option value="all">All stages</option>
+          {stages.map((s) => (
+            <option key={s} value={s}>
+              {s.replace("STAGE_", "Stage ")}
+            </option>
+          ))}
+        </select>
+        <select
+          value={statusFilter}
+          onChange={(e) => onStatusFilter(e.target.value)}
+          className="p-2 border border-border rounded-lg text-sm bg-white"
+        >
+          <option value="all">All statuses</option>
+          {statuses.map((s) => (
+            <option key={s} value={s}>
+              {s}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div className="bg-white border border-border rounded-xl overflow-hidden">
+        <div className="max-h-[600px] overflow-y-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-muted/30 text-xs uppercase tracking-wide text-muted-foreground sticky top-0">
+              <tr>
+                <th className="px-4 py-2.5 text-left">Name</th>
+                <th className="px-3 py-2.5 text-left">Stage</th>
+                <th className="px-3 py-2.5 text-left">Status</th>
+                <th className="px-3 py-2.5 text-right">Score</th>
+                <th className="px-3 py-2.5 text-left">Submission</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((r) => {
+                const stageNum = r.stage.replace("STAGE_", "");
+                const statusClass = statusBadge(r.status);
+                return (
+                  <tr key={r.id} className="border-t border-border hover:bg-muted/20">
+                    <td className="px-4 py-2.5">
+                      <div className="text-sm text-foreground">{r.internName}</div>
+                      <div className="text-[11px] font-mono text-muted-foreground">{r.internEmail}</div>
+                    </td>
+                    <td className="px-3 py-2.5 text-sm tabular-nums">Stage {stageNum}</td>
+                    <td className="px-3 py-2.5">
+                      <span className={`px-2 py-0.5 rounded-full text-[11px] font-medium border ${statusClass}`}>
+                        {r.status}
+                      </span>
+                    </td>
+                    <td className="px-3 py-2.5 text-right text-sm tabular-nums">
+                      {r.score != null ? r.score : "—"}
+                    </td>
+                    <td className="px-3 py-2.5">
+                      {r.submissionUrl ? (
+                        <a
+                          href={r.submissionUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-[12px] text-blue hover:underline break-all"
+                          title={r.submissionUrl}
+                        >
+                          <ExternalLink className="h-3 w-3 shrink-0" />
+                          <span className="truncate max-w-[260px]">{r.submissionUrl}</span>
+                        </a>
+                      ) : (
+                        <span className="text-[12px] text-muted-foreground italic">
+                          No submission link
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+              {filtered.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="px-4 py-8 text-center text-sm text-muted-foreground">
+                    No submissions match the current filter.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function statusBadge(status: string): string {
+  switch (status) {
+    case "PASSED":
+      return "bg-emerald-50 text-emerald-800 border-emerald-200";
+    case "FAILED":
+      return "bg-rose-50 text-rose-800 border-rose-200";
+    case "PENDING_PROMOTION":
+      return "bg-emerald-50/60 text-emerald-700 border-emerald-200";
+    case "PENDING_ELIMINATION":
+      return "bg-rose-50/60 text-rose-700 border-rose-200";
+    case "GRADED":
+      return "bg-blue-50 text-blue-800 border-blue-200";
+    case "UNDER_REVIEW":
+      return "bg-amber-50 text-amber-800 border-amber-200";
+    case "SUBMITTED":
+      return "bg-slate-100 text-slate-700 border-slate-200";
+    default:
+      return "bg-muted/40 text-muted-foreground border-border";
+  }
 }
 
 function Row({ report, action }: { report: QueueItem; action: React.ReactNode }) {

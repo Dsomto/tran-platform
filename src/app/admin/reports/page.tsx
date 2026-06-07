@@ -89,6 +89,32 @@ export default async function AdminReportsPage() {
     (g) => g.score !== null && (g.score ?? 0) < passingScoreDefault
   ).length;
 
+  // Super-admin view: every intern who ever submitted a report, across all
+  // stages and statuses, with a clickable submission link. Lets the
+  // programme office scan who's where without bouncing between admin pages.
+  // Falls back from reportUrl to attachmentUrl the same way Result Review
+  // does so attachment-only submissions still surface a clickable link.
+  const allSubmissions = isSuper
+    ? await prisma.stageReport.findMany({
+        where: { submittedAt: { not: null } },
+        orderBy: [{ stage: "asc" }, { submittedAt: "desc" }],
+        select: {
+          id: true,
+          stage: true,
+          status: true,
+          score: true,
+          submittedAt: true,
+          reportUrl: true,
+          attachmentUrl: true,
+          intern: {
+            select: {
+              user: { select: { firstName: true, lastName: true, email: true } },
+            },
+          },
+        },
+      })
+    : [];
+
   return (
     <GraderQueue
       queue={queue.map((r) => serialize(r, r.grades.length))}
@@ -103,6 +129,16 @@ export default async function AdminReportsPage() {
         scores: r.grades
           .map((g) => g.score)
           .filter((s): s is number => s !== null && s !== undefined),
+      }))}
+      allSubmissions={allSubmissions.map((r) => ({
+        id: r.id,
+        stage: r.stage,
+        status: r.status,
+        score: r.score,
+        submittedAt: r.submittedAt ? r.submittedAt.toISOString() : null,
+        submissionUrl: r.reportUrl ?? r.attachmentUrl ?? null,
+        internName: `${r.intern.user.firstName} ${r.intern.user.lastName}`,
+        internEmail: r.intern.user.email,
       }))}
       pendingCount={pendingCount}
       passedToday={passedToday}
