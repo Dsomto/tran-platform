@@ -1,15 +1,17 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
-import { requireAdmin } from "@/lib/auth";
 import { logger } from "@/lib/logger";
 import { recordAudit, auditMetaFromRequest } from "@/lib/audit";
+import { requireApiAdmin } from "@/lib/api-auth";
 
 export async function PATCH(
   request: NextRequest,
   ctx: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await requireAdmin();
+    const auth = await requireApiAdmin();
+    if (auth.response) return auth.response;
+    const session = auth.session;
     const { id } = await ctx.params;
     const body = await request.json();
     const { status, reviewNotes } = body ?? {};

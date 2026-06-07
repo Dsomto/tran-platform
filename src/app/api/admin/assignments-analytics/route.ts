@@ -1,13 +1,14 @@
 import { prisma } from "@/lib/db";
-import { requireAdmin } from "@/lib/auth";
 import { logger } from "@/lib/logger";
+import { requireApiAdmin } from "@/lib/api-auth";
 
 // Returns every assignment with submission counts attached — so the admin
 // list page can show "X started, Y submitted" without a separate query
 // per row.
 export async function GET() {
   try {
-    await requireAdmin();
+    const auth = await requireApiAdmin();
+    if (auth.response) return auth.response;
 
     const assignments = await prisma.assignment.findMany({
       orderBy: [{ stage: "asc" }, { order: "asc" }, { title: "asc" }],

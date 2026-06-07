@@ -1,9 +1,9 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
-import { requireSuperAdmin } from "@/lib/auth";
 import { logger } from "@/lib/logger";
 import { scheduleCohortBroadcast } from "@/lib/email";
 import { publicAppUrl } from "@/lib/public-url";
+import { requireApiSuperAdmin } from "@/lib/api-auth";
 
 const STAGE_KEYS = ["STAGE_0", "STAGE_1", "STAGE_2", "STAGE_3", "STAGE_4"] as const;
 type StageKey = (typeof STAGE_KEYS)[number];
@@ -35,7 +35,9 @@ function escapeHtml(s: string): string {
 // Other transitions are silent.
 export async function POST(request: NextRequest) {
   try {
-    const session = await requireSuperAdmin();
+    const auth = await requireApiSuperAdmin();
+    if (auth.response) return auth.response;
+    const session = auth.session;
     const body = await request.json().catch(() => ({}));
     const { stage, status, announce } = body ?? {};
 

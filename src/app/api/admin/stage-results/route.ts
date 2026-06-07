@@ -1,11 +1,12 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
-import { requireSuperAdmin } from "@/lib/auth";
 import { logger } from "@/lib/logger";
 import { certificateUrl, letterUrl, passLetterUrl } from "@/lib/certificate-link";
 import { recordAudit, auditMetaFromRequest } from "@/lib/audit";
 import { stageTerminalScores, combinedFinalScore } from "@/lib/stage-score";
 import { Prisma } from "@/generated/prisma";
+import { requireApiSuperAdmin } from "@/lib/api-auth";
+import type { SessionUser } from "@/lib/auth";
 
 const STAGE_KEYS = [
   "STAGE_0",
@@ -42,7 +43,8 @@ type PendingRow = {
 // Used by /admin/stage-results to show what will happen if a given threshold is applied.
 export async function GET(request: NextRequest) {
   try {
-    await requireSuperAdmin();
+    const auth = await requireApiSuperAdmin();
+    if (auth.response) return auth.response;
     const url = new URL(request.url);
     const stage = url.searchParams.get("stage");
     if (!isStageKey(stage)) {
@@ -186,7 +188,9 @@ export async function GET(request: NextRequest) {
 // outcome for the same intern depending on which path the admin hit.
 export async function POST(request: NextRequest) {
   try {
-    const admin = await requireSuperAdmin();
+    const auth = await requireApiSuperAdmin();
+    if (auth.response) return auth.response;
+    const admin = auth.session;
     const body = await request.json();
 
     if (body?.action === "reset") {
@@ -236,7 +240,7 @@ export async function POST(request: NextRequest) {
 // progressed beyond the next stage are left untouched.
 async function handleReset(
   request: NextRequest,
-  admin: Awaited<ReturnType<typeof requireSuperAdmin>>,
+  admin: SessionUser,
   body: { stage?: unknown; moveInternsBack?: unknown }
 ): Promise<Response> {
   const stage = body.stage;
@@ -330,7 +334,7 @@ async function handleReset(
 // swaps made in Result Review persist while admins add newly graded people.
 async function handleApplyCutoff(
   request: NextRequest,
-  admin: Awaited<ReturnType<typeof requireSuperAdmin>>,
+  admin: SessionUser,
   body: { stage?: unknown; passingScore?: unknown }
 ): Promise<Response> {
   const stage = body.stage;
@@ -421,7 +425,7 @@ async function handleApplyCutoff(
 // Swap one intern between the two pending buckets. Logged to StageDecisionLog.
 async function handleSwap(
   request: NextRequest,
-  admin: Awaited<ReturnType<typeof requireSuperAdmin>>,
+  admin: SessionUser,
   body: { stage?: unknown; internId?: unknown; reportId?: unknown; to?: unknown; reason?: unknown }
 ): Promise<Response> {
   const to = body.to;
@@ -491,7 +495,7 @@ async function handleSwap(
 // names the score change as the cause.
 async function handleUpdateScore(
   request: NextRequest,
-  admin: Awaited<ReturnType<typeof requireSuperAdmin>>,
+  admin: SessionUser,
   body: { reportId?: unknown; score?: unknown; feedback?: unknown; reason?: unknown }
 ): Promise<Response> {
   if (typeof body.reportId !== "string") {
@@ -601,7 +605,7 @@ async function handleUpdateScore(
 
 async function handleToggleQaVerified(
   request: NextRequest,
-  admin: Awaited<ReturnType<typeof requireSuperAdmin>>,
+  admin: SessionUser,
   body: { reportId?: unknown; verified?: unknown }
 ): Promise<Response> {
   if (typeof body.reportId !== "string") {
@@ -666,7 +670,7 @@ async function handleToggleQaVerified(
 // from this run (same kind + subject) and skips anyone already queued.
 async function handleFinalizeNonSubmitters(
   request: NextRequest,
-  admin: Awaited<ReturnType<typeof requireSuperAdmin>>,
+  admin: SessionUser,
   body: { stage?: unknown }
 ): Promise<Response> {
   const stage = body.stage;
@@ -774,7 +778,7 @@ async function handleFinalizeNonSubmitters(
 // only whoever is still pending — no double-sends.
 async function handleFinalize(
   request: NextRequest,
-  admin: Awaited<ReturnType<typeof requireSuperAdmin>>,
+  admin: SessionUser,
   body: { stage?: unknown }
 ): Promise<Response> {
   const stage = body.stage;

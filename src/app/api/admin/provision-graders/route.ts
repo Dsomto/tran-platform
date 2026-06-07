@@ -1,9 +1,10 @@
 import { NextRequest } from "next/server";
 import crypto from "node:crypto";
 import { prisma } from "@/lib/db";
-import { requireSuperAdmin, hashPassword } from "@/lib/auth";
+import { hashPassword } from "@/lib/auth";
 import { logger } from "@/lib/logger";
 import { recordAudit, auditMetaFromRequest } from "@/lib/audit";
+import { requireApiSuperAdmin } from "@/lib/api-auth";
 
 // Directly provision GRADER accounts from a pasted list of name + email — for
 // graders brought on to score stage reports. Each entry creates (or reuses) a
@@ -111,7 +112,9 @@ function renderLoginEmail(opts: {
 
 export async function POST(request: NextRequest) {
   try {
-    const admin = await requireSuperAdmin();
+    const auth = await requireApiSuperAdmin();
+    if (auth.response) return auth.response;
+    const admin = auth.session;
     const body = await request.json().catch(() => ({}));
 
     const raw = typeof body?.raw === "string" ? body.raw : "";

@@ -22,12 +22,20 @@ export default async function AdminLayout({
     notFound();
   }
 
+  const h = await headers();
+  const pathname = h.get("x-pathname") ?? "";
+  if (
+    session.role === "GRADER" &&
+    pathname !== "/admin/reports" &&
+    !pathname.startsWith("/admin/reports/")
+  ) {
+    notFound();
+  }
+
   // Enforce 2FA enrollment for every privileged role. If the user does not
   // have TOTP set up, bounce them to /setup-2fa until they enroll. We allow
   // /setup-2fa itself (and api routes) so the enrollment flow can complete.
   // The proxy forwards x-pathname so we can detect where the request is.
-  const h = await headers();
-  const pathname = h.get("x-pathname") ?? "";
   const isOnSetupPage = pathname.startsWith("/setup-2fa");
   if (!isOnSetupPage) {
     const userRow = await prisma.user.findUnique({

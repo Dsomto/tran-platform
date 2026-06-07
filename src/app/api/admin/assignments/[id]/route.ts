@@ -1,8 +1,8 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
-import { requireAdmin } from "@/lib/auth";
 import { logger } from "@/lib/logger";
 import { recordAudit, auditMetaFromRequest } from "@/lib/audit";
+import { requireApiAdmin } from "@/lib/api-auth";
 
 // Detail view for one assignment — full submissions list + analytics.
 export async function GET(
@@ -10,7 +10,8 @@ export async function GET(
   ctx: { params: Promise<{ id: string }> }
 ) {
   try {
-    await requireAdmin();
+    const auth = await requireApiAdmin();
+    if (auth.response) return auth.response;
     const { id } = await ctx.params;
 
     const assignment = await prisma.assignment.findUnique({
@@ -109,7 +110,9 @@ export async function PATCH(
   ctx: { params: Promise<{ id: string }> }
 ) {
   try {
-    const admin = await requireAdmin();
+    const auth = await requireApiAdmin();
+    if (auth.response) return auth.response;
+    const admin = auth.session;
     const { id } = await ctx.params;
     const body = await request.json().catch(() => ({}));
 

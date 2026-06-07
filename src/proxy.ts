@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 import { TOKEN_TO_STAGE, STAGE_TOKENS } from "./lib/stage-routes";
 
 type PrivilegedRole = "GRADER" | "ADMIN" | "SUPER_ADMIN";
-type RouteAuth = "admin" | "ops";
+type RouteAuth = "admin" | "grader-admin" | "ops";
 
 /**
  * Path-token routing for TRAN's foundation rooms.
@@ -121,6 +121,9 @@ async function verifiedSessionRole(token: string | undefined): Promise<Privilege
 }
 
 function authBoundary(pathname: string): RouteAuth | null {
+  if (pathname === "/admin/reports" || pathname.startsWith("/admin/reports/")) {
+    return "grader-admin";
+  }
   if (pathname === "/admin" || pathname.startsWith("/admin/")) return "admin";
   if (pathname === "/ops" || pathname.startsWith("/ops/")) return "ops";
   return null;
@@ -155,7 +158,9 @@ export async function proxy(request: NextRequest) {
     const allowed =
       boundary === "ops"
         ? role === "SUPER_ADMIN"
-        : role === "GRADER" || role === "ADMIN" || role === "SUPER_ADMIN";
+        : boundary === "grader-admin"
+        ? role === "GRADER" || role === "ADMIN" || role === "SUPER_ADMIN"
+        : role === "ADMIN" || role === "SUPER_ADMIN";
     if (!allowed) {
       return NextResponse.rewrite(forbiddenRewrite(request), {
         request: { headers: requestHeaders },

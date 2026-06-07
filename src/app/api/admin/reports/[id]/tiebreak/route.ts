@@ -1,8 +1,8 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
-import { requireSuperAdmin } from "@/lib/auth";
 import { logger } from "@/lib/logger";
 import { recordAudit, auditMetaFromRequest } from "@/lib/audit";
+import { requireApiSuperAdmin } from "@/lib/api-auth";
 
 // Super-admin tiebreak. When two graders' scores diverge by more than the
 // threshold, the report sits in UNDER_REVIEW with divergent=true. A super
@@ -13,7 +13,9 @@ export async function POST(
   ctx: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await requireSuperAdmin();
+    const auth = await requireApiSuperAdmin();
+    if (auth.response) return auth.response;
+    const session = auth.session;
 
     const { id } = await ctx.params;
     const body = await request.json();

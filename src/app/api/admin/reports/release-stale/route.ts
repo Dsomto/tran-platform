@@ -1,9 +1,9 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
-import { requireSuperAdmin } from "@/lib/auth";
 import { logger } from "@/lib/logger";
 import { recordAudit, auditMetaFromRequest } from "@/lib/audit";
 import { STALE_CLAIM_HOURS } from "@/lib/grading";
+import { requireApiSuperAdmin } from "@/lib/api-auth";
 
 // Super-admin action: drop any ReportGrade row that has been claimed but not
 // graded for more than STALE_CLAIM_HOURS. The slot returns to the queue so
@@ -11,7 +11,9 @@ import { STALE_CLAIM_HOURS } from "@/lib/grading";
 // SUBMITTED. This protects against graders who claim and disappear.
 export async function POST(request: NextRequest) {
   try {
-    const session = await requireSuperAdmin();
+    const auth = await requireApiSuperAdmin();
+    if (auth.response) return auth.response;
+    const session = auth.session;
 
     const cutoff = new Date(Date.now() - STALE_CLAIM_HOURS * 60 * 60 * 1000);
 

@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db";
-import { requireAdmin } from "@/lib/auth";
 import { logger } from "@/lib/logger";
+import { requireApiAdmin } from "@/lib/api-auth";
 
 // One row per stage. Status, intern access count, submission count.
 // No deadlines, no passing-score input — those have been removed from
@@ -9,7 +9,8 @@ const STAGES = ["STAGE_0", "STAGE_1", "STAGE_2", "STAGE_3", "STAGE_4"] as const;
 
 export async function GET() {
   try {
-    await requireAdmin();
+    const auth = await requireApiAdmin();
+    if (auth.response) return auth.response;
 
     const [windows, accessCounts, reportCounts] = await Promise.all([
       prisma.stageWindow.findMany({

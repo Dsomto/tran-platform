@@ -1,11 +1,12 @@
 import { NextRequest } from "next/server";
-import { requireAdmin } from "@/lib/auth";
 import { logger } from "@/lib/logger";
 import { getApplicationState, setApplicationWindow } from "@/lib/system-settings";
+import { requireApiAdmin } from "@/lib/api-auth";
 
 export async function GET() {
   try {
-    await requireAdmin();
+    const auth = await requireApiAdmin();
+    if (auth.response) return auth.response;
     const state = await getApplicationState();
     return Response.json({ state });
   } catch (error) {
@@ -16,7 +17,9 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await requireAdmin();
+    const auth = await requireApiAdmin();
+    if (auth.response) return auth.response;
+    const session = auth.session;
     const body = await request.json().catch(() => ({}));
 
     const patch: Parameters<typeof setApplicationWindow>[0] = {};
