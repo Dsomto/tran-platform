@@ -53,6 +53,17 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "images.unsplash.com" },
     ],
   },
+  // PDFKit reads its built-in font metrics (.afm) files from disk at runtime
+  // via fs.readFileSync('node_modules/pdfkit/js/data/{Helvetica,...}.afm').
+  // Next's serverless tracer can't follow that string-concatenated path, so
+  // the Vercel bundle ships without them and every cert/letter call fails
+  // with ENOENT. Force the whole pdfkit data dir into the function's working
+  // set for every PDF-generating route.
+  outputFileTracingIncludes: {
+    "/api/certificate/**": ["./node_modules/pdfkit/js/data/**"],
+    "/api/letter/**": ["./node_modules/pdfkit/js/data/**"],
+    "/api/pass-letter/**": ["./node_modules/pdfkit/js/data/**"],
+  },
   async headers() {
     return [
       {
