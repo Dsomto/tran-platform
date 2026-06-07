@@ -77,13 +77,6 @@ export async function GET(
     });
   } catch (error) {
     logger.error("certificate_generate_failed", error);
-    // TEMPORARY DEBUG: surface error message so we can see what's failing
-    // on Vercel. Revert after we've fixed the underlying issue.
-    const msg = error instanceof Error ? error.message : String(error);
-    const stack = error instanceof Error ? error.stack : undefined;
-    return Response.json(
-      { error: "Internal server error", detail: msg, stack: stack?.split("\n").slice(0, 6) },
-      { status: 500 }
-    );
+    return Response.json({ error: "Internal server error" }, { status: 500 });
   }
 }
