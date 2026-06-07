@@ -21,34 +21,42 @@ export default async function AdminReportsPage() {
     },
     orderBy: { submittedAt: "asc" },
     include: {
-      grades: { select: { graderId: true } },
+      // Include score so we can distinguish orphan claims (score=null) from
+      // real submitted grades. Orphan claims shouldn't make a report look
+      // "already graded" — they were never submitted.
+      grades: { select: { graderId: true, score: true } },
       intern: {
         select: {
           user: { select: { firstName: true, lastName: true, email: true } },
         },
       },
     },
-    // Super-admin draining the whole cohort manually needs to see every row,
-    // so widen the cap. Peer graders keep the modest cap so the queue stays
-    // scannable.
     take: isSuper ? 1000 : 100,
   });
 
+  // A "submitted" grade has a score on it; a grade row with score=null is
+  // an orphan claim (some grader clicked Claim and never finished).
+  // Orphan claims should not block the report from being graded.
   // Second-grader slot is reserved for super-admin. Non-super-admin graders
-  // only see reports nobody has touched (grades.length === 0). Super-admins
-  // see both the empty queue and any report sitting with one grade waiting
-  // for a second. In solo mode the second slot is disabled — any existing
-  // grade means the report is final and drops out of the queue.
-  const claimable = candidates.filter(
-    (r) => {
-      if (r.grades.length >= 2) return false;
-      if (r.grades.some((g) => g.graderId === session.id)) return false;
-      if (r.skippedByGraderIds.includes(session.id)) return false;
-      if (solo && r.grades.length >= 1) return false;
-      if (!solo && r.grades.length === 1 && session.role !== "SUPER_ADMIN") return false;
-      return true;
+  // only see reports nobody has submitted a grade on. Super-admins see both
+  // the empty queue and any report sitting with one submitted grade waiting
+  // for a second. In solo mode the second slot is disabled — any submitted
+  // grade means the report should be finalised and drops out of the queue.
+  const claimable = candidates.filter((r) => {
+    const submittedGradeCount = r.grades.filter((g) => g.score !== null).length;
+    if (submittedGradeCount >= 2) return false;
+    // Super-admin can take over even when they already claimed it (resume).
+    if (
+      session.role !== "SUPER_ADMIN" &&
+      r.grades.some((g) => g.graderId === session.id && g.score !== null)
+    ) {
+      return false;
     }
-  );
+    if (r.skippedByGraderIds.includes(session.id)) return false;
+    if (solo && submittedGradeCount >= 1) return false;
+    if (!solo && submittedGradeCount === 1 && session.role !== "SUPER_ADMIN") return false;
+    return true;
+  });
   // Super-admin in solo mode wants the whole list scrollable, so don't slice.
   const queue = isSuper ? claimable : claimable.slice(0, 25);
   const pendingCount = claimable.length;

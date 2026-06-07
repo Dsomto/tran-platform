@@ -35,17 +35,23 @@ export async function POST(
         { status: 409 }
       );
     }
-    if (report.grades.some((g) => g.graderId === session!.id)) {
-      return Response.json({ error: "You have already claimed this report" }, { status: 409 });
+    // Existing grade row by this grader: if they already submitted a score
+    // it's a true duplicate claim and we reject. If it's an orphan claim
+    // (score=null) we re-use it — they're resuming work.
+    const myExistingGrade = report.grades.find((g) => g.graderId === session!.id);
+    if (myExistingGrade && myExistingGrade.score !== null) {
+      return Response.json({ error: "You have already submitted a grade for this report" }, { status: 409 });
     }
-    if (report.grades.length >= 2) {
-      return Response.json({ error: "This report already has two graders" }, { status: 409 });
+    // Count only submitted grades for the "already has two graders" check.
+    // Orphan claims (someone clicked Claim and never finished) should not
+    // block a super-admin from taking the slot, especially in solo mode.
+    const submittedGradeCount = report.grades.filter((g) => g.score !== null).length;
+    if (submittedGradeCount >= 2) {
+      return Response.json({ error: "This report already has two submitted grades" }, { status: 409 });
     }
     // Second-grader slot is reserved for super-admin. Once any grader has
-    // taken the first slot, only a super-admin can take the second. Regular
-    // graders get a friendly explanation. (Super-admins remain unconstrained
-    // on the first slot too — they grade like anyone else when zero are on.)
-    if (report.grades.length === 1 && session!.role !== "SUPER_ADMIN") {
+    // taken the first slot, only a super-admin can take the second.
+    if (submittedGradeCount === 1 && session!.role !== "SUPER_ADMIN") {
       return Response.json(
         { error: "This report already has one grader. The second grade is reserved for the programme head." },
         { status: 409 }
@@ -70,28 +76,40 @@ export async function POST(
       );
     }
 
-    // Concurrency-safe claim: create the grade row, then immediately recount
-    // and roll back if the count is now >2. This isn't a serializable
+    // Concurrency-safe claim: if this grader has an existing orphan claim
+    // (score=null), re-use it; otherwise create. Then immediately recount and
+    // roll back the create if count is now >2. This isn't a serializable
     // transaction (Mongo doesn't expose those for free), but it closes the
     // window where three graders racing past the earlier count check could
     // all create rows. Worst case under contention: one grader's create gets
     // rolled back and they see a friendly "no longer claimable" error.
     let createdId: string | null = null;
-    try {
-      const created = await prisma.reportGrade.create({
-        data: { reportId: report.id, graderId: session!.id },
+    if (myExistingGrade) {
+      // Resume the orphan claim — no new row, refresh claimedAt.
+      await prisma.reportGrade
+        .update({ where: { id: myExistingGrade.id }, data: { claimedAt: new Date() } })
+        .catch(() => undefined);
+    } else {
+      try {
+        const created = await prisma.reportGrade.create({
+          data: { reportId: report.id, graderId: session!.id },
+        });
+        createdId = created.id;
+      } catch {
+        return Response.json({ error: "Report is no longer claimable" }, { status: 409 });
+      }
+      // Re-check against submitted grades, not orphan claims — orphans should
+      // not block a new claimant in solo mode.
+      const finalSubmitted = await prisma.reportGrade.count({
+        where: { reportId: report.id, score: { not: null } },
       });
-      createdId = created.id;
-    } catch {
-      return Response.json({ error: "Report is no longer claimable" }, { status: 409 });
-    }
-    const finalCount = await prisma.reportGrade.count({ where: { reportId: report.id } });
-    if (finalCount > 2 && createdId) {
-      await prisma.reportGrade.delete({ where: { id: createdId } }).catch(() => undefined);
-      return Response.json(
-        { error: "Another grader claimed the last slot first." },
-        { status: 409 }
-      );
+      if (finalSubmitted > 2 && createdId) {
+        await prisma.reportGrade.delete({ where: { id: createdId } }).catch(() => undefined);
+        return Response.json(
+          { error: "Another grader claimed the last slot first." },
+          { status: 409 }
+        );
+      }
     }
 
     await prisma.stageReport.update({
