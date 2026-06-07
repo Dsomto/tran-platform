@@ -58,7 +58,7 @@ export async function GET(
       stageKey: report.stage,
       score: report.finalScore ?? report.score ?? 0,
       passingScore: win?.passingScore ?? 70,
-      issuedAt: report.gradedAt ?? new Date(),
+      issuedAt: report.finalizedAt ?? report.gradedAt ?? new Date(),
       certId: certificateIdFor(report.id),
     });
 
@@ -75,6 +75,13 @@ export async function GET(
     });
   } catch (error) {
     logger.error("certificate_generate_failed", error);
-    return Response.json({ error: "Internal server error" }, { status: 500 });
+    // TEMPORARY DEBUG: surface error message so we can see what's failing
+    // on Vercel. Revert after we've fixed the underlying issue.
+    const msg = error instanceof Error ? error.message : String(error);
+    const stack = error instanceof Error ? error.stack : undefined;
+    return Response.json(
+      { error: "Internal server error", detail: msg, stack: stack?.split("\n").slice(0, 6) },
+      { status: 500 }
+    );
   }
 }
