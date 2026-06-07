@@ -9,6 +9,10 @@ import type { StageSlug } from "@/lib/stage-routes";
 import { isReportResultReleased, publicReportStatus } from "@/lib/report-visibility";
 import { ReportEditor } from "./report-editor";
 
+// Always re-fetch — score field switched from `score` to `finalScore`.
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 type StageKey = keyof typeof STAGE_BRIEFS;
 
 function isStageKey(s: string): s is StageKey {

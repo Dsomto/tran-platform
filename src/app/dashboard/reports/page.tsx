@@ -5,6 +5,11 @@ import { FileText, Clock, CheckCircle2, XCircle, AlertTriangle, Award, FileSigna
 import { certificateShareSig, letterShareSig, passLetterShareSig } from "@/lib/certificate-link";
 import { isReportResultReleased } from "@/lib/report-visibility";
 
+// Always re-fetch — the score field switched from `score` to `finalScore`
+// and any cached render of this route would still show the old value.
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 const STAGE_META: Record<string, { label: string; subtitle: string }> = {
   STAGE_0: { label: "Stage 0", subtitle: "Foundations" },
   STAGE_1: { label: "Stage 1", subtitle: "Applied Cryptography" },
