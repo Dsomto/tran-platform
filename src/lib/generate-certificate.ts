@@ -139,7 +139,7 @@ export function generateStageCertificate(opts: {
     // ── 5. Title — bigger, bolder, deep navy ──────────────
     doc
       .fontSize(46)
-      .font("Times-Bold")
+      .font("Helvetica-Bold")
       .fillColor(COLORS.navy)
       .text("Certificate of Achievement", 0, 144, {
         align: "center",
@@ -168,7 +168,7 @@ export function generateStageCertificate(opts: {
     // ── 7. Recipient name — large serif italic, deep navy ──
     doc
       .fontSize(42)
-      .font("Times-BoldItalic")
+      .font("Helvetica-BoldOblique")
       .fillColor(COLORS.navy)
       .text(fullName, 0, 240, {
         align: "center",
@@ -202,7 +202,7 @@ export function generateStageCertificate(opts: {
       });
     doc
       .fontSize(24)
-      .font("Times-Bold")
+      .font("Helvetica-Bold")
       .fillColor(COLORS.navy)
       .text(stageLabel, 0, 334, { align: "center", width: pageW });
 
@@ -222,7 +222,7 @@ export function generateStageCertificate(opts: {
     const compLine = competencies.join("    •    ");
     doc
       .fontSize(10)
-      .font("Times-Italic")
+      .font("Helvetica-Oblique")
       .fillColor(COLORS.inkSoft)
       .text(compLine, 0, 402, {
         align: "center",
@@ -257,7 +257,7 @@ export function generateStageCertificate(opts: {
     for (const s of signers) {
       doc
         .fontSize(18)
-        .font("Times-BoldItalic")
+        .font("Helvetica-BoldOblique")
         .fillColor(COLORS.navy)
         .text(s.sig, s.x, sigBaselineY - 26, { width: 200 });
       doc
@@ -268,7 +268,7 @@ export function generateStageCertificate(opts: {
         .stroke();
       doc
         .fontSize(9.5)
-        .font("Times-Bold")
+        .font("Helvetica-Bold")
         .fillColor(COLORS.ink)
         .text(s.name, s.x, sigBaselineY + 8, { width: 200 });
       doc
