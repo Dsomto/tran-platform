@@ -570,6 +570,9 @@ model StageReport {
   // past decision; re-applying the cutoff recomputes them.
   terminalScore      Int?                          // terminal-task % for this stage (0-100) at cutoff time
   finalScore         Int?                          // combined 0-100 the cutoff sorts on
+  qaVerified         Boolean?                      // super-admin marker from Result Review; null/false = still needs QA
+  qaVerifiedAt       DateTime?
+  qaVerifiedById     String?       @db.ObjectId
 
   // Set true when both graders submit and their scores diverge by more than
   // DIVERGENCE_THRESHOLD. The report stays UNDER_REVIEW and surfaces in the

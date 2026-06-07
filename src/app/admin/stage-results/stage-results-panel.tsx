@@ -142,8 +142,8 @@ export function StageResultsPanel() {
     if (
       isReapply &&
       !confirm(
-        `Re-apply cutoff ${t} for Stage ${stage.replace("STAGE_", "")}?\n\n` +
-          "Everyone is re-sorted on the new cutoff. Any manual swaps you made are discarded."
+        `Add newly graded reports with cutoff ${t} for Stage ${stage.replace("STAGE_", "")}?\n\n` +
+          "Saved score edits, feedback edits, and pass/fail swaps in Result Review will stay as they are."
       )
     ) {
       return;
@@ -153,7 +153,7 @@ export function StageResultsPanel() {
       const data = await post({ action: "apply-cutoff", stage, passingScore: t });
       if (data) {
         setResult(
-          `Cutoff ${data.threshold} applied. ${data.pendingPromotion} pending pass, ${data.pendingElimination} pending fail. Opening review tab…`
+          `Cutoff ${data.threshold} applied. ${data.pendingPromotion} pending pass, ${data.pendingElimination} pending fail. Added ${data.newlySorted ?? 0} newly graded report(s); preserved ${data.preservedPending ?? 0} reviewed row(s). Opening review tab…`
         );
         setPreview(null);
         await loadSummary(stage);
@@ -425,7 +425,7 @@ export function StageResultsPanel() {
                       className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg border border-border hover:bg-muted/50 disabled:opacity-50"
                     >
                       {busy === "apply" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Scale className="h-4 w-4" />}
-                      Re-apply
+                      Add new graded
                     </button>
                     <button
                       onClick={exportCsv}

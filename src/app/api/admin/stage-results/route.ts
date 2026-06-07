@@ -34,6 +34,8 @@ type PendingRow = {
   finalScore: number;
   feedback: string | null;
   reportUrl: string | null;
+  qaVerified: boolean;
+  qaVerifiedAt: string | null;
 };
 
 // GET: summarise the state of a stage's reports — status counts + score distribution.
@@ -92,6 +94,8 @@ export async function GET(request: NextRequest) {
         finalScore: true,
         feedback: true,
         reportUrl: true,
+        qaVerified: true,
+        qaVerifiedAt: true,
         intern: {
           select: { id: true, user: { select: { firstName: true, lastName: true, email: true } } },
         },
@@ -115,6 +119,8 @@ export async function GET(request: NextRequest) {
         finalScore: r.finalScore ?? 0,
         feedback: r.feedback,
         reportUrl: r.reportUrl,
+        qaVerified: r.qaVerified === true,
+        qaVerifiedAt: r.qaVerifiedAt ? r.qaVerifiedAt.toISOString() : null,
       });
       pending = {
         cutoff: win?.passingScore ?? null,
@@ -191,6 +197,9 @@ export async function POST(request: NextRequest) {
     if (body?.action === "update-score") {
       return await handleUpdateScore(request, admin, body);
     }
+    if (body?.action === "toggle-qa-verified") {
+      return await handleToggleQaVerified(request, admin, body);
+    }
     if (body?.action === "finalize") {
       return await handleFinalize(request, admin, body);
     }
@@ -198,7 +207,7 @@ export async function POST(request: NextRequest) {
     return Response.json(
       {
         error:
-          "Unknown action. Use action='apply-cutoff' | 'swap' | 'update-score' | 'finalize' | 'reset'. The legacy direct-publish path was removed; publishing goes through the cutoff/pending/finalize flow on /admin/stage-results.",
+          "Unknown action. Use action='apply-cutoff' | 'swap' | 'update-score' | 'toggle-qa-verified' | 'finalize' | 'reset'. The legacy direct-publish path was removed; publishing goes through the cutoff/pending/finalize flow on /admin/stage-results.",
       },
       { status: 400 }
     );
@@ -308,10 +317,10 @@ async function handleReset(
   });
 }
 
-// Apply a cutoff: sort every graded report for the stage into a pending bucket
-// based on the combined final score (0.8*report + 0.2*terminal%). Persists the
-// cutoff on the StageWindow. Re-running re-sorts everyone and overrides prior
-// manual swaps by design — the cutoff is the source of truth until finalize.
+// Apply a cutoff: sort newly graded reports for the stage into a pending bucket
+// based on the combined final score (0.8*report + 0.2*terminal%). Existing
+// pending rows are preserved so score edits, feedback edits, and manual pass/fail
+// swaps made in Result Review persist while admins add newly graded people.
 async function handleApplyCutoff(
   request: NextRequest,
   admin: Awaited<ReturnType<typeof requireSuperAdmin>>,
@@ -339,51 +348,35 @@ async function handleApplyCutoff(
     );
   }
 
+  const existingPending = await prisma.stageReport.findMany({
+    where: { stage, status: { in: ["PENDING_PROMOTION", "PENDING_ELIMINATION"] } },
+    select: { id: true, status: true },
+  });
+
   const reports = await prisma.stageReport.findMany({
-    where: { stage, status: { in: ["GRADED", "PENDING_PROMOTION", "PENDING_ELIMINATION"] } },
+    where: { stage, status: "GRADED" },
     select: { id: true, internId: true, score: true, status: true },
   });
-  if (reports.length === 0) {
+  if (reports.length === 0 && existingPending.length === 0) {
     return Response.json({ error: "No graded reports to sort for this stage" }, { status: 409 });
   }
 
   const { maxPoints, earnedByIntern } = await stageTerminalScores(stage);
   const round = Math.round(threshold);
-  let pendingPromotion = 0;
-  let pendingElimination = 0;
-  // A re-applied cutoff can flip a report whose bucket was previously set by an
-  // explicit handleSwap. Record each such flip as a StageDecisionLog row so the
-  // audit trail names the cutoff-re-application as the cause, not a phantom.
-  const swapOverrides: Prisma.StageDecisionLogCreateManyInput[] = [];
+  let pendingPromotion = existingPending.filter((r) => r.status === "PENDING_PROMOTION").length;
+  let pendingElimination = existingPending.filter((r) => r.status === "PENDING_ELIMINATION").length;
+
   for (const r of reports) {
     const terminalPct =
       maxPoints > 0 ? Math.round(((earnedByIntern.get(r.internId) ?? 0) / maxPoints) * 100) : null;
     const finalScore = combinedFinalScore(r.score, terminalPct);
     const newStatus = finalScore >= round ? "PENDING_PROMOTION" : "PENDING_ELIMINATION";
-    const prevStatus = r.status;
-    if (
-      (prevStatus === "PENDING_PROMOTION" || prevStatus === "PENDING_ELIMINATION") &&
-      prevStatus !== newStatus
-    ) {
-      swapOverrides.push({
-        internId: r.internId,
-        stage,
-        reportId: r.id,
-        fromStatus: prevStatus,
-        toStatus: newStatus,
-        actorId: admin.id,
-        reason: `Re-bucketed by cutoff re-application (threshold ${round}; finalScore ${finalScore}).`,
-      });
-    }
     await prisma.stageReport.update({
       where: { id: r.id },
       data: { status: newStatus, terminalScore: terminalPct, finalScore },
     });
     if (newStatus === "PENDING_PROMOTION") pendingPromotion++;
     else pendingElimination++;
-  }
-  if (swapOverrides.length > 0) {
-    await prisma.stageDecisionLog.createMany({ data: swapOverrides });
   }
 
   await prisma.stageWindow.upsert({
@@ -402,8 +395,8 @@ async function handleApplyCutoff(
       threshold: round,
       pendingPromotion,
       pendingElimination,
-      reSorted: reports.length,
-      swapOverridesUndone: swapOverrides.length,
+      newlySorted: reports.length,
+      preservedPending: existingPending.length,
     },
     ...auditMetaFromRequest(request),
   });
@@ -413,7 +406,8 @@ async function handleApplyCutoff(
     threshold: round,
     pendingPromotion,
     pendingElimination,
-    swapOverridesUndone: swapOverrides.length,
+    newlySorted: reports.length,
+    preservedPending: existingPending.length,
   });
 }
 
@@ -595,6 +589,64 @@ async function handleUpdateScore(
     finalScore,
     status: newStatus,
     flipped,
+  });
+}
+
+async function handleToggleQaVerified(
+  request: NextRequest,
+  admin: Awaited<ReturnType<typeof requireSuperAdmin>>,
+  body: { reportId?: unknown; verified?: unknown }
+): Promise<Response> {
+  if (typeof body.reportId !== "string") {
+    return Response.json({ error: "reportId is required" }, { status: 400 });
+  }
+  if (typeof body.verified !== "boolean") {
+    return Response.json({ error: "verified must be true or false" }, { status: 400 });
+  }
+
+  const report = await prisma.stageReport.findUnique({
+    where: { id: body.reportId },
+    select: { id: true, internId: true, stage: true, status: true, qaVerified: true },
+  });
+  if (!report) {
+    return Response.json({ error: "Report not found" }, { status: 404 });
+  }
+  if (report.status !== "PENDING_PROMOTION" && report.status !== "PENDING_ELIMINATION") {
+    return Response.json(
+      { error: "QA verification is only available while results are pending review." },
+      { status: 409 }
+    );
+  }
+
+  const verifiedAt = body.verified ? new Date() : null;
+  await prisma.stageReport.update({
+    where: { id: report.id },
+    data: {
+      qaVerified: body.verified,
+      qaVerifiedAt: verifiedAt,
+      qaVerifiedById: body.verified ? admin.id : null,
+    },
+  });
+
+  await recordAudit({
+    actor: admin,
+    action: body.verified ? "stage-results.qa-verify" : "stage-results.qa-unverify",
+    targetType: "STAGE_RESULTS",
+    targetId: report.stage,
+    details: {
+      reportId: report.id,
+      internId: report.internId,
+      previousQaVerified: report.qaVerified === true,
+      qaVerified: body.verified,
+    },
+    ...auditMetaFromRequest(request),
+  });
+
+  return Response.json({
+    updated: true,
+    reportId: report.id,
+    qaVerified: body.verified,
+    qaVerifiedAt: verifiedAt ? verifiedAt.toISOString() : null,
   });
 }
 

@@ -6,6 +6,7 @@ import {
   ArrowLeft,
   ArrowLeftRight,
   CheckCircle2,
+  CircleCheck,
   ChevronDown,
   ChevronRight,
   ExternalLink,
@@ -25,6 +26,8 @@ interface PendingRow {
   finalScore: number;
   feedback: string | null;
   reportUrl: string | null;
+  qaVerified: boolean;
+  qaVerifiedAt: string | null;
 }
 
 interface Pending {
@@ -49,6 +52,7 @@ export function CutoffReviewPanel({ stage }: { stage: string }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busyRowId, setBusyRowId] = useState<string | null>(null);
+  const [busyQaId, setBusyQaId] = useState<string | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
   const [draftScore, setDraftScore] = useState<Record<string, string>>({});
   const [draftFeedback, setDraftFeedback] = useState<Record<string, string>>({});
@@ -197,6 +201,25 @@ export function CutoffReviewPanel({ stage }: { stage: string }) {
     }
   }
 
+  async function toggleQa(row: PendingRow & { bucket: Bucket }) {
+    setBusyQaId(row.reportId);
+    setError(null);
+    try {
+      const next = !row.qaVerified;
+      const data = await post({
+        action: "toggle-qa-verified",
+        reportId: row.reportId,
+        verified: next,
+      });
+      if (data) {
+        showToast(`${row.fullName}: QA ${next ? "verified" : "reopened"}`);
+        await load();
+      }
+    } finally {
+      setBusyQaId(null);
+    }
+  }
+
   function resetRow(row: PendingRow) {
     setDraftScore((d) => {
       const n = { ...d };
@@ -299,6 +322,9 @@ export function CutoffReviewPanel({ stage }: { stage: string }) {
               tone="rose"
             />
           </section>
+          <div className="mb-3 text-xs text-muted-foreground">
+            QA verified: {allRows.filter((r) => r.qaVerified).length} of {allRows.length}
+          </div>
 
           <section className="mb-4 bg-white border border-border rounded-xl p-4 flex flex-wrap gap-3 items-center">
             <div className="flex items-center gap-2 flex-1 min-w-[200px]">
@@ -379,6 +405,7 @@ export function CutoffReviewPanel({ stage }: { stage: string }) {
                       fbVal={fbVal}
                       dirty={dirty}
                       busy={busy}
+                      qaBusy={busyQaId === row.reportId}
                       onScoreChange={(v) =>
                         setDraftScore((d) => ({ ...d, [row.reportId]: v }))
                       }
@@ -388,6 +415,7 @@ export function CutoffReviewPanel({ stage }: { stage: string }) {
                       onSave={() => saveRow(row)}
                       onReset={() => resetRow(row)}
                       onSwap={() => swap(row)}
+                      onToggleQa={() => toggleQa(row)}
                     />
                   );
                 })}
@@ -422,11 +450,13 @@ function RowFragment({
   fbVal,
   dirty,
   busy,
+  qaBusy,
   onScoreChange,
   onFeedbackChange,
   onSave,
   onReset,
   onSwap,
+  onToggleQa,
 }: {
   open: boolean;
   onToggle: () => void;
@@ -435,11 +465,13 @@ function RowFragment({
   fbVal: string;
   dirty: boolean;
   busy: boolean;
+  qaBusy: boolean;
   onScoreChange: (v: string) => void;
   onFeedbackChange: (v: string) => void;
   onSave: () => void;
   onReset: () => void;
   onSwap: () => void;
+  onToggleQa: () => void;
 }) {
   const bucketColor =
     row.bucket === "promotion"
@@ -447,7 +479,7 @@ function RowFragment({
       : "bg-rose-50 text-rose-800 border-rose-200";
   return (
     <>
-      <tr className="border-t border-border hover:bg-muted/20">
+      <tr className={`border-t border-border hover:bg-muted/20 ${row.qaVerified ? "bg-emerald-50/30" : ""}`}>
         <td className="px-2 py-2.5 text-center">
           <button
             onClick={onToggle}
@@ -501,6 +533,23 @@ function RowFragment({
           </span>
         </td>
         <td className="px-3 py-2.5 text-right whitespace-nowrap">
+          <button
+            onClick={onToggleQa}
+            disabled={qaBusy}
+            title={row.qaVerified ? "QA verified. Click to reopen." : "Mark QA verified"}
+            className={`mr-1 inline-flex items-center gap-1 px-2 py-1.5 text-xs rounded-md border disabled:opacity-50 ${
+              row.qaVerified
+                ? "border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100"
+                : "border-border text-muted-foreground hover:bg-muted/40 hover:text-foreground"
+            }`}
+          >
+            {qaBusy ? (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            ) : (
+              <CircleCheck className="h-3 w-3" />
+            )}
+            {row.qaVerified ? "QA verified" : "QA"}
+          </button>
           {dirty && (
             <>
               <button
