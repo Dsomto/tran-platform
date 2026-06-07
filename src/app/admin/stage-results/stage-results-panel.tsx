@@ -468,15 +468,6 @@ export function StageResultsPanel() {
                       Review & adjust
                     </a>
                     <button
-                      onClick={finalizeNonSubmitters}
-                      disabled={busy != null}
-                      title="Email + deactivate every active intern still on this stage who never submitted a capstone"
-                      className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg border border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100 disabled:opacity-50"
-                    >
-                      {busy === "nosubs" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                      Process non-submitters
-                    </button>
-                    <button
                       onClick={finalize}
                       disabled={busy != null}
                       className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-blue text-white hover:opacity-90 disabled:opacity-50"
@@ -508,6 +499,26 @@ export function StageResultsPanel() {
               </section>
             </>
           )}
+
+          <section className="mt-6 bg-white border border-amber-200 rounded-xl p-5">
+            <h2 className="text-sm font-semibold text-amber-900 mb-2 uppercase tracking-wide">
+              Process non-submitters
+            </h2>
+            <p className="text-sm text-muted-foreground mb-4 max-w-2xl">
+              Every active intern still on Stage {stage.replace("STAGE_", "")} who never submitted
+              a capstone gets the soft &ldquo;did not submit&rdquo; email and their account is
+              deactivated. Safe to run after Finalize — it only touches interns who don&apos;t
+              have a report row at all. Re-running skips anyone already emailed.
+            </p>
+            <button
+              onClick={finalizeNonSubmitters}
+              disabled={busy != null}
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border border-amber-400 bg-amber-50 text-amber-900 hover:bg-amber-100 disabled:opacity-50"
+            >
+              {busy === "nosubs" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              Process non-submitters
+            </button>
+          </section>
 
           {finalized && (
             <section className="mt-6 bg-white border border-rose-200 rounded-xl p-5">
