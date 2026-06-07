@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
+import { requireSuperAdmin } from "@/lib/auth";
 import {
   Activity,
   Clock,
@@ -17,6 +18,10 @@ const STALE_AFTER_HOURS = 48;
 export const dynamic = "force-dynamic";
 
 export default async function OpsDashboardPage() {
+  // Gate at the page boundary. /ops exposes grader personal emails, intern
+  // counts, and grading metadata — strictly SUPER_ADMIN only.
+  await requireSuperAdmin();
+
   const now = new Date();
   const startOfToday = new Date();
   startOfToday.setHours(0, 0, 0, 0);

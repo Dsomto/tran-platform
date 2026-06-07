@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { canSendEmails } from "@/lib/email-permissions";
 import { promptTotpCode } from "@/lib/totp-prompt";
 import {
   Send,
@@ -85,7 +84,7 @@ export default function DecisionEmailsPage() {
   const [appPreviewLoading, setAppPreviewLoading] = useState<string | null>(null);
   const [flippingId, setFlippingId] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
-  // Sending is locked to one account (see canSendEmails). Other admins can
+  // Sending is locked to one account server-side. Other admins can
   // view and re-route decisions, but the send buttons are disabled for them.
   const [canSend, setCanSend] = useState(false);
   // Name search to find anyone (pre-email) and switch their decision.
@@ -97,7 +96,7 @@ export default function DecisionEmailsPage() {
   useEffect(() => {
     fetch("/api/auth/me")
       .then((r) => r.json())
-      .then((d) => setCanSend(canSendEmails(d.user?.email)))
+      .then((d) => setCanSend(d.permissions?.emailSendAllowed === true))
       .catch(() => setCanSend(false));
   }, []);
 

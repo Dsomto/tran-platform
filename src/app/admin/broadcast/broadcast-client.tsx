@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Send, Loader2, Search, Users, Mail, Eye, EyeOff, Sparkles, FileText } from "lucide-react";
 import { renderBroadcastEmail, personalizeText, firstNameOf } from "@/lib/broadcast-email";
-import { canSendEmails } from "@/lib/email-permissions";
 import { promptTotpCode } from "@/lib/totp-prompt";
 import { NEWSLETTER_TEMPLATES, renderTemplate, getTemplate } from "@/lib/newsletter-templates";
 
@@ -48,14 +47,14 @@ export function BroadcastClient() {
   const [templateId, setTemplateId] = useState<string>("");
   const [templateVars, setTemplateVars] = useState<Record<string, string>>({});
   const activeTemplate = useMemo(() => (templateId ? getTemplate(templateId) ?? null : null), [templateId]);
-  // Sending is locked to one account (see canSendEmails) regardless of role —
+  // Sending is locked to one account server-side regardless of role —
   // the co-super-admin can compose/preview but cannot send.
   const [allowedToSend, setAllowedToSend] = useState(false);
 
   useEffect(() => {
     fetch("/api/auth/me")
       .then((r) => r.json())
-      .then((d) => setAllowedToSend(canSendEmails(d.user?.email)))
+      .then((d) => setAllowedToSend(d.permissions?.emailSendAllowed === true))
       .catch(() => setAllowedToSend(false));
   }, []);
 

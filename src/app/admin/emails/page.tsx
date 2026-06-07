@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { Mail, AlertTriangle, CheckCircle2, Clock, RefreshCw, Loader2, Search, Trash2, Pencil } from "lucide-react";
-import { canSendEmails } from "@/lib/email-permissions";
 import { promptTotpCode } from "@/lib/totp-prompt";
 
 interface EmailItem {
@@ -37,7 +36,7 @@ export default function AdminEmailsPage() {
   useEffect(() => {
     fetch("/api/auth/me")
       .then((r) => r.json())
-      .then((d) => setCanSend(canSendEmails(d.user?.email)))
+      .then((d) => setCanSend(d.permissions?.emailSendAllowed === true))
       .catch(() => setCanSend(false));
   }, []);
 

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
+import { requireSuperAdmin } from "@/lib/auth";
 import { ClipboardList, ArrowLeft } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -35,6 +36,11 @@ interface SearchParams {
 }
 
 export default async function AuditPage({ searchParams }: SearchParams) {
+  // Gate at the page boundary. The audit log shows admin/grader personal
+  // emails, session IP addresses, and every privileged action ever taken —
+  // strictly SUPER_ADMIN only.
+  await requireSuperAdmin();
+
   const sp = (await searchParams) ?? {};
   const where: Record<string, unknown> = {};
   if (sp.actor) where.actorEmail = { contains: sp.actor, mode: "insensitive" };

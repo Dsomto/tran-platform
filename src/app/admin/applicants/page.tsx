@@ -34,7 +34,6 @@ import {
   Shield,
 } from "lucide-react";
 import { formatDate } from "@/lib/utils";
-import { canSendEmails } from "@/lib/email-permissions";
 import { promptTotpCode } from "@/lib/totp-prompt";
 
 interface PublicApp {
@@ -116,8 +115,8 @@ export default function ApplicantsPage() {
     email: "",
     avatarUrl: null as string | null,
   });
-  // Sending is locked to one account regardless of role (see canSendEmails).
-  const canSend = canSendEmails(user.email);
+  // Sending is locked to one account server-side regardless of role.
+  const [canSend, setCanSend] = useState(false);
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -126,7 +125,11 @@ export default function ApplicantsPage() {
   useEffect(() => {
     fetch("/api/auth/me")
       .then((r) => r.json())
-      .then((d) => d.user && setUser(d.user));
+      .then((d) => {
+        if (d.user) setUser(d.user);
+        setCanSend(d.permissions?.emailSendAllowed === true);
+      })
+      .catch(() => setCanSend(false));
   }, []);
 
   // Keep the open tab in sync with the URL — covers sidebar navigation to
