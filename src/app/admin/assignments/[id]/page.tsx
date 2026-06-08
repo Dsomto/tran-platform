@@ -95,12 +95,20 @@ export default async function StageDetailPage({
   return (
     <div className="min-h-screen">
       <div className="p-6 md:p-10 max-w-5xl mx-auto w-full">
-        <Link
-          href="/admin/assignments"
-          className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground mb-3"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" /> All stages
-        </Link>
+        <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+          <Link
+            href="/admin/assignments"
+            className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" /> All stages
+          </Link>
+          <Link
+            href={`/admin/assignments/${id}/tasks`}
+            className="inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-md border border-border bg-white hover:bg-muted/40"
+          >
+            View assignments in this stage →
+          </Link>
+        </div>
 
         <StageAdminPanel
           stage={stage}

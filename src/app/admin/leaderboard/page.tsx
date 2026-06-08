@@ -5,7 +5,7 @@ import { Topbar } from "@/components/dashboard/topbar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Users, Medal } from "lucide-react";
+import { Trophy, Users, Medal, RotateCcw, Loader2 } from "lucide-react";
 import { trackLabel } from "@/lib/utils";
 
 interface LeaderboardEntry {
@@ -36,11 +36,20 @@ export default function AdminLeaderboardPage() {
     lastName: "",
     avatarUrl: null as string | null,
   });
+  const [canReset, setCanReset] = useState(false);
+  const [resetting, setResetting] = useState(false);
+  const [resetMessage, setResetMessage] = useState<string | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     fetch("/api/auth/me")
       .then((r) => r.json())
-      .then((d) => d.user && setAdminUser(d.user));
+      .then((d) => {
+        if (d.user) {
+          setAdminUser(d.user);
+          setCanReset(d.user.role === "SUPER_ADMIN");
+        }
+      });
   }, []);
 
   useEffect(() => {
@@ -50,7 +59,35 @@ export default function AdminLeaderboardPage() {
         if (type === "individual") setIndividual(d.leaderboard || []);
         else setTeams(d.leaderboard || []);
       });
-  }, [type]);
+  }, [type, reloadKey]);
+
+  async function resetLeaderboard() {
+    if (
+      !confirm(
+        "Reset every intern's points to 0?\n\nThis zeros all leaderboard scores so the next stage starts fresh. Historical PointLog entries are kept for audit, but rankings reset.\n\nThis cannot be undone via the UI."
+      )
+    ) {
+      return;
+    }
+    setResetting(true);
+    setResetMessage(null);
+    try {
+      const res = await fetch("/api/admin/leaderboard/reset", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) {
+        setResetMessage(data.error || "Reset failed");
+      } else {
+        setResetMessage(
+          `Reset complete. ${data.internsReset} interns + ${data.teamsReset} teams set to 0.`
+        );
+        setReloadKey((k) => k + 1);
+      }
+    } catch {
+      setResetMessage("Network error");
+    } finally {
+      setResetting(false);
+    }
+  }
 
   const medalColors = [
     "bg-amber-100 text-amber-700",
@@ -69,7 +106,7 @@ export default function AdminLeaderboardPage() {
       />
 
       <div className="flex-1 overflow-y-auto p-6">
-        <div className="flex gap-2 mb-6">
+        <div className="flex gap-2 mb-6 flex-wrap items-center">
           <button
             onClick={() => setType("individual")}
             className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all cursor-pointer ${
@@ -92,7 +129,27 @@ export default function AdminLeaderboardPage() {
             <Users className="w-4 h-4" />
             Teams
           </button>
+          {canReset && (
+            <button
+              onClick={resetLeaderboard}
+              disabled={resetting}
+              className="ml-auto flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium border border-rose-300 bg-rose-50 text-rose-800 hover:bg-rose-100 disabled:opacity-50 cursor-pointer"
+              title="Set every intern's points to 0. Use between stages."
+            >
+              {resetting ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <RotateCcw className="w-4 h-4" />
+              )}
+              Reset leaderboard
+            </button>
+          )}
         </div>
+        {resetMessage && (
+          <div className="mb-4 p-3 rounded-lg border border-emerald-200 bg-emerald-50 text-sm text-emerald-900">
+            {resetMessage}
+          </div>
+        )}
 
         <Card variant="glass">
           <CardContent>

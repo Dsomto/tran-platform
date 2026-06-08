@@ -10,6 +10,7 @@ const navLinks = [
   ["Tracks", "/tracks"],
   ["For Employers", "/hire"],
   ["Play", "/play"],
+  ["Results", "/results"],
   ["Data Scholarship", "/apply/data-scholarship"],
 ] as const;
 
