@@ -30,6 +30,7 @@ import {
   Hourglass,
   Hash,
   UserPlus,
+  Eye,
 } from "lucide-react";
 import { LogoMark } from "@/components/logo";
 import { useState } from "react";
@@ -65,6 +66,7 @@ const adminLinks = [
   { href: "/admin/mailing", label: "Decision Emails", icon: Send },
   { href: "/admin/broadcast", label: "Newsletter", icon: Mail },
   { href: "/admin/interns", label: "Interns", icon: Users },
+  { href: "/admin/impersonate", label: "View as intern", icon: Eye },
   { href: "/admin/provision", label: "Provision Graders", icon: UserPlus },
   { href: "/admin/teams", label: "Teams", icon: Award },
   { href: "/admin/assignments", label: "Assignments", icon: BookOpen },

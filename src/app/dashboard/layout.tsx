@@ -1,9 +1,10 @@
 import { redirect } from "next/navigation";
-import { headers } from "next/headers";
+import { headers, cookies } from "next/headers";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { EasterEggs } from "@/components/dashboard/easter-eggs/EasterEggs";
+import { ImpersonationBanner } from "@/components/dashboard/impersonation-banner";
 
 export default async function DashboardLayout({
   children,
@@ -59,15 +60,29 @@ export default async function DashboardLayout({
     }
   }
 
+  // Detect impersonation. If admin-shadow is present, this dashboard render
+  // is being viewed by a super-admin acting as the intern. Show a top banner
+  // with a one-click return-to-admin button.
+  const cookieStore = await cookies();
+  const impersonating = cookieStore.has("admin-shadow");
+
   return (
-    <div className="flex min-h-screen bg-background">
-      <Sidebar
-        role="INTERN"
-        userName={`${session.firstName} ${session.lastName}`}
-      />
-      <main className="flex-1 flex flex-col min-w-0">
-        {children}
-      </main>
+    <div className="flex min-h-screen bg-background flex-col">
+      {impersonating && (
+        <ImpersonationBanner
+          internName={`${session.firstName} ${session.lastName}`}
+          internEmail={session.email}
+        />
+      )}
+      <div className="flex flex-1 min-h-0">
+        <Sidebar
+          role="INTERN"
+          userName={`${session.firstName} ${session.lastName}`}
+        />
+        <main className="flex-1 flex flex-col min-w-0">
+          {children}
+        </main>
+      </div>
       <EasterEggs />
     </div>
   );
