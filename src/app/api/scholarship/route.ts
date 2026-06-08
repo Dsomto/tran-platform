@@ -32,8 +32,13 @@ export async function POST(request: NextRequest) {
     if (typeof reason !== "string" || reason.trim().length < 20) errs.push("reason");
     if (reason && reason.length > 3000) errs.push("reason_too_long");
     if (dataSituation && dataSituation.length > 3000) errs.push("dataSituation_too_long");
-    // UBI Intern ID is required — scholarships are tracked to it.
-    if (typeof internCode !== "string" || !/^UBI-\d{4}-\d+$/i.test(internCode.trim())) {
+    // UBI Intern ID is required — scholarships are tracked to it. Accept any
+    // format an intern might type ('UBI-2026-3', 'ubi-2026-0003', '  UBI -
+    // 2026 - 03 ') and normalise to the zero-padded canonical form stored on
+    // PublicApplication.internId. Previously a literal-string match rejected
+    // interns who typed their own number without leading zeros.
+    const normalised = typeof internCode === "string" ? normaliseInternId(internCode) : null;
+    if (!normalised) {
       errs.push("internCode");
     }
 
@@ -44,16 +49,15 @@ export async function POST(request: NextRequest) {
     // The ID must belong to a real enrolled intern. A UBI ID is only assigned
     // once an applicant is fully onboarded, so this both rejects typos and
     // blocks scholarship requests from people not actually in the programme.
-    const internCodeUpper = internCode.trim().toUpperCase();
     const enrolled = await prisma.publicApplication.findFirst({
-      where: { internId: internCodeUpper },
+      where: { internId: normalised! },
       select: { id: true },
     });
     if (!enrolled) {
       return Response.json(
         {
           error:
-            "That UBI Intern ID was not found. Use the exact ID from your acceptance email.",
+            "That UBI Intern ID was not found. Check your acceptance email — it looks like UBI-2026-XXXX.",
           fields: ["internCode"],
         },
         { status: 400 }
@@ -66,7 +70,7 @@ export async function POST(request: NextRequest) {
         email: email.trim().toLowerCase(),
         phone: phone.trim(),
         country: country.trim(),
-        internCode: internCodeUpper,
+        internCode: normalised!,
         currentStage: currentStage ? String(currentStage).slice(0, 120) : null,
         dataSituation: dataSituation.trim(),
         reason: reason.trim(),
@@ -79,6 +83,24 @@ export async function POST(request: NextRequest) {
     logger.error("scholarship_submit_failed", error);
     return Response.json({ error: "Internal server error" }, { status: 500 });
   }
+}
+
+// Canonical UBI intern ID is `UBI-YYYY-NNNN` with a 4-digit zero-padded
+// sequence (every PublicApplication.internId in the DB matches this
+// format). Accept what interns actually type — extra whitespace, mixed
+// case, missing leading zeros, even spaces around the dashes — and
+// produce the canonical form for the DB lookup. Returns null if the
+// shape isn't recognisable at all.
+function normaliseInternId(raw: string): string | null {
+  if (typeof raw !== "string") return null;
+  // Strip every whitespace, including spaces between dashes.
+  const compact = raw.replace(/\s+/g, "").toUpperCase();
+  // Year up to 4 digits, sequence up to 5 digits (covers future cohorts).
+  const m = compact.match(/^UBI-(\d{1,4})-(\d{1,5})$/);
+  if (!m) return null;
+  const year = m[1].padStart(4, "0");
+  const seq = m[2].padStart(4, "0");
+  return `UBI-${year}-${seq}`;
 }
 
 // Admin list.
