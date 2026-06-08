@@ -34,10 +34,40 @@ type FileEntry =
 type TerminalConfig = {
   prompt?: string;
   welcome?: string[];
+  /** Starting working directory. Falls back to the longest common directory
+   *  in `files` (so labs that seed everything under /staging/* don't strand
+   *  the intern in /home/intern with `ls` returning nothing). */
+  cwd?: string;
   files?: Record<string, FileEntry>;
   commands?: Record<string, { output?: string; stderr?: string }>;
   hints?: string[];
 };
+
+// Pick a sensible default cwd from the seeded files. If the lab seeds
+// /staging/* and nothing else, the intern should land in /staging.
+function defaultCwd(files: Record<string, FileEntry>): string {
+  const HOME = "/home/intern";
+  const homeHasFiles = Object.keys(files).some((p) =>
+    p.startsWith(`${HOME}/`)
+  );
+  if (homeHasFiles) return HOME;
+  const dirs = Object.keys(files).map((p) => {
+    const lastSlash = p.lastIndexOf("/");
+    return lastSlash <= 0 ? "/" : p.slice(0, lastSlash);
+  });
+  if (dirs.length === 0) return HOME;
+  // Longest common directory prefix.
+  const split = (d: string) => d.split("/").filter(Boolean);
+  let common = split(dirs[0]);
+  for (let i = 1; i < dirs.length; i += 1) {
+    const parts = split(dirs[i]);
+    let j = 0;
+    while (j < common.length && j < parts.length && common[j] === parts[j]) j += 1;
+    common = common.slice(0, j);
+    if (common.length === 0) break;
+  }
+  return common.length ? `/${common.join("/")}` : HOME;
+}
 
 const DEFAULT_CONFIG: TerminalConfig = {
   prompt: "intern@sankofa:~$",
@@ -82,7 +112,10 @@ export default function WebTerminal({ config, context, onAnswerChange }: WidgetP
 
   const [history, setHistory] = useState<string[]>([...(c.welcome ?? [])]);
   const [input, setInput] = useState("");
-  const [cwd, setCwd] = useState("/home/intern");
+  // Seeded cwd: honour config.cwd if set, else infer from where the lab
+  // actually has files. Without this, interns running `ls` immediately
+  // see nothing and have to guess that the lab is mounted under /staging.
+  const [cwd, setCwd] = useState<string>(c.cwd ?? defaultCwd(files));
   const [past, setPast] = useState<string[]>([]);
   const [pastIdx, setPastIdx] = useState<number>(-1);
   const [flagCache, setFlagCache] = useState<string | null>(null);
@@ -170,7 +203,23 @@ export default function WebTerminal({ config, context, onAnswerChange }: WidgetP
         const target = args.find((a) => !a.startsWith("-")) ?? cwd;
         const abs = normalizePath(cwd, target);
         const names = listDir(files, abs, showHidden);
-        if (names.length === 0) return [`ls: ${target}: no such file or directory`];
+        if (names.length === 0) {
+          // Distinguish 'directory exists but empty' from 'doesn't exist at
+          // all'. Either way, give the intern a useful hint about where the
+          // lab files actually live so they're not stuck guessing.
+          const validDir = Object.keys(files).some((p) => p.startsWith(`${abs}/`));
+          const allDirs = new Set<string>();
+          for (const p of Object.keys(files)) {
+            const lastSlash = p.lastIndexOf("/");
+            const d = lastSlash <= 0 ? "/" : p.slice(0, lastSlash);
+            allDirs.add(d);
+          }
+          const hint = allDirs.size
+            ? `  hint: try \`ls ${[...allDirs][0]}\``
+            : "";
+          if (validDir) return [`ls: ${target}: (empty)${hint ? "\n" + hint : ""}`];
+          return [`ls: ${target}: no such file or directory${hint ? "\n" + hint : ""}`];
+        }
         return [names.join("  ")];
       }
       case "cd": {
