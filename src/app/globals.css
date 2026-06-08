@@ -11,6 +11,11 @@
   --border: #E5E5E5;
   --border-light: #F5F5F5;
   --muted: #737373;
+  /* Body text in a muted tone. Slightly darker than --muted so it meets WCAG
+     AA (4.5:1) on white. text-muted-foreground was referenced across the
+     dashboard but never defined, falling back to inherited / transparent. */
+  --muted-foreground: #525252;
+  --foreground-muted: #525252;
   --danger: #DC2626;
   --warning: #D97706;
   --primary: #2563EB;
@@ -53,6 +58,8 @@
   --color-border: var(--border);
   --color-border-light: var(--border-light);
   --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-foreground-muted: var(--foreground-muted);
   --color-danger: var(--danger);
   --color-warning: var(--warning);
   --color-cyan: var(--cyan);

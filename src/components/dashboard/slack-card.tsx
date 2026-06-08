@@ -60,12 +60,12 @@ export function SlackCard({ inviteUrl, joined, joinedAt }: Props) {
   return (
     <div className="bg-[#4A154B] rounded-xl p-5 text-white">
       <div className="flex items-start gap-3 mb-3">
-        <MessageSquare className="h-5 w-5 shrink-0 mt-0.5 text-purple-200" />
+        <MessageSquare className="h-5 w-5 shrink-0 mt-0.5 text-white/85" />
         <div onClick={onSlackPoke}>
           <h3 className="font-semibold cursor-default select-none">
             {slackSecret ? "Signal acquired." : "Join the cohort Slack"}
           </h3>
-          <p className="text-sm text-purple-100 mt-1 leading-relaxed">
+          <p className="text-sm text-white/95 mt-1 leading-relaxed">
             Most of what happens outside the platform — announcements, office-hours,
             help from other participants — lives in Slack. Join before Stage 0 closes.
           </p>
@@ -88,7 +88,7 @@ export function SlackCard({ inviteUrl, joined, joinedAt }: Props) {
             Open Slack invite
           </a>
         ) : (
-          <span className="text-xs text-purple-200 italic">
+          <span className="text-xs text-white/85 italic">
             Invite link not yet configured — check your welcome email.
           </span>
         )}
