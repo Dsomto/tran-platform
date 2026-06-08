@@ -88,7 +88,7 @@ export function HiringProcess() {
                     id="first-name"
                     type="text"
                     placeholder="Jane"
-                    className="w-full text-sm px-4 py-2.5 rounded-lg border border-border/60 bg-white text-foreground placeholder:text-muted/50 focus:outline-none focus:ring-2 focus:ring-blue/20 focus:border-blue/40 transition-colors"
+                    className="w-full text-sm px-4 py-2.5 rounded-lg border border-border/60 bg-white text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue/20 focus:border-blue/40 transition-colors"
                   />
                 </div>
                 <div>
@@ -99,7 +99,7 @@ export function HiringProcess() {
                     id="last-name"
                     type="text"
                     placeholder="Doe"
-                    className="w-full text-sm px-4 py-2.5 rounded-lg border border-border/60 bg-white text-foreground placeholder:text-muted/50 focus:outline-none focus:ring-2 focus:ring-blue/20 focus:border-blue/40 transition-colors"
+                    className="w-full text-sm px-4 py-2.5 rounded-lg border border-border/60 bg-white text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue/20 focus:border-blue/40 transition-colors"
                   />
                 </div>
               </div>
@@ -112,7 +112,7 @@ export function HiringProcess() {
                   id="company-email"
                   type="email"
                   placeholder="jane@company.com"
-                  className="w-full text-sm px-4 py-2.5 rounded-lg border border-border/60 bg-white text-foreground placeholder:text-muted/50 focus:outline-none focus:ring-2 focus:ring-blue/20 focus:border-blue/40 transition-colors"
+                  className="w-full text-sm px-4 py-2.5 rounded-lg border border-border/60 bg-white text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue/20 focus:border-blue/40 transition-colors"
                 />
               </div>
 
@@ -162,7 +162,7 @@ export function HiringProcess() {
                   id="message"
                   rows={3}
                   placeholder="Timeline, skill preferences, team context..."
-                  className="w-full text-sm px-4 py-2.5 rounded-lg border border-border/60 bg-white text-foreground placeholder:text-muted/50 focus:outline-none focus:ring-2 focus:ring-blue/20 focus:border-blue/40 transition-colors resize-none"
+                  className="w-full text-sm px-4 py-2.5 rounded-lg border border-border/60 bg-white text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue/20 focus:border-blue/40 transition-colors resize-none"
                 />
               </div>
 

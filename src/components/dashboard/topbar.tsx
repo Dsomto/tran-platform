@@ -36,7 +36,7 @@ export function Topbar({ title, subtitle, firstName, lastName, avatarUrl }: Topb
           <input
             type="text"
             placeholder="Search..."
-            className="bg-transparent text-sm text-foreground placeholder:text-muted/60 outline-none w-40"
+            className="bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none w-40"
           />
         </div>
 

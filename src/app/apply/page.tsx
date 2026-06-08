@@ -45,7 +45,7 @@ const trackOptions = [
   { value: "Not sure yet", emoji: "🤔", desc: "I'll decide later" },
 ];
 
-const inputClass = "w-full px-4 py-3 rounded-xl bg-background border border-border text-sm text-foreground placeholder:text-muted/60 focus:outline-none focus:ring-2 focus:ring-blue/30 focus:border-blue transition-all";
+const inputClass = "w-full px-4 py-3 rounded-xl bg-background border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue/30 focus:border-blue transition-all";
 const selectClass = `${inputClass} appearance-none cursor-pointer`;
 const labelClass = "block text-[13px] font-medium text-foreground mb-2";
 

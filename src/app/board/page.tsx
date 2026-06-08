@@ -175,7 +175,7 @@ export default function BoardPage() {
                   placeholder="Search your name..."
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
-                  className="w-full h-14 rounded-2xl border-2 border-border bg-white pl-12 pr-6 text-base text-foreground placeholder:text-muted/50 transition-all focus:outline-none focus:border-blue focus:ring-4 focus:ring-blue/10 shadow-lg"
+                  className="w-full h-14 rounded-2xl border-2 border-border bg-white pl-12 pr-6 text-base text-foreground placeholder:text-muted-foreground transition-all focus:outline-none focus:border-blue focus:ring-4 focus:ring-blue/10 shadow-lg"
                 />
               </div>
             </div>
