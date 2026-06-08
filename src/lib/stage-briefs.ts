@@ -454,6 +454,13 @@ export const STAGE_BRIEFS: Record<
           "Propose five concrete controls (products, policies, or configurations) Sankofa should adopt. One-sentence justification each. Assume a small team and a tight budget.",
         deliverable: "crypto-controls (Google Doc or MS Word)",
       },
+      {
+        id: "ethics-stance-ethnos",
+        title: "Ethics stance — the Ethnos Cyber call",
+        description:
+          "A senior contact at Ethnos Cyber — your cohort's sponsor and a major regional security firm — reaches out privately. They have heard about your Stage 1 findings and ask you to forward the decoded artefacts and your control recommendations to them ahead of the formal Sankofa board briefing. They argue this is 'ecosystem visibility' and that interns who help with that kind of intel sharing are remembered when full-time roles open up. Write your response (300–500 words). Address: who you would consult before deciding, what you would and would not share and why, how you square loyalty to the sponsor against your obligations to Sankofa and to the wider ISC2 canon, and one concrete action you would take regardless of what your manager says. Cite at least one specific clause of the ISC2 Code of Ethics by number.",
+        deliverable: "ethics-stance-ethnos (PDF, 300–500 words, your own writing — the AI-detect signal on this one is high)",
+      },
     ],
     resourcesDriveUrl:
       "https://drive.google.com/drive/folders/1-nWE7vQj-RN80m7o6UGcT7bZIZDJApgJ?usp=sharing",
@@ -489,6 +496,7 @@ export const STAGE_BRIEFS: Record<
       "Crypto failure mapping (each finding cites the relevant artefact file plus one external standard by section number: RFC, NIST, or FIPS)",
       "Decoded artefact appendix (include plaintext, method, and intermediate outputs where the file has layers)",
       "Five controls the board should approve (each control maps to at least two observed cryptographic failures)",
+      "Ethics stance — the Ethnos Cyber call (300-500 words, your own writing, references the ISC2 canon by number)",
     ],
   },
 

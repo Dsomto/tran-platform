@@ -48,15 +48,64 @@ export default async function FAQPage() {
             <p>
               Every stage capstone is a <strong>four-document pack</strong>:
               D1, D2, D3, D4. Each one has its own brief inside the stage
-              mission board. You upload them to a Google Drive folder, then
-              paste the folder link into the submission form on{" "}
+              mission board. You write each in Google Docs or Word, export
+              each one to PDF, upload all four PDFs to a Google Drive
+              folder, then paste the folder link into the submission form
+              on{" "}
               <code className="text-foreground">/dashboard/reports</code>.
             </p>
             <p>
-              The submission form takes <em>one link</em>, not four. Put the
-              four files inside one folder, share the folder, paste the
-              folder link.
+              The submission form takes <em>one link</em>, not four. Put
+              the four files inside one folder, share the folder, paste
+              the folder link.
             </p>
+            <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-900 text-sm">
+              <strong>Do not PDF this mission brief.</strong> &quot;Save as
+              PDF&quot; means export each of <em>your</em> deliverables to
+              PDF. We wrote the brief; we already have it. Some interns
+              have been printing the brief itself to PDF and submitting
+              that — it earns zero marks because none of the deliverables
+              are in it.
+            </div>
+          </Section>
+
+          <Section icon={FileText} title="Stage 1 — what the four deliverables actually are">
+            <p>
+              The Stage 1 capstone is post-mortem + controls + ethics. Each
+              deliverable is one PDF. The full requirements live in the
+              Stage 1 mission brief — short version below.
+            </p>
+            <ul className="space-y-3">
+              <li>
+                <strong>D1 — Crypto failure mapping.</strong> Every
+                cryptographic failure you found in The Griot's artefacts,
+                each one cited to the specific evidence-pack file plus one
+                external standard by section number (RFC, NIST, FIPS).
+              </li>
+              <li>
+                <strong>D2 — Decoded artefact appendix.</strong> For each
+                artefact: plaintext, method used to recover it, and the
+                intermediate outputs where the file has layers. Show your
+                working.
+              </li>
+              <li>
+                <strong>D3 — Five controls the board should approve.</strong>{" "}
+                Each control maps to at least two observed cryptographic
+                failures from D1. Specific enough that someone else could
+                go and implement it.
+              </li>
+              <li>
+                <strong>D4 — Ethics stance: the Ethnos Cyber call.</strong>{" "}
+                300–500 words, your own writing. A senior contact at
+                Ethnos Cyber (our sponsor) asks you to forward your
+                findings to them privately before the Sankofa board sees
+                them, hinting it will help your future job prospects.
+                Address: who you consult, what you share and what you
+                don't, how you weigh loyalty to the sponsor against
+                obligations to Sankofa, and which ISC2 canon applies
+                (cite by number).
+              </li>
+            </ul>
           </Section>
 
           <Section
@@ -244,6 +293,71 @@ D4-Judgment-Essay-<YourLastName>.pdf`}
             </ul>
           </Section>
 
+          <Section icon={HelpCircle} title="The other questions we keep getting">
+            <Q q="Can I work with another intern?">
+              No. Every deliverable must be your own writing. You can
+              discuss the brief in Slack and you can ask mentors questions
+              — but the words in your PDF have to be yours. Identical
+              passages across two interns get both submissions flagged.
+            </Q>
+            <Q q="My Drive folder name has my name. Is that OK?">
+              Yes. The folder name doesn't matter — only the file names
+              inside it do (D1-Evidence-Table-Surname.pdf etc.).
+            </Q>
+            <Q q="Can I use AI to help me write?">
+              Use it for brainstorming and to check your spelling. Don't
+              paste its output as your deliverable. Graders mark heavy
+              AI-cadence answers down and may flag the submission.
+              Particularly for D4 — the ethics stance is the one we look
+              hardest for AI signal on.
+            </Q>
+            <Q q="What if I miss the deadline by a few minutes?">
+              The stage closes hard at the deadline. The submission API
+              rejects anything after. Plan to ship 20 minutes early.
+            </Q>
+            <Q q="What if my computer dies / Wi-Fi drops on deadline day?">
+              Anything you've already pasted into your stage report
+              persists. Use the Data Scholarship if your connectivity is
+              the issue — it's there for exactly this.
+            </Q>
+            <Q q="Can I submit a Google Doc share link instead of a PDF?">
+              No. The grader cannot rely on Google's link permissions
+              staying stable for the marking window, and the document can
+              be edited after submission. PDFs are frozen artefacts.
+              Export from Docs (File → Download → PDF) and upload the PDF.
+            </Q>
+            <Q q="Do I need to sign my deliverables?">
+              The header on page 1 (name + intern ID) is your signature.
+              No need for a separate signature image.
+            </Q>
+            <Q q="How long until I get my grade?">
+              The programme office publishes results stage-by-stage. You
+              get a result email when your stage finishes grading — usually
+              within 7–10 days of the stage deadline.
+            </Q>
+            <Q q="Can I appeal a grade?">
+              Yes, via the "Open my feedback" link in your result email.
+              Read the reviewer notes first; appeals that don't cite
+              specific points in the feedback rarely move the score.
+            </Q>
+            <Q q="I lost my Intern ID. Where do I find it?">
+              It's in your acceptance email and on your dashboard top-right
+              corner. Format is UBI-2026-XXXX.
+            </Q>
+            <Q q="The Data Scholarship form says my Intern ID is invalid. What now?">
+              The form accepts spaces, lowercase, and missing leading
+              zeros (UBI-2026-3 is treated the same as UBI-2026-0003). If
+              it's still rejecting, double-check you're typing the ID
+              that came in YOUR acceptance email — sometimes interns try
+              a friend's ID by mistake.
+            </Q>
+            <Q q="Can I share screenshots of the brief or the artefacts on social?">
+              No. Stage materials are confidential under the NDA you
+              signed. Read the pinned NDA notice on your dashboard for
+              the full rules.
+            </Q>
+          </Section>
+
           <p className="mt-10 text-sm text-muted-foreground text-center">
             One sentence to remember:{" "}
             <strong className="text-foreground">
@@ -253,6 +367,24 @@ D4-Judgment-Essay-<YourLastName>.pdf`}
         </div>
       </div>
     </>
+  );
+}
+
+function Q({ q, children }: { q: string; children: React.ReactNode }) {
+  return (
+    <details className="group border-b border-border last:border-0 py-3">
+      <summary className="cursor-pointer list-none flex items-start justify-between gap-3">
+        <span className="text-sm font-semibold text-foreground group-hover:text-blue transition-colors">
+          {q}
+        </span>
+        <span className="text-muted-foreground text-xs mt-0.5 shrink-0 group-open:rotate-180 transition-transform">
+          ▾
+        </span>
+      </summary>
+      <div className="mt-2 text-sm text-foreground/80 leading-relaxed pl-1">
+        {children}
+      </div>
+    </details>
   );
 }
 

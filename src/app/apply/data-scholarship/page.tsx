@@ -186,14 +186,20 @@ export default function DataScholarshipPage() {
                   required
                   type="text"
                   value={form.internCode}
-                  onChange={(e) => update("internCode", e.target.value.toUpperCase())}
+                  onChange={(e) =>
+                    // Don't strip whitespace here — let the user type
+                    // naturally. The server normalises every reasonable
+                    // typo (spaces, missing leading zeros, lowercase)
+                    // before the DB lookup. Just uppercase for visual
+                    // consistency.
+                    update("internCode", e.target.value.toUpperCase())
+                  }
                   className={inputClass}
                   placeholder="UBI-2026-0001"
-                  pattern="^UBI-\\d{4}-\\d+$"
                 />
                 <p className="mt-1.5 text-xs text-muted-foreground">
-                  The ID from your acceptance email. Data scholarships are tracked
-                  to your UBI ID, so this is required.
+                  The ID from your acceptance email — looks like UBI-2026-XXXX.
+                  Spaces, missing leading zeros, and lowercase are all OK.
                 </p>
               </div>
 
