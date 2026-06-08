@@ -67,15 +67,20 @@ export const STAGE_LANDING_THEMES: Record<StageSlug, StageLandingTheme> = {
     cardClass: "stage-1-panel stage-1-card",
     headingClass: "stage-1-heading",
     pillClass: "stage-1-pill",
-    accentTextClass: "text-violet-300",
-    bodyTextClass: "text-violet-50/85",
-    mutedTextClass: "text-violet-200/55",
-    ctaBgClass: "bg-violet-500",
-    ctaHoverClass: "hover:bg-violet-600",
-    dividerClass: "border-violet-400/20",
-    light: false,
-    softBgClass: "bg-white/5",
-    softHoverClass: "hover:bg-white/[0.08]",
+    // Stage 1 renders on #fafafa (src/app/subdomains/stage-1/theme.css),
+    // not on the dark background the original palette assumed. The
+    // violet-300 / violet-50 / violet-200 tints were invisible on white —
+    // interns reported the entire brief was unreadable. Mirror stage-2's
+    // light-theme palette with violet swapped in for rose.
+    accentTextClass: "text-violet-700",
+    bodyTextClass: "text-neutral-800",
+    mutedTextClass: "text-neutral-600",
+    ctaBgClass: "bg-violet-600",
+    ctaHoverClass: "hover:bg-violet-700",
+    dividerClass: "border-violet-100",
+    light: true,
+    softBgClass: "bg-neutral-900/[0.035]",
+    softHoverClass: "hover:bg-neutral-900/[0.06]",
   },
   "stage-2": {
     slug: "stage-2",

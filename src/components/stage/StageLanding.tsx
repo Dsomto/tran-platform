@@ -49,7 +49,23 @@ interface Props {
   internCode: string;
 }
 
-function alignmentClasses(alignment: CastMember["alignment"]) {
+function alignmentClasses(alignment: CastMember["alignment"], light: boolean) {
+  // Two palettes per alignment: a light-bg one (dark text + soft tinted
+  // surface) and a dark-bg one (light text + low-alpha surface). The
+  // original function only returned the dark-bg variants, which rendered
+  // invisible on stages whose bg was repainted to #fafafa.
+  if (light) {
+    switch (alignment) {
+      case "ally":
+        return { ring: "ring-emerald-300", bg: "bg-emerald-50", text: "text-emerald-700", badge: "bg-emerald-50 text-emerald-800 border-emerald-200", label: "Ally" };
+      case "peer":
+        return { ring: "ring-blue-300", bg: "bg-blue-50", text: "text-blue-700", badge: "bg-blue-50 text-blue-800 border-blue-200", label: "Peer" };
+      case "adversary":
+        return { ring: "ring-rose-300", bg: "bg-rose-50", text: "text-rose-700", badge: "bg-rose-50 text-rose-800 border-rose-200", label: "Adversary" };
+      case "external":
+        return { ring: "ring-amber-300", bg: "bg-amber-50", text: "text-amber-700", badge: "bg-amber-50 text-amber-800 border-amber-200", label: "Stakeholder" };
+    }
+  }
   switch (alignment) {
     case "ally":
       return { ring: "ring-emerald-400/40", bg: "bg-emerald-500/15", text: "text-emerald-300", badge: "bg-emerald-500/15 text-emerald-200 border-emerald-500/30", label: "Ally" };
@@ -250,7 +266,7 @@ export function StageLanding({
         </p>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           {brief.cast.map((person) => {
-            const a = alignmentClasses(person.alignment);
+            const a = alignmentClasses(person.alignment, theme.light);
             return (
               <article key={person.name} className={`${theme.panelClass} p-6 sm:p-7`}>
                 <div className="flex items-start gap-4 mb-4">
@@ -299,7 +315,7 @@ export function StageLanding({
         </p>
         <div className="grid sm:grid-cols-2 gap-3">
           {brief.bulletin.map((item, i) => {
-            const v = bulletinVisuals(item.kind);
+            const v = bulletinVisuals(item.kind, theme.light);
             const Icon = v.icon;
             return (
               <article key={i} className={`${theme.panelClass} p-4 sm:p-5 flex gap-3`}>
@@ -569,12 +585,28 @@ function SectionHeading({
   );
 }
 
-function bulletinVisuals(kind: BulletinKind): {
-  icon: React.ElementType;
-  label: string;
-  bg: string;
-  text: string;
-} {
+function bulletinVisuals(
+  kind: BulletinKind,
+  light: boolean
+): { icon: React.ElementType; label: string; bg: string; text: string } {
+  // Light palette: tinted-50 background + 700 text for contrast on white.
+  // Dark palette: 500/15 background + 300 text for contrast on dark.
+  if (light) {
+    switch (kind) {
+      case "news":
+        return { icon: Newspaper, label: "Company news", bg: "bg-blue-50", text: "text-blue-700" };
+      case "meeting":
+        return { icon: Calendar, label: "Meeting notes", bg: "bg-violet-50", text: "text-violet-700" };
+      case "gossip":
+        return { icon: Coffee, label: "SOC bench overheard", bg: "bg-amber-50", text: "text-amber-700" };
+      case "notice":
+        return { icon: Pin, label: "Pinned notice", bg: "bg-emerald-50", text: "text-emerald-700" };
+      case "alert":
+        return { icon: AlertTriangle, label: "Heads up", bg: "bg-rose-50", text: "text-rose-700" };
+      case "joke":
+        return { icon: MessageCircle, label: "Inside joke", bg: "bg-cyan-50", text: "text-cyan-700" };
+    }
+  }
   switch (kind) {
     case "news":
       return { icon: Newspaper, label: "Company news", bg: "bg-blue-500/15", text: "text-blue-300" };
