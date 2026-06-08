@@ -13,7 +13,11 @@ const prisma = new PrismaClient();
 const COMMIT = process.env.COMMIT === "1";
 
 const TITLE = "Internal communication — NDA breach";
-const APP_URL = process.env.PUBLIC_APP_URL || "https://ubuntubridgeinitiatives.org";
+// Hardcoded production URL. We deliberately do NOT read PUBLIC_APP_URL
+// from env here — running this script locally would pull in a localhost
+// value from .env and ship broken links to the live cohort. If we ever
+// move the production host, change this constant.
+const APP_URL = "https://ubuntubridgeinitiatives.org";
 
 const CONTENT = `A small number of interns posted screenshots and excerpts of internal Stage 0 material — including PII from the evidence pack — to external social channels. This is a direct breach of the NDA you signed before starting the programme.
 
