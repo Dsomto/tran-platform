@@ -7,7 +7,9 @@ import {
   ShieldAlert,
   HelpCircle,
   FileSignature,
+  BookOpen,
 } from "lucide-react";
+import { STAGE_STORIES } from "@/lib/stage-story";
 
 export const dynamic = "force-dynamic";
 
@@ -48,10 +50,9 @@ export default async function FAQPage() {
             <p>
               Every stage capstone is a <strong>four-document pack</strong>:
               D1, D2, D3, D4. Each one has its own brief inside the stage
-              mission board. You write each in Google Docs or Word, export
-              each one to PDF, upload all four PDFs to a Google Drive
-              folder, then paste the folder link into the submission form
-              on{" "}
+              mission board. You write each one in <strong>Google Docs</strong>{" "}
+              or Microsoft Word, upload all four into a Google Drive folder,
+              then paste the folder link into the submission form on{" "}
               <code className="text-foreground">/dashboard/reports</code>.
             </p>
             <p>
@@ -60,20 +61,20 @@ export default async function FAQPage() {
               the folder link.
             </p>
             <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-900 text-sm">
-              <strong>Do not PDF this mission brief.</strong> &quot;Save as
-              PDF&quot; means export each of <em>your</em> deliverables to
-              PDF. We wrote the brief; we already have it. Some interns
-              have been printing the brief itself to PDF and submitting
-              that — it earns zero marks because none of the deliverables
-              are in it.
+              <strong>Do not submit the mission brief itself.</strong> What
+              you upload is the four documents <em>you</em> wrote — not the
+              chapter brief from the dashboard. Some interns last cycle
+              printed the brief to PDF and uploaded that. It earns zero
+              marks because none of your deliverables are in it.
             </div>
           </Section>
 
           <Section icon={FileText} title="Stage 1 — what the four deliverables actually are">
             <p>
               The Stage 1 capstone is post-mortem + controls + ethics. Each
-              deliverable is one PDF. The full requirements live in the
-              Stage 1 mission brief — short version below.
+              deliverable is one Google Doc (or Word doc). The full
+              requirements live in the Stage 1 mission brief — short
+              version below.
             </p>
             <ul className="space-y-3">
               <li>
@@ -112,46 +113,58 @@ export default async function FAQPage() {
             icon={FileText}
             title="File names — exact format"
           >
-            <p>
-              Name each file using this pattern:
-            </p>
+            <p>Name each file using this pattern:</p>
             <pre className="text-xs bg-slate-900 text-slate-100 p-3 rounded-lg font-mono leading-relaxed overflow-x-auto">
-              {`D1-Evidence-Table-<YourLastName>.pdf
-D2-Dismissal-Pattern-<YourLastName>.pdf
-D3-Business-Impact-<YourLastName>.pdf
-D4-Judgment-Essay-<YourLastName>.pdf`}
+              {`D1-Crypto-Failure-Mapping-<YourLastName>.docx
+D2-Decoded-Artefact-Appendix-<YourLastName>.docx
+D3-Five-Controls-<YourLastName>.docx
+D4-Ethics-Stance-<YourLastName>.docx`}
             </pre>
             <ul className="list-disc pl-5 space-y-1">
               <li>No spaces in the file name. Use dashes.</li>
               <li>Your last name exactly as it appears on your acceptance email.</li>
               <li>Same pattern across stages — only the deliverable codes change per brief.</li>
+              <li>
+                Google Doc files don&apos;t have a .docx extension on
+                Drive — the file just shows the Doc icon. That&apos;s
+                fine; the grader can still read it. Optional: download
+                each Doc as <code>.docx</code> back into the folder for
+                a frozen copy.
+              </li>
             </ul>
           </Section>
 
           <Section
             icon={FileSignature}
-            title="Format — PDF, every time"
+            title="Format — Google Docs or DOCX (the easy path)"
           >
             <p>
-              Submit as <strong>PDF</strong>. Not .docx, not .pages, not
-              .txt, not Google Doc share links inside the folder.
+              Write each deliverable in <strong>Google Docs</strong> or
+              <strong> Microsoft Word</strong>. Upload the Doc (or the .docx
+              export) into your stage folder. That&apos;s it.
             </p>
             <p>
-              If you write in Word or Google Docs, export to PDF before
-              uploading. The graders read on whatever device they happen to
-              have open; PDF is the only format that renders the same for
-              everyone.
+              Earlier cohorts had to convert everything to PDF before
+              uploading — and a lot of marks were lost to PDFs that came
+              out as blank pages, missing fonts, or single-line tables.
+              Docs avoids that entirely. The graders open the Doc directly.
             </p>
+            <div className="p-3 rounded-lg bg-blue/5 border border-blue/20 text-sm text-foreground">
+              <strong>Why this changed:</strong> the Stage 1 graders read
+              on web, mobile, and the occasional iPad. Google Docs renders
+              the same on all three. PDFs, surprisingly, do not. So we
+              switched.
+            </div>
             <p className="text-sm text-muted-foreground">
-              Exception: if a specific deliverable explicitly asks for a
-              spreadsheet (e.g. an evidence table you keep editing), the
-              brief will say so. Default is PDF.
+              PDF is still accepted if you prefer it. DOCS is recommended.
+              Either is fine; just <strong>don&apos;t</strong> upload .pages,
+              .odt, .txt, or a screenshot of a doc.
             </p>
           </Section>
 
           <Section
             icon={CheckCircle2}
-            title="Every PDF must include"
+            title="Every deliverable must include"
           >
             <ol className="list-decimal pl-5 space-y-2">
               <li>
@@ -297,7 +310,7 @@ D4-Judgment-Essay-<YourLastName>.pdf`}
             <Q q="Can I work with another intern?">
               No. Every deliverable must be your own writing. You can
               discuss the brief in Slack and you can ask mentors questions
-              — but the words in your PDF have to be yours. Identical
+              — but the words in your Doc have to be yours. Identical
               passages across two interns get both submissions flagged.
             </Q>
             <Q q="My Drive folder name has my name. Is that OK?">
@@ -320,11 +333,12 @@ D4-Judgment-Essay-<YourLastName>.pdf`}
               persists. Use the Data Scholarship if your connectivity is
               the issue — it's there for exactly this.
             </Q>
-            <Q q="Can I submit a Google Doc share link instead of a PDF?">
-              No. The grader cannot rely on Google's link permissions
-              staying stable for the marking window, and the document can
-              be edited after submission. PDFs are frozen artefacts.
-              Export from Docs (File → Download → PDF) and upload the PDF.
+            <Q q="Can I submit a Google Doc share link instead of a file in the folder?">
+              No share-link-only submissions. The grader needs to see the
+              document inside your stage folder — that&apos;s what we
+              archive. Drop the Google Doc into the folder (or download
+              it as .docx and upload that). Either is fine; just don&apos;t
+              paste a bare Doc URL in the submission form.
             </Q>
             <Q q="Do I need to sign my deliverables?">
               The header on page 1 (name + intern ID) is your signature.
@@ -358,15 +372,129 @@ D4-Judgment-Essay-<YourLastName>.pdf`}
             </Q>
           </Section>
 
+          <Section icon={BookOpen} title="The story so far">
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              The capstones are not isolated essays — they're chapters of
+              one ongoing case. Knowing where you sit in the arc makes the
+              brief easier to read and the recommendations easier to
+              ground. Skim before you start writing.
+            </p>
+
+            <div className="space-y-5 mt-4">
+              <StoryChapter
+                num={1}
+                title="Stage 0 · Induction at the Gate"
+                where="SOC Bench · Floor 4 — Sankofa Digital HQ, Lagos"
+                summary={
+                  "Amaka handed you the Q2 case file. A Tier-1 analyst had read one ticket, written 'probably nothing', and closed it. You had to tell her whether she was right to be worried."
+                }
+                cliffhanger={STAGE_STORIES["stage-0"].cliffhanger}
+              />
+              <StoryChapter
+                num={2}
+                title="Stage 1 · Ciphers & Secrets — you are here"
+                where="Cryptography Lab · Floor 6"
+                summary={
+                  STAGE_STORIES["stage-1"].previously ??
+                  "Your D2 dismissal-pattern walkthrough drove the SOC restructure. The board funded this chapter's emergency cryptography audit on the strength of your report."
+                }
+                cliffhanger={STAGE_STORIES["stage-1"].cliffhanger}
+                isCurrent
+              />
+              <StoryChapter
+                num={3}
+                title="Stage 2 · The Attack Surface — next"
+                where="Engineering War Room · Floor 5"
+                summary={
+                  STAGE_STORIES["stage-2"].previously ??
+                  "One file from your Stage 1 work named a door — /legacy-admin/, a 2019 Django app that should have died two years ago. Chapter 3 is the war room. Bayo will not enjoy the conversation."
+                }
+                cliffhanger={STAGE_STORIES["stage-2"].cliffhanger}
+                isLocked
+              />
+            </div>
+
+            <p className="text-xs text-muted-foreground italic mt-2">
+              Chapters 4 (Inside the Walls · DFIR) and 5 (The Debrief ·
+              The Boardroom) wait beyond that — but no spoilers. Clear
+              this stage to unlock the next.
+            </p>
+          </Section>
+
           <p className="mt-10 text-sm text-muted-foreground text-center">
             One sentence to remember:{" "}
             <strong className="text-foreground">
-              cite the line, name the number, ship the PDF, share every file.
+              cite the line, name the number, ship the Doc, share every file.
             </strong>
           </p>
         </div>
       </div>
     </>
+  );
+}
+
+function StoryChapter({
+  num,
+  title,
+  where,
+  summary,
+  cliffhanger,
+  isCurrent,
+  isLocked,
+}: {
+  num: number;
+  title: string;
+  where: string;
+  summary: string;
+  cliffhanger: string | null;
+  isCurrent?: boolean;
+  isLocked?: boolean;
+}) {
+  return (
+    <div
+      className={`relative rounded-xl border p-4 ${
+        isCurrent
+          ? "border-blue/40 bg-blue/5"
+          : isLocked
+            ? "border-border bg-slate-50 opacity-80"
+            : "border-border bg-white"
+      }`}
+    >
+      <div className="flex items-center gap-2 mb-2 flex-wrap">
+        <span
+          className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold ${
+            isCurrent
+              ? "bg-blue text-white"
+              : isLocked
+                ? "bg-slate-200 text-slate-600"
+                : "bg-emerald-100 text-emerald-800"
+          }`}
+        >
+          {num}
+        </span>
+        <h3 className="text-sm font-bold text-foreground">{title}</h3>
+        {isCurrent && (
+          <span className="text-[10px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded bg-blue text-white">
+            you are here
+          </span>
+        )}
+        {isLocked && (
+          <span className="text-[10px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-200 text-slate-700">
+            locked
+          </span>
+        )}
+      </div>
+      <div className="text-xs text-muted-foreground font-mono mb-2">{where}</div>
+      <p className="text-sm text-foreground/85 leading-relaxed mb-2">
+        {summary}
+      </p>
+      {cliffhanger && (
+        <div className="mt-2 pt-2 border-t border-border/60 text-xs italic text-foreground/70 leading-relaxed">
+          <strong className="not-italic text-foreground/90">Next:</strong>{" "}
+          {cliffhanger}
+        </div>
+      )}
+    </div>
   );
 }
 

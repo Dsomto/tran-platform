@@ -459,7 +459,7 @@ export const STAGE_BRIEFS: Record<
         title: "Ethics stance — the Ethnos Cyber call",
         description:
           "A senior contact at Ethnos Cyber — your cohort's sponsor and a major regional security firm — reaches out privately. They have heard about your Stage 1 findings and ask you to forward the decoded artefacts and your control recommendations to them ahead of the formal Sankofa board briefing. They argue this is 'ecosystem visibility' and that interns who help with that kind of intel sharing are remembered when full-time roles open up. Write your response (300–500 words). Address: who you would consult before deciding, what you would and would not share and why, how you square loyalty to the sponsor against your obligations to Sankofa and to the wider ISC2 canon, and one concrete action you would take regardless of what your manager says. Cite at least one specific clause of the ISC2 Code of Ethics by number.",
-        deliverable: "ethics-stance-ethnos (PDF, 300–500 words, your own writing — the AI-detect signal on this one is high)",
+        deliverable: "ethics-stance-ethnos (Google Doc or DOCX, 300–500 words, your own writing — the AI-detect signal on this one is high)",
       },
     ],
     resourcesDriveUrl:

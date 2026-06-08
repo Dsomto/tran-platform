@@ -343,14 +343,28 @@ export function ReportEditor({
       </section>
 
       <section className="mb-6 bg-blue/5 border border-blue/20 rounded-xl p-5">
-        <h2 className="font-semibold text-foreground flex items-center gap-2 mb-2">
-          <FileText className="h-4 w-4 text-blue" />
-          How to submit your report
-        </h2>
+        <div className="flex items-start justify-between gap-3 flex-wrap mb-2">
+          <h2 className="font-semibold text-foreground flex items-center gap-2">
+            <FileText className="h-4 w-4 text-blue" />
+            How to submit your report
+          </h2>
+          <a
+            href="/dashboard/faq"
+            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-semibold border border-blue/40 bg-white text-blue hover:bg-blue/10"
+          >
+            Read the full Deliverables FAQ →
+          </a>
+        </div>
         <ol className="list-decimal list-inside text-sm text-foreground/80 space-y-1.5 leading-relaxed">
           <li>
-            Put every file the stage asks for into a single Google Drive folder
-            (or a shared folder on Dropbox / OneDrive).
+            Write each deliverable as a <strong>Google Doc</strong> (or
+            Word .docx). PDF still accepted but Docs is recommended — the
+            graders read on web, mobile, and tablet, and Docs renders the
+            same on all three.
+          </li>
+          <li>
+            Put every deliverable the stage asks for into a single Google
+            Drive folder.
           </li>
           <li>
             Right-click the folder → <strong>Share</strong> → set access to{" "}

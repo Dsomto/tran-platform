@@ -214,6 +214,17 @@ export function StageLanding({
             className={`inline-flex items-center gap-2 px-6 py-3.5 rounded-full text-sm font-semibold border ${theme.dividerClass} ${theme.bodyTextClass} hover:bg-white/5 transition-colors`}
           />
         </div>
+        <p className={`${theme.mutedTextClass} text-[12.5px] mt-3`}>
+          New to the capstone format? Read{" "}
+          <Link
+            href="/dashboard/faq"
+            className={`${theme.accentTextClass} font-semibold underline-offset-2 hover:underline`}
+          >
+            the Deliverables FAQ
+          </Link>{" "}
+          first — naming convention, what to submit as Doc vs PDF, the
+          checklist for full marks, and how this chapter fits the story.
+        </p>
       </section>
 
       {/* ── Journey map — how the chapter fits together ───── */}
