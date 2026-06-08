@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { EasterEggs } from "@/components/dashboard/easter-eggs/EasterEggs";
 import { ImpersonationBanner } from "@/components/dashboard/impersonation-banner";
+import { NdaBreachBanner } from "@/components/dashboard/nda-breach-banner";
 
 export default async function DashboardLayout({
   children,
@@ -74,6 +75,7 @@ export default async function DashboardLayout({
           internEmail={session.email}
         />
       )}
+      <NdaBreachBanner />
       <div className="flex flex-1 min-h-0">
         <Sidebar
           role="INTERN"

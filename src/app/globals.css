@@ -90,6 +90,56 @@ body {
 }
 
 /* ═══════════════════════════════════════════
+   ANIMATIONS — subtle motion on first paint
+   ═══════════════════════════════════════════ */
+
+@keyframes ubi-fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes ubi-slide-down {
+  from { opacity: 0; transform: translateY(-12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes ubi-pulse-soft {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.30); }
+  50%      { box-shadow: 0 0 0 6px rgba(220, 38, 38, 0); }
+}
+
+.animate-fade-in        { animation: ubi-fade-in 0.45s cubic-bezier(0.4, 0, 0.2, 1) both; }
+.animate-slide-down     { animation: ubi-slide-down 0.4s cubic-bezier(0.4, 0, 0.2, 1) both; }
+.animate-pulse-soft     { animation: ubi-pulse-soft 2.4s ease-in-out infinite; }
+
+/* Cascading entrance for stage panels — each section fades in slightly
+   later than the previous one. Keeps the page from arriving all at once. */
+.stage-1-panel,
+.stage-2-panel,
+.stage-3-panel,
+.stage-4-panel,
+.stage-0-panel {
+  animation: ubi-fade-in 0.55s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+.stage-1-panel:nth-of-type(2),
+.stage-2-panel:nth-of-type(2) { animation-delay: 0.08s; }
+.stage-1-panel:nth-of-type(3),
+.stage-2-panel:nth-of-type(3) { animation-delay: 0.16s; }
+.stage-1-panel:nth-of-type(4),
+.stage-2-panel:nth-of-type(4) { animation-delay: 0.24s; }
+.stage-1-panel:nth-of-type(5),
+.stage-2-panel:nth-of-type(5) { animation-delay: 0.32s; }
+.stage-1-panel:nth-of-type(6),
+.stage-2-panel:nth-of-type(6) { animation-delay: 0.40s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .animate-slide-down,
+  .animate-pulse-soft,
+  .stage-0-panel, .stage-1-panel, .stage-2-panel, .stage-3-panel, .stage-4-panel {
+    animation: none !important;
+  }
+}
+
+/* ═══════════════════════════════════════════
    GLASSMORPHISM — STRONG FROSTED GLASS
    ═══════════════════════════════════════════ */
 

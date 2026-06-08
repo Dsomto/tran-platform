@@ -31,6 +31,7 @@ import {
   Hash,
   UserPlus,
   Eye,
+  FileQuestion,
 } from "lucide-react";
 import { LogoMark } from "@/components/logo";
 import { useState } from "react";
@@ -54,6 +55,7 @@ const internLinks = [
   { href: "/dashboard/team", label: "My Team", icon: Users },
   { href: "/dashboard/meetings", label: "Meetings", icon: Video },
   { href: "/dashboard/feedback", label: "Feedback", icon: MessageSquare },
+  { href: "/dashboard/faq", label: "Deliverables FAQ", icon: FileQuestion },
   { href: "/dashboard/settings/security", label: "Security", icon: Shield },
 ];
 
