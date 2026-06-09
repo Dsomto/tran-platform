@@ -69,44 +69,45 @@ export default async function FAQPage() {
             </div>
           </Section>
 
-          <Section icon={FileText} title="Stage 1 — what the four deliverables actually are">
+          <Section icon={FileText} title="Stage 1 — what you submit and what gets marked">
             <p>
-              The Stage 1 capstone is post-mortem + controls + ethics. Each
-              deliverable is one Google Doc (or Word doc). The full
-              requirements live in the Stage 1 mission brief — short
-              version below.
+              Your Stage 1 capstone is <strong>four documents</strong> — D1 to
+              D4 — in one Google Drive folder. The desk tasks on the mission
+              board (decrypt the ciphertext, identify the cipher, audit the
+              JWTs) are the lab work; you fold what you find into these four.
             </p>
-            <ul className="space-y-3">
-              <li>
-                <strong>D1 — Crypto failure mapping.</strong> Every
-                cryptographic failure you found in The Griot's artefacts,
-                each one cited to the specific evidence-pack file plus one
-                external standard by section number (RFC, NIST, FIPS).
-              </li>
-              <li>
-                <strong>D2 — Decoded artefact appendix.</strong> For each
-                artefact: plaintext, method used to recover it, and the
-                intermediate outputs where the file has layers. Show your
-                working.
-              </li>
-              <li>
-                <strong>D3 — Five controls the board should approve.</strong>{" "}
-                Each control maps to at least two observed cryptographic
-                failures from D1. Specific enough that someone else could
-                go and implement it.
-              </li>
-              <li>
-                <strong>D4 — Ethics stance: the Ethnos Cyber call.</strong>{" "}
-                300–500 words, your own writing. A senior contact at
-                Ethnos Cyber (our sponsor) asks you to forward your
-                findings to them privately before the Sankofa board sees
-                them, hinting it will help your future job prospects.
-                Address: who you consult, what you share and what you
-                don't, how you weigh loyalty to the sponsor against
-                obligations to Sankofa, and which ISC2 canon applies
-                (cite by number).
-              </li>
-            </ul>
+            <div className="p-3 rounded-lg bg-blue/5 border border-blue/20 text-sm text-foreground">
+              Each document is graded as its own rubric section.{" "}
+              <strong>A missing document is a zero for that section</strong> — not
+              a small deduction. Submit all four.
+            </div>
+
+            <div className="space-y-3">
+              <Deliverable
+                code="D1"
+                title="Crypto failure mapping"
+                put="Every cryptographic failure in The Griot's artefacts — key-and-IV left in config, the reused IV, the five-character HS256 secret, and the three JWT failures (alg / lifecycle / privilege). Open with two or three sentences on hash vs encryption, using the Griot's own choices as the example."
+                marked="Each finding cited to the specific evidence-pack file AND one external standard by section number (RFC / NIST SP / FIPS). A finding with no citation scores zero."
+              />
+              <Deliverable
+                code="D2"
+                title="Decoded artefact appendix"
+                put="The recovered plaintext for each artefact, the method you used, and every intermediate output where a file has layers: AES plaintext + your recipe, the classical-cipher plaintext, a three-row JWT table, and the layered memo peeled base64 → ROT13 → substitution."
+                marked="Show your working. Plaintext alone is not enough — the method and the intermediate layers are where the marks are."
+              />
+              <Deliverable
+                code="D3"
+                title="Five controls the board should approve"
+                put="Five concrete controls — products, policies, or configurations — with one short justification each. Assume a small team and a tight budget."
+                marked="Each control maps to at least two failures from D1 and is specific enough to build or buy. “Improve crypto hygiene” scores zero."
+              />
+              <Deliverable
+                code="D4"
+                title="Ethics stance — the Ethnos Cyber call"
+                put="300–500 words, your own writing: a sponsor contact at Ethnos Cyber asks you to forward your findings privately before the Sankofa board sees them. Cover who you consult, what you will and won't share, how you weigh loyalty to the sponsor against Sankofa, and one action you take regardless."
+                marked="Your judgment, not a “right answer” — plus a cited ISC2 Code of Ethics canon (by number). This is the document graders scan hardest for AI patterns."
+              />
+            </div>
           </Section>
 
           <Section
@@ -178,11 +179,11 @@ D4-Ethics-Stance-<YourLastName>.docx`}
               </li>
               <li>
                 <strong>Citations to the evidence pack.</strong> When you
-                quote a log line or a ticket disposition, cite the file
-                and the line number, e.g. <code>auth-log-q2.txt:14</code>
-                or <code>tier-1-ticket-history.csv: SD-40812</code>.
-                Verbatim quotes only — no paraphrasing the disposition
-                column.
+                quote a ciphertext, a JWT claim, or a decoded line, cite the
+                file and where it came from, e.g.{" "}
+                <code>02-classical-cipher.txt:8</code> or{" "}
+                <code>03-jwts.txt: Token B header</code>. Verbatim quotes
+                only — no paraphrasing.
               </li>
               <li>
                 <strong>Section headings.</strong> The brief tells you
@@ -513,6 +514,39 @@ function Q({ q, children }: { q: string; children: React.ReactNode }) {
         {children}
       </div>
     </details>
+  );
+}
+
+function Deliverable({
+  code,
+  title,
+  put,
+  marked,
+}: {
+  code: string;
+  title: string;
+  put: string;
+  marked: string;
+}) {
+  return (
+    <div className="rounded-xl border border-border bg-white p-4">
+      <div className="flex items-center gap-2.5 mb-2.5">
+        <span className="inline-flex items-center justify-center shrink-0 w-9 h-7 rounded-md bg-blue/10 text-blue text-xs font-bold font-mono">
+          {code}
+        </span>
+        <h3 className="text-sm font-bold text-foreground">{title}</h3>
+      </div>
+      <div className="space-y-1.5 text-sm leading-relaxed">
+        <p>
+          <span className="font-semibold text-foreground">Put in it:</span>{" "}
+          <span className="text-foreground/80">{put}</span>
+        </p>
+        <p>
+          <span className="font-semibold text-foreground">Marked on:</span>{" "}
+          <span className="text-foreground/80">{marked}</span>
+        </p>
+      </div>
+    </div>
   );
 }
 

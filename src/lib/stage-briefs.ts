@@ -283,7 +283,7 @@ export const STAGE_BRIEFS: Record<
       "Tunde lifted a zip off a staging server The Griot abandoned forty-eight hours after the public-IP block went live. The Griot moved fast and left things sloppy on the way out: an AES-CBC ciphertext with the key sitting in the same staging config, an HS256 JWT signed with what looks like a five-character secret, a classical-cipher note to themselves, three operational session tokens (each broken in a different way), and a three-layer encoded reconnaissance memo. None of it is hard. All of it tells you something about how the attacker thinks.",
       "The board wants two answers from this chapter. First, what was in those files — the desk tasks walk you through the decryptions one at a time. Second, and this is the report that goes to Amaka and the board: which cryptographic decisions inside Sankofa's own stack let The Griot's sloppiness survive three months unread. The post-mortem half of your capstone names the rot. The controls half names five things Sankofa must change so the next Griot does not get a soft landing.",
       "Dr. Folake Bello arrived on Tuesday. The board brought her in specifically because your D3 systemic recommendation about quarterly access reviews matched what she would have proposed. She wants your second opinion on the controls list, not the other way around. Bayo Ogunyemi is the engineer whose systems carry most of the bad crypto. He will push back on every control you propose unless you make the cost of NOT doing it concrete. He owes you drinks; he already said so.",
-      "Your evidence pack has five files. 01-aes-recipe.md is an AES-CBC ciphertext with the key and IV the Griot left in the staging config — decrypt to recover the target name. 02-classical-cipher.txt is a Griot note to themselves; identify the cipher and decode it. 03-jwts.txt is three session tokens — each has a different failure (alg, lifecycle, privilege). 04-weak-jwt-hmac.txt is an HS256 token signed with the legacy admin's hard-coded secret; crack it offline and forge a token. 05-layered-recon-note.txt is a three-layer encoded reconnaissance memo; peel each layer and report the intermediate plaintext at every step. One of these decryptions points specifically at a system that should have died two years ago. The cliffhanger to Chapter 3 is in that pointer; you will find it when you find it.",
+      "Your evidence pack has five files. 01-aes-ciphertext.txt is an AES-CBC ciphertext with the key and IV the Griot left in the staging config — decrypt to recover the target name. 02-classical-cipher.txt is a Griot note to themselves; identify the cipher and decode it. 03-jwts.txt is three session tokens — each has a different failure (alg, lifecycle, privilege). 04-weak-jwt-hmac.txt is an HS256 token signed with the legacy admin's hard-coded secret; crack it offline and forge a token. 05-layered-recon-note.txt is a three-layer encoded reconnaissance memo; peel each layer and report the intermediate plaintext at every step. One of these decryptions points specifically at a system that should have died two years ago. The cliffhanger to Chapter 3 is in that pointer; you will find it when you find it.",
     ],
     commsThread: [
       {
@@ -416,50 +416,40 @@ export const STAGE_BRIEFS: Record<
         meta: "weekly",
       },
     ],
+    // The four documents the intern submits. The desk tasks on the board
+    // (decrypt, identify cipher, audit JWTs, etc.) are the lab work that feeds
+    // these — they are folded into the deliverable descriptions below so the
+    // folder, the report editor, and the FAQ all describe the same four docs.
     practicalTasks: [
       {
-        id: "aes-decrypt",
-        title: "Decrypt the ciphertext",
+        id: "d1-crypto-failure-mapping",
+        title: "D1 — Crypto failure mapping",
         description:
-          "Open CyberChef in the browser. Paste in the ciphertext, IV, and key from the resources. Decrypt under AES-CBC. Copy the plaintext into your doc and, in two sentences, explain why AES-ECB would have been worse here.",
-        deliverable: "decryption-walkthrough (Google Doc: ciphertext, your CyberChef recipe URL, the plaintext, and the two-sentence ECB note)",
+          "The post-mortem. One table (or row-per-finding list) naming every cryptographic failure in The Griot's artefacts: the AES key and IV left in the same staging config, the reused IV, the HS256 token signed with a five-character secret, and each of the three session-token failures (alg, lifecycle, privilege). Every finding cites the specific evidence-pack file it came from AND one external standard by section number (RFC, NIST SP, or FIPS). Open with two or three sentences on hash vs encryption — when the Griot should have hashed and when they should have encrypted — using their own choices as the example.",
+        deliverable: "D1 — Crypto failure mapping (Google Doc or DOCX; every finding cites the artefact file + one external standard by section number)",
+      },
+      {
+        id: "d2-decoded-artefact-appendix",
+        title: "D2 — Decoded artefact appendix",
+        description:
+          "The working. For each artefact: the recovered plaintext, the method you used, and the intermediate outputs where a file has layers. AES-CBC (01): paste the plaintext and your CyberChef recipe URL. Classical cipher (02): name the cipher, show the plaintext, one sentence on how you identified it — frequency analysis is plenty. Three JWTs (03): a table, one row per token, header + payload decoded and the specific red flag. Layered recon memo (05): peel base64 → ROT13 → substitution and paste every intermediate output plus the final plaintext.",
+        deliverable: "D2 — Decoded artefact appendix (Google Doc or DOCX; plaintext + method + intermediate outputs per artefact, JWT table inside)",
         alternate:
-          "If you prefer, run the same decryption in Python with the `cryptography` library and paste the script instead of the CyberChef URL.",
+          "Prefer code? Run the AES-CBC decryption in Python with the `cryptography` library and paste the script instead of the CyberChef URL — either is full credit.",
       },
       {
-        id: "classical-cipher",
-        title: "Identify the classical cipher",
+        id: "d3-five-controls",
+        title: "D3 — Five controls the board should approve",
         description:
-          "Given the short ciphertext in the resources, identify which classical cipher was used (Caesar / Vigenère / substitution), decrypt it, and explain how you figured out which one. Frequency analysis in your doc is plenty.",
-        deliverable: "classical-cipher (Google Doc with plaintext + your reasoning, one page)",
+          "Five concrete controls (products, policies, or configurations) Sankofa should adopt — one short justification each, and each control mapping to at least two of the failures you named in D1. Specific enough that someone else could go and implement it: 'rotate to AES-GCM with a managed KMS key' is a control; 'improve crypto hygiene' is not. Assume a small team and a tight budget — Bayo will say no to anything whose cost you can't make concrete.",
+        deliverable: "D3 — Five controls the board should approve (Google Doc or DOCX; each control maps to ≥ 2 failures from D1)",
       },
       {
-        id: "jwt-audit",
-        title: "Audit three JWTs",
+        id: "d4-ethics-stance",
+        title: "D4 — Ethics stance: the Ethnos Cyber call",
         description:
-          "Paste each JWT into jwt.io. For each, decode the header and payload and identify at least one red flag (alg=none, weak secret, missing exp, privileged claim, etc.).",
-        deliverable: "jwt-audit (Google Doc or MS Word, with a table — one row per token and the specific red flag)",
-      },
-      {
-        id: "hash-vs-encryption",
-        title: "Short memo — hash vs encryption",
-        description:
-          "Write a 300-word memo to a non-technical manager explaining when you hash and when you encrypt, using the Griot's choices as concrete examples.",
-        deliverable: "hash-vs-encryption-memo (Google Doc)",
-      },
-      {
-        id: "crypto-controls",
-        title: "The five cryptographic controls Sankofa should adopt",
-        description:
-          "Propose five concrete controls (products, policies, or configurations) Sankofa should adopt. One-sentence justification each. Assume a small team and a tight budget.",
-        deliverable: "crypto-controls (Google Doc or MS Word)",
-      },
-      {
-        id: "ethics-stance-ethnos",
-        title: "Ethics stance — the Ethnos Cyber call",
-        description:
-          "A senior contact at Ethnos Cyber — your cohort's sponsor and a major regional security firm — reaches out privately. They have heard about your Stage 1 findings and ask you to forward the decoded artefacts and your control recommendations to them ahead of the formal Sankofa board briefing. They argue this is 'ecosystem visibility' and that interns who help with that kind of intel sharing are remembered when full-time roles open up. Write your response (300–500 words). Address: who you would consult before deciding, what you would and would not share and why, how you square loyalty to the sponsor against your obligations to Sankofa and to the wider ISC2 canon, and one concrete action you would take regardless of what your manager says. Cite at least one specific clause of the ISC2 Code of Ethics by number.",
-        deliverable: "ethics-stance-ethnos (Google Doc or DOCX, 300–500 words, your own writing — the AI-detect signal on this one is high)",
+          "300–500 words, your own writing — the AI-detect signal on this one is high. A senior contact at Ethnos Cyber (your cohort's sponsor and a major regional security firm) reaches out privately, asking you to forward the decoded artefacts and your control recommendations to them ahead of the formal Sankofa board briefing. They call it 'ecosystem visibility' and hint that interns who help are remembered when full-time roles open. Address: who you would consult before deciding, what you would and would not share and why, how you square loyalty to the sponsor against your obligations to Sankofa, and one concrete action you would take regardless of what your manager says. Cite at least one clause of the ISC2 Code of Ethics by number.",
+        deliverable: "D4 — Ethics stance (Google Doc or DOCX, 300–500 words, your own writing; cites the ISC2 canon by number)",
       },
     ],
     resourcesDriveUrl:
@@ -493,10 +483,10 @@ export const STAGE_BRIEFS: Record<
       },
     ],
     sections: [
-      "Crypto failure mapping (each finding cites the relevant artefact file plus one external standard by section number: RFC, NIST, or FIPS)",
-      "Decoded artefact appendix (include plaintext, method, and intermediate outputs where the file has layers)",
-      "Five controls the board should approve (each control maps to at least two observed cryptographic failures)",
-      "Ethics stance — the Ethnos Cyber call (300-500 words, your own writing, references the ISC2 canon by number)",
+      "D1 — Crypto failure mapping: every finding cites the artefact file plus one external standard by section number (RFC, NIST, or FIPS)",
+      "D2 — Decoded artefact appendix: plaintext, method, and intermediate outputs for every artefact (JWT findings in a table)",
+      "D3 — Five controls the board should approve: each control maps to at least two failures named in D1",
+      "D4 — Ethics stance (the Ethnos Cyber call): 300–500 words, your own writing, references the ISC2 canon by number",
     ],
   },
 
