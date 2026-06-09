@@ -66,11 +66,11 @@ const EVIDENCE_PACK: Record<
   ],
   STAGE_1: [
     {
-      filename: "01-aes-recipe.md",
-      url: "/capstone/stage-1/01-aes-recipe.md",
+      filename: "01-aes-ciphertext.txt",
+      url: "/capstone/stage-1/01-aes-ciphertext.txt",
       description:
-        "AES-CBC ciphertext + the key/IV the Griot left in config. Decrypt with CyberChef → recover the plaintext that names what they were after.",
-      bytes: 1400,
+        "AES-CBC ciphertext + the key/IV the Griot left in config. Decrypt it with CyberChef (AES Decrypt → CBC) and recover the plaintext that names what they were after.",
+      bytes: 950,
     },
     {
       filename: "02-classical-cipher.txt",

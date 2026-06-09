@@ -1,0 +1,19 @@
+================================================================
+ARTEFACT: aes-ciphertext.txt
+Recovered from The Griot's staging drop. The key and IV were
+left in the staging config (sloppy). Decrypt the ciphertext and
+recover the plaintext — it names what they were after.
+Lesson: the algorithm is not the asset; the key is.
+================================================================
+
+mode:             AES-CBC (AES-128)
+key (hex):        00112233445566778899AABBCCDDEEFF
+iv  (hex):        0102030405060708090A0B0C0D0E0F10
+ciphertext (hex):
+2685c1fd8249d2917f0d324e55e8c58b8edfbb3d21256cc02b4391b03a8716a7c5d982454a4b2d049bed390af2522838
+
+How: paste key, iv, and ciphertext into CyberChef -> AES Decrypt
+(input Hex, key Hex, IV Hex, mode CBC, output Raw), or use any AES
+library. In your report, name the cipher/mode, paste the recovered
+plaintext, and write one sentence on why storing the key beside the
+ciphertext defeats the encryption.
