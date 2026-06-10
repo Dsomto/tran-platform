@@ -8,6 +8,7 @@ import {
   HelpCircle,
   FileSignature,
   BookOpen,
+  Download,
 } from "lucide-react";
 import { STAGE_STORIES } from "@/lib/stage-story";
 
@@ -107,6 +108,47 @@ export default async function FAQPage() {
                 put="300–500 words, your own writing: a sponsor contact at Ethnos Cyber asks you to forward your findings privately before the Sankofa board sees them. Cover who you consult, what you will and won't share, how you weigh loyalty to the sponsor against Sankofa, and one action you take regardless."
                 marked="Your judgment, not a “right answer” — plus a cited ISC2 Code of Ethics canon (by number). This is the document graders scan hardest for AI patterns."
               />
+            </div>
+          </Section>
+
+          <Section icon={FileSignature} title="Start from the template">
+            <p>
+              Don&apos;t build the four documents from a blank page. The Stage 1
+              capstone template lays out D1–D4 with the tables, headings, and
+              citation placeholders already in place — replace each{" "}
+              <code>[ bracketed prompt ]</code> with your own work and delete the
+              grey instruction lines.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <a
+                href="/capstone/stage-1/stage-1-capstone-template.docx"
+                download
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue text-white text-sm font-semibold hover:bg-blue/90"
+              >
+                <Download className="h-4 w-4" /> Template — .docx (editable)
+              </a>
+              <a
+                href="/capstone/stage-1/stage-1-capstone-template.pdf"
+                target="_blank"
+                rel="noreferrer noopener"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-blue/40 bg-white text-blue text-sm font-semibold hover:bg-blue/10"
+              >
+                <FileText className="h-4 w-4" /> Template — .pdf (preview)
+              </a>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Open the <strong>.docx</strong> in Google Docs (File → Open →
+              Upload) or in Word and edit directly. The <strong>.pdf</strong> is
+              a read-only preview of the same thing. You can submit the four
+              deliverables as one combined document or as four separate files
+              (D1–D4) — graders accept either, as long as all four areas are
+              covered.
+            </p>
+            <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-900 text-sm">
+              <strong>Already submitted the six separate documents?</strong>{" "}
+              That&apos;s still accepted — you don&apos;t need to resubmit or use
+              this template. See &ldquo;I already submitted six separate
+              documents&rdquo; below.
             </div>
           </Section>
 
@@ -308,6 +350,15 @@ D4-Ethics-Stance-<YourLastName>.docx`}
           </Section>
 
           <Section icon={HelpCircle} title="The other questions we keep getting">
+            <Q q="I already submitted six separate documents (the older task list). Is that a problem?">
+              No — that&apos;s fully accepted and you do <strong>not</strong>{" "}
+              need to resubmit. The six task documents (decryption walkthrough,
+              classical cipher, JWT audit, hash-vs-encryption memo, controls, and
+              ethics stance) cover exactly the same four graded areas (D1–D4).
+              Graders mark the coverage of those four areas, not the number of
+              files. The four-document template just organises the same work for
+              everyone submitting from here on.
+            </Q>
             <Q q="Can I work with another intern?">
               No. Every deliverable must be your own writing. You can
               discuss the brief in Slack and you can ask mentors questions
