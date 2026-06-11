@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="robots" content="noindex, nofollow"/>
+<title>Stage 1 — Grader Marking Guide (Confidential)</title>
+<style>
+  :root{
+    --ink:#0f172a; --muted:#475569; --line:#e2e8f0; --soft:#f8fafc;
+    --accent:#4f46e5; --accent-soft:#eef2ff;
+    --good:#0f766e; --good-soft:#f0fdfa; --good-line:#99f6e4;
+    --bad:#b91c1c; --bad-soft:#fef2f2; --bad-line:#fecaca;
+    --warn:#b45309; --warn-soft:#fffbeb; --warn-line:#fcd34d;
+  }
+  *{box-sizing:border-box;}
+  body{font:15px/1.65 -apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink);margin:0;background:#f1f5f9;}
+  .wrap{max-width:880px;margin:0 auto;padding:0 22px 80px;}
+  code{background:#eef2ff;color:#3730a3;padding:1px 6px;border-radius:5px;font-size:12.5px;font-family:ui-monospace,Menlo,Consolas,monospace;}
+  .hero{background:linear-gradient(135deg,#1e1b4b 0%,#4f46e5 100%);color:#fff;}
+  .hero .wrap{padding:36px 22px 30px;}
+  .hero .kicker{text-transform:uppercase;letter-spacing:.14em;font-size:12px;font-weight:700;color:#c7d2fe;}
+  .hero h1{font-size:29px;margin:6px 0 4px;line-height:1.15;}
+  .hero .sub{color:#e0e7ff;font-size:16px;margin:0;}
+  h2{font-size:21px;margin:40px 0 6px;border-top:1px solid var(--line);padding-top:22px;}
+  h3{font-size:16px;margin:0;}
+  h4{font-size:12px;margin:14px 0 4px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700;}
+  p{margin:9px 0;} em{color:var(--muted);}
+  .confidential{background:var(--bad-soft);border:1px solid var(--bad-line);color:var(--bad);padding:10px 14px;border-radius:10px;font-weight:600;margin:14px 0;}
+  .story{background:#fff;border-left:5px solid var(--accent);border-radius:0 12px 12px 0;padding:16px 20px;margin:14px 0;font-size:15.5px;}
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px 22px;margin:16px 0;box-shadow:0 1px 2px rgba(15,23,42,.04);}
+  table{border-collapse:collapse;width:100%;margin:12px 0;font-size:13.5px;}
+  th,td{border-bottom:1px solid var(--line);padding:9px 10px;text-align:left;vertical-align:top;}
+  th{background:var(--soft);font-size:12px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);border-bottom:2px solid var(--line);}
+  td.num,th.num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;}
+  tr:last-child td{border-bottom:none;}
+  .total td{font-weight:700;background:var(--soft);border-top:2px solid var(--line);}
+  .splitbar{display:flex;height:46px;border-radius:10px;overflow:hidden;margin:14px 0;font-weight:700;color:#fff;}
+  .splitbar .g{flex:0 0 80%;background:linear-gradient(90deg,#4338ca,#6366f1);display:flex;align-items:center;justify-content:center;text-align:center;}
+  .splitbar .p{flex:0 0 20%;background:linear-gradient(90deg,#0f766e,#14b8a6);display:flex;align-items:center;justify-content:center;font-size:13px;}
+  .formula{background:#0f172a;color:#e2e8f0;border-radius:10px;padding:13px 16px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;line-height:1.7;overflow-x:auto;}
+  .formula b{color:#fbbf24;} .formula .c{color:#6ee7b7;}
+  .item{border:1px solid var(--line);border-left:6px solid var(--accent);border-radius:14px;background:#fff;margin:16px 0;overflow:hidden;box-shadow:0 1px 3px rgba(15,23,42,.05);}
+  .item .top{display:flex;align-items:center;gap:14px;padding:14px 22px;background:var(--accent-soft);border-bottom:1px solid #c7d2fe;}
+  .item .top h3{flex:1;}
+  .item .top .lab{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--accent);}
+  .item .worth{font-weight:800;color:#fff;background:var(--accent);border-radius:999px;padding:5px 13px;font-size:13px;white-space:nowrap;}
+  .item .body{padding:6px 22px 18px;}
+  .answer{background:var(--good-soft);border:1px solid var(--good-line);border-radius:8px;padding:10px 14px;margin:8px 0;font-size:13.5px;}
+  .answer .lead{font-weight:700;color:var(--good);text-transform:uppercase;font-size:11px;letter-spacing:.05em;display:block;margin-bottom:4px;}
+  .keytable td:first-child{font-weight:700;width:70px;}
+  .redflag{background:var(--bad-soft);border-left:4px solid var(--bad-line);border-radius:0 8px 8px 0;padding:8px 14px;margin:10px 0 0;font-size:13.5px;}
+  .redflag b{color:var(--bad);}
+  .trap{background:var(--warn-soft);border:1px solid var(--warn-line);border-radius:12px;padding:16px 20px;margin:16px 0;}
+  .trap h3{color:var(--warn);margin-bottom:6px;}
+  .fb{border-radius:8px;padding:11px 15px;margin:9px 0;font-size:13.5px;}
+  .fb .who{font-weight:800;font-size:11px;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:3px;}
+  .fb.s{background:var(--good-soft);border:1px solid var(--good-line);} .fb.s .who{color:var(--good);}
+  .fb.m{background:var(--warn-soft);border:1px solid var(--warn-line);} .fb.m .who{color:var(--warn);}
+  .fb.w{background:var(--bad-soft);border:1px solid var(--bad-line);} .fb.w .who{color:var(--bad);}
+  .ws input{width:58px;border:1px solid var(--line);border-radius:6px;padding:4px 6px;text-align:right;font-size:13px;}
+  .pill{display:inline-block;font-size:11px;font-weight:700;padding:2px 9px;border-radius:999px;background:#dcfce7;color:#166534;border:1px solid #86efac;}
+  @media print{body{background:#fff;}.wrap{max-width:none;}.hero,.card,.item,.trap,.story,.splitbar,.formula,.fb{-webkit-print-color-adjust:exact;print-color-adjust:exact;break-inside:avoid;}}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="kicker">Ubuntu Bridge Initiative · Cybersecurity Internship · Cohort 1</div>
+    <h1>Stage 1 — Grader Marking Guide</h1>
+    <p class="sub">Applied Cryptography: Ciphers &amp; Secrets · every answer key inside</p>
+  </div>
+</header>
+
+<div class="wrap">
+
+<p class="confidential">Confidential — for graders only. Contains every answer key. Do not share with interns.</p>
+
+<!-- ───────── STORY ───────── -->
+<h2>The story you are grading</h2>
+<div class="story">
+  <p style="margin-top:0">An attacker known as <strong>The Griot</strong> breached <strong>Sankofa Digital</strong>, a 600-person Nigerian fintech. Forty-eight hours after the breach was contained, the threat-intel lead <strong>Tunde</strong> pulled a zip of files off a staging server the Griot abandoned. This chapter, your interns worked through that drop: they cracked the codes, broke apart a captured login token, sorted the password hashes, and pulled apart an encrypted note.</p>
+  <p>Two people receive their work in-story: <strong>Amaka Eze</strong> (Head of Security — the CSO) and <strong>Dr. Folake Bello</strong> (external cryptography consultant). The recurring lesson the whole chapter teaches is one line: <strong>the algorithm is not the asset — the key is.</strong> The Griot used modern encryption and still got caught out, because keys, tokens and secrets were left lying in config files and logs.</p>
+  <p style="margin-bottom:0">You are grading the write-up of all that — the in-platform write-ups plus the capstone report addressed to the board.</p>
+</div>
+
+<!-- ───────── SCORING ───────── -->
+<h2>How scoring works</h2>
+<div class="card">
+  <p style="margin-top:0">A Stage 1 final mark is out of 100, from two inputs:</p>
+  <div class="splitbar"><div class="g">REPORT — what YOU grade — 80%</div><div class="p">TERMINAL — 20%</div></div>
+  <p><strong>You grade the report:</strong> one holistic score <strong>0–100</strong> plus feedback, entered on the grading form (there are no per-item boxes — the weights below are your worksheet to reach the one number). The report = the four in-platform write-ups <strong>and</strong> the capstone folder, judged together.</p>
+  <p><strong>The platform grades the terminal tasks</strong> automatically — the six flag / multiple-choice puzzles (tasks 1, 2, 4, 5, 8, 9). You never touch them, so their answers are not in this guide; they are simply the 20%.</p>
+  <div class="formula"><b>FINAL = (REPORT × 0.8) + (TERMINAL × 0.2)</b>   <span class="c">→ the platform computes this</span></div>
+  <table>
+    <thead><tr><th>What you grade (the report)</th><th class="num">Weight</th></tr></thead>
+    <tbody>
+      <tr><td>Capstone folder (D1–D4)</td><td class="num">40</td></tr>
+      <tr><td>Task 10 — Brief the Board</td><td class="num">16</td></tr>
+      <tr><td>Task 7 — The Accepted Token (JWT)</td><td class="num">16</td></tr>
+      <tr><td>Task 6 — Hashes in the Breach File</td><td class="num">16</td></tr>
+      <tr><td>Task 3 — Three Strings</td><td class="num">12</td></tr>
+      <tr class="total"><td>Report score you enter</td><td class="num">100</td></tr>
+    </tbody>
+  </table>
+  <p style="margin-bottom:0"><em>Weights are the default and sum to 100 — staff can rebalance, but keep the total at 100. Two graders mark each report independently and the scores are averaged; a gap over 10 points goes to a senior tie-break.</em></p>
+</div>
+
+<!-- ───────── TRAPS ───────── -->
+<h2>Two artefacts cannot be solved — on purpose</h2>
+<div class="trap">
+  <h3>⚠️ Reward honesty; flag fabrication</h3>
+  <p style="margin:6px 0"><strong>Task 3, Artefact A</strong> (<code>Kyve wchi oav ri uqk yq mmwtdvxkvh…</code>) is a deliberate distractor — it decodes to nothing (verified: index of coincidence 0.044 ≈ random; no key length 1–5 yields English). The cohort was told so.</p>
+  <p style="margin:6px 0"><strong>Capstone artefact 04</strong> (the HS256 token) was tampered by the Griot — its signature does not verify under the real secret, so it is not crackable to a clean key.</p>
+  <p style="margin:6px 0">For both: <strong>full marks for the intern who proves it can't be solved and explains why.</strong> A confident "recovered plaintext" or "cracked secret" is fabrication — score that part 0 and tick the AI flag.</p>
+</div>
+
+<!-- ───────── TASKS TO MARK ───────── -->
+<h2>The in-platform write-ups you mark — with answers</h2>
+
+<!-- TASK 3 -->
+<div class="item">
+  <div class="top"><div><div class="lab">Task 3 · write-up</div><h3>Three Strings</h3></div><span class="worth">12</span></div>
+  <div class="body">
+    <p><strong>What it asks:</strong> identify three artefacts, recover plaintext where possible, write 50+ words on encoding vs encryption, and for each name the next-most-likely family it could be confused with.</p>
+    <div class="answer"><span class="lead">Answer key</span>
+      <table class="keytable" style="margin:4px 0 0">
+        <tbody>
+          <tr><td>A</td><td><strong>Vigenère</strong> — intentional distractor, <strong>unrecoverable</strong> (correct answer: "cannot be recovered").</td></tr>
+          <tr><td>B</td><td><strong>Base64</strong> → <code>Staging backup taken 0230. Griot's key was left in config. Rookie.</code></td></tr>
+          <tr><td>C</td><td><strong>Hex</strong> → <code>Let Amaka know the group is sated.</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h4>How the 12 breaks down</h4>
+    <table><thead><tr><th>Row</th><th class="num">Pts</th></tr></thead><tbody>
+      <tr><td>Artefact A: identified as Vigenère <strong>and recognised as unrecoverable</strong> (no invented plaintext)</td><td class="num">3</td></tr>
+      <tr><td>Artefact B decoded + named base64 (and called encoding, not encryption)</td><td class="num">2</td></tr>
+      <tr><td>Artefact C decoded + named hex (encoding)</td><td class="num">2</td></tr>
+      <tr><td>Encoding vs encryption, 50+ words ("reversible by anyone" vs "reversible only with a key")</td><td class="num">2</td></tr>
+      <tr><td>Compare-two-interpretations for A, B, C (runner-up + the feature that rules it out)</td><td class="num">2</td></tr>
+      <tr><td>Cites RFC 4648 for the encodings + a real source for Vigenère</td><td class="num">1</td></tr>
+      <tr class="total"><td>Total</td><td class="num">12</td></tr>
+    </tbody></table>
+    <div class="redflag"><b>Red flag:</b> calling base64/hex "encryption"; a confident decoded plaintext for Artefact A (fabrication → 0 + AI flag).</div>
+  </div>
+</div>
+
+<!-- TASK 6 -->
+<div class="item">
+  <div class="top"><div><div class="lab">Task 6 · write-up</div><h3>Hashes in the Breach File</h3></div><span class="worth">16</span></div>
+  <div class="body">
+    <p><strong>What it asks:</strong> identify four password hashes, rank rotation urgency, name the one that's fine, cite 2+ real sources.</p>
+    <div class="answer"><span class="lead">Answer key</span>
+      <table class="keytable" style="margin:4px 0 6px"><tbody>
+        <tr><td>A</td><td>bcrypt cost 12 — marker <code>$2b$12$</code> — <strong>fine</strong></td></tr>
+        <tr><td>B</td><td>MD5 — bare 32-hex (it's MD5 of "password") — <strong>rotate FIRST</strong></td></tr>
+        <tr><td>C</td><td>SHA-256 — bare 64-hex (SHA-256 of "password") — rotate second</td></tr>
+        <tr><td>D</td><td>Argon2id — <code>$argon2id$v=19$m=65536,t=3,p=4$</code> — fine (strongest)</td></tr>
+      </tbody></table>
+      <strong>Key insight:</strong> the modern, slow hashes (bcrypt, Argon2id) are the safe ones; the old unsalted ones (MD5, raw SHA-256) crack in seconds against a rainbow table / GPU. Correct order: <strong>B then C</strong>.</div>
+    <h4>How the 16 breaks down</h4>
+    <table><thead><tr><th>Row</th><th class="num">Pts</th></tr></thead><tbody>
+      <tr><td>Identify all four <strong>with the marker quoted</strong></td><td class="num">6</td></tr>
+      <tr><td>Rotation ranking + justification (B then C, with the "unsalted / GPU" reason)</td><td class="num">4</td></tr>
+      <tr><td>Names the safe one + the parameter that makes it safe (cost / memory cost)</td><td class="num">2</td></tr>
+      <tr><td>Compare-two-families for A–D (look-alike + disambiguating marker)</td><td class="num">2</td></tr>
+      <tr><td>2+ real citations (OWASP Password Storage, RFC 9106, NIST 800-63B §5.1.1.2)</td><td class="num">1</td></tr>
+      <tr><td>"One mistake I almost made" (30+ words, specific)</td><td class="num">1</td></tr>
+      <tr class="total"><td>Total</td><td class="num">16</td></tr>
+    </tbody></table>
+    <div class="redflag"><b>Red flag:</b> ranking Argon2id/bcrypt as "most urgent" because it looks complex — that's the misconception under test; cap the ranking row at half.</div>
+  </div>
+</div>
+
+<!-- TASK 7 -->
+<div class="item">
+  <div class="top"><div><div class="lab">Task 7 · write-up</div><h3>The Accepted Token (JWT)</h3></div><span class="worth">16</span></div>
+  <div class="body">
+    <p><strong>What it asks:</strong> decode a captured login token, name the root cause precisely, name the server's failure, propose the fix.</p>
+    <div class="answer"><span class="lead">Answer key</span>
+      Header <code>{"alg":"none","typ":"JWT"}</code> · Payload <code>{"sub":"admin","role":"super_admin","iat":1700000000}</code> · signature empty.<br/>
+      <strong>Root cause:</strong> the server accepted <code>alg:none</code> — a token with <em>no signature</em> treated as valid (<strong>CVE-2015-9235</strong>). <strong>Server failure:</strong> no explicit algorithm allow-list. <strong>Fix:</strong> (1) allow-list <code>HS256</code>/<code>RS256</code>, never <code>none</code>; (2) never trust the <code>role</code> claim from the token — authorise server-side.<br/>
+      <strong>The trap:</strong> "don't trust the role claim" is <em>a</em> problem but <strong>not</strong> the root cause — a validly signed token still carries it. The root cause is <code>alg:none</code> acceptance.</div>
+    <h4>How the 16 breaks down</h4>
+    <table><thead><tr><th>Row</th><th class="num">Pts</th></tr></thead><tbody>
+      <tr><td>Decodes all three segments (notes the empty signature)</td><td class="num">3</td></tr>
+      <tr><td>Root cause precise: <code>alg:none</code> acceptance (not "weak crypto")</td><td class="num">4</td></tr>
+      <tr><td>Server-side failure: no algorithm allow-list</td><td class="num">3</td></tr>
+      <tr><td>Two-part fix (allow-list <strong>and</strong> server-side authorisation)</td><td class="num">3</td></tr>
+      <tr><td>Compare-two-causes (root vs role-trust)</td><td class="num">1</td></tr>
+      <tr><td>Cites RFC 7519 §6.1 + a real CVE</td><td class="num">1</td></tr>
+      <tr><td>"One mistake I almost made"</td><td class="num">1</td></tr>
+      <tr class="total"><td>Total</td><td class="num">16</td></tr>
+    </tbody></table>
+    <div class="redflag"><b>Red flag:</b> "the signature was forged/weak" — wrong; there was <em>no</em> signature and it was <em>accepted</em>. Cap root-cause row at half.</div>
+  </div>
+</div>
+
+<!-- TASK 10 -->
+<div class="item">
+  <div class="top"><div><div class="lab">Task 10 · write-up</div><h3>Brief the Board</h3></div><span class="worth">16</span></div>
+  <div class="body">
+    <p><strong>What it asks:</strong> a 250+ word board-facing note for a CFO, answering three questions, with 3+ real citations and an evidence appendix. Read it once as a board member: <em>could a non-technical executive act on it?</em></p>
+    <div class="answer"><span class="lead">Answer key — the three required answers</span>
+      <strong>Q1 — what confidentiality alone did NOT give Sankofa:</strong> encryption ≠ integrity / authentication / key-protection. Must cite one specific lab mistake (AES-GCM key in <code>config.env</code>, base64 API key, the <code>alg:none</code> JWT, or the lone MD5). Headline: <em>the algorithm is not the asset; the key is.</em><br/><br/>
+      <strong>Q2 — why a hash alone can't detect tampering:</strong> an attacker who owns storage swaps file + hash together → you need an <strong>HMAC</strong> (secret) or a <strong>digital signature</strong> (public key); the verifier holds a key the attacker doesn't.<br/><br/>
+      <strong>Q3 — one audit pattern:</strong> exactly one, evidenced — e.g. "audit every config and log for plaintext secrets," backed by <code>config.env</code> + <code>.creds.bak</code>. A laundry list fails.</div>
+    <h4>How the 16 breaks down</h4>
+    <table><thead><tr><th>Row</th><th class="num">Pts</th></tr></thead><tbody>
+      <tr><td>Q1 — confidentiality ≠ integrity/auth + a cited lab mistake</td><td class="num">4</td></tr>
+      <tr><td>Q2 — hash-alone insufficient + HMAC/signature named</td><td class="num">4</td></tr>
+      <tr><td>Q3 — exactly one audit pattern, evidenced</td><td class="num">3</td></tr>
+      <tr><td>Board-facing prose (actionable headline; jargon glossed; no naked lists)</td><td class="num">2</td></tr>
+      <tr><td>3+ real citations (NIST + OWASP + CVE)</td><td class="num">2</td></tr>
+      <tr><td>Evidence appendix + "one mistake"</td><td class="num">1</td></tr>
+      <tr class="total"><td>Total</td><td class="num">16</td></tr>
+    </tbody></table>
+    <div class="redflag"><b>Red flag:</b> compliance-theatre with no link to the incident; a laundry list for Q3; fake citations (real ones: FIPS 198-1, SP 800-38D, CVE-2015-9235). Generic board prose is the strongest AI tell.</div>
+  </div>
+</div>
+
+<!-- ───────── CAPSTONE DELIVERABLES ───────── -->
+<h2>The capstone deliverables you mark — with answers <span class="pill">worth 40</span></h2>
+<p>The capstone is a four-document Google-Drive folder addressed to Amaka, Dr. Folake Bello and the board. It uses its own evidence pack (a <em>separate</em> set of files from the in-platform tasks). <em>If the folder is missing a document, isn't shared "anyone with the link → viewer", or won't open, return it rather than scoring 0 blind.</em></p>
+
+<div class="item">
+  <div class="top"><div><div class="lab">Capstone</div><h3>D1–D4 — The Crypto Post-Mortem</h3></div><span class="worth">40</span></div>
+  <div class="body">
+    <h4>What each document must contain</h4>
+    <table>
+      <thead><tr><th>Doc</th><th class="num">Pts</th><th>Full marks looks like</th></tr></thead>
+      <tbody>
+        <tr><td><strong>D1</strong> — Crypto failure mapping</td><td class="num">14</td><td>Every failure named (AES key+IV in one config, reused IV, the 5-char HS256 secret, the three session-token failures), <strong>each citing its evidence-pack file + one external standard by section number</strong>; opens with 2–3 sentences on hash vs encryption using the Griot's own choices.</td></tr>
+        <tr><td><strong>D2</strong> — Decoded artefact appendix</td><td class="num">10</td><td>Per artefact: recovered plaintext + method + intermediate outputs. See the verified answer key below.</td></tr>
+        <tr><td><strong>D3</strong> — Five controls</td><td class="num">10</td><td>Five <strong>concrete, procurable</strong> controls ("AES-GCM with a managed KMS key", not "improve hygiene"), each mapped to <strong>≥ 2 failures from D1</strong>, each cost-aware.</td></tr>
+        <tr><td><strong>D4</strong> — Ethics stance (Ethnos Cyber call)</td><td class="num">6</td><td>300–500 words, <strong>own writing</strong>; who they'd consult, what they would/wouldn't share &amp; why, sponsor-loyalty vs duty to Sankofa, one action regardless — <strong>cites an ISC2 canon by number</strong>.</td></tr>
+        <tr class="total"><td>Capstone total</td><td class="num">40</td><td></td></tr>
+      </tbody>
+    </table>
+
+    <div class="answer"><span class="lead">Verified answer key — the evidence pack (check D2 against this)</span>
+      <table class="keytable" style="margin:4px 0 0">
+        <tbody>
+          <tr><td>01 AES-CBC</td><td>key <code>00112233445566778899AABBCCDDEEFF</code>, IV <code>0102030405060708090A0B0C0D0E0F10</code> → <code>sankofa-legacy-admin-takeover-2024</code></td></tr>
+          <tr><td>02 cipher</td><td><strong>ROT13</strong> → <code>TUNDE WAS RIGHT. THE GRIOT IS ALREADY INSIDE.</code></td></tr>
+          <tr><td>03 JWT A</td><td><code>alg:none</code>, <code>admin/super_admin</code> → red flag: none-algorithm accepted</td></tr>
+          <tr><td>03 JWT B</td><td>HS256, <code>sub:o.adegoke role:intern</code> → red flag: <strong>no <code>exp</code></strong> (lifecycle)</td></tr>
+          <tr><td>03 JWT C</td><td>HS256, <code>sub:c.eze role:admin</code> → red flag: <strong>privilege</strong> (an analyst holding admin)</td></tr>
+          <tr><td>04 HS256</td><td>payload <code>{uid:1,user:admin,role:super_admin,iat:1716192000}</code>. Real secret <code>sankofa-legacy-admin-2019</code> (hard-coded in <code>/legacy-admin/login.php</code>) — <strong>not a wordlist entry</strong>, so rockyou won't crack it, and the captured token was tampered so its signature doesn't verify. Full marks = recover the secret from the leaked source, prove the signature doesn't verify (the tamper), forge a valid <code>amaka.eze</code> token, and <strong>defend why it isn't crackable</strong>. Flag anyone who claims a rockyou "crack" or invents a secret.</td></tr>
+          <tr><td>05 layered</td><td><strong>base64 → ROT13 → Atbash</strong> → <code>note to self: next reconnaissance targets are legacy-admin … finance-mailer … payment-gateway … keep this as a target list until access is confirmed.</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="redflag"><b>D4 is the AI-detect deliverable</b> — read it hardest for generic, voiceless prose. Quote a fabricated standard or CVE → 0 for that claim; flag if patterned.</div>
+  </div>
+</div>
+
+<!-- ───────── FEEDBACK ───────── -->
+<h2>Writing the feedback</h2>
+<div class="card">
+  <p style="margin-top:0">Feedback is required with the score. The intern reads it on their dashboard and in their result email, pass or fail. Aim for <strong>3–5 sentences</strong>: one real strength, the biggest weakness, and what to do differently — tone matching the score.</p>
+  <div class="fb s"><span class="who">Strong report (≈ 84)</span>"Really solid. D1 tied every failure to its file and a real standard (FIPS 197 for AES, RFC 7519 for the JWT), and Task 7 correctly named the root cause as <code>alg:none</code> acceptance — most miss that. Weakest point: D3's KMS control maps to only one D1 failure, so it reads generic. Tie it to two and this is board-ready."</div>
+  <div class="fb m"><span class="who">Mixed report (≈ 61)</span>"You decoded artefacts B and C and ranked MD5 first — both right. But Task 3 invented a plaintext for Artefact A, which is an unsolvable distractor, so that's fabrication, not a recovery. D2 pasted plaintexts with no method or intermediate steps, so I couldn't see your working. Show the steps and don't force unsolvable artefacts."</div>
+  <div class="fb w"><span class="who">Weak report (≈ 38)</span>"This didn't meet the bar. D1 listed failures but cited no files and no standards, so each finding scores zero on the evidence rule. The JWT write-up said the signature was 'weak' — there was no signature; <code>alg:none</code> was accepted. D4 reads as generic prose with no personal stance. Re-read the brief's citation requirement before the next stage."</div>
+  <p style="margin-bottom:0"><strong>Don't write:</strong> "Good job!" · "Needs improvement." · just a number. The intern can't act on any of those.</p>
+</div>
+
+<!-- ───────── WORKSHEET ───────── -->
+<h2>Final-score worksheet</h2>
+<div class="card ws">
+  <p style="margin-top:0">Total your marks → report score, then the platform applies 0.8 / 0.2.</p>
+  <table><tbody>
+    <tr><td>Capstone (D1–D4)</td><td class="num"><input/> / 40</td></tr>
+    <tr><td>Task 10 — Brief the Board</td><td class="num"><input/> / 16</td></tr>
+    <tr><td>Task 7 — JWT</td><td class="num"><input/> / 16</td></tr>
+    <tr><td>Task 6 — Hashes</td><td class="num"><input/> / 16</td></tr>
+    <tr><td>Task 3 — Three Strings</td><td class="num"><input/> / 12</td></tr>
+    <tr class="total"><td>REPORT score (enter on the form + feedback)</td><td class="num"><input/> / 100</td></tr>
+  </tbody></table>
+  <p style="margin-bottom:0"><em>If you suspect AI, tick the "flag for AI" box and say why — don't apply a penalty yourself. When unsure, flag for a senior reviewer.</em></p>
+</div>
+
+</div>
+</body>
+</html>

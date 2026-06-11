@@ -265,6 +265,38 @@ export function StageLanding({
         </div>
       </section>
 
+      {/* ── A word from your CSO — Amaka's hints ──────────── */}
+      {story.amakaHints && story.amakaHints.length > 0 && (
+        <section className={`${theme.panelClass} p-6 sm:p-8`}>
+          <div className="flex items-center gap-3 mb-5">
+            <div className={`w-11 h-11 rounded-full grid place-items-center font-bold text-sm shrink-0 ${theme.ctaBgClass} text-white`} aria-hidden="true">
+              AE
+            </div>
+            <div className="min-w-0">
+              <div className={`${theme.bodyTextClass} text-sm font-semibold flex items-center gap-1.5`}>
+                <Sparkles className={`w-3.5 h-3.5 ${theme.accentTextClass}`} />
+                Amaka Eze
+              </div>
+              <div className={`${theme.mutedTextClass} text-[11.5px]`}>
+                Chief Security Officer · a quiet word before you start
+              </div>
+            </div>
+          </div>
+          <ul className="space-y-3">
+            {story.amakaHints.map((hint, i) => (
+              <li key={i} className="flex gap-3 items-start">
+                <span className={`shrink-0 mt-0.5 grid place-items-center w-5 h-5 rounded-full text-[10px] font-bold ${theme.ctaBgClass} text-white`}>
+                  {i + 1}
+                </span>
+                <span className={`${theme.bodyTextClass} text-[14px] leading-relaxed`} style={{ fontFamily: "Georgia, serif" }}>
+                  {personalise(hint, firstName)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       {/* ── Meet your coworkers ───────────────────────────── */}
       <section>
         <SectionHeading icon={Users} accent={theme.accentTextClass} headingClass={theme.headingClass} eyebrow="The bench">
@@ -510,6 +542,14 @@ export function StageLanding({
         >
           {story.cliffhanger}
         </p>
+        {story.teaser && (
+          <p
+            className={`${theme.mutedTextClass} text-sm sm:text-base italic leading-relaxed max-w-2xl mx-auto mt-5`}
+            style={{ fontFamily: "Georgia, serif" }}
+          >
+            {story.teaser}
+          </p>
+        )}
         <p className={`${theme.mutedTextClass} text-xs mt-4`}>
           {nextChapter
             ? "Finish and pass every task in this chapter to unlock the next room."

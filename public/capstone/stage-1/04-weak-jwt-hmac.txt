@@ -1,7 +1,7 @@
 ================================================================
 SANKOFA SOC — captured JWT (HS256), source: /legacy-admin/
 Tunde says: "I think the legacy admin app's HMAC secret is the
-same hard-coded string the dev posted in the 2021 wiki cleanup.
+same hard-coded string the dev posted in the 2019 wiki cleanup.
 If you can crack the signature locally, you can prove who else
 on the team should rotate everything they have ever signed."
 ================================================================
@@ -22,7 +22,7 @@ What Tunde wants from you:
      and prove the legacy-admin server would accept it.
 
 Hint: the secret is short, ASCII-only, and includes the
-year. It is in a dictionary that ships with kali.
+year — but it is not a wordlist entry, so rockyou will not crack it.
 The /legacy-admin/login.php source you have in this stage's
 evidence pack hard-codes the same string — but cracking it
 here without peeking proves you can do it against a target

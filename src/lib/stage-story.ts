@@ -35,6 +35,12 @@ export interface StageStory {
   reportTo: string;
   /** The "to be continued" hook shown once the chapter is complete. */
   cliffhanger: string;
+  /** Optional hints from the CSO (Amaka), shown as a card on the stage page
+   *  while the intern works. May contain {firstName} tokens. */
+  amakaHints?: string[];
+  /** Optional extra, deliberately cryptic teaser shown beneath the cliffhanger
+   *  — a second hook into the next chapter. */
+  teaser?: string;
 }
 
 export const TOTAL_CHAPTERS = 5;
@@ -97,6 +103,16 @@ export const STAGE_STORIES: Record<StageSlug, StageStory> = {
     reportTo: "Amaka, Dr. Folake Bello, and the Sankofa Digital board",
     cliffhanger:
       "Your post-mortem named the rot, and your forged token unlocked the door. One decrypted note pointed somewhere specific — sankofa.internal/legacy-admin/, a 2019 app that should have died two years ago. You walked through it. Chapter 3 is a war room and Bayo will not enjoy the conversation.",
+    amakaHints: [
+      "Start in the shell assuming the Griot was sloppy — because he was. A plain `ls` won't show everything; files that begin with a dot are hiding for a reason.",
+      "Half the tokens in those logs are bait — fixtures, test dummies, sanity checks. Don't grab the first TRAN{ you see; read the line around it. One of them was never meant to be in a log at all.",
+      "Tell encoding from encryption before you lose an hour — the character set and the length give it away. And not every string has a key: part of this job is proving when a thing cannot be cracked and walking away. I would rather you spend ten minutes proving that than ten hours pretending.",
+      "On the hashes, the scariest-looking one is usually the safest. Ask which one a public rainbow table eats for breakfast — that is the one to rotate first.",
+      "On the captured login token: the Griot doesn't leave clean evidence. He went back to that staging box on the way out and altered things, so some of it will not reconcile no matter how long you run a wordlist. That legacy secret was hard-coded in 2019 and never rotated — it isn't in any dictionary. Find where it leaked, prove what he changed, and write down why it cannot be cracked. Naming the tamper is the finding.",
+      "Write the board note for a CFO, {firstName}, not for me. No jargon without a one-line gloss, and one clear thing to fix first — not a shopping list.",
+    ],
+    teaser:
+      "One thing still doesn't sit right. The Griot didn't guess that token — he rewrote it, and the legacy door was standing open before he ever knocked. Someone inside Sankofa left it that way. You are not going to like who.",
   },
 
   "stage-2": {
