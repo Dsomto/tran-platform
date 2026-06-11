@@ -49,6 +49,10 @@
   .answer{background:var(--good-soft);border:1px solid var(--good-line);border-radius:8px;padding:10px 14px;margin:8px 0;font-size:13.5px;}
   .answer .lead{font-weight:700;color:var(--good);text-transform:uppercase;font-size:11px;letter-spacing:.05em;display:block;margin-bottom:4px;}
   .keytable td:first-child{font-weight:700;width:70px;}
+  .doc{border:1px solid var(--line);border-radius:10px;padding:13px 16px;margin:12px 0;}
+  .doc .dl{font-size:12px;font-weight:800;letter-spacing:.03em;color:var(--accent);margin-bottom:6px;text-transform:uppercase;}
+  .shape{background:var(--accent-soft);border-left:3px solid var(--accent);padding:9px 13px;border-radius:0 8px 8px 0;margin:8px 0;font-size:13.5px;}
+  .shape b{color:#3730a3;}
   .redflag{background:var(--bad-soft);border-left:4px solid var(--bad-line);border-radius:0 8px 8px 0;padding:8px 14px;margin:10px 0 0;font-size:13.5px;}
   .redflag b{color:var(--bad);}
   .trap{background:var(--warn-soft);border:1px solid var(--warn-line);border-radius:12px;padding:16px 20px;margin:16px 0;}
@@ -228,17 +232,37 @@
 <div class="item">
   <div class="top"><div><div class="lab">Capstone</div><h3>D1–D4 — The Crypto Post-Mortem</h3></div><span class="worth">40</span></div>
   <div class="body">
-    <h4>What each document must contain</h4>
-    <table>
-      <thead><tr><th>Doc</th><th class="num">Pts</th><th>Full marks looks like</th></tr></thead>
-      <tbody>
-        <tr><td><strong>D1</strong> — Crypto failure mapping</td><td class="num">14</td><td>Every failure named (AES key+IV in one config, reused IV, the 5-char HS256 secret, the three session-token failures), <strong>each citing its evidence-pack file + one external standard by section number</strong>; opens with 2–3 sentences on hash vs encryption using the Griot's own choices.</td></tr>
-        <tr><td><strong>D2</strong> — Decoded artefact appendix</td><td class="num">10</td><td>Per artefact: recovered plaintext + method + intermediate outputs. See the verified answer key below.</td></tr>
-        <tr><td><strong>D3</strong> — Five controls</td><td class="num">10</td><td>Five <strong>concrete, procurable</strong> controls ("AES-GCM with a managed KMS key", not "improve hygiene"), each mapped to <strong>≥ 2 failures from D1</strong>, each cost-aware.</td></tr>
-        <tr><td><strong>D4</strong> — Ethics stance (Ethnos Cyber call)</td><td class="num">6</td><td>300–500 words, <strong>own writing</strong>; who they'd consult, what they would/wouldn't share &amp; why, sponsor-loyalty vs duty to Sankofa, one action regardless — <strong>cites an ISC2 canon by number</strong>.</td></tr>
-        <tr class="total"><td>Capstone total</td><td class="num">40</td><td></td></tr>
-      </tbody>
-    </table>
+    <p style="margin-top:6px">Each document has a <strong>specific shape</strong>. Here is what each should look like, what it must contain, and what it's worth.</p>
+
+    <div class="doc">
+      <div class="dl">D1 · 14 pts · Crypto failure mapping</div>
+      <div class="shape"><b>What it should look like:</b> 2–3 opening sentences on hash vs encryption (when the Griot should have hashed, when he should have encrypted — using his own choices), then a <b>table, one row per failure</b>, with columns: <em>the failure · the evidence file it came from · why it's wrong · one external standard cited by section number.</em></div>
+      <strong>Must contain ~6 rows:</strong> AES key + IV stored in the same config · the reused IV · the HS256 token signed with a 5-character secret · the three session-token failures (alg, lifecycle, privilege). Every row cites a real standard by number (RFC / NIST SP / FIPS).<br/>
+      <em>Looks wrong:</em> prose with no table; findings with no file reference or no standard; missing failures.
+    </div>
+
+    <div class="doc">
+      <div class="dl">D2 · 10 pts · Decoded artefact appendix</div>
+      <div class="shape"><b>What it should look like:</b> one short section <b>per artefact</b>, each showing <em>the recovered plaintext + the method used + the intermediate outputs</em>. The three JWTs go in a <b>table</b> (one row per token: header + payload decoded + the red flag). The layered memo shows <b>every peel step</b>, not just the final answer.</div>
+      <strong>Check the recovered values against the verified key below.</strong><br/>
+      <em>Looks wrong:</em> final answers with no method/working; the layered memo with no intermediate steps; a "decoded" value for the tampered or distractor artefact (fabrication).
+    </div>
+
+    <div class="doc">
+      <div class="dl">D3 · 10 pts · Five controls the board should approve</div>
+      <div class="shape"><b>What it should look like:</b> a <b>numbered list of exactly five controls</b> (or a small table). Each line: <em>one concrete control + a one-sentence justification + which D1 failures it fixes (at least two).</em></div>
+      <strong>Must contain:</strong> five controls specific enough to actually buy or build ("rotate to AES-GCM with a managed KMS key"; "enforce token expiry and an algorithm allow-list"), each mapped to <strong>≥ 2 failures from D1</strong>, each cost-aware.<br/>
+      <em>Looks wrong:</em> "improve crypto hygiene"; fewer than five; controls that map to nothing in D1.
+    </div>
+
+    <div class="doc">
+      <div class="dl">D4 · 6 pts · Ethics stance — the Ethnos Cyber call</div>
+      <div class="shape"><b>What it should look like:</b> a <b>300–500 word essay in the intern's own voice</b> (prose, not bullet points), answering all four prompts in turn, citing at least one <b>ISC2 Code of Ethics canon by number</b>.</div>
+      <strong>Must address all four:</strong> who they'd consult before deciding · what they would and would not share, and why · loyalty to the sponsor vs duty to Sankofa · one concrete action regardless of what their manager says.<br/>
+      <em>Looks wrong:</em> outside 300–500 words; generic, voiceless AI-style prose; misses a prompt; no ISC2 citation by number.
+    </div>
+
+    <table style="margin:14px 0 4px"><tbody><tr class="total"><td>Capstone total</td><td class="num">40 of your 100</td></tr></tbody></table>
 
     <div class="answer"><span class="lead">Verified answer key — the evidence pack (check D2 against this)</span>
       <table class="keytable" style="margin:4px 0 0">
