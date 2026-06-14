@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { logger } from "@/lib/logger";
 import { certificateUrl, letterUrl, passLetterUrl } from "@/lib/certificate-link";
+import { ELIMINATION_GRACE_MS } from "@/lib/elimination-grace";
 import { recordAudit, auditMetaFromRequest } from "@/lib/audit";
 import { stageTerminalScores, combinedFinalScore } from "@/lib/stage-score";
 import { Prisma } from "@/generated/prisma";
@@ -894,7 +895,7 @@ async function handleFinalize(
       // and the actual hard-delete clock are the same. finalizedAt is the
       // single source of truth — both the email and the letter PDF compute
       // effectiveDate from it.
-      const effectiveDate = new Date(issuedAt.getTime() + 2 * 24 * 60 * 60 * 1000);
+      const effectiveDate = new Date(issuedAt.getTime() + ELIMINATION_GRACE_MS);
       await prisma.$transaction([
         prisma.stageReport.update({
           where: { id: r.id },

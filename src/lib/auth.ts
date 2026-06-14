@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { jwtSecret } from "./secrets";
+import { ELIMINATION_GRACE_MS } from "./elimination-grace";
 
 export interface SessionUser {
   id: string;
@@ -281,7 +282,19 @@ export async function login(
       select: { stageStatus: true },
     });
     if (app?.stageStatus === "eliminated") {
-      return { ok: false, reason: "eliminated" };
+      // Grace window: an eliminated intern keeps read-only dashboard access for
+      // ELIMINATION_GRACE_MS after the decision so they can pull their feedback,
+      // their letter, and any references. Login is only blocked once the grace
+      // has elapsed (the purge cron deletes the account on the same clock).
+      const intern = await prisma.intern.findFirst({
+        where: { userId: user.id },
+        select: { eliminatedAt: true },
+      });
+      const elimAt = intern?.eliminatedAt;
+      const inGrace = !!elimAt && Date.now() - elimAt.getTime() < ELIMINATION_GRACE_MS;
+      if (!inGrace) {
+        return { ok: false, reason: "eliminated" };
+      }
     }
   }
 

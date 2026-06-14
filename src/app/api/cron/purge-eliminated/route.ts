@@ -1,13 +1,15 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { logger } from "@/lib/logger";
+import { ELIMINATION_GRACE_MS } from "@/lib/elimination-grace";
 
 // Daily purge of eliminated interns.
 //
 // Elimination sets Intern.isActive = false + eliminatedAt = now (and
-// PublicApplication.stageStatus = "eliminated"). Two days after that, this cron
-// HARD-DELETES the User account — which cascades to the Intern and all their
-// work (submissions, reports, points, stage history, testimonials). It is
+// PublicApplication.stageStatus = "eliminated"). The intern keeps read-only
+// dashboard access for the grace window (ELIMINATION_GRACE_MS); after it, this
+// cron HARD-DELETES the User account — which cascades to the Intern and all
+// their work (submissions, reports, points, stage history, testimonials). It is
 // irreversible; every purged account is logged first for audit.
 //
 // Step 1 (reconcile) heals historical inconsistency: some applicants were
@@ -18,7 +20,7 @@ import { logger } from "@/lib/logger";
 //
 // The PublicApplication row is intentionally kept (a minimal audit trail that
 // they applied and were eliminated); deleting the User already blocks login.
-const GRACE_MS = 2 * 24 * 60 * 60 * 1000;
+const GRACE_MS = ELIMINATION_GRACE_MS;
 
 async function handlePurge(request: NextRequest): Promise<Response> {
   try {
