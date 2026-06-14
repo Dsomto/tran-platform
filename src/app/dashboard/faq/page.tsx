@@ -61,7 +61,7 @@ export default async function FAQPage() {
               the four files inside one folder, share the folder, paste
               the folder link.
             </p>
-            <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-900 text-sm">
+            <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-900 dark:bg-rose-500/15 dark:border-rose-500/30 dark:text-rose-200 text-sm">
               <strong>Do not submit the mission brief itself.</strong> What
               you upload is the four documents <em>you</em> wrote — not the
               chapter brief from the dashboard. Some interns last cycle
@@ -131,7 +131,7 @@ export default async function FAQPage() {
                 href="/capstone/stage-1/stage-1-capstone-template.pdf"
                 target="_blank"
                 rel="noreferrer noopener"
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-blue/40 bg-white text-blue text-sm font-semibold hover:bg-blue/10"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-blue/40 bg-surface text-blue dark:text-blue-300 text-sm font-semibold hover:bg-blue/10"
               >
                 <FileText className="h-4 w-4" /> Template — .pdf (preview)
               </a>
@@ -144,7 +144,7 @@ export default async function FAQPage() {
               (D1–D4) — graders accept either, as long as all four areas are
               covered.
             </p>
-            <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-900 text-sm">
+            <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-900 dark:bg-emerald-500/15 dark:border-emerald-500/30 dark:text-emerald-200 text-sm">
               <strong>Already submitted the six separate documents?</strong>{" "}
               That&apos;s still accepted — you don&apos;t need to resubmit or use
               this template. See &ldquo;I already submitted six separate
@@ -508,8 +508,8 @@ function StoryChapter({
         isCurrent
           ? "border-blue/40 bg-blue/5"
           : isLocked
-            ? "border-border bg-slate-50 opacity-80"
-            : "border-border bg-white"
+            ? "border-border bg-surface-hover opacity-80"
+            : "border-border bg-surface"
       }`}
     >
       <div className="flex items-center gap-2 mb-2 flex-wrap">
@@ -518,8 +518,8 @@ function StoryChapter({
             isCurrent
               ? "bg-blue text-white"
               : isLocked
-                ? "bg-slate-200 text-slate-600"
-                : "bg-emerald-100 text-emerald-800"
+                ? "bg-surface-hover text-muted"
+                : "bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300"
           }`}
         >
           {num}
@@ -531,7 +531,7 @@ function StoryChapter({
           </span>
         )}
         {isLocked && (
-          <span className="text-[10px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-200 text-slate-700">
+          <span className="text-[10px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded bg-surface-hover text-muted">
             locked
           </span>
         )}
@@ -580,7 +580,7 @@ function Deliverable({
   marked: string;
 }) {
   return (
-    <div className="rounded-xl border border-border bg-white p-4">
+    <div className="rounded-xl border border-border bg-surface p-4">
       <div className="flex items-center gap-2.5 mb-2.5">
         <span className="inline-flex items-center justify-center shrink-0 w-9 h-7 rounded-md bg-blue/10 text-blue text-xs font-bold font-mono">
           {code}
@@ -614,10 +614,10 @@ function Section({
 }) {
   const iconTone =
     tone === "rose"
-      ? "bg-rose-50 text-rose-700 border-rose-200"
-      : "bg-blue/10 text-blue border-blue/30";
+      ? "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-500/15 dark:text-rose-300 dark:border-rose-500/30"
+      : "bg-blue/10 text-blue dark:text-blue-300 border-blue/30";
   return (
-    <section className="mb-8 bg-white border border-border rounded-2xl p-6 shadow-sm transition-shadow hover:shadow-md">
+    <section className="mb-8 bg-surface border border-border rounded-2xl p-6 shadow-sm transition-shadow hover:shadow-md">
       <div className="flex items-center gap-3 mb-4">
         <span className={`inline-flex items-center justify-center w-9 h-9 rounded-lg border ${iconTone}`}>
           <Icon className="h-4 w-4" />

@@ -153,10 +153,10 @@ function StageCard({
 
   return (
     <div
-      className={`relative p-5 bg-white border rounded-xl transition-all ${
+      className={`relative p-5 bg-surface border rounded-xl transition-all ${
         accessible
           ? "border-border hover:border-blue/40"
-          : "border-border/60 bg-slate-50/60"
+          : "border-border/60 bg-surface-hover/60"
       }`}
     >
       <div className="flex items-start justify-between gap-4">
@@ -166,11 +166,11 @@ function StageCard({
               Stage {stageNum} · {name}
             </h2>
             {isLocked ? (
-              <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200">
+              <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded bg-surface-hover text-muted border border-border">
                 <Lock className="w-3 h-3" /> Locked
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200">
+              <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/30">
                 <LockOpen className="w-3 h-3" /> Open
               </span>
             )}
@@ -183,14 +183,14 @@ function StageCard({
               <span
                 className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded border ${
                   statusLabel.tone === "emerald"
-                    ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                    ? "bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/30"
                     : statusLabel.tone === "rose"
-                      ? "bg-rose-50 text-rose-800 border-rose-200"
+                      ? "bg-rose-50 text-rose-800 border-rose-200 dark:bg-rose-500/15 dark:text-rose-300 dark:border-rose-500/30"
                       : statusLabel.tone === "blue"
-                        ? "bg-blue/10 text-blue border-blue/30"
+                        ? "bg-blue/10 text-blue dark:text-blue-300 border-blue/30"
                         : statusLabel.tone === "amber"
-                          ? "bg-amber-50 text-amber-800 border-amber-200"
-                          : "bg-slate-100 text-slate-700 border-slate-200"
+                          ? "bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/30"
+                          : "bg-surface-hover text-muted border-border"
                 }`}
               >
                 {statusLabel.label}
@@ -212,16 +212,16 @@ function StageCard({
             )}
             {isLocked && !isPast && (
               <EggHoverNote note="Awaiting clearance.">
-                <span className="text-slate-600">Waiting for admin to open this stage.</span>
+                <span className="text-muted">Waiting for admin to open this stage.</span>
               </EggHoverNote>
             )}
             {!isLocked && !accessible && !isPast && (
-              <span className="text-slate-600">
+              <span className="text-muted">
                 Finish the previous stage first.
               </span>
             )}
             {isPast && !reportStatus && (
-              <span className="text-slate-600">You have moved past this stage.</span>
+              <span className="text-muted">You have moved past this stage.</span>
             )}
           </div>
         </div>

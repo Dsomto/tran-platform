@@ -220,7 +220,7 @@ export default async function DashboardPage() {
           )}
 
           {/* ── Hero: your current stage ── */}
-          <section className="bg-white border border-border rounded-2xl p-6 sm:p-8">
+          <section className="bg-surface border border-border rounded-2xl p-6 sm:p-8">
             <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-blue mb-1">
@@ -231,11 +231,11 @@ export default async function DashboardPage() {
                 </h2>
               </div>
               {isStageOpen ? (
-                <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
+                <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/30">
                   Open
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
+                <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-surface-hover text-muted border border-border">
                   <Lock className="w-3 h-3" /> Not open yet
                 </span>
               )}
@@ -296,16 +296,16 @@ export default async function DashboardPage() {
                 <span
                   className={`self-center text-[11px] font-semibold px-2 py-0.5 rounded border ${
                     reportStatusLabel.tone === "emerald"
-                      ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                      ? "bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/30"
                       : reportStatusLabel.tone === "rose"
-                        ? "bg-rose-50 text-rose-800 border-rose-200"
+                        ? "bg-rose-50 text-rose-800 border-rose-200 dark:bg-rose-500/15 dark:text-rose-300 dark:border-rose-500/30"
                         : reportStatusLabel.tone === "blue"
-                          ? "bg-blue/10 text-blue border-blue/30"
+                          ? "bg-blue/10 text-blue dark:text-blue-300 border-blue/30"
                           : reportStatusLabel.tone === "amber"
-                            ? "bg-amber-50 text-amber-800 border-amber-200"
+                            ? "bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/30"
                             : reportStatusLabel.tone === "slate"
-                              ? "bg-slate-100 text-slate-700 border-slate-200"
-                              : "bg-white text-muted border-border"
+                              ? "bg-surface-hover text-muted border-border"
+                              : "bg-surface text-muted border-border"
                   }`}
                 >
                   {reportStatusLabel.text}
@@ -341,7 +341,7 @@ export default async function DashboardPage() {
               </div>
               <Link
                 href={`/dashboard/announcements#${topAnnouncement.id}`}
-                className="block bg-white border border-border rounded-2xl p-5 hover:border-blue/40 transition-colors"
+                className="block bg-surface border border-border rounded-2xl p-5 hover:border-blue/40 transition-colors"
               >
                 <div className="flex items-start gap-2 mb-1.5">
                   {topAnnouncement.isPinned && (
@@ -379,10 +379,10 @@ function MiniStat({
   tone: "blue" | "amber";
 }) {
   return (
-    <div className="bg-white border border-border rounded-2xl p-5 flex items-center gap-4">
+    <div className="bg-surface border border-border rounded-2xl p-5 flex items-center gap-4">
       <div
         className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${
-          tone === "blue" ? "bg-blue/10 text-blue" : "bg-amber-100 text-amber-700"
+          tone === "blue" ? "bg-blue/10 text-blue dark:text-blue-300" : "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300"
         }`}
       >
         <Icon className="w-5 h-5" />

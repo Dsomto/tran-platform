@@ -74,7 +74,7 @@ export default async function ReportsPage() {
           return (
             <div
               key={stage}
-              className="bg-white border border-border rounded-xl p-5 hover:shadow-sm transition-shadow"
+              className="bg-surface border border-border rounded-xl p-5 hover:shadow-sm transition-shadow"
             >
               <div className="flex items-start justify-between gap-4 flex-wrap">
                 <div className="min-w-0">
@@ -92,7 +92,7 @@ export default async function ReportsPage() {
                     )}
                   </div>
                   {r?.divergent && (
-                    <p className="mt-2 text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded px-2 py-1.5 max-w-xl">
+                    <p className="mt-2 text-xs text-amber-800 bg-amber-50 border border-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/30 rounded px-2 py-1.5 max-w-xl">
                       Your two reviewers disagreed on this report. The programme team is reviewing — you&apos;ll get a final score once they&apos;re done.
                     </p>
                   )}
@@ -123,7 +123,7 @@ export default async function ReportsPage() {
                         href={`/api/pass-letter/${r.id}?sig=${passLetterShareSig(r.id, intern.id)}`}
                         target="_blank"
                         rel="noreferrer noopener"
-                        className="inline-flex items-center gap-1.5 justify-center px-3 py-2 text-sm font-medium rounded-lg border border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100"
+                        className="inline-flex items-center gap-1.5 justify-center px-3 py-2 text-sm font-medium rounded-lg border border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 dark:border-emerald-500/30 dark:bg-emerald-500/15 dark:text-emerald-300 dark:hover:bg-emerald-500/25"
                       >
                         <FileSignature className="h-4 w-4" />
                         Achievement letter
@@ -135,7 +135,7 @@ export default async function ReportsPage() {
                       href={`/api/letter/${r.id}?sig=${letterShareSig(r.id, intern.id)}`}
                       target="_blank"
                       rel="noreferrer noopener"
-                      className="inline-flex items-center gap-1.5 justify-center px-3 py-2 text-sm font-medium rounded-lg border border-slate-300 bg-slate-50 text-slate-800 hover:bg-slate-100"
+                      className="inline-flex items-center gap-1.5 justify-center px-3 py-2 text-sm font-medium rounded-lg border border-border bg-surface text-foreground hover:bg-surface-hover"
                     >
                       <FileSignature className="h-4 w-4" />
                       End-of-programme letter
@@ -176,7 +176,7 @@ function StatusPill({ status, divergent }: { status: string; divergent: boolean 
   // intern needs a distinct label so they don't read it as silent inactivity.
   if (divergent) {
     return (
-      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200">
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/30">
         <AlertTriangle className="h-3.5 w-3.5" />
         Awaiting admin review
       </span>
@@ -184,15 +184,15 @@ function StatusPill({ status, divergent }: { status: string; divergent: boolean 
   }
   const config: Record<string, { label: string; color: string; icon: React.ElementType }> = {
     NONE: { label: "Not started", color: "bg-muted text-muted-foreground", icon: Clock },
-    DRAFT: { label: "Draft", color: "bg-amber-50 text-amber-700 border border-amber-200", icon: Clock },
+    DRAFT: { label: "Draft", color: "bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/30", icon: Clock },
     SUBMITTED: { label: "Submitted — awaiting review", color: "bg-blue/10 text-blue border border-blue/30", icon: Clock },
     UNDER_REVIEW: { label: "Under review", color: "bg-blue/10 text-blue border border-blue/30", icon: Clock },
-    GRADED: { label: "Result pending release", color: "bg-slate-100 text-slate-800 border border-slate-300", icon: CheckCircle2 },
-    PENDING_PROMOTION: { label: "Result pending release", color: "bg-slate-100 text-slate-800 border border-slate-300", icon: Clock },
-    PENDING_ELIMINATION: { label: "Result pending release", color: "bg-slate-100 text-slate-800 border border-slate-300", icon: Clock },
-    PASSED: { label: "Passed", color: "bg-emerald-50 text-emerald-700 border border-emerald-200", icon: CheckCircle2 },
-    FAILED: { label: "Not passed", color: "bg-rose-50 text-rose-700 border border-rose-200", icon: XCircle },
-    LATE: { label: "Late", color: "bg-slate-100 text-slate-700 border border-slate-200", icon: AlertTriangle },
+    GRADED: { label: "Result pending release", color: "bg-surface-hover text-foreground border border-border", icon: CheckCircle2 },
+    PENDING_PROMOTION: { label: "Result pending release", color: "bg-surface-hover text-foreground border border-border", icon: Clock },
+    PENDING_ELIMINATION: { label: "Result pending release", color: "bg-surface-hover text-foreground border border-border", icon: Clock },
+    PASSED: { label: "Passed", color: "bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/30", icon: CheckCircle2 },
+    FAILED: { label: "Not passed", color: "bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-500/15 dark:text-rose-300 dark:border-rose-500/30", icon: XCircle },
+    LATE: { label: "Late", color: "bg-surface-hover text-muted border border-border", icon: AlertTriangle },
   };
   const c = config[status] ?? config.NONE;
   const Icon = c.icon;

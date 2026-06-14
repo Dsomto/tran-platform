@@ -65,7 +65,7 @@ export default async function InternAnnouncementsPage() {
       </a>
 
       {announcements.length === 0 ? (
-        <div className="p-10 bg-white border border-border rounded-xl text-center text-muted-foreground">
+        <div className="p-10 bg-surface border border-border rounded-xl text-center text-muted-foreground">
           <Megaphone className="h-8 w-8 text-muted-foreground/40 mx-auto mb-3" />
           <p className="text-sm">No announcements yet. You&apos;ll see them here when the team posts.</p>
         </div>
@@ -75,7 +75,7 @@ export default async function InternAnnouncementsPage() {
             <article
               key={a.id}
               id={a.id}
-              className={`bg-white border rounded-xl p-5 scroll-mt-20 ${
+              className={`bg-surface border rounded-xl p-5 scroll-mt-20 ${
                 a.isPinned ? "border-blue/30 bg-blue/5" : "border-border"
               }`}
             >

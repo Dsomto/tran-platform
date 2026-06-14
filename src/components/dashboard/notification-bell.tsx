@@ -88,16 +88,16 @@ export function NotificationBell() {
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-80 max-h-96 overflow-y-auto bg-white border border-border rounded-xl shadow-lg z-50">
+        <div className="absolute right-0 mt-2 w-80 max-h-96 overflow-y-auto bg-surface border border-border rounded-xl shadow-lg z-50">
           <div className="flex items-center justify-between p-3 border-b border-border">
             <div className="flex items-center gap-2">
-              <Megaphone className="w-4 h-4 text-blue" />
+              <Megaphone className="w-4 h-4 text-blue dark:text-blue-400" />
               <span className="text-sm font-semibold text-foreground">Announcements</span>
             </div>
             <Link
               href="/dashboard/announcements"
               onClick={() => setOpen(false)}
-              className="text-xs text-blue hover:underline"
+              className="text-xs text-blue dark:text-blue-400 hover:underline"
             >
               View all
             </Link>
@@ -120,7 +120,7 @@ export function NotificationBell() {
                     >
                       <div className="flex items-start gap-2">
                         {a.isPinned && (
-                          <Pin className="w-3.5 h-3.5 text-blue mt-1 shrink-0" />
+                          <Pin className="w-3.5 h-3.5 text-blue dark:text-blue-400 mt-1 shrink-0" />
                         )}
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2">

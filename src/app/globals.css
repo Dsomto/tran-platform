@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* Class-based dark mode. The default Tailwind v4 `dark:` variant keys off the
+   OS prefers-color-scheme; we override it to a `.dark` class on <html> so the
+   topbar toggle can drive it (and persist a manual choice). */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #FAFAFA;
   --foreground: #111111;
@@ -38,6 +43,31 @@
   --violet-light: #EDE9FE;
   --rose: #E11D48;
   --rose-light: #FFE4E6;
+}
+
+/* ── Dark mode ──────────────────────────────────────────────
+   Redefines the surface/text/border tokens for `.dark`. Because every
+   chrome component and shared ui/* element reads these via the @theme
+   bindings below (bg-surface, text-foreground, text-muted, border-border,
+   bg-background, …), flipping the tokens here flips the whole dashboard
+   without per-component dark: variants.
+
+   Contrast on the dark surface (#161A22) is verified AA:
+     foreground  #F2F4F7  ~15:1   (body / headings)
+     muted       #9BA3B0  ~6.9:1  (captions)
+     muted-fg    #B7BFCC  ~9:1    (placeholders / secondary)
+   Brand hues (blue, danger, emerald, …) keep their solid values so buttons
+   stay legible with white text; the few `text-blue` spots on dark get a
+   lighter `dark:text-blue-400` at the call site. */
+.dark {
+  --background: #0B0D12;
+  --foreground: #F2F4F7;
+  --surface: #161A22;
+  --surface-hover: #1F242E;
+  --border: #2A303B;
+  --border-light: #1C212A;
+  --muted: #9BA3B0;
+  --muted-foreground: #B7BFCC;
 }
 
 @theme inline {
@@ -240,6 +270,25 @@ body {
 
 .glass-shine:hover::before {
   left: 100%;
+}
+
+/* Dark variants for the frosted-glass surfaces — swap the white wash for a
+   dark one so these read as elevated panels, not blinding white, in dark mode. */
+.dark .glass {
+  background: rgba(20, 24, 32, 0.5);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+.dark .glass-strong {
+  background: rgba(20, 24, 32, 0.72);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+.dark .glass-card {
+  background: rgba(20, 24, 32, 0.45);
+  border-color: rgba(255, 255, 255, 0.07);
+}
+.dark .glass-card-elevated {
+  background: rgba(20, 24, 32, 0.5);
+  border-color: rgba(255, 255, 255, 0.08);
 }
 
 .gradient-primary {

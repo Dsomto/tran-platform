@@ -127,10 +127,10 @@ export default async function TeamPage() {
                           <span
                             className={`absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold border ${
                               i === 0
-                                ? "bg-amber-100 text-amber-700 border-amber-200"
+                                ? "bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/30"
                                 : i === 1
-                                ? "bg-gray-100 text-gray-600 border-gray-200"
-                                : "bg-orange-100 text-orange-700 border-orange-200"
+                                ? "bg-gray-100 text-gray-600 border-gray-200 dark:bg-white/10 dark:text-slate-300 dark:border-white/15"
+                                : "bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-500/15 dark:text-orange-300 dark:border-orange-500/30"
                             }`}
                           >
                             {i + 1}

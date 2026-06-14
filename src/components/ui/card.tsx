@@ -14,10 +14,10 @@ export function Card({
   ...props
 }: CardProps) {
   const variants = {
-    default: "bg-white border border-border shadow-sm",
+    default: "bg-surface border border-border shadow-sm",
     glass: "glass shadow-lg",
     gradient: "gradient-card border border-border/50",
-    bordered: "bg-white border-2 border-primary/10",
+    bordered: "bg-surface border-2 border-primary/10",
   };
 
   return (

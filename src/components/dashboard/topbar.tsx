@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Search } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
 import { NotificationBell } from "./notification-bell";
+import { ThemeToggle } from "./theme-toggle";
 
 interface TopbarProps {
   title: string;
@@ -19,11 +20,11 @@ export function Topbar({ title, subtitle, firstName, lastName, avatarUrl }: Topb
   // Egg #4: between 00:00–00:59 the greeting line becomes "Night shift active."
   useEffect(() => setNight(new Date().getHours() === 0), []);
   return (
-    <header className="h-16 bg-white border-b border-border flex items-center justify-between px-6 shrink-0">
+    <header className="h-16 bg-surface border-b border-border flex items-center justify-between px-6 shrink-0">
       <div>
         <h1 className="text-lg font-semibold text-foreground">{title}</h1>
         {night ? (
-          <p className="text-xs text-blue">Night shift active.</p>
+          <p className="text-xs text-blue dark:text-blue-400">Night shift active.</p>
         ) : subtitle ? (
           <p className="text-xs text-muted">{subtitle}</p>
         ) : null}
@@ -39,6 +40,9 @@ export function Topbar({ title, subtitle, firstName, lastName, avatarUrl }: Topb
             className="bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none w-40"
           />
         </div>
+
+        {/* Light/dark toggle */}
+        <ThemeToggle />
 
         {/* Notifications — real dropdown of the latest announcements */}
         <NotificationBell />

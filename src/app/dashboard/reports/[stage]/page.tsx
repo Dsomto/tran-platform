@@ -264,9 +264,9 @@ export default async function ReportEditorPage({
   if (!isOpen) {
     return (
       <div className="flex-1 overflow-y-auto p-6">
-        <div className="max-w-xl mx-auto mt-16 bg-white border border-border rounded-xl p-8 text-center">
-          <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-slate-100 grid place-items-center">
-            <Lock className="w-5 h-5 text-slate-600" />
+        <div className="max-w-xl mx-auto mt-16 bg-surface border border-border rounded-xl p-8 text-center">
+          <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-surface-hover grid place-items-center">
+            <Lock className="w-5 h-5 text-muted" />
           </div>
           <h1 className="text-lg font-semibold text-foreground mb-1">
             {brief.label} is not open yet

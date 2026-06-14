@@ -120,7 +120,7 @@ export function Sidebar({ role, userName }: SidebarProps) {
   return (
     <aside
       className={cn(
-        "h-screen sticky top-0 bg-white border-r border-border flex flex-col transition-all duration-300",
+        "h-screen sticky top-0 bg-surface border-r border-border flex flex-col transition-all duration-300",
         collapsed ? "w-[72px]" : "w-64"
       )}
     >
@@ -130,7 +130,7 @@ export function Sidebar({ role, userName }: SidebarProps) {
           <LogoMark size={28} className="shrink-0" />
           {!collapsed && (
             <span className="text-lg font-bold text-foreground tracking-tight">
-              <span className="text-blue">UBI</span>
+              <span className="text-blue dark:text-blue-400">UBI</span>
             </span>
           )}
         </Link>
@@ -194,7 +194,7 @@ export function Sidebar({ role, userName }: SidebarProps) {
         {!collapsed && (
           <div className="px-3 py-2 mt-2">
             <p className="text-xs text-muted truncate">{userName}</p>
-            <p className="text-xs font-medium text-blue capitalize">
+            <p className="text-xs font-medium text-blue dark:text-blue-400 capitalize">
               {role.toLowerCase().replace("_", " ")}
             </p>
           </div>

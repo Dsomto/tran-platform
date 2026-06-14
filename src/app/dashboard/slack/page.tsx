@@ -35,7 +35,7 @@ export default async function SlackJoinPage() {
         </p>
       </header>
 
-      <div className="bg-white border border-border rounded-xl overflow-hidden">
+      <div className="bg-surface border border-border rounded-xl overflow-hidden">
         <div className="p-6 md:p-8 border-b border-border">
           <p className="text-foreground text-base leading-relaxed mb-5">
             {SLACK_INVITE_PITCH}
@@ -57,7 +57,7 @@ export default async function SlackJoinPage() {
 
         <div className="p-6 md:p-8 bg-muted/20">
           {joined ? (
-            <div className="flex items-center gap-3 text-emerald-700">
+            <div className="flex items-center gap-3 text-emerald-700 dark:text-emerald-400">
               <CheckCircle2 className="h-5 w-5" />
               <div>
                 <p className="font-medium">You&apos;ve joined Slack.</p>

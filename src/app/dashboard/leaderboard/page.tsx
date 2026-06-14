@@ -65,9 +65,9 @@ export default function LeaderboardPage() {
   }, [type]);
 
   const medalColors = [
-    "bg-amber-100 text-amber-700 border-amber-200",
-    "bg-gray-100 text-gray-600 border-gray-200",
-    "bg-orange-100 text-orange-700 border-orange-200",
+    "bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/30",
+    "bg-gray-100 text-gray-600 border-gray-200 dark:bg-white/10 dark:text-slate-300 dark:border-white/15",
+    "bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-500/15 dark:text-orange-300 dark:border-orange-500/30",
   ];
 
   return (
@@ -88,7 +88,7 @@ export default function LeaderboardPage() {
             className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all cursor-pointer ${
               type === "individual"
                 ? "gradient-primary text-white shadow-lg shadow-primary/20"
-                : "bg-white border border-border text-muted hover:text-foreground"
+                : "bg-surface border border-border text-muted hover:text-foreground"
             }`}
           >
             <Medal className="w-4 h-4" />
@@ -99,7 +99,7 @@ export default function LeaderboardPage() {
             className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all cursor-pointer ${
               type === "team"
                 ? "gradient-primary text-white shadow-lg shadow-primary/20"
-                : "bg-white border border-border text-muted hover:text-foreground"
+                : "bg-surface border border-border text-muted hover:text-foreground"
             }`}
           >
             <Users className="w-4 h-4" />
