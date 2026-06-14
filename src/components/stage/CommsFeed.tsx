@@ -2,6 +2,7 @@ import { Pin, EyeOff } from "lucide-react";
 import type { CommsMessage } from "@/lib/stage-briefs";
 import type { StageLandingTheme } from "@/lib/stage-landing-theme";
 import { personalise } from "@/lib/stage-story";
+import { Reveal } from "./Reveal";
 
 interface Props {
   theme: StageLandingTheme;
@@ -71,7 +72,13 @@ function CommsItem({
           </span>
         )}
         {isRedacted && (
-          <span className="inline-flex items-center gap-1 text-[9.5px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded border border-rose-400/40 text-rose-300">
+          <span
+            className={`inline-flex items-center gap-1 text-[9.5px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded border ${
+              theme.light
+                ? "border-rose-300 text-rose-700"
+                : "border-rose-400/40 text-rose-300"
+            }`}
+          >
             <EyeOff className="w-2.5 h-2.5" />
             redacted
           </span>
@@ -117,10 +124,14 @@ export function CommsFeed({ theme, thread, firstName }: Props) {
       </div>
       <div className="space-y-3">
         {pinned.map((m, i) => (
-          <CommsItem key={`p-${i}`} msg={m} theme={theme} firstName={firstName} />
+          <Reveal key={`p-${i}`} delay={i * 0.07}>
+            <CommsItem msg={m} theme={theme} firstName={firstName} />
+          </Reveal>
         ))}
         {rest.map((m, i) => (
-          <CommsItem key={`r-${i}`} msg={m} theme={theme} firstName={firstName} />
+          <Reveal key={`r-${i}`} delay={(pinned.length + i) * 0.07}>
+            <CommsItem msg={m} theme={theme} firstName={firstName} />
+          </Reveal>
         ))}
       </div>
     </section>

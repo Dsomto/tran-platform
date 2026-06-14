@@ -135,6 +135,15 @@ export const STAGE_STORIES: Record<StageSlug, StageStory> = {
     reportTo: "Bayo Ogunyemi, Head of Engineering",
     cliffhanger:
       "You proved how The Griot walked in. But the capture showed they didn't stop at the door — they pivoted to a finance workstation and went quiet. Chapter 4: 10.0.1.87 is in quarantine.",
+    amakaHints: [
+      "Don't trust the comments in the recovered source, {firstName}. Whoever wrote them labelled some bugs and stayed quiet about others. Review every line as if it's unproven — the findings nobody flagged in the margin are the ones that move you up the bench.",
+      "Read past the login query. What the app does with the error message, the cookie flags, and the token's lifetime are findings too, even though no one wrote BUG next to them.",
+      "One thing in the verifier looks hand-rolled and unsafe and is actually fine. Before you flag it critical, ask which function it calls and what that function guarantees. Proving a non-issue is a non-issue is real work — say so out loud, and say it with confidence.",
+      "The capture has no annotations this time. Number the requests yourself, and for each one ask which line of source made it possible. A request you can't tie back to a weakness is a request you don't understand yet.",
+      "Bayo doesn't read severity, he reads money and hours. Every finding needs a naira figure or a customer count from the exfil sample, and every fix needs an effort estimate. Risk reduced per hour is the only ranking he respects.",
+    ],
+    teaser:
+      "The app didn't crawl back online by itself. The change that re-exposed /legacy-admin/ was pushed from inside the building — eight days before The Griot ever knocked — and the author still badges in every morning. The press is calling this carelessness. By Thursday someone senior will agree to call it that too, on the record, and step down for it. You'll know better.",
   },
 
   "stage-3": {

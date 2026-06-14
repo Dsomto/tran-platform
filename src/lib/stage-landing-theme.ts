@@ -53,7 +53,10 @@ export const STAGE_LANDING_THEMES: Record<StageSlug, StageLandingTheme> = {
     pillClass: "stage-0-pill",
     accentTextClass: "text-emerald-700",
     bodyTextClass: "text-neutral-700",
-    mutedTextClass: "text-neutral-500",
+    // neutral-500 sat at ~4.6:1 on white — passing AA but with no margin, and
+    // interns reported caption text was hard to read. neutral-600 (~7:1) gives
+    // the muted look real headroom above the 4.5:1 floor.
+    mutedTextClass: "text-neutral-600",
     ctaBgClass: "bg-emerald-600",
     ctaHoverClass: "hover:bg-emerald-700",
     dividerClass: "border-neutral-200",
@@ -90,7 +93,9 @@ export const STAGE_LANDING_THEMES: Record<StageSlug, StageLandingTheme> = {
     pillClass: "stage-2-pill",
     accentTextClass: "text-rose-700",
     bodyTextClass: "text-neutral-700",
-    mutedTextClass: "text-neutral-500",
+    // Raised from neutral-500 to neutral-600 for the same reason as stage-0:
+    // muted captions now clear AA with margin on the white surface.
+    mutedTextClass: "text-neutral-600",
     ctaBgClass: "bg-rose-600",
     ctaHoverClass: "hover:bg-rose-700",
     dividerClass: "border-rose-100",
@@ -106,7 +111,10 @@ export const STAGE_LANDING_THEMES: Record<StageSlug, StageLandingTheme> = {
     pillClass: "stage-3-pill",
     accentTextClass: "text-amber-400",
     bodyTextClass: "text-amber-50/85",
-    mutedTextClass: "text-amber-200/55",
+    // amber-200 at 55% alpha fell below 4.5:1 on the dark panel — graders
+    // flagged muted text as unreadable on stages 3-4. 80% clears AA while
+    // keeping the dimmer, secondary feel.
+    mutedTextClass: "text-amber-200/80",
     ctaBgClass: "bg-amber-500",
     ctaHoverClass: "hover:bg-amber-600",
     dividerClass: "border-amber-500/20",
@@ -122,7 +130,9 @@ export const STAGE_LANDING_THEMES: Record<StageSlug, StageLandingTheme> = {
     pillClass: "stage-4-pill",
     accentTextClass: "text-cyan-300",
     bodyTextClass: "text-cyan-50/85",
-    mutedTextClass: "text-cyan-200/55",
+    // Same fix as stage-3: cyan-200 at 55% failed AA on the dark panel; 80%
+    // clears it.
+    mutedTextClass: "text-cyan-200/80",
     ctaBgClass: "bg-cyan-500",
     ctaHoverClass: "hover:bg-cyan-600",
     dividerClass: "border-cyan-400/20",

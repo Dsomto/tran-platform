@@ -495,10 +495,10 @@ export const STAGE_BRIEFS: Record<
     label: "Stage 2",
     subtitle: "Web Application Security — The Attack Surface",
     missionBrief: [
-      "The decrypted files point at a path: sankofa.internal/legacy-admin/. It is a Django app from 2019 that was supposed to be decommissioned two years ago. Tunde confirms it is still online and publicly reachable.",
-      "You are writing a pentest-style findings report for Sankofa's Head of Engineering. The goal is not to showboat — it is to tell the team exactly what's broken, how an attacker would chain the weaknesses, and what to fix first. You have a week. The team has two.",
-      "You will not run any scans against real infrastructure. Every weakness you need to analyse is in the source-code snippets, HTTP captures, and sample tokens in the resources. You read them in the browser, no install needed.",
-      "Your evidence pack has five files. 01-legacy-admin-login.php is the recovered login source — SQLi, MD5 password storage, open redirect, and a hand-rolled JWT verifier that honours alg:none. 02-attacker-http-capture.txt is the edge-proxy capture of the attacker's 02:14–02:31 UTC session; map each request to the bug class in the source. 03-legacy-admin-tokens.txt is three JWTs from the same app, each showing a different failure. 04-import-xxe.xml is an XML import body containing an XXE file-read attempt — connect the parser flaw to the matching HTTP capture line. 05-exfil-sample.csv is a redacted twenty-row sample of what the attacker exfiltrated; use it to quantify impact for the CVSS scoring here and the NDPA letter in Stage 4.",
+      "The decrypted files point at a path: sankofa.internal/legacy-admin/. It is a Django app from 2019 that was supposed to be decommissioned two years ago. Tunde confirms it is still online and publicly reachable — and as of this morning, the press knows it too.",
+      "You are writing the pentest-style findings report Bayo, the Head of Engineering, will actually act on. Nobody is going to tell you what is wrong with this app — finding it is the job. Prove each weakness from the evidence, rank it by business risk, tell the team what to fix first, and tell them what to watch while the holes are still open. You have a week. The team has two, and they no longer have the luxury of arguing about it.",
+      "You will not run any scans against real infrastructure. Every weakness you need is already sitting in the source, the captures, and the sample tokens. You read them in the browser, no install needed.",
+      "Your evidence pack: the recovered login source, an edge-proxy capture of the attacker's 02:14–02:31 UTC session with the analyst annotations stripped off — you reconstruct the path yourself — the three JWTs the app handed out, an XML import body the attacker submitted, and a redacted twenty-row sample of what left the building (you'll quantify impact from it here, and it feeds the NDPA letter in Stage 4). The recovered source still carries the original developer's comments. Some of them flag a bug honestly; some flag nothing while the bug sits two lines down. Trust the code, not the margin. What is wrong, how many, and how they chain is for you to discover.",
     ],
     cast: [
       {
@@ -551,18 +551,23 @@ export const STAGE_BRIEFS: Record<
     bulletin: [
       {
         kind: "news",
-        text: "Sankofa is launching BoltCash in 6 weeks. Marketing wants the legacy admin fixed BEFORE launch. Bayo wants it fixed AFTER. Adaeze will pick a side this Friday.",
-        meta: "internal · 3 days ago",
+        text: "It's public. TechCabal ran \"Lagos fintech Sankofa confirms data incident\" at 07:40. The support queue is on fire and Legal is already citing the report you haven't finished. No comment to anyone outside this building — not even the friend who DMs you about it.",
+        meta: "breaking · this morning",
+      },
+      {
+        kind: "alert",
+        text: "Word out of the all-hands: someone senior is going to take the fall for /legacy-admin/ outliving its kill date by two years. Two names in the corridor. Neither is Ngozi — she filed her objection in writing six months ago and kept the receipt.",
+        meta: "from #insiders · 1 hour ago",
+      },
+      {
+        kind: "news",
+        text: "BoltCash still ships in 6 weeks. Marketing wanted legacy-admin fixed BEFORE launch, Bayo wanted it AFTER — after this morning that fight is over, but the clock didn't move. You cannot fix everything in time. Part of the job is saying what to watch instead.",
+        meta: "internal · updated today",
       },
       {
         kind: "gossip",
-        text: "Ngozi (DevSecOps) signed an offer at OpenSec. Starts next quarter. Bayo doesn't know yet. Don't be the one who tells him.",
+        text: "Ngozi's OpenSec offer is still on the table. Read the room: the one person who tried to kill this app is the one holding an exit. Bayo doesn't know yet. Don't be the one who tells him.",
         meta: "from #insiders · today",
-      },
-      {
-        kind: "meeting",
-        text: "Sprint planning: Tuesday 09:00. Bayo will not stay if you talk legacy-admin for more than five minutes. Be efficient.",
-        meta: "this Tuesday",
       },
       {
         kind: "notice",
@@ -570,56 +575,58 @@ export const STAGE_BRIEFS: Record<
         meta: "pinned by #qa",
       },
       {
-        kind: "joke",
-        text: "Sankofa pentest etiquette: if you find something, write it up. If you can exploit it from your phone in a meeting, you must immediately stop and write it up. Discipline.",
-        meta: "wiki: pentester-handbook",
-      },
-      {
-        kind: "alert",
-        text: "/legacy-admin/ is publicly reachable. The web team disagrees on whether to take it down today (Ngozi: yes) or stage a soft retire (Bayo: yes). Until they decide, treat it as a live target you are not allowed to touch.",
-        meta: "from #incident-q2",
-      },
-      {
         kind: "meeting",
-        text: "Engineering retro: Thursday 15:30. Optional, but it's where the post-mortem of /legacy-admin/ will be done. Bring your remediation order if you want it heard.",
+        text: "Post-mortem moved up to Thursday 15:30, now mandatory. The /legacy-admin/ timeline gets read into the record. Bring your remediation order and your CVSS vectors, or don't bring an opinion.",
         meta: "this Thursday",
+      },
+      {
+        kind: "joke",
+        text: "Sankofa pentest etiquette: if you find something, write it up. If you can exploit it from your phone during the post-mortem, you must stop, put the phone down, and write it up. Discipline.",
+        meta: "wiki: pentester-handbook",
       },
     ],
     practicalTasks: [
       {
-        id: "sqli-analysis",
-        title: "Find the SQLi in the code",
+        id: "findings-catalogue",
+        title: "Find what's wrong — we're not telling you",
         description:
-          "Read the PHP snippet in the resources. Identify the vulnerable line, the class of injection (in-band / blind / time-based), and write a PoC URL that would demonstrate it. You are not running anything — just describing.",
-        deliverable: "sqli-analysis (Google Doc with the vulnerable line quoted, the class, the PoC URL, and the fix)",
+          "Read the recovered source, the three tokens, and the XML import. We have not told you what is broken or how many findings there are — that is the work. Catalogue every distinct weakness you can substantiate, and for each one quote the exact line or request that proves it, name the class, and rate your confidence. The dev's own comments flag some bugs and stay silent on others — treat an unflagged line with the same suspicion as a flagged one. Missing the obvious ones shows; finding the quiet ones is how you stand out.",
+        deliverable: "findings-catalogue (Google Doc — one row per finding: class, exact evidence line/request, confidence)",
       },
       {
-        id: "http-capture",
-        title: "Trace the attack in the HTTP capture",
+        id: "decoy-adjudication",
+        title: "Decide the one that looks worse than it is",
         description:
-          "Open the HTTP capture (plain text, not a PCAP) in the resources. Identify the sequence of requests the attacker used — from reconnaissance to exploitation. Number them and annotate what each step accomplished.",
-        deliverable: "http-trace (Google Doc with the numbered sequence + your annotations)",
+          "One construct in the source looks hand-rolled and dangerous, and it will tempt you to flag it critical. Decide whether it is actually exploitable. If it is, show the exploit. If it is not, prove why — name the exact mechanism that saves it. A false positive in a real report costs the team a sprint, so we score a clean disproof as hard as a finding.",
+        deliverable: "decoy-adjudication (Google Doc — the construct, your verdict, and the proof either way)",
       },
       {
-        id: "top10-mapping",
-        title: "Map the five findings to OWASP Top 10 (2021)",
+        id: "exploit-chain",
+        title: "Rebuild the attacker's path — annotations removed",
         description:
-          "For each of the five weaknesses you identified, record: OWASP category (e.g. A03 Injection), CVSS 3.1 vector + score (use the FIRST calculator), and a one-sentence business impact.",
-        deliverable: "findings-table (Google Doc or MS Word, with a table inside)",
+          "The capture's analyst notes were stripped before it reached you. Reconstruct the attacker's session yourself, from first contact to exfiltration, as one chain: initial access, authentication forgery, the XML file-read, and what they walked out with. For every hop give a concrete, reproducible PoC — the exact request, the exact forged token header and payload, the exact XML body — not a description. The chain has to explain how an unauthenticated outsider reaches the data in 05-exfil-sample.csv.",
+        deliverable: "exploit-chain (Google Doc — numbered hops, each with a working PoC and the capture line it matches)",
       },
       {
-        id: "remediation-order",
-        title: "Remediation roadmap in priority order",
+        id: "cvss-and-impact",
+        title: "Score it, and put a number on the damage",
         description:
-          "List the five weaknesses in the order the Engineering team should fix them, with one-sentence justifications that reference risk reduction per hour of effort (not just severity).",
-        deliverable: "remediation-roadmap (Google Doc, 1 page)",
+          "Give every substantiated finding a CVSS 3.1 vector — the vector string is mandatory, a bare number is rejected — and quantify business impact in customers and naira using the exfil sample and the BoltCash launch timeline. Where two weaknesses only matter once chained, score the chain, not just the isolated parts.",
+        deliverable: "findings-table (Google Doc or MS Word — table inside: finding, OWASP category, CVSS vector, chained-with, quantified impact)",
+      },
+      {
+        id: "detection-stopgap",
+        title: "Tell them what to watch while it bleeds",
+        description:
+          "Engineering cannot fix everything before BoltCash ships. For the two findings you rank most dangerous, write a detection that would have caught The Griot in the act — a concrete SIEM/log query or WAF rule, naming the exact field or pattern it keys on and the false-positive rate you would expect. A stopgap they can deploy today beats a fix they land next quarter.",
+        deliverable: "detection-stopgap (Google Doc — two rules, each with the trigger logic and expected noise)",
       },
       {
         id: "findings-report",
-        title: "The report itself",
+        title: "The report Bayo acts on",
         description:
-          "Write the finished pentest report: executive summary, scope, methodology (paper-based analysis), findings with severities, remediation order, and appendices.",
-        deliverable: "sankofa-pentest-report (Google Doc, 4–6 pages)",
+          "Write the finished pentest report: an executive summary a CFO understands, a short threat model, the substantiated findings tied to evidence, the decoy you disproved (state it — it buys trust), the exploit chain, CVSS plus money impact, a remediation order argued by risk reduction per hour of effort, and the detection stopgaps. 6–8 pages. If a finding is not tied to a line of evidence, cut it.",
+        deliverable: "sankofa-pentest-report (Google Doc, 6–8 pages)",
       },
     ],
     resourcesDriveUrl:
@@ -643,9 +650,50 @@ export const STAGE_BRIEFS: Record<
       },
     ],
     sections: [
-      "Exploit chain with quantified impact (each bug class cites the source file line, the HTTP capture entry, and the affected customer count from the exfil sample)",
-      "Findings table with OWASP category, CVSS vector, and the evidence files that prove each finding",
-      "Remediation plan in priority order (each fix names the bug class, owner, and risk reduction per hour of effort)",
+      "A findings catalogue the intern discovered unaided — each weakness citing the exact source line, token, or capture request that proves it, with a confidence rating",
+      "The disproved decoy, stated explicitly, with the mechanism that makes it safe (a clean false-positive call, scored as hard as a finding)",
+      "An end-to-end exploit chain with a reproducible PoC per hop, reconciled to the un-annotated HTTP capture and ending at the exfil sample",
+      "A findings table with OWASP category, CVSS vector, chained-with, and quantified business impact in customers and naira",
+      "A remediation plan in priority order (risk reduction per hour of effort) plus two deployable detection stopgaps for what cannot be fixed before BoltCash ships",
+    ],
+    commsThread: [
+      {
+        from: "Amaka Eze",
+        role: "Head of Security",
+        time: "Mon 07:52",
+        body: "It's public, {firstName}. TechCabal ran the incident at 07:40. We do not comment — not to press, not in group chats, not to the friend who DMs you about it. The cleaner your findings, the faster we close this. Heads down.",
+        alignment: "ally",
+        kind: "pinned",
+      },
+      {
+        from: "Ngozi Ojukwu",
+        role: "DevSecOps Lead",
+        time: "Mon 08:10",
+        body: "Six months ago I wrote that this app would do exactly this. Nobody listened. Now your CVSS vectors are the board's evidence — so make them airtight. Rank the findings the way Bayo thinks: business risk, not severity.",
+        alignment: "ally",
+      },
+      {
+        from: "Tunde Afolabi",
+        role: "Threat Intel Lead",
+        time: "Mon 08:31",
+        body: "I had to strip my annotations off the capture before it reached you — Counsel's call, chain-of-custody now that this is a filing. You rebuild the attacker path clean. It's harder. It's also better for the record. Read every line.",
+        alignment: "ally",
+      },
+      {
+        from: "Office of the General Counsel",
+        role: "Legal",
+        time: "Mon 09:03",
+        body: "Message removed pending a personnel matter. Do not forward speculation about Floor 5 staffing; anything you heard in the all-hands stays out of writing.",
+        alignment: "external",
+        kind: "redacted",
+      },
+      {
+        from: "Bayo Ogunyemi",
+        role: "Head of Engineering",
+        time: "Mon 09:20",
+        body: "Whatever you put in that report, I'm the one answering for it Thursday — possibly for more than the app. Make it defensible, make it ordered, and tell me what I can ship a watch on before BoltCash. No theatre.",
+        alignment: "peer",
+      },
     ],
   },
 

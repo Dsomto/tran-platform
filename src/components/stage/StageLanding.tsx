@@ -33,6 +33,7 @@ import {
 import { PrintBriefButton } from "./PrintBriefButton";
 import { StageJourneyMap } from "./StageJourneyMap";
 import { CommsFeed } from "./CommsFeed";
+import { Reveal } from "./Reveal";
 
 interface Props {
   brief: StageBrief;
@@ -308,10 +309,11 @@ export function StageLanding({
           into the mission board.
         </p>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-          {brief.cast.map((person) => {
+          {brief.cast.map((person, i) => {
             const a = alignmentClasses(person.alignment, theme.light);
             return (
-              <article key={person.name} className={`${theme.panelClass} p-6 sm:p-7`}>
+              <Reveal key={person.name} delay={i * 0.06}>
+                <article className={`${theme.panelClass} p-6 sm:p-7`}>
                 <div className="flex items-start gap-4 mb-4">
                   <div className={`w-16 h-16 rounded-full grid place-items-center font-bold text-base shrink-0 ring-2 ${a.ring} ${a.bg} ${a.text}`} aria-hidden="true">
                     {initialsOf(person.name)}
@@ -339,7 +341,8 @@ export function StageLanding({
                   </blockquote>
                 )}
                 <p className={`${theme.bodyTextClass} text-[14px] leading-relaxed`}>{person.bio}</p>
-              </article>
+                </article>
+              </Reveal>
             );
           })}
         </div>
@@ -361,7 +364,8 @@ export function StageLanding({
             const v = bulletinVisuals(item.kind, theme.light);
             const Icon = v.icon;
             return (
-              <article key={i} className={`${theme.panelClass} p-4 sm:p-5 flex gap-3`}>
+              <Reveal key={i} delay={i * 0.05}>
+                <article className={`${theme.panelClass} p-4 sm:p-5 flex gap-3`}>
                 <div className={`shrink-0 w-9 h-9 rounded-lg grid place-items-center ${v.bg} ${v.text}`} aria-hidden="true">
                   <Icon className="w-4 h-4" />
                 </div>
@@ -376,7 +380,8 @@ export function StageLanding({
                   </div>
                   <p className={`${theme.bodyTextClass} text-[13.5px] leading-relaxed`}>{item.text}</p>
                 </div>
-              </article>
+                </article>
+              </Reveal>
             );
           })}
         </div>
@@ -469,7 +474,8 @@ export function StageLanding({
             What goes in the folder
           </p>
           {brief.practicalTasks.map((task, idx) => (
-            <article key={task.id} className={`${theme.softBgClass} border ${theme.dividerClass} rounded-xl p-5 flex gap-4`}>
+            <Reveal key={task.id} delay={idx * 0.05}>
+              <article className={`${theme.softBgClass} border ${theme.dividerClass} rounded-xl p-5 flex gap-4`}>
               <span className={`shrink-0 w-9 h-9 rounded-full ${theme.ctaBgClass} text-white text-sm font-bold grid place-items-center`}>
                 {idx + 1}
               </span>
@@ -489,7 +495,8 @@ export function StageLanding({
                   </p>
                 )}
               </div>
-            </article>
+              </article>
+            </Reveal>
           ))}
         </div>
 
