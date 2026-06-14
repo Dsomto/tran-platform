@@ -1088,12 +1088,16 @@ function renderResultEmail(opts: {
       </div>
 
       <p style="font-size:14px;line-height:1.7;color:#334155;margin:0 0 10px;font-weight:600;">
-        Two things to do this weekend:
+        Three things to do this weekend:
       </p>
       <ol style="font-size:14px;line-height:1.75;color:#334155;margin:0 0 22px;padding-left:20px;">
         <li style="margin-bottom:6px;">
           <strong>Grab your certificate.</strong> It's signed and has a verification
           code on it. Save the PDF; we can reissue if you lose the file.
+        </li>
+        <li style="margin-bottom:6px;">
+          <strong>Keep your letter.</strong> A note from Sankofa confirming you
+          cleared this stage and where you go next. Good for your own records.
         </li>
         <li>
           <strong>Join the cohort Slack.</strong> Most of the practical help,
@@ -1102,9 +1106,12 @@ function renderResultEmail(opts: {
         </li>
       </ol>
 
-      <div style="margin:0 0 18px;">
+      <div style="margin:0 0 10px;">
         ${certUrl ? ctaButton(certUrl, "Download your certificate", "#2563EB") : ""}
-        ${slackUrl ? `&nbsp;&nbsp;${ctaButton(slackUrl, "Join the cohort Slack", "#4A154B")}` : ""}
+        ${letterPdfUrl ? `&nbsp;&nbsp;${ctaButton(letterPdfUrl, "Download your letter", "#0A1F44")}` : ""}
+      </div>
+      <div style="margin:0 0 18px;">
+        ${slackUrl ? ctaButton(slackUrl, "Join the cohort Slack", "#4A154B") : ""}
       </div>
 
       <p style="font-size:13px;line-height:1.6;color:#64748B;margin:24px 0 0;">
