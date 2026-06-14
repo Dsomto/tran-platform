@@ -43,21 +43,20 @@ const STAGE_COMPETENCIES: Record<string, string[]> = {
   ],
 };
 
-// Colour system — blue and white, gold only for the star. Pushed for higher
-// contrast so the page reads clearly on screen and print. Solid hex only.
+// Blue / white / gold. Navy structure, blue accents, a real gold seal.
 const COLORS = {
-  bg: "#FFFFFF",         // pure white paper
-  bgTint: "#EEF2FA",     // faint blue wash for the side strip
-  navy: "#061732",       // deeper, near-black navy for max contrast
-  navyDeep: "#020B1F",   // signature ink, darkest tone
-  blue: "#1538A6",       // accent blue — stage label
-  blueLight: "#2563EB",  // subtitle accents and rule
-  gold: "#D4AF37",       // the single gold accent — star ONLY
-  goldDeep: "#8C6E12",
-  ink: "#061732",
-  inkSoft: "#1B2545",
-  muted: "#4A5775",
-  rule: "#9DB2D6",       // visible enough to register, not garish
+  bg: "#FFFFFF",
+  navy: "#0A1F44",       // deep navy — waves, title, name
+  navyDeep: "#06152F",   // darkest tone, signature ink
+  blue: "#1D4ED8",       // accent blue — front wave, labels
+  blueLight: "#3B82F6",  // lighter blue highlight
+  ink: "#0A1F44",
+  inkSoft: "#33405C",
+  muted: "#5A6682",      // muted secondary text
+  rule: "#A9BCDE",
+  gold: "#C9A227",       // seal gold
+  goldLight: "#EBCB63",  // seal highlight
+  goldDeep: "#7A5E12",   // seal outline
 };
 
 export function generateStageCertificate(opts: {
@@ -71,8 +70,6 @@ export function generateStageCertificate(opts: {
 }): Promise<Buffer> {
   const { fullName, stageLabel, score, passingScore, issuedAt, certId, stageKey } = opts;
 
-  // Derive stage key from the label if not given. The label is the
-  // canonical "Stage N — Foundation" string used everywhere else.
   const resolvedKey =
     stageKey ??
     (() => {
@@ -95,39 +92,34 @@ export function generateStageCertificate(opts: {
 
     const pageW = doc.page.width;
     const pageH = doc.page.height;
+    const cx = pageW / 2;
 
-    // ── 1. Paper + blue double border ─────────────────────
+    // ── 1. Paper ──────────────────────────────────────────
     doc.rect(0, 0, pageW, pageH).fill(COLORS.bg);
 
-    // Outer thick navy frame
+    // ── 2. Decorative wave bands, top and bottom ──────────
+    // Two-tone navy + blue sweeps in opposite corners, like the reference.
+    drawTopWaves(doc, pageW);
+    drawBottomWaves(doc, pageW, pageH);
+
+    // ── 3. Thin gold inner frame (hairline, premium) ──────
     doc
-      .lineWidth(3)
-      .strokeColor(COLORS.navy)
-      .rect(24, 24, pageW - 48, pageH - 48)
+      .lineWidth(1.4)
+      .strokeColor(COLORS.gold)
+      .rect(40, 40, pageW - 80, pageH - 80)
       .stroke();
-    // Inner thin blue rule
     doc
-      .lineWidth(0.6)
-      .strokeColor(COLORS.blueLight)
-      .rect(38, 38, pageW - 76, pageH - 76)
+      .lineWidth(0.4)
+      .strokeColor(COLORS.rule)
+      .rect(46, 46, pageW - 92, pageH - 92)
       .stroke();
 
-    // ── 2. Corner accents — short blue brackets (no filigree) ──
-    drawCornerBracket(doc, 38, 38, "tl");
-    drawCornerBracket(doc, pageW - 38, 38, "tr");
-    drawCornerBracket(doc, 38, pageH - 38, "bl");
-    drawCornerBracket(doc, pageW - 38, pageH - 38, "br");
-
-    // ── 3. Gold star on the right side — seal of achievement ──
-    // Positioned in the upper-right area, like a wax seal on a document.
-    drawGoldStar(doc, pageW - 110, 175, 28);
-
-    // ── 4. Organisation mark at the top, left-of-centre ───
+    // ── 4. Organisation mark ──────────────────────────────
     doc
-      .fontSize(10)
+      .fontSize(11)
       .font("Helvetica-Bold")
       .fillColor(COLORS.navy)
-      .text("UBUNTU BRIDGE INITIATIVE", 0, 88, {
+      .text("UBUNTU BRIDGE INITIATIVE", 0, 84, {
         align: "center",
         width: pageW,
         characterSpacing: 4,
@@ -136,242 +128,270 @@ export function generateStageCertificate(opts: {
       .fontSize(8)
       .font("Helvetica")
       .fillColor(COLORS.muted)
-      .text("Cybersecurity Internship · The Root Access Network", 0, 105, {
+      .text("Cybersecurity Internship · The Root Access Network", 0, 100, {
         align: "center",
         width: pageW,
         characterSpacing: 2,
       });
 
-    // ── 5. Title — bigger, bolder, deep navy ──────────────
+    // ── 5. Title — serif, letter-spaced ───────────────────
     doc
-      .fontSize(46)
-      .font("Helvetica-Bold")
+      .fontSize(52)
+      .font("Times-Bold")
       .fillColor(COLORS.navy)
-      .text("Certificate of Achievement", 0, 144, {
+      .text("CERTIFICATE", 0, 132, {
         align: "center",
         width: pageW,
+        characterSpacing: 8,
       });
-
-    // Thicker blue rule under the title
     doc
-      .moveTo(pageW / 2 - 80, 198)
-      .lineTo(pageW / 2 + 80, 198)
-      .lineWidth(2)
-      .strokeColor(COLORS.blue)
-      .stroke();
-
-    // ── 6. "Awarded to" caption ───────────────────────────
-    doc
-      .fontSize(11)
-      .font("Helvetica-Bold")
+      .fontSize(15)
+      .font("Helvetica")
       .fillColor(COLORS.blue)
-      .text("AWARDED TO", 0, 220, {
+      .text("OF ACHIEVEMENT", 0, 196, {
         align: "center",
         width: pageW,
-        characterSpacing: 5,
+        characterSpacing: 9,
       });
 
-    // ── 7. Recipient name — large serif italic, deep navy ──
+    // ── 6. Presented-to caption ───────────────────────────
     doc
-      .fontSize(42)
-      .font("Helvetica-BoldOblique")
+      .fontSize(12.5)
+      .font("Times-Italic")
+      .fillColor(COLORS.muted)
+      .text("This certificate is proudly presented to", 0, 230, {
+        align: "center",
+        width: pageW,
+      });
+
+    // ── 7. Recipient name — large serif italic ────────────
+    doc
+      .fontSize(40)
+      .font("Times-BoldItalic")
       .fillColor(COLORS.navy)
-      .text(fullName, 0, 240, {
-        align: "center",
-        width: pageW,
-      });
+      .text(fullName, 0, 252, { align: "center", width: pageW });
 
-    // Stronger navy rules either side of a blue diamond
-    const nameRuleY = 298;
-    const ruleHalf = 230;
+    // Underline rule with a small gold diamond at the centre
+    const nameRuleY = 312;
+    const ruleHalf = 210;
     doc
-      .moveTo(pageW / 2 - ruleHalf, nameRuleY)
-      .lineTo(pageW / 2 - 16, nameRuleY)
-      .lineWidth(0.8)
+      .moveTo(cx - ruleHalf, nameRuleY)
+      .lineTo(cx - 14, nameRuleY)
+      .lineWidth(0.9)
       .strokeColor(COLORS.navy)
       .stroke();
     doc
-      .moveTo(pageW / 2 + 16, nameRuleY)
-      .lineTo(pageW / 2 + ruleHalf, nameRuleY)
+      .moveTo(cx + 14, nameRuleY)
+      .lineTo(cx + ruleHalf, nameRuleY)
       .stroke();
-    drawDiamond(doc, pageW / 2, nameRuleY, 5, COLORS.blue);
+    drawDiamond(doc, cx, nameRuleY, 4.5, COLORS.gold);
 
-    // ── 8. Stage line — heavier accent, no italic preamble ──
+    // ── 8. Citation line ──────────────────────────────────
+    const bodyW = 470;
     doc
       .fontSize(12)
-      .font("Helvetica")
-      .fillColor(COLORS.muted)
-      .text("FOR THE WORK COMPLETED IN", 0, 314, {
-        align: "center",
-        width: pageW,
-        characterSpacing: 3,
-      });
-    doc
-      .fontSize(24)
-      .font("Helvetica-Bold")
-      .fillColor(COLORS.navy)
-      .text(stageLabel, 0, 334, { align: "center", width: pageW });
-
-    // ── 9. Score line — bolder, more contrast ─────────────
-    doc
-      .fontSize(11)
-      .font("Helvetica-Bold")
-      .fillColor(COLORS.blue)
+      .font("Times-Roman")
+      .fillColor(COLORS.inkSoft)
       .text(
-        `FINAL SCORE  ${score} / 100        PASSING MARK  ${passingScore}`,
-        0,
-        372,
-        { align: "center", width: pageW, characterSpacing: 1.5 }
+        `for outstanding work in ${stageLabel} of the Ubuntu Bridge cybersecurity internship, ` +
+          `achieving a final score of ${score} out of 100 against a ${passingScore} pass mark.`,
+        cx - bodyW / 2,
+        332,
+        { align: "center", width: bodyW, lineGap: 3 }
       );
 
-    // ── 10. Competencies — italic serif row with blue dot dividers ──
-    const compLine = competencies.join("    •    ");
+    // ── 9. Competencies — small italic, gold dot dividers ──
     doc
-      .fontSize(10)
-      .font("Helvetica-Oblique")
-      .fillColor(COLORS.inkSoft)
-      .text(compLine, 0, 402, {
+      .fontSize(9.5)
+      .font("Times-Italic")
+      .fillColor(COLORS.muted)
+      .text(competencies.join("    •    "), 0, 384, {
         align: "center",
         width: pageW,
-        characterSpacing: 0.4,
+        characterSpacing: 0.3,
       });
-    const compEndsAt = 402 + 12;
 
-    // ── 10. Issued date — its own row, below competencies ──
-    const issuedY = compEndsAt + 18;
+    // ── 10. The gold seal, left, beside the name ──────────
+    drawSeal(doc, 116, 248, 40);
+
+    // ── 11. Two signatures, with date + id centred between ──
+    const footY = pageH - 128;
     const dateStr = issuedAt.toLocaleDateString("en-GB", {
       day: "numeric",
       month: "long",
       year: "numeric",
     });
-    doc
-      .fontSize(9)
-      .font("Helvetica-Oblique")
-      .fillColor(COLORS.muted)
-      .text(`Issued on ${dateStr}`, 0, issuedY, {
-        align: "center",
-        width: pageW,
-        characterSpacing: 1.2,
-      });
 
-    // ── 11. Signatures — serif, restrained ────────────────
-    const sigBaselineY = pageH - 86;
+    const sigW = 200;
     const signers = [
-      { x: 90, sig: "Okoma Somto", name: "Okoma Somtochukwu", title: "Head of Programme · TRAN" },
-      { x: pageW - 290, sig: "Quadri O.", name: "Quadri Omoloju", title: "Founder · TRAN" },
+      { x: 104, sig: "Okoma Somto", name: "Okoma Somtochukwu", title: "Head of Programme · TRAN" },
+      { x: pageW - 104 - sigW, sig: "Quadri O.", name: "Quadri Omoloju", title: "Founder · TRAN" },
     ];
     for (const s of signers) {
       doc
-        .fontSize(18)
-        .font("Helvetica-BoldOblique")
-        .fillColor(COLORS.navy)
-        .text(s.sig, s.x, sigBaselineY - 26, { width: 200 });
+        .fontSize(17)
+        .font("Times-BoldItalic")
+        .fillColor(COLORS.navyDeep)
+        .text(s.sig, s.x, footY - 8, { width: sigW, align: "center" });
       doc
-        .moveTo(s.x, sigBaselineY + 2)
-        .lineTo(s.x + 200, sigBaselineY + 2)
-        .lineWidth(0.5)
+        .moveTo(s.x, footY + 18)
+        .lineTo(s.x + sigW, footY + 18)
+        .lineWidth(0.6)
         .strokeColor(COLORS.navy)
         .stroke();
       doc
-        .fontSize(9.5)
+        .fontSize(8.5)
         .font("Helvetica-Bold")
         .fillColor(COLORS.ink)
-        .text(s.name, s.x, sigBaselineY + 8, { width: 200 });
+        .text(s.name, s.x, footY + 24, { width: sigW, align: "center" });
       doc
-        .fontSize(7.5)
+        .fontSize(7)
         .font("Helvetica")
         .fillColor(COLORS.muted)
-        .text(s.title.toUpperCase(), s.x, sigBaselineY + 22, {
-          width: 200,
-          characterSpacing: 1.4,
+        .text(s.title.toUpperCase(), s.x, footY + 35, {
+          width: sigW,
+          align: "center",
+          characterSpacing: 1.2,
         });
     }
 
-    // ── 12. Footer — certificate ID only. No public /verify endpoint yet,
-    //        so we don't promise one we haven't built.
+    // ── 12. Issue date + certificate id, centred in the gap ──
+    doc
+      .fontSize(11)
+      .font("Times-Italic")
+      .fillColor(COLORS.navy)
+      .text(`Issued ${dateStr}`, 0, footY + 2, { width: pageW, align: "center" });
     doc
       .fontSize(7.5)
       .font("Helvetica")
       .fillColor(COLORS.muted)
-      .text(
-        `Certificate ID  ${certId}`,
-        0,
-        pageH - 32,
-        {
-          align: "center",
-          width: pageW,
-          characterSpacing: 1.2,
-          lineBreak: false,
-          height: 14,
-        }
-      );
+      .text(`Certificate ID  ${certId}`, 0, footY + 24, {
+        width: pageW,
+        align: "center",
+        characterSpacing: 1.2,
+        lineBreak: false,
+      });
 
     doc.end();
   });
 }
 
-// Short blue right-angle bracket at each inner-frame corner. Crisp, modern,
-// no filigree — fits the blue-and-white scheme.
+// ── Wave bands ──────────────────────────────────────────
+// A back (navy) and front (blue) sweep. Top waves anchor top-left,
+// bottom waves anchor bottom-right, mirrored, like the reference.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function drawCornerBracket(
-  doc: any,
-  cx: number,
-  cy: number,
-  corner: "tl" | "tr" | "bl" | "br"
-): void {
-  const len = 22;
-  const dx = corner === "tl" || corner === "bl" ? 1 : -1;
-  const dy = corner === "tl" || corner === "tr" ? 1 : -1;
+function drawTopWaves(doc: any, pageW: number): void {
+  // back navy
   doc
-    .moveTo(cx, cy + dy * len)
-    .lineTo(cx, cy)
-    .lineTo(cx + dx * len, cy)
-    .lineWidth(1.4)
-    .strokeColor(COLORS.navy)
-    .stroke();
+    .moveTo(0, 0)
+    .lineTo(pageW, 0)
+    .lineTo(pageW, 30)
+    .bezierCurveTo(pageW * 0.72, 78, pageW * 0.5, 8, pageW * 0.28, 56)
+    .bezierCurveTo(pageW * 0.14, 86, 0, 44, 0, 44)
+    .closePath()
+    .fill(COLORS.navy);
+  // front blue, slightly higher and shorter
+  doc
+    .moveTo(0, 0)
+    .lineTo(pageW, 0)
+    .lineTo(pageW, 14)
+    .bezierCurveTo(pageW * 0.74, 56, pageW * 0.52, -8, pageW * 0.3, 36)
+    .bezierCurveTo(pageW * 0.16, 62, 0, 22, 0, 22)
+    .closePath()
+    .fill(COLORS.blue);
 }
 
-// Five-pointed gold star — the single ornamental element on the page.
-// Two concentric blue rings frame it so it reads as the focal point.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function drawGoldStar(doc: any, cx: number, cy: number, r: number): void {
-  // Halo rings — very faint, give the star weight
-  doc.circle(cx, cy, r + 14).lineWidth(0.5).strokeColor(COLORS.rule).stroke();
-  doc.circle(cx, cy, r + 22).lineWidth(0.3).strokeColor(COLORS.rule).stroke();
+function drawBottomWaves(doc: any, pageW: number, pageH: number): void {
+  // back navy (mirror of top, anchored bottom)
+  doc
+    .moveTo(pageW, pageH)
+    .lineTo(0, pageH)
+    .lineTo(0, pageH - 30)
+    .bezierCurveTo(pageW * 0.28, pageH - 78, pageW * 0.5, pageH - 8, pageW * 0.72, pageH - 56)
+    .bezierCurveTo(pageW * 0.86, pageH - 86, pageW, pageH - 44, pageW, pageH - 44)
+    .closePath()
+    .fill(COLORS.navy);
+  // front blue
+  doc
+    .moveTo(pageW, pageH)
+    .lineTo(0, pageH)
+    .lineTo(0, pageH - 14)
+    .bezierCurveTo(pageW * 0.26, pageH - 56, pageW * 0.48, pageH + 8, pageW * 0.7, pageH - 36)
+    .bezierCurveTo(pageW * 0.84, pageH - 62, pageW, pageH - 22, pageW, pageH - 22)
+    .closePath()
+    .fill(COLORS.blue);
+}
 
-  // Star points
-  const points: Array<[number, number]> = [];
-  const outer = r;
-  const inner = r * 0.42;
-  // Start at top and rotate around — 5 outer + 5 inner = 10 vertices
-  for (let i = 0; i < 10; i++) {
-    const angle = (Math.PI / 5) * i - Math.PI / 2;
-    const radius = i % 2 === 0 ? outer : inner;
-    points.push([cx + radius * Math.cos(angle), cy + radius * Math.sin(angle)]);
+// ── Gold seal of achievement ────────────────────────────
+// A scalloped gold medallion with two ribbon tails, a navy centre disc,
+// a gold star, and small lettering. The focal ornament of the page.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function drawSeal(doc: any, cx: number, cy: number, R: number): void {
+  // Ribbon tails (drawn first, behind the medal)
+  const ribY = cy + R * 0.55;
+  for (const dir of [-1, 1]) {
+    const x = cx + dir * R * 0.42;
+    doc
+      .moveTo(x, ribY)
+      .lineTo(x + dir * R * 0.5, ribY + R * 1.15)
+      .lineTo(x + dir * R * 0.16, ribY + R * 0.95)
+      .lineTo(x - dir * R * 0.18, ribY + R * 1.2)
+      .closePath()
+      .fillAndStroke(COLORS.blue, COLORS.navyDeep);
   }
-  doc.moveTo(points[0][0], points[0][1]);
-  for (let i = 1; i < points.length; i++) {
-    doc.lineTo(points[i][0], points[i][1]);
+
+  // Scalloped starburst outer edge (24 points)
+  const burst: Array<[number, number]> = [];
+  const n = 24;
+  for (let i = 0; i < n * 2; i++) {
+    const a = (Math.PI / n) * i - Math.PI / 2;
+    const rad = i % 2 === 0 ? R * 1.18 : R * 1.0;
+    burst.push([cx + rad * Math.cos(a), cy + rad * Math.sin(a)]);
   }
+  doc.moveTo(burst[0][0], burst[0][1]);
+  for (let i = 1; i < burst.length; i++) doc.lineTo(burst[i][0], burst[i][1]);
   doc.closePath().fillAndStroke(COLORS.gold, COLORS.goldDeep);
 
-  // Subtle highlight: a smaller inner star in lighter gold to suggest shine
-  const points2: Array<[number, number]> = [];
-  const outer2 = r * 0.55;
-  const inner2 = r * 0.22;
-  for (let i = 0; i < 10; i++) {
-    const angle = (Math.PI / 5) * i - Math.PI / 2;
-    const radius = i % 2 === 0 ? outer2 : inner2;
-    points2.push([cx + radius * Math.cos(angle), cy + radius * Math.sin(angle)]);
-  }
-  doc.moveTo(points2[0][0], points2[0][1]);
-  for (let i = 1; i < points2.length; i++) {
-    doc.lineTo(points2[i][0], points2[i][1]);
-  }
-  doc.closePath().fill("#F2D979");
+  // Gold disc + highlight ring
+  doc.circle(cx, cy, R).fill(COLORS.goldLight);
+  doc.circle(cx, cy, R).lineWidth(1).strokeColor(COLORS.goldDeep).stroke();
+  doc.circle(cx, cy, R * 0.9).lineWidth(0.8).strokeColor(COLORS.gold).stroke();
+
+  // Navy centre
+  doc.circle(cx, cy, R * 0.74).fill(COLORS.navy);
+  doc.circle(cx, cy, R * 0.74).lineWidth(1).strokeColor(COLORS.gold).stroke();
+
+  // Gold star in the centre
+  drawStar(doc, cx, cy - R * 0.06, R * 0.42, COLORS.goldLight, COLORS.gold);
+
+  // Tiny lettering
+  doc
+    .fontSize(8)
+    .font("Helvetica-Bold")
+    .fillColor(COLORS.goldLight)
+    .text("UBI", cx - R * 0.74, cy + R * 0.36, {
+      width: R * 1.48,
+      align: "center",
+      characterSpacing: 2,
+    });
 }
 
-// Small filled diamond — used between hairline rules under the recipient name.
+// Five-pointed star, filled with a highlight + outline.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function drawStar(doc: any, cx: number, cy: number, r: number, fill: string, stroke: string): void {
+  const pts: Array<[number, number]> = [];
+  for (let i = 0; i < 10; i++) {
+    const a = (Math.PI / 5) * i - Math.PI / 2;
+    const rad = i % 2 === 0 ? r : r * 0.42;
+    pts.push([cx + rad * Math.cos(a), cy + rad * Math.sin(a)]);
+  }
+  doc.moveTo(pts[0][0], pts[0][1]);
+  for (let i = 1; i < pts.length; i++) doc.lineTo(pts[i][0], pts[i][1]);
+  doc.closePath().fillAndStroke(fill, stroke);
+}
+
+// Small filled diamond — the gold centre on the name rule.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function drawDiamond(doc: any, cx: number, cy: number, r: number, color: string): void {
   doc

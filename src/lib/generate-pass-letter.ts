@@ -5,12 +5,21 @@
 const pdfkitMod: any = require("pdfkit");
 const PDFDocument = pdfkitMod.default || pdfkitMod;
 
-// Formal letter that complements the certificate. The certificate is the
-// visual diploma; this is the text record. Useful for HR files, recruiters,
-// or anywhere an intern needs a paragraph that says what they did.
-//
-// Same single-page A4 portrait shape as the discontinuation letter, so the
-// two read like sibling documents from the same programme office.
+const C = {
+  navy: "#0A1F44",
+  navyDeep: "#06152F",
+  blue: "#1D4ED8",
+  ink: "#1A2233",
+  muted: "#5A6682",
+  rule: "#C3D0E6",
+  gold: "#C9A227",
+  paper: "#FFFFFF",
+};
+
+// In-world promotion letter from Sankofa Digital — the case company the intern
+// has been working inside all stage. The certificate is the real UBI credential;
+// this letter is the story reward, a "well done, you are promoted" from the
+// company, co-signed by the programme office so it still reads as a real record.
 export function generatePassLetter(opts: {
   fullName: string;
   stageLabel: string;
@@ -18,9 +27,10 @@ export function generatePassLetter(opts: {
   passingScore: number;
   issuedAt: Date;
   letterId: string;
-  nextStageLabel?: string; // e.g. "Stage 1 — Applied Cryptography". Optional.
+  nextStageLabel?: string;
 }): Promise<Buffer> {
   const { fullName, stageLabel, score, passingScore, issuedAt, letterId, nextStageLabel } = opts;
+  const firstName = (fullName.trim().split(/\s+/)[0] || fullName).trim();
   const issuedStr = issuedAt.toLocaleDateString("en-GB", {
     day: "numeric", month: "long", year: "numeric",
   });
@@ -29,149 +39,184 @@ export function generatePassLetter(opts: {
     const doc = new PDFDocument({
       size: "A4",
       layout: "portrait",
-      margins: { top: 72, bottom: 72, left: 72, right: 72 },
+      margins: { top: 64, bottom: 64, left: 64, right: 64 },
     });
     const chunks: Buffer[] = [];
     doc.on("data", (c: Buffer) => chunks.push(c));
     doc.on("end", () => resolve(Buffer.concat(chunks)));
     doc.on("error", reject);
 
-    const pageWidth = doc.page.width;
-    const pageHeight = doc.page.height;
-    const contentX = 72;
-    const contentWidth = pageWidth - 144;
+    const pageW = doc.page.width;
+    const pageH = doc.page.height;
+    const x = 64;
+    const w = pageW - 128;
 
-    // ── Letterhead ─────────────────────────────────────
+    // ── Letterhead ─────────────────────────────────────────
+    drawEmblem(doc, x + 13, 78, 15);
     doc
-      .fontSize(12)
+      .fontSize(16)
       .font("Helvetica-Bold")
-      .fillColor("#0B2447")
-      .text("UBUNTU BRIDGE INITIATIVE", contentX, 72, { width: contentWidth });
+      .fillColor(C.navy)
+      .text("SANKOFA DIGITAL", x + 40, 66, { characterSpacing: 1.5 });
     doc
-      .fontSize(9)
+      .fontSize(8.5)
       .font("Helvetica")
-      .fillColor("#4B5775")
-      .text("Cybersecurity Internship Programme · TRAN (The Root Access Network)", contentX, 88, {
-        width: contentWidth,
+      .fillColor(C.muted)
+      .text("Office of the Head of Security  ·  Lagos, Nigeria", x + 40, 87, {
+        characterSpacing: 0.8,
       });
     doc
-      .moveTo(contentX, 112)
-      .lineTo(contentX + contentWidth, 112)
-      .lineWidth(0.5)
-      .strokeColor("#9DB2D6")
-      .stroke();
+      .fontSize(8)
+      .font("Helvetica")
+      .fillColor(C.muted)
+      .text("Cohort 1 · Internship", x, 70, { width: w, align: "right" });
 
-    // ── Date + reference ───────────────────────────────
+    // Navy rule with a gold lead segment
+    const ruleY = 108;
+    doc.moveTo(x, ruleY).lineTo(x + 70, ruleY).lineWidth(2.2).strokeColor(C.gold).stroke();
+    doc.moveTo(x + 70, ruleY).lineTo(x + w, ruleY).lineWidth(0.8).strokeColor(C.navy).stroke();
+
+    // ── Date + reference ───────────────────────────────────
     doc
       .fontSize(10)
       .font("Helvetica")
-      .fillColor("#1B2545")
-      .text(issuedStr, contentX, 132, { width: contentWidth });
+      .fillColor(C.ink)
+      .text(issuedStr, x, 126, { width: w });
     doc
       .fontSize(8)
-      .fillColor("#9DB2D6")
-      .text(`Ref: ${letterId}`, contentX, 148, { width: contentWidth });
+      .fillColor(C.muted)
+      .text(`Ref ${letterId}`, x, 126, { width: w, align: "right" });
 
-    // ── Salutation + body ──────────────────────────────
-    let y = 180;
+    // ── Salutation ─────────────────────────────────────────
+    let y = 160;
     doc
-      .fontSize(11)
-      .font("Helvetica-Bold")
-      .fillColor("#061732")
-      .text(`Dear ${fullName},`, contentX, y, { width: contentWidth });
-    y += 32;
+      .fontSize(11.5)
+      .font("Times-Bold")
+      .fillColor(C.navyDeep)
+      .text(`Dear ${firstName},`, x, y, { width: w });
+    y += 26;
 
-    const para = (text: string) => {
+    const para = (text: string, gap = 13) => {
       doc
         .fontSize(11)
-        .font("Helvetica")
-        .fillColor("#1F2937")
-        .text(text, contentX, y, { width: contentWidth, align: "left", lineGap: 4 });
-      y = doc.y + 14;
+        .font("Times-Roman")
+        .fillColor(C.ink)
+        .text(text, x, y, { width: w, align: "left", lineGap: 3.5 });
+      y = doc.y + gap;
     };
 
     para(
-      `We are pleased to confirm that you have successfully completed ${stageLabel} ` +
-        `of the Ubuntu Bridge Initiative Cybersecurity Internship, Cohort 1. Your ` +
-        `final score was ${score} out of 100, against a passing mark of ${passingScore}.`
+      `On behalf of everyone at Sankofa Digital, congratulations. You have completed ` +
+        `${stageLabel}, and your work was held to the same standard we hold our own ` +
+        `analysts to. It cleared that bar, and it did so honestly.`
     );
 
     para(
-      `Your capstone was assessed against the published rubric for this stage and ` +
-        `met the standard required to progress. The certificate of achievement is ` +
-        `attached separately and is available for download from your programme ` +
-        `dashboard at any time.`
+      `Your capstone and write-ups were assessed against the programme rubric and scored ` +
+        `${score} out of 100, against a pass mark of ${passingScore}. Your reviewer's notes ` +
+        `are on your dashboard. Read them closely, because the next desk assumes you already have.`
     );
 
     if (nextStageLabel) {
       para(
-        `On the basis of this result you have been advanced to ${nextStageLabel}. ` +
-          `The brief for the next stage, including the reading list and your first ` +
-          `exercise, will be delivered to your inbox before that stage opens.`
+        `On the strength of that result, you are promoted to ${nextStageLabel}. A new desk, ` +
+          `a new brief, and a harder problem are waiting for you. The chapter opens to you shortly, ` +
+          `and the team you are about to meet has read your file.`
+      );
+    } else {
+      para(
+        `On the strength of that result, you have reached the end of the foundation track, ` +
+          `and you reached it on merit. What comes next is the specialist work you chose.`
       );
     }
 
     para(
-      `This letter, alongside the certificate and your reviewer's detailed notes ` +
-        `on the dashboard, forms the complete record of your work at this stage. ` +
-        `It may be shared with employers, academic institutions, or anyone else ` +
-        `who requires evidence of your participation and standing in the programme.`
+      `Keep the standard you set here. The work gets harder from this point, and so does ` +
+        `the company you keep. We are glad you are still in the room.`
     );
 
-    para(`Congratulations on the work and please continue to put the same in.`);
+    doc
+      .fontSize(11)
+      .font("Times-Italic")
+      .fillColor(C.navy)
+      .text("Welcome to the next chapter.", x, y, { width: w });
+    y += 30;
 
-    // ── Signatures ─────────────────────────────────────
-    const sigY = Math.min(y + 30, pageHeight - 160);
+    // ── Signatures ─────────────────────────────────────────
+    const sigY = Math.min(y + 24, pageH - 168);
     const signers = [
+      { x: x, sig: "Amaka Eze", name: "Amaka Eze", title: "Head of Security · Sankofa Digital" },
       {
-        x: contentX,
-        sig: "Okoma Somto",
+        x: x + w - 210,
+        sig: "Okoma S.",
         name: "Okoma Somtochukwu",
-        title: "Head of Programme",
-      },
-      {
-        x: contentX + contentWidth - 200,
-        sig: "Quadri O.",
-        name: "Quadri Omoloju",
-        title: "Founder",
+        title: "Programme Lead · Ubuntu Bridge Initiative",
       },
     ];
     for (const s of signers) {
       doc
-        .fontSize(14)
-        .font("Helvetica-BoldOblique")
-        .fillColor("#0B2447")
-        .text(s.sig, s.x, sigY - 30, { width: 200 });
+        .fontSize(17)
+        .font("Times-BoldItalic")
+        .fillColor(C.navyDeep)
+        .text(s.sig, s.x, sigY - 26, { width: 210 });
       doc
         .moveTo(s.x, sigY + 2)
         .lineTo(s.x + 200, sigY + 2)
-        .lineWidth(0.5)
-        .strokeColor("#9CA3AF")
+        .lineWidth(0.6)
+        .strokeColor(C.navy)
         .stroke();
       doc
-        .fontSize(9)
+        .fontSize(9.5)
         .font("Helvetica-Bold")
-        .fillColor("#374151")
-        .text(s.name, s.x, sigY + 8, { width: 200 });
+        .fillColor(C.ink)
+        .text(s.name, s.x, sigY + 8, { width: 210 });
       doc
-        .fontSize(8)
+        .fontSize(7.5)
         .font("Helvetica")
-        .fillColor("#4B5775")
-        .text(`${s.title} · TRAN (The Root Access Network)`, s.x, sigY + 21, { width: 200 });
+        .fillColor(C.muted)
+        .text(s.title, s.x, sigY + 21, { width: 210 });
     }
 
-    // ── Footer ─────────────────────────────────────────
+    // ── Footer ─────────────────────────────────────────────
     doc
-      .fontSize(8)
+      .moveTo(x, pageH - 104)
+      .lineTo(x + w, pageH - 104)
+      .lineWidth(0.5)
+      .strokeColor(C.rule)
+      .stroke();
+    doc
+      .fontSize(7.5)
       .font("Helvetica")
-      .fillColor("#9DB2D6")
+      .fillColor(C.muted)
       .text(
-        `Letter reference: ${letterId}  ·  ubuntubridgeinitiatives.org`,
-        contentX,
-        pageHeight - 60,
-        { width: contentWidth, align: "center", lineBreak: false, height: 14 }
+        "Sankofa Digital is the live case environment of the Ubuntu Bridge Initiative Cybersecurity Internship.",
+        x,
+        pageH - 94,
+        { width: w, align: "center", lineBreak: false }
       );
+    doc
+      .fontSize(7.5)
+      .fillColor(C.muted)
+      .text(`Letter reference ${letterId}  ·  ubuntubridgeinitiatives.org`, x, pageH - 82, {
+        width: w,
+        align: "center",
+        lineBreak: false,
+      });
 
     doc.end();
   });
+}
+
+// Small hexagon emblem with a gold core — a quiet brand mark for the letterhead.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function drawEmblem(doc: any, cx: number, cy: number, r: number): void {
+  const pts: Array<[number, number]> = [];
+  for (let i = 0; i < 6; i++) {
+    const a = (Math.PI / 3) * i - Math.PI / 2;
+    pts.push([cx + r * Math.cos(a), cy + r * Math.sin(a)]);
+  }
+  doc.moveTo(pts[0][0], pts[0][1]);
+  for (let i = 1; i < 6; i++) doc.lineTo(pts[i][0], pts[i][1]);
+  doc.closePath().lineWidth(1.6).fillAndStroke(C.navy, C.navy);
+  doc.circle(cx, cy, r * 0.34).fill(C.gold);
 }
