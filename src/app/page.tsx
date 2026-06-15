@@ -10,8 +10,12 @@ import { FAQ } from "@/components/landing/faq";
 import { CTA } from "@/components/landing/cta";
 import { Footer } from "@/components/landing/footer";
 import { ScrollIndicator } from "@/components/landing/scroll-indicator";
+import { StatsDashboard } from "@/components/landing/stats-dashboard";
+import { getLandingStats } from "@/lib/landing-stats";
 
-export default function Home() {
+export default async function Home() {
+  const stats = await getLandingStats();
+
   return (
     <>
       <a
@@ -23,9 +27,10 @@ export default function Home() {
       <Navbar />
       <ScrollIndicator />
       <main id="main-content">
-        <Hero />
+        <Hero stats={stats} />
         <Marquee />
         <About />
+        <StatsDashboard />
         <Why />
         <Stages />
         <Tracks />

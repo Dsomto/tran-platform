@@ -6,6 +6,7 @@ import { ArrowRight, ChevronDown } from "lucide-react";
 import { useEffect, useState } from "react";
 import AOS from "aos";
 import "aos/dist/aos.css";
+import type { LandingStats } from "@/lib/landing-stats";
 
 const allHeroImages = [
   {
@@ -61,7 +62,13 @@ function shuffleAndPick(arr: typeof allHeroImages, count: number) {
   return shuffled.slice(0, count);
 }
 
-export function Hero() {
+export function Hero({ stats }: { stats: LandingStats }) {
+  const heroStats: [string, string, string][] = [
+    [stats.applicants.toLocaleString(), "Applicants", "🌍"],
+    [stats.passedStage1.toLocaleString(), "Passed Stage 1", "🚀"],
+    [stats.tracks.toLocaleString(), "Tracks", "🎯"],
+  ];
+
   const [scrollProgress, setScrollProgress] = useState(0);
   const [heroImages, setHeroImages] = useState(allHeroImages.slice(0, 3));
   const [layoutVariant, setLayoutVariant] = useState(0);
@@ -190,7 +197,7 @@ export function Hero() {
               </div>
 
               <div data-aos="fade-up" data-aos-delay="400" className="mt-14 flex flex-wrap gap-3" role="list" aria-label="Program statistics">
-                {[["10", "Stages", "⚡"], ["3", "Tracks", "🎯"], ["1,000+", "Members", "🌍"]].map(([val, label, emoji]) => (
+                {heroStats.map(([val, label, emoji]) => (
                   <div key={label} role="listitem" className="glass-card rounded-xl px-5 py-3 flex items-center gap-3">
                     <span className="text-lg" aria-hidden="true">{emoji}</span>
                     <div>
