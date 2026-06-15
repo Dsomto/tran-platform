@@ -21,8 +21,10 @@ import {
   MapPin,
   Mail,
   History,
+  Download,
 } from "lucide-react";
 import type { StageBrief, CastMember, BulletinKind } from "@/lib/stage-briefs";
+import type { EvidenceFile } from "@/lib/evidence-pack";
 import type { StageLandingTheme } from "@/lib/stage-landing-theme";
 import {
   type StageStory,
@@ -48,6 +50,9 @@ interface Props {
   firstName: string;
   /** The intern's code, e.g. UBI-2026-0001. */
   internCode: string;
+  /** Downloadable evidence-pack files for this stage. When present and
+   *  non-empty, rendered as a download list in the capstone area. */
+  evidencePack?: EvidenceFile[];
 }
 
 function alignmentClasses(alignment: CastMember["alignment"], light: boolean) {
@@ -98,6 +103,7 @@ export function StageLanding({
   companyName,
   firstName,
   internCode,
+  evidencePack,
 }: Props) {
   const capstoneHref = "#capstone";
   const nextChapter = story.chapter < TOTAL_CHAPTERS ? story.chapter + 1 : null;
@@ -468,6 +474,50 @@ export function StageLanding({
             className={`inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold border ${theme.dividerClass} ${theme.bodyTextClass} hover:bg-white/5 transition-colors`}
           />
         </div>
+
+        {evidencePack && evidencePack.length > 0 && (
+          <div className={`mb-8 ${theme.softBgClass} border ${theme.dividerClass} rounded-xl p-5`}>
+            <p className={`${theme.bodyTextClass} text-sm font-semibold mb-1 flex items-center gap-2`}>
+              <Download className={`w-4 h-4 ${theme.accentTextClass}`} />
+              Your evidence pack
+              <span className={`${theme.mutedTextClass} text-[11px] font-normal`}>
+                · {evidencePack.length} file{evidencePack.length === 1 ? "" : "s"} to download
+              </span>
+            </p>
+            <p className={`${theme.mutedTextClass} text-[13px] leading-relaxed mb-3`}>
+              These are the artefacts the stage gives you. Download each one, analyse it
+              locally, and cite specific lines / paths / values in your report.
+            </p>
+            <ul className="space-y-1.5">
+              {evidencePack.map((f) => (
+                <li key={f.url} className={`flex items-start gap-3 rounded-lg border ${theme.dividerClass} px-3 py-2.5`}>
+                  <Download className={`w-4 h-4 mt-0.5 shrink-0 ${theme.accentTextClass}`} />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <a
+                        href={f.url}
+                        download
+                        className={`${theme.bodyTextClass} font-mono text-sm font-medium hover:underline truncate`}
+                      >
+                        {f.filename}
+                      </a>
+                      {typeof f.bytes === "number" && (
+                        <span className={`${theme.mutedTextClass} text-[10px] tabular-nums`}>
+                          {f.bytes < 1024
+                            ? `${f.bytes} B`
+                            : `${(f.bytes / 1024).toFixed(1)} KB`}
+                        </span>
+                      )}
+                    </div>
+                    <div className={`${theme.mutedTextClass} text-xs leading-snug mt-0.5`}>
+                      {f.description}
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         <div className="space-y-3">
           <p className={`${theme.mutedTextClass} text-[11px] uppercase tracking-[0.18em] font-semibold mb-2`}>

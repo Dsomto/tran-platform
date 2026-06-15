@@ -5,6 +5,7 @@ import { StageLanding } from "@/components/stage/StageLanding";
 import { getStageAccess } from "@/lib/stage-access";
 import { stageUrl } from "@/lib/stage-routes";
 import { STAGE_BRIEFS } from "@/lib/stage-briefs";
+import { EVIDENCE_PACK } from "@/lib/evidence-pack";
 import { STAGE_STORIES } from "@/lib/stage-story";
 import { STAGE_LANDING_THEMES } from "@/lib/stage-landing-theme";
 
@@ -31,6 +32,7 @@ export default async function Stage4LandingPage() {
         companyName="Sankofa Digital"
         firstName={firstName}
         internCode={internCode}
+        evidencePack={EVIDENCE_PACK.STAGE_4}
       />
     </StageShell>
   );

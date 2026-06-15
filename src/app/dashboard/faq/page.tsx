@@ -1,4 +1,5 @@
 import { requireAuth } from "@/lib/auth";
+import { prisma } from "@/lib/db";
 import { Topbar } from "@/components/dashboard/topbar";
 import {
   FileText,
@@ -8,14 +9,50 @@ import {
   HelpCircle,
   FileSignature,
   BookOpen,
-  Download,
 } from "lucide-react";
-import { STAGE_STORIES } from "@/lib/stage-story";
+import { STAGE_STORIES, CHAPTER_TITLES, TOTAL_CHAPTERS } from "@/lib/stage-story";
+import { STAGE_BRIEFS } from "@/lib/stage-briefs";
+import { STAGE_ENUM_TO_SLUG } from "@/lib/stage-login";
+import type { StageSlug } from "@/lib/stage-routes";
 
 export const dynamic = "force-dynamic";
 
+type StageKey = keyof typeof STAGE_BRIEFS;
+
+/** Turn a deliverable line into a safe, dash-cased filename slug, e.g.
+ *  "D1 — Findings catalogue (...)" → "Findings-catalogue". */
+function deliverableSlug(deliverable: string): string {
+  // Drop a leading "D<n> — " / "D<n> - " prefix and any trailing parenthetical.
+  const core = deliverable
+    .replace(/^D\d+\s*[—-]\s*/i, "")
+    .replace(/\s*\(.*$/, "")
+    .trim();
+  return (
+    core
+      .replace(/[^A-Za-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 40) || "Deliverable"
+  );
+}
+
 export default async function FAQPage() {
   const session = await requireAuth();
+
+  const intern = await prisma.intern.findUnique({
+    where: { userId: session.id },
+    select: { currentStage: true },
+  });
+
+  const currentStage: StageKey =
+    intern?.currentStage && intern.currentStage in STAGE_BRIEFS
+      ? (intern.currentStage as StageKey)
+      : "STAGE_0";
+
+  const stageBrief = STAGE_BRIEFS[currentStage];
+  const stageSlugEnum = currentStage; // e.g. "STAGE_2" — used in the reports URL
+  const tasks = stageBrief.practicalTasks;
+  const n = tasks.length;
+  const currentRank = Number(currentStage.split("_")[1]);
 
   return (
     <>
@@ -45,112 +82,124 @@ export default async function FAQPage() {
           </div>
 
           <Section
+            icon={CheckCircle2}
+            title="How to submit — the numbers"
+          >
+            <p>
+              Your {stageBrief.label} capstone is a{" "}
+              <strong>{n}-deliverable pack</strong> — D1 to D{n}. Each one
+              has its own brief on the stage mission board.
+            </p>
+            <p>
+              You submit <strong>one Google Drive folder link</strong> plus a
+              short executive summary on{" "}
+              <code className="text-foreground">
+                /dashboard/reports/{stageSlugEnum}
+              </code>
+              . Put every deliverable inside that one folder, share the folder,
+              paste the link.
+            </p>
+            <div className="p-3 rounded-lg bg-blue/5 border border-blue/20 text-sm text-foreground">
+              Each deliverable is graded as its own rubric section.{" "}
+              <strong>A missing one is a zero for that section</strong> — not a
+              small deduction. And set every file&apos;s sharing to{" "}
+              <strong>&ldquo;Anyone with the link → Viewer&rdquo;</strong>, or
+              the grader can&apos;t open it.
+            </div>
+          </Section>
+
+          <Section
             icon={Folder}
             title="What you submit, in plain terms"
           >
             <p>
-              Every stage capstone is a <strong>four-document pack</strong>:
-              D1, D2, D3, D4. Each one has its own brief inside the stage
-              mission board. You write each one in <strong>Google Docs</strong>{" "}
-              or Microsoft Word, upload all four into a Google Drive folder,
-              then paste the folder link into the submission form on{" "}
+              Every stage capstone is a{" "}
+              <strong>{n}-document pack</strong>: D1 through D{n}. Each one has
+              its own brief inside the stage mission board. You write each one
+              in <strong>Google Docs</strong> or Microsoft Word, upload them all
+              into a Google Drive folder, then paste the folder link into the
+              submission form on{" "}
               <code className="text-foreground">/dashboard/reports</code>.
             </p>
             <p>
-              The submission form takes <em>one link</em>, not four. Put
-              the four files inside one folder, share the folder, paste
-              the folder link.
+              The submission form takes <em>one link</em>, not {n}. Put the
+              files inside one folder, share the folder, paste the folder link.
             </p>
             <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-900 dark:bg-rose-500/15 dark:border-rose-500/30 dark:text-rose-200 text-sm">
               <strong>Do not submit the mission brief itself.</strong> What
-              you upload is the four documents <em>you</em> wrote — not the
+              you upload is the {n} documents <em>you</em> wrote — not the
               chapter brief from the dashboard. Some interns last cycle
               printed the brief to PDF and uploaded that. It earns zero
               marks because none of your deliverables are in it.
             </div>
           </Section>
 
-          <Section icon={FileText} title="Stage 1 — what you submit and what gets marked">
+          <Section
+            icon={FileText}
+            title={`${stageBrief.label} — what you submit and what gets marked`}
+          >
             <p>
-              Your Stage 1 capstone is <strong>four documents</strong> — D1 to
-              D4 — in one Google Drive folder. The desk tasks on the mission
-              board (decrypt the ciphertext, identify the cipher, audit the
-              JWTs) are the lab work; you fold what you find into these four.
+              Your {stageBrief.label} capstone is{" "}
+              <strong>{n} {n === 1 ? "document" : "documents"}</strong> — D1 to
+              D{n} — in one Google Drive folder. The desk tasks on the mission
+              board are the lab work; you fold what you find into these{" "}
+              {n === 1 ? "one" : n} deliverables.
             </p>
             <div className="p-3 rounded-lg bg-blue/5 border border-blue/20 text-sm text-foreground">
               Each document is graded as its own rubric section.{" "}
-              <strong>A missing document is a zero for that section</strong> — not
-              a small deduction. Submit all four.
+              <strong>A missing document is a zero for that section</strong> —
+              not a small deduction. Submit all {n}.
             </div>
 
             <div className="space-y-3">
-              <Deliverable
-                code="D1"
-                title="Crypto failure mapping"
-                put="Every cryptographic failure in The Griot's artefacts — key-and-IV left in config, the reused IV, the five-character HS256 secret, and the three JWT failures (alg / lifecycle / privilege). Open with two or three sentences on hash vs encryption, using the Griot's own choices as the example."
-                marked="Each finding cited to the specific evidence-pack file AND one external standard by section number (RFC / NIST SP / FIPS). A finding with no citation scores zero."
-              />
-              <Deliverable
-                code="D2"
-                title="Decoded artefact appendix"
-                put="The recovered plaintext for each artefact, the method you used, and every intermediate output where a file has layers: AES plaintext + your recipe, the classical-cipher plaintext, a three-row JWT table, and the layered memo peeled base64 → ROT13 → substitution."
-                marked="Show your working. Plaintext alone is not enough — the method and the intermediate layers are where the marks are."
-              />
-              <Deliverable
-                code="D3"
-                title="Five controls the board should approve"
-                put="Five concrete controls — products, policies, or configurations — with one short justification each. Assume a small team and a tight budget."
-                marked="Each control maps to at least two failures from D1 and is specific enough to build or buy. “Improve crypto hygiene” scores zero."
-              />
-              <Deliverable
-                code="D4"
-                title="Ethics stance — the Ethnos Cyber call"
-                put="300–500 words, your own writing: a sponsor contact at Ethnos Cyber asks you to forward your findings privately before the Sankofa board sees them. Cover who you consult, what you will and won't share, how you weigh loyalty to the sponsor against Sankofa, and one action you take regardless."
-                marked="Your judgment, not a “right answer” — plus a cited ISC2 Code of Ethics canon (by number). This is the document graders scan hardest for AI patterns."
-              />
+              {tasks.map((task, idx) => (
+                <Deliverable
+                  key={task.id}
+                  code={`D${idx + 1}`}
+                  title={task.title}
+                  description={task.description}
+                  deliverable={task.deliverable}
+                />
+              ))}
             </div>
           </Section>
 
-          <Section icon={FileSignature} title="Start from the template">
-            <p>
-              Don&apos;t build the four documents from a blank page. The Stage 1
-              capstone template lays out D1–D4 with the tables, headings, and
-              citation placeholders already in place — replace each{" "}
-              <code>[ bracketed prompt ]</code> with your own work and delete the
-              grey instruction lines.
-            </p>
-            <div className="flex flex-wrap gap-3">
-              <a
-                href="/capstone/stage-1/stage-1-capstone-template.docx"
-                download
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue text-white text-sm font-semibold hover:bg-blue/90"
-              >
-                <Download className="h-4 w-4" /> Template — .docx (editable)
-              </a>
-              <a
-                href="/capstone/stage-1/stage-1-capstone-template.pdf"
-                target="_blank"
-                rel="noreferrer noopener"
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-blue/40 bg-surface text-blue dark:text-blue-300 text-sm font-semibold hover:bg-blue/10"
-              >
-                <FileText className="h-4 w-4" /> Template — .pdf (preview)
-              </a>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Open the <strong>.docx</strong> in Google Docs (File → Open →
-              Upload) or in Word and edit directly. The <strong>.pdf</strong> is
-              a read-only preview of the same thing. You can submit the four
-              deliverables as one combined document or as four separate files
-              (D1–D4) — graders accept either, as long as all four areas are
-              covered.
-            </p>
-            <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-900 dark:bg-emerald-500/15 dark:border-emerald-500/30 dark:text-emerald-200 text-sm">
-              <strong>Already submitted the six separate documents?</strong>{" "}
-              That&apos;s still accepted — you don&apos;t need to resubmit or use
-              this template. See &ldquo;I already submitted six separate
-              documents&rdquo; below.
-            </div>
-          </Section>
+          {currentStage === "STAGE_1" && (
+            <Section icon={FileSignature} title="Start from the template">
+              <p>
+                Don&apos;t build the four documents from a blank page. The Stage 1
+                capstone template lays out D1–D4 with the tables, headings, and
+                citation placeholders already in place — replace each{" "}
+                <code>[ bracketed prompt ]</code> with your own work and delete the
+                grey instruction lines.
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <a
+                  href="/capstone/stage-1/stage-1-capstone-template.docx"
+                  download
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue text-white text-sm font-semibold hover:bg-blue/90"
+                >
+                  <FileSignature className="h-4 w-4" /> Template — .docx (editable)
+                </a>
+                <a
+                  href="/capstone/stage-1/stage-1-capstone-template.pdf"
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-blue/40 bg-surface text-blue dark:text-blue-300 text-sm font-semibold hover:bg-blue/10"
+                >
+                  <FileText className="h-4 w-4" /> Template — .pdf (preview)
+                </a>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Open the <strong>.docx</strong> in Google Docs (File → Open →
+                Upload) or in Word and edit directly. The <strong>.pdf</strong> is
+                a read-only preview of the same thing. You can submit the four
+                deliverables as one combined document or as four separate files
+                (D1–D4) — graders accept either, as long as all four areas are
+                covered.
+              </p>
+            </Section>
+          )}
 
           <Section
             icon={FileText}
@@ -158,10 +207,12 @@ export default async function FAQPage() {
           >
             <p>Name each file using this pattern:</p>
             <pre className="text-xs bg-slate-900 text-slate-100 p-3 rounded-lg font-mono leading-relaxed overflow-x-auto">
-              {`D1-Crypto-Failure-Mapping-<YourLastName>.docx
-D2-Decoded-Artefact-Appendix-<YourLastName>.docx
-D3-Five-Controls-<YourLastName>.docx
-D4-Ethics-Stance-<YourLastName>.docx`}
+              {tasks
+                .map(
+                  (task, idx) =>
+                    `D${idx + 1}-${deliverableSlug(task.deliverable)}-<YourLastName>.docx`,
+                )
+                .join("\n")}
             </pre>
             <ul className="list-disc pl-5 space-y-1">
               <li>No spaces in the file name. Use dashes.</li>
@@ -193,10 +244,9 @@ D4-Ethics-Stance-<YourLastName>.docx`}
               Docs avoids that entirely. The graders open the Doc directly.
             </p>
             <div className="p-3 rounded-lg bg-blue/5 border border-blue/20 text-sm text-foreground">
-              <strong>Why this changed:</strong> the Stage 1 graders read
-              on web, mobile, and the occasional iPad. Google Docs renders
-              the same on all three. PDFs, surprisingly, do not. So we
-              switched.
+              <strong>Why this changed:</strong> graders read on web,
+              mobile, and the occasional iPad. Google Docs renders the same
+              on all three. PDFs, surprisingly, do not. So we switched.
             </div>
             <p className="text-sm text-muted-foreground">
               PDF is still accepted if you prefer it. DOCS is recommended.
@@ -213,7 +263,7 @@ D4-Ethics-Stance-<YourLastName>.docx`}
               <li>
                 <strong>A header on page 1</strong> with: your full name,
                 your UBI Intern ID (UBI-2026-XXXX), the deliverable code
-                (D1 / D2 / D3 / D4), the stage label, and the date.
+                (D1 … D{n}), the stage label, and the date.
               </li>
               <li>
                 <strong>Page numbers</strong> on every page. Footer or
@@ -221,11 +271,11 @@ D4-Ethics-Stance-<YourLastName>.docx`}
               </li>
               <li>
                 <strong>Citations to the evidence pack.</strong> When you
-                quote a ciphertext, a JWT claim, or a decoded line, cite the
-                file and where it came from, e.g.{" "}
-                <code>02-classical-cipher.txt:8</code> or{" "}
-                <code>03-jwts.txt: Token B header</code>. Verbatim quotes
-                only — no paraphrasing.
+                quote a line, a value, or a record from an evidence file, cite
+                the file and where it came from, e.g.{" "}
+                <code>&lt;evidence-file&gt;:&lt;line&gt;</code> or{" "}
+                <code>&lt;evidence-file&gt;: &lt;section&gt;</code>. Verbatim
+                quotes only — no paraphrasing.
               </li>
               <li>
                 <strong>Section headings.</strong> The brief tells you
@@ -277,7 +327,7 @@ D4-Ethics-Stance-<YourLastName>.docx`}
                 hours later", show the two timestamps.
               </li>
               <li>
-                Recommendations are concrete. "Improve crypto hygiene" is
+                Recommendations are concrete. "Tighten security" is
                 not a recommendation. "Require a second analyst signature
                 on any Medium+ ticket closed as resolved-by-reference" is.
               </li>
@@ -308,7 +358,7 @@ D4-Ethics-Stance-<YourLastName>.docx`}
                 template, fill in every blank.
               </li>
               <li>
-                Submitting fewer than the four deliverables. Each missing
+                Submitting fewer than the {n} deliverables. Each missing
                 document is a missing rubric section.
               </li>
               <li>
@@ -350,15 +400,6 @@ D4-Ethics-Stance-<YourLastName>.docx`}
           </Section>
 
           <Section icon={HelpCircle} title="The other questions we keep getting">
-            <Q q="I already submitted six separate documents (the older task list). Is that a problem?">
-              No — that&apos;s fully accepted and you do <strong>not</strong>{" "}
-              need to resubmit. The six task documents (decryption walkthrough,
-              classical cipher, JWT audit, hash-vs-encryption memo, controls, and
-              ethics stance) cover exactly the same four graded areas (D1–D4).
-              Graders mark the coverage of those four areas, not the number of
-              files. The four-document template just organises the same work for
-              everyone submitting from here on.
-            </Q>
             <Q q="Can I work with another intern?">
               No. Every deliverable must be your own writing. You can
               discuss the brief in Slack and you can ask mentors questions
@@ -366,8 +407,10 @@ D4-Ethics-Stance-<YourLastName>.docx`}
               passages across two interns get both submissions flagged.
             </Q>
             <Q q="My Drive folder name has my name. Is that OK?">
-              Yes. The folder name doesn't matter — only the file names
-              inside it do (D1-Evidence-Table-Surname.pdf etc.).
+              Yes. The folder name doesn&apos;t matter — only the file names
+              inside it do (
+              <code>D1-{deliverableSlug(tasks[0].deliverable)}-Surname.docx</code>{" "}
+              etc.).
             </Q>
             <Q q="Can I use AI to help me write?">
               Use it for brainstorming and to check your spelling. Don't
@@ -433,43 +476,37 @@ D4-Ethics-Stance-<YourLastName>.docx`}
             </p>
 
             <div className="space-y-5 mt-4">
-              <StoryChapter
-                num={1}
-                title="Stage 0 · Induction at the Gate"
-                where="SOC Bench · Floor 4 — Sankofa Digital HQ, Lagos"
-                summary={
-                  "Amaka handed you the Q2 case file. A Tier-1 analyst had read one ticket, written 'probably nothing', and closed it. You had to tell her whether she was right to be worried."
-                }
-                cliffhanger={STAGE_STORIES["stage-0"].cliffhanger}
-              />
-              <StoryChapter
-                num={2}
-                title="Stage 1 · Ciphers & Secrets — you are here"
-                where="Cryptography Lab · Floor 6"
-                summary={
-                  STAGE_STORIES["stage-1"].previously ??
-                  "Your D2 dismissal-pattern walkthrough drove the SOC restructure. The board funded this chapter's emergency cryptography audit on the strength of your report."
-                }
-                cliffhanger={STAGE_STORIES["stage-1"].cliffhanger}
-                isCurrent
-              />
-              <StoryChapter
-                num={3}
-                title="Stage 2 · The Attack Surface — next"
-                where="Engineering War Room · Floor 5"
-                summary={
-                  STAGE_STORIES["stage-2"].previously ??
-                  "One file from your Stage 1 work named a door — /legacy-admin/, a 2019 Django app that should have died two years ago. Chapter 3 is the war room. Bayo will not enjoy the conversation."
-                }
-                cliffhanger={STAGE_STORIES["stage-2"].cliffhanger}
-                isLocked
-              />
+              {(["STAGE_0", "STAGE_1", "STAGE_2", "STAGE_3", "STAGE_4"] as const).map(
+                (key) => {
+                  const rank = Number(key.split("_")[1]);
+                  const slug = STAGE_ENUM_TO_SLUG[key] as StageSlug;
+                  const story = STAGE_STORIES[slug];
+                  const chapterTitle = CHAPTER_TITLES[rank] ?? STAGE_BRIEFS[key].label;
+                  const isCurrent = rank === currentRank;
+                  const isLocked = rank > currentRank;
+                  const suffix = isCurrent ? " — you are here" : isLocked ? " — locked" : "";
+                  return (
+                    <StoryChapter
+                      key={key}
+                      num={rank + 1}
+                      title={`${STAGE_BRIEFS[key].label} · ${chapterTitle}${suffix}`}
+                      where={story?.office ?? ""}
+                      summary={
+                        story?.previously ??
+                        STAGE_BRIEFS[key].subtitle
+                      }
+                      cliffhanger={story?.cliffhanger ?? null}
+                      isCurrent={isCurrent}
+                      isLocked={isLocked}
+                    />
+                  );
+                },
+              )}
             </div>
 
             <p className="text-xs text-muted-foreground italic mt-2">
-              Chapters 4 (Inside the Walls · DFIR) and 5 (The Debrief ·
-              The Boardroom) wait beyond that — but no spoilers. Clear
-              this stage to unlock the next.
+              {TOTAL_CHAPTERS} chapters in all — clear your current stage to
+              unlock the next. No spoilers beyond where you stand.
             </p>
           </Section>
 
@@ -571,30 +608,30 @@ function Q({ q, children }: { q: string; children: React.ReactNode }) {
 function Deliverable({
   code,
   title,
-  put,
-  marked,
+  description,
+  deliverable,
 }: {
   code: string;
   title: string;
-  put: string;
-  marked: string;
+  description: string;
+  deliverable: string;
 }) {
+  // Task titles may already carry a "D1 — " prefix; the badge shows the code,
+  // so strip it to avoid "D1   D1 — ...".
+  const cleanTitle = title.replace(/^D\d+\s*[—-]\s*/i, "");
   return (
     <div className="rounded-xl border border-border bg-surface p-4">
       <div className="flex items-center gap-2.5 mb-2.5">
         <span className="inline-flex items-center justify-center shrink-0 w-9 h-7 rounded-md bg-blue/10 text-blue text-xs font-bold font-mono">
           {code}
         </span>
-        <h3 className="text-sm font-bold text-foreground">{title}</h3>
+        <h3 className="text-sm font-bold text-foreground">{cleanTitle}</h3>
       </div>
       <div className="space-y-1.5 text-sm leading-relaxed">
+        <p className="text-foreground/80">{description}</p>
         <p>
-          <span className="font-semibold text-foreground">Put in it:</span>{" "}
-          <span className="text-foreground/80">{put}</span>
-        </p>
-        <p>
-          <span className="font-semibold text-foreground">Marked on:</span>{" "}
-          <span className="text-foreground/80">{marked}</span>
+          <span className="font-semibold text-foreground">Submit as:</span>{" "}
+          <span className="text-foreground/80">{deliverable}</span>
         </p>
       </div>
     </div>

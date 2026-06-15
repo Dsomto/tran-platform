@@ -587,46 +587,36 @@ export const STAGE_BRIEFS: Record<
     ],
     practicalTasks: [
       {
-        id: "findings-catalogue",
-        title: "Find what's wrong — we're not telling you",
+        id: "d1-findings-catalogue",
+        title: "D1 — Findings catalogue (and the decoy you disprove)",
         description:
-          "Read the recovered source, the three tokens, and the XML import. We have not told you what is broken or how many findings there are — that is the work. Catalogue every distinct weakness you can substantiate, and for each one quote the exact line or request that proves it, name the class, and rate your confidence. The dev's own comments flag some bugs and stay silent on others — treat an unflagged line with the same suspicion as a flagged one. Missing the obvious ones shows; finding the quiet ones is how you stand out.",
-        deliverable: "findings-catalogue (Google Doc — one row per finding: class, exact evidence line/request, confidence)",
+          "Read the recovered login source, the three tokens, and the XML import — we do not tell you what is broken or how many findings there are; that is the work. Catalogue every distinct weakness you can substantiate: for each, quote the exact line or request that proves it, name the class (OWASP category + CWE), and rate your confidence. Then handle the trap: one construct in the source looks hand-rolled and dangerous and will tempt you to flag it critical. Decide whether it is actually exploitable — if it is, show the exploit; if it is not, name the exact mechanism that makes it safe. A false positive costs the team a sprint, so a clean disproof scores as hard as a finding.",
+        deliverable:
+          "D1 — Findings catalogue (Google Doc or DOCX — one row per finding: class, OWASP + CWE, exact evidence line/request, confidence; plus the decoy verdict with proof either way)",
       },
       {
-        id: "decoy-adjudication",
-        title: "Decide the one that looks worse than it is",
+        id: "d2-exploit-chain-impact",
+        title: "D2 — Exploit chain + CVSS and business impact",
         description:
-          "One construct in the source looks hand-rolled and dangerous, and it will tempt you to flag it critical. Decide whether it is actually exploitable. If it is, show the exploit. If it is not, prove why — name the exact mechanism that saves it. A false positive in a real report costs the team a sprint, so we score a clean disproof as hard as a finding.",
-        deliverable: "decoy-adjudication (Google Doc — the construct, your verdict, and the proof either way)",
+          "Rebuild the attacker's path from the edge-proxy capture (the analyst annotations were stripped — you reconstruct it) as one chain from first contact to exfiltration: initial access, the authentication forgery, the XML file-read, and what they walked out with. Every hop needs a concrete, reproducible PoC — the exact request, the exact forged token header and payload, the exact XML body — not a description, and it must reconcile to a line in the capture and end at 05-exfil-sample.csv. Then score it: a CVSS 3.1 vector for every substantiated finding (the vector string is mandatory; a bare number is rejected), and quantify business impact in customers and naira using the exfil sample and the BoltCash launch timeline. Where two weaknesses only matter chained, score the chain.",
+        deliverable:
+          "D2 — Exploit chain + impact (Google Doc or DOCX — numbered hops each with a working PoC and its capture line; a findings table: finding, OWASP, CVSS vector, chained-with, quantified impact)",
       },
       {
-        id: "exploit-chain",
-        title: "Rebuild the attacker's path — annotations removed",
+        id: "d3-report-and-stopgaps",
+        title: "D3 — The report Bayo acts on (and detection stopgaps)",
         description:
-          "The capture's analyst notes were stripped before it reached you. Reconstruct the attacker's session yourself, from first contact to exfiltration, as one chain: initial access, authentication forgery, the XML file-read, and what they walked out with. For every hop give a concrete, reproducible PoC — the exact request, the exact forged token header and payload, the exact XML body — not a description. The chain has to explain how an unauthenticated outsider reaches the data in 05-exfil-sample.csv.",
-        deliverable: "exploit-chain (Google Doc — numbered hops, each with a working PoC and the capture line it matches)",
+          "Write the finished pentest report engineering will actually use: an executive summary a CFO understands, a short threat model, the substantiated findings tied to evidence, the decoy you disproved (state it — it buys trust), the exploit chain, CVSS plus money impact, and a remediation order argued by risk reduction per hour of effort, not severity alone. Engineering cannot fix everything before BoltCash ships, so for the two findings you rank most dangerous add a deployable detection — a concrete SIEM/log query or WAF rule naming the exact field or pattern it keys on and the false-positive rate you expect. A stopgap they can deploy today beats a fix they land next quarter. 6–8 pages; if a finding is not tied to a line of evidence, cut it.",
+        deliverable:
+          "sankofa-pentest-report (Google Doc, 6–8 pages — exec summary, threat model, findings, disproved decoy, exploit chain, CVSS + impact, remediation order, two detection stopgaps)",
       },
       {
-        id: "cvss-and-impact",
-        title: "Score it, and put a number on the damage",
+        id: "d4-ethics-stance",
+        title: "D4 — Ethics stance: the call you make under pressure",
         description:
-          "Give every substantiated finding a CVSS 3.1 vector — the vector string is mandatory, a bare number is rejected — and quantify business impact in customers and naira using the exfil sample and the BoltCash launch timeline. Where two weaknesses only matter once chained, score the chain, not just the isolated parts.",
-        deliverable: "findings-table (Google Doc or MS Word — table inside: finding, OWASP category, CVSS vector, chained-with, quantified impact)",
-      },
-      {
-        id: "detection-stopgap",
-        title: "Tell them what to watch while it bleeds",
-        description:
-          "Engineering cannot fix everything before BoltCash ships. For the two findings you rank most dangerous, write a detection that would have caught The Griot in the act — a concrete SIEM/log query or WAF rule, naming the exact field or pattern it keys on and the false-positive rate you would expect. A stopgap they can deploy today beats a fix they land next quarter.",
-        deliverable: "detection-stopgap (Google Doc — two rules, each with the trigger logic and expected noise)",
-      },
-      {
-        id: "findings-report",
-        title: "The report Bayo acts on",
-        description:
-          "Write the finished pentest report: an executive summary a CFO understands, a short threat model, the substantiated findings tied to evidence, the decoy you disproved (state it — it buys trust), the exploit chain, CVSS plus money impact, a remediation order argued by risk reduction per hour of effort, and the detection stopgaps. 6–8 pages. If a finding is not tied to a line of evidence, cut it.",
-        deliverable: "sankofa-pentest-report (Google Doc, 6–8 pages)",
+          "300–500 words, your own writing — graders scan this one hardest for AI patterns. The breach is public: TechCabal ran it this morning, the support queue is on fire, and a journalist you know personally DMs you asking for 'just background, off the record' on what really happened with /legacy-admin/. Separately, someone senior is about to take the fall for the app outliving its kill date, and you hold the timeline that proves who knew what. Write your response: what you say to the journalist and why, what you will and will not put in writing, how you handle the evidence that could protect or implicate a colleague, and the one action you take regardless of what your manager prefers. Name at least one ISC2 Code of Ethics canon (by number) and the NDPA duty that applies once you have confirmed PII left the building.",
+        deliverable:
+          "D4 — Ethics stance (Google Doc or DOCX, 300–500 words, your own writing; cites the ISC2 canon by number and the relevant NDPA section)",
       },
     ],
     resourcesDriveUrl:
@@ -650,11 +640,10 @@ export const STAGE_BRIEFS: Record<
       },
     ],
     sections: [
-      "A findings catalogue the intern discovered unaided — each weakness citing the exact source line, token, or capture request that proves it, with a confidence rating",
-      "The disproved decoy, stated explicitly, with the mechanism that makes it safe (a clean false-positive call, scored as hard as a finding)",
-      "An end-to-end exploit chain with a reproducible PoC per hop, reconciled to the un-annotated HTTP capture and ending at the exfil sample",
-      "A findings table with OWASP category, CVSS vector, chained-with, and quantified business impact in customers and naira",
-      "A remediation plan in priority order (risk reduction per hour of effort) plus two deployable detection stopgaps for what cannot be fixed before BoltCash ships",
+      "D1 — Findings catalogue: every weakness cited to the exact source line / token / capture request (OWASP + CWE), with a confidence rating, plus the disproved decoy and the mechanism that makes it safe",
+      "D2 — Exploit chain + impact: a reproducible PoC per hop reconciled to the un-annotated capture and ending at the exfil sample; a CVSS vector per finding; impact quantified in customers and naira",
+      "D3 — The report: executive summary, threat model, findings tied to evidence, remediation ordered by risk reduction per hour, and two deployable detection stopgaps",
+      "D4 — Ethics stance: 300–500 words, your own writing, the press / disclosure call, citing an ISC2 canon by number and the NDPA duty",
     ],
     commsThread: [
       {
