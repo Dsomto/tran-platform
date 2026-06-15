@@ -41,6 +41,10 @@ type TerminalConfig = {
   files?: Record<string, FileEntry>;
   commands?: Record<string, { output?: string; stderr?: string }>;
   hints?: string[];
+  // Present on server-verified tasks (T3). When set, the terminal is just the
+  // recon scratchpad; the injection itself is submitted to the /verify route via
+  // the separate input below, which checks it server-side and returns the flag.
+  verify?: { kind?: string };
 };
 
 // Pick a sensible default cwd from the seeded files. If the lab seeds
@@ -119,6 +123,10 @@ export default function WebTerminal({ config, context, onAnswerChange }: WidgetP
   const [past, setPast] = useState<string[]>([]);
   const [pastIdx, setPastIdx] = useState<number>(-1);
   const [flagCache, setFlagCache] = useState<string | null>(null);
+  const [injection, setInjection] = useState("");
+  const [verifyMsg, setVerifyMsg] = useState<string | null>(null);
+  const [verifyOk, setVerifyOk] = useState(false);
+  const [verifying, setVerifying] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
   const scrollerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -324,6 +332,39 @@ export default function WebTerminal({ config, context, onAnswerChange }: WidgetP
     onAnswerChange?.({ lastCommand: line, flag: flagCache ?? "" });
   }
 
+  // Server-verified tasks (T3): the salt is withheld from the client, so the
+  // flag can't be rendered locally. The terminal stays the recon scratchpad; the
+  // candidate submits the constructed injection here. On success the /verify
+  // route returns the per-intern flag, which we prefill into the answer box.
+  async function submitInjection() {
+    if (!context.taskId || !injection.trim()) return;
+    setVerifyMsg(null);
+    setVerifyOk(false);
+    setVerifying(true);
+    try {
+      const res = await fetch(
+        `/api/stage/${context.stage}/tasks/${context.taskId}/verify`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ payload: injection }),
+        }
+      );
+      const j = await res.json().catch(() => ({}));
+      if (j.ok && typeof j.flag === "string") {
+        onAnswerChange?.({ flag: j.flag, verified: true });
+        setVerifyOk(true);
+        setVerifyMsg("Verified — the flag has been placed in the answer box below.");
+      } else {
+        setVerifyMsg(j.message ?? j.error ?? "Verification failed.");
+      }
+    } catch {
+      setVerifyMsg("Could not reach the verification service.");
+    } finally {
+      setVerifying(false);
+    }
+  }
+
   function onKey(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -349,6 +390,7 @@ export default function WebTerminal({ config, context, onAnswerChange }: WidgetP
   }
 
   return (
+    <div className="space-y-3">
     <div
       className="rounded-2xl border border-white/10 bg-black text-emerald-300 font-mono text-sm shadow-2xl overflow-hidden"
       onClick={() => inputRef.current?.focus()}
@@ -383,6 +425,43 @@ export default function WebTerminal({ config, context, onAnswerChange }: WidgetP
         </div>
         <div ref={endRef} />
       </div>
+    </div>
+    {c.verify?.kind && (
+      <div className="rounded-2xl border border-white/10 bg-black/40 p-4 space-y-2">
+        <div className="text-xs text-white/50">
+          Submit your injection to the server — it is checked server-side; only a
+          valid extraction releases the flag.
+        </div>
+        <div className="flex gap-2">
+          <input
+            value={injection}
+            onChange={(e) => setInjection(e.target.value)}
+            placeholder="' UNION SELECT …"
+            className="flex-1 bg-black/60 rounded-lg p-2.5 border border-white/10 outline-none font-mono text-sm text-emerald-100"
+            spellCheck={false}
+            autoCorrect="off"
+            autoCapitalize="off"
+            autoComplete="off"
+          />
+          <button
+            onClick={() => void submitInjection()}
+            disabled={verifying || !injection.trim()}
+            className="px-4 py-2 rounded-lg bg-blue-500 hover:bg-blue-400 text-sm font-semibold disabled:opacity-50"
+          >
+            {verifying ? "Verifying…" : "Verify"}
+          </button>
+        </div>
+        {verifyMsg && (
+          <div
+            className={`text-sm font-mono whitespace-pre-wrap break-all ${
+              verifyOk ? "text-emerald-300" : "text-rose-300"
+            }`}
+          >
+            {verifyMsg}
+          </div>
+        )}
+      </div>
+    )}
     </div>
   );
 }

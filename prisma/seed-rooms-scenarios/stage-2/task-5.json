@@ -1,7 +1,7 @@
 {
   "order": 5,
   "title": "The Note That Watched Everyone",
-  "description": "Amaka: 'The search field was bad. The notes feature was worse. The Griot posted something to the notes board and walked away. For the next six hours, every analyst who opened that dashboard executed The Griot's code in their own browser — without clicking anything, without a link, without being tricked. The payload just sat there in the database and fired automatically.'\n\nTunde: 'This is a different class of problem from the previous task, even though the mechanism on the wire looks similar. The persistence — the fact it lives in storage and fires on every render — is what makes it worse, and it is what changes the vulnerability class. Confirm the injection point in the lab.'\n\nIn the pentest finding (task 9) you will be asked which of the two field-class vulnerabilities you'd write up first, and why. Take notes on the difference in blast radius.\n\nReference: OWASP Top 10 2021 A03 Injection; OWASP XSS Prevention Cheat Sheet — Stored XSS section; CWE-79 (Improper Neutralization of Input During Web Page Generation) — variant: Stored.",
+  "description": "Amaka: 'The search field was bad. The notes feature is worse. The Griot posted one note and walked away. For six hours, every analyst who opened the dashboard ran The Griot's code in their own browser — no click, no link. It sat in the database and fired on every render.'\n\nTunde: 'Different class from the last task, even though the wire looks similar. This one is STORED, and it renders in a full HTML body context in the admin review queue — so you do NOT need the attribute-breakout trick from the search field. What you DO need is a payload that targets the admin's session and beacons it out when the admin loads the note. If you paste your reflected-XSS answer from task 4 in here, it will be rejected — the context is different, and confusing the two is exactly the mistake task 9 asks you about.'\n\nAmaka: 'Simulator, same rules: we check the payload's shape, we do not execute it. Confirm the stored injection and capture the flag.'\n\nIn the pentest finding (task 9) you will be asked which of the two field-class vulnerabilities you would write up first, and why. Take notes on the difference in blast radius.\n\nReference: OWASP Top 10 2021 A03 Injection; OWASP XSS Prevention Cheat Sheet — Stored XSS section; CWE-79 (Improper Neutralization of Input During Web Page Generation) — variant: Stored.",
   "maxPoints": 15,
   "kind": "FLAG",
   "widget": "VULN_APP_SIM",
@@ -9,13 +9,13 @@
     "scenario": "notes",
     "triggers": [
       {
-        "regex": "<\\s*script[^>]*>|<\\s*img[^>]+onerror\\s*=|<\\s*svg[^>]+on\\w+\\s*=|<\\s*iframe|<\\s*details[^>]+on\\w+|<\\s*video[^>]+on\\w+",
+        "regex": "^(?=.*<\\s*(?:script|svg[^>]*\\sonload|img[^>]*\\sonerror|body[^>]*\\sonload|details[^>]*\\sontoggle))(?!.*[\"']\\s*>\\s*<)(?=.*(?:document\\.cookie|localStorage|sessionStorage))(?=.*(?:fetch\\(|new\\s+Image|\\.src\\s*=))",
         "renderKind": "text",
-        "response": "Note saved successfully.\n\nContent stored to database: [PAYLOAD PERSISTED WITHOUT SANITISATION]\n\nThis content will be rendered into the page DOM for every user who loads /legacy-admin/dashboard.\nNo link click required. The payload executes on page load.\n\nStored injection confirmed. Flag: {flag}"
+        "response": "Note saved. Payload persisted to the database unescaped.\n\nThis content renders into the admin dashboard DOM for every reviewer, on load, with no interaction. Your payload reads the admin's session and beacons it to an attacker-controlled sink.\n\nStored XSS (admin-context, persistent) confirmed. Flag: {flag}"
       }
     ],
     "fallback": {
-      "response": "Note saved."
+      "response": "Note saved. (Note: this renders in a full HTML body context for the admin — you do not need the search field's attribute-breakout trick here. Your payload must target the admin's session and beacon it out.)"
     }
   },
   "flagSalt": "stage-2-task-5-salt",

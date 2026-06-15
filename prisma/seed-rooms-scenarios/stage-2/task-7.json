@@ -1,24 +1,24 @@
 {
   "order": 7,
   "title": "Classify the Chain",
-  "description": "Amaka has the full list of vulnerabilities confirmed during the investigation. Before the report goes to legal, the classification needs to be precise. The wrong label on a finding changes the remediation guidance and the risk score.\n\nReview what you observed across this investigation — the login bypass, the search field behaviour, the notes injection, the import feature — and identify the option below that correctly names every class of vulnerability in the order they were exploited.\n\nReference: OWASP Top 10 2021 A03 Injection (CWE-89, CWE-79), A01 Broken Access Control, A10 Server-Side Request Forgery (CWE-918).",
+  "description": "Amaka has the full list of vulnerabilities confirmed during the investigation. The classifications are not in dispute — every option below names the same four findings with the same CWEs. What legal needs is the ORDER they were exploited in, because the kill-chain sequence drives the remediation priority and the incident narrative.\n\nReconstruct the chain from what you actually did across this stage: the login (task 3), the search field (task 4), the notes feature (task 5), the import feature (task 6). Pick the option that lists every class in the correct order of exploitation.\n\nReference: OWASP Top 10 2021 A03 Injection (CWE-89, CWE-79), A01 Broken Access Control, A10 Server-Side Request Forgery (CWE-918).",
   "maxPoints": 10,
   "kind": "MULTIPLE_CHOICE",
   "widget": "MCQ_QUIZ",
   "widgetConfig": {
     "choices": [
       "SQL injection (login form, CWE-89) → reflected cross-site scripting (search field, CWE-79) → stored cross-site scripting (notes feature, CWE-79 stored variant) → server-side request forgery (import feature, CWE-918)",
-      "CSRF (login form) → DOM-based XSS (search field) → stored XSS (notes feature) → open redirect (import feature)",
-      "XML injection (login form) → reflected XSS (search field) → second-order XSS (notes feature) → blind SSRF (import feature)",
-      "Command injection (login form) → reflected XSS (import field) → stored XSS (search field) → SSRF (notes feature)"
+      "reflected cross-site scripting (search field, CWE-79) → SQL injection (login form, CWE-89) → server-side request forgery (import feature, CWE-918) → stored cross-site scripting (notes feature, CWE-79 stored variant)",
+      "SQL injection (login form, CWE-89) → stored cross-site scripting (notes feature, CWE-79 stored variant) → reflected cross-site scripting (search field, CWE-79) → server-side request forgery (import feature, CWE-918)",
+      "server-side request forgery (import feature, CWE-918) → SQL injection (login form, CWE-89) → reflected cross-site scripting (search field, CWE-79) → stored cross-site scripting (notes feature, CWE-79 stored variant)"
     ]
   },
   "flagSalt": null,
   "choices": [
     "SQL injection (login form, CWE-89) → reflected cross-site scripting (search field, CWE-79) → stored cross-site scripting (notes feature, CWE-79 stored variant) → server-side request forgery (import feature, CWE-918)",
-    "CSRF (login form) → DOM-based XSS (search field) → stored XSS (notes feature) → open redirect (import feature)",
-    "XML injection (login form) → reflected XSS (search field) → second-order XSS (notes feature) → blind SSRF (import feature)",
-    "Command injection (login form) → reflected XSS (import field) → stored XSS (search field) → SSRF (notes feature)"
+    "reflected cross-site scripting (search field, CWE-79) → SQL injection (login form, CWE-89) → server-side request forgery (import feature, CWE-918) → stored cross-site scripting (notes feature, CWE-79 stored variant)",
+    "SQL injection (login form, CWE-89) → stored cross-site scripting (notes feature, CWE-79 stored variant) → reflected cross-site scripting (search field, CWE-79) → server-side request forgery (import feature, CWE-918)",
+    "server-side request forgery (import feature, CWE-918) → SQL injection (login form, CWE-89) → reflected cross-site scripting (search field, CWE-79) → stored cross-site scripting (notes feature, CWE-79 stored variant)"
   ],
   "correctIndex": 0,
   "minWords": null

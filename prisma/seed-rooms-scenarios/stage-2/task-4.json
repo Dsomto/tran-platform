@@ -1,7 +1,7 @@
 {
   "order": 4,
   "title": "What the Search Field Returned",
-  "description": "Tunde: 'Once inside the dashboard, The Griot tested every input field. The customer search returned something it should not have. The network capture shows they sent one request to that field and the server rendered the value straight back into the response body without escaping.'\n\nAmaka: 'We have reconstructed the search endpoint in the lab. The server-side behaviour is identical to what was running on the night of the breach. Figure out what payload triggers the mishandling, confirm the injection point exists, and capture the flag the server emits when it does.'\n\nIn the pentest finding (task 9) you will need to name the precise vulnerability class — there are at least three related classes in the same family; only one matches what you confirm here. Take notes on the exact payload you sent and the response that came back.\n\nReference: OWASP Top 10 2021 A03 Injection; OWASP XSS Prevention Cheat Sheet; CWE-79 (Improper Neutralization of Input During Web Page Generation).",
+  "description": "Tunde: 'Once inside the dashboard, The Griot tested every input field. The customer search reflects your term straight back into the response — but not where you would hope. It lands inside an HTML attribute, unescaped. A bare <script>alert(1)</script> will NOT fire there: that is not a script context, it is an attribute value. You have to break out of the attribute first, then land an event handler that actually exfiltrates something.'\n\nAmaka: 'This is a simulator — we do not run your JavaScript. We check that your payload has the SHAPE of a working attribute-breakout exfil: it escapes the attribute, fires on an event, and sends data to somewhere an attacker controls. A payload that would not steal a real victim's session does not count. Capture the flag the server emits when your payload is shaped correctly.'\n\nIn the pentest finding (task 9) you will name the precise vulnerability class — at least three related classes live in this family; only one matches what you confirm here. In task 5 you meet its stored cousin — do not confuse them. Note the exact payload you send.\n\nReference: OWASP Top 10 2021 A03 Injection; OWASP XSS Prevention Cheat Sheet (reflected, attribute context); CWE-79 (Improper Neutralization of Input During Web Page Generation).",
   "maxPoints": 15,
   "kind": "FLAG",
   "widget": "VULN_APP_SIM",
@@ -9,13 +9,13 @@
     "scenario": "search",
     "triggers": [
       {
-        "regex": "<\\s*script[^>]*>|<\\s*img[^>]+onerror\\s*=|<\\s*svg[^>]+on\\w+\\s*=|javascript\\s*:|<\\s*iframe|<\\s*body[^>]+on\\w+",
+        "regex": "(?=.*[\"']\\s*>)(?=.*on(?:error|load|mouseover)\\s*=)(?=.*(?:fetch\\(|document\\.cookie|new\\s+Image|\\.src\\s*=))",
         "renderKind": "text",
-        "response": "Search results for your query:\n\n[SERVER RENDERED INPUT UNESCAPED]\n\nContent-Type: text/html\nX-Content-Type-Options: (not set)\n\nThe response body contains the submitted value without HTML encoding.\nA browser loading this response would interpret the markup as part of the page DOM.\n\nInjection confirmed. Flag: {flag}"
+        "response": "Reflected value lands inside an HTML attribute. Your payload escaped the attribute, attached an event handler, and beacons data to an attacker-controlled sink.\n\nA browser rendering this response in attribute context would fire the handler and exfiltrate the session.\n\nReflected XSS (attribute-context breakout) confirmed. Flag: {flag}"
       }
     ],
     "fallback": {
-      "response": "No customers found matching your query."
+      "response": "No customers found matching your query. (Note: a bare <script> tag reflects into an attribute here — it will not fire. Look at where your input actually lands, then break out of it.)"
     }
   },
   "flagSalt": "stage-2-task-4-salt",

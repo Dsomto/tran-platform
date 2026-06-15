@@ -37,6 +37,9 @@ type Config = {
   fallback?: { response: unknown };
   secretSalt?: string;
   secretLen?: number;
+  // Present on server-verified tasks (T6). When set, the active input is sent to
+  // the /verify route, which checks it server-side and returns the flag on success.
+  verify?: { kind?: string };
 };
 
 export default function VulnAppSim({ config, context, onAnswerChange }: WidgetProps) {
@@ -50,6 +53,9 @@ export default function VulnAppSim({ config, context, onAnswerChange }: WidgetPr
   const [matchedHit, setMatchedHit] = useState<Trigger | null>(null);
   const [flag, setFlag] = useState<string | null>(null);
   const [secret, setSecret] = useState<string | null>(null);
+  const [serverError, setServerError] = useState<string | null>(null);
+  const [verifying, setVerifying] = useState(false);
+  const [verified, setVerified] = useState(false);
 
   useEffect(() => {
     let live = true;
@@ -96,7 +102,43 @@ export default function VulnAppSim({ config, context, onAnswerChange }: WidgetPr
     return null;
   }
 
+  // Server-verified tasks (T6): the salt is withheld from the client, so the
+  // flag can't be rendered locally. We POST the input to /verify; on success the
+  // route returns the per-intern flag, which we prefill into the answer box.
+  async function verifyOnServer() {
+    if (!context.taskId) return;
+    setServerError(null);
+    setVerified(false);
+    setVerifying(true);
+    try {
+      const res = await fetch(
+        `/api/stage/${context.stage}/tasks/${context.taskId}/verify`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ payload: activeInput }),
+        }
+      );
+      const j = await res.json().catch(() => ({}));
+      if (j.ok && typeof j.flag === "string") {
+        onAnswerChange?.({ flag: j.flag, verified: true });
+        setMatchedHit(null);
+        setVerified(true);
+      } else {
+        setServerError(j.message ?? j.error ?? "Verification failed.");
+      }
+    } catch {
+      setServerError("Could not reach the verification service.");
+    } finally {
+      setVerifying(false);
+    }
+  }
+
   function submit() {
+    if (c.verify?.kind) {
+      void verifyOnServer();
+      return;
+    }
     const hit = checkTriggers();
     setMatchedHit(hit);
     if (hit) {
@@ -202,7 +244,25 @@ export default function VulnAppSim({ config, context, onAnswerChange }: WidgetPr
         </div>
         <div className="p-6 bg-black/40 min-h-[260px]">
           <div className="text-xs text-white/50 mb-2">Server response</div>
-          {matchedHit ? (
+          {c.verify?.kind ? (
+            verifying ? (
+              <pre className="font-mono text-sm text-white/60 whitespace-pre-wrap break-all">
+                Verifying on the server…
+              </pre>
+            ) : serverError ? (
+              <pre className="font-mono text-sm text-rose-300 whitespace-pre-wrap break-all">
+                {serverError}
+              </pre>
+            ) : verified ? (
+              <pre className="font-mono text-sm text-emerald-200 whitespace-pre-wrap break-all">
+                Verified — the flag has been placed in the answer box below.
+              </pre>
+            ) : (
+              <pre className="font-mono text-sm text-white/60 whitespace-pre-wrap break-all">
+                {" "}
+              </pre>
+            )
+          ) : matchedHit ? (
             <pre className="font-mono text-sm text-emerald-200 whitespace-pre-wrap break-all">
               {templated(matchedHit.response)}
             </pre>

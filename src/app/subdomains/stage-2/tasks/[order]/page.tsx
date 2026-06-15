@@ -45,6 +45,11 @@ export default async function Stage2TaskPage({
       ? (assignment.widgetConfig as Record<string, unknown>)
       : null;
 
+  // Tasks that carry a `verify` block (T3/T6) are graded through the server-side
+  // /verify route, so we withhold the salt from the client to stop the devtools
+  // flag derivation. The candidate gets the flag from POST /verify instead.
+  const verifyServerSide = widgetConfig?.verify != null;
+
   return (
     <StageShell theme={theme} internCode={internCode}>
       <div className="mb-6">
@@ -68,7 +73,8 @@ export default async function Stage2TaskPage({
         context={{
           internId: internId,
           internCode: internCode,
-          flagSalt: assignment.flagSalt ?? null,
+          taskId: assignment.id,
+          flagSalt: verifyServerSide ? null : (assignment.flagSalt ?? null),
           stage: "stage-2",
           accentColor: "#fb7185",
         }}

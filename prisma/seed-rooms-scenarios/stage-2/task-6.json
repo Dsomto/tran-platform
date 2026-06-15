@@ -1,26 +1,20 @@
 {
   "order": 6,
   "title": "The Request the Server Made",
-  "description": "Tunde: 'The IAM credentials were not stolen through the front end. The admin panel had an import feature — submit a URL and the server fetches the content on your behalf. This is where the breach became a full infrastructure compromise.'\n\nAmaka: 'The network capture shows the server making an outbound HTTP request to an address that is only reachable from within the cloud instance itself — a link-local range cloud providers reserve for a service that hands back instance metadata to whatever is running on the box. The Griot knew which exact endpoint to hit on that service to surface the IAM role credentials. Look it up if you don't know it offhand — knowing what to type into that field is half the skill.'\n\nReconstruct the request The Griot made to the import form. The simulated server will respond the same way the production server did.\n\nIn the pentest finding (task 9) you will be asked to name this class precisely, what the cloud-side mitigation is (the v2 of the same metadata service), and one architectural control beyond \"validate the input\" that would have stopped it. Take notes on the metadata endpoint path and the IAM role you saw in the response.\n\nReference: OWASP Top 10 2021 A10 Server-Side Request Forgery; CWE-918 (SSRF); MITRE ATT&CK T1190; AWS IMDSv2 documentation (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/configuring-instance-metadata-service.html).",
+  "description": "Tunde: 'The IAM credentials were not stolen through the front end. The admin panel had an import feature — submit a URL and the server fetches it on your behalf, with no allow-list. The Griot pointed it at cloud metadata and walked out with the role's temporary credentials. This is where the breach became a full infrastructure compromise.'\n\nAmaka: 'Don't just reach the metadata IP. The link-local metadata service has a whole tree under /latest/meta-data/ — most of it is harmless inventory. You have to reach the EXACT IAM credentials path and name the role at the end of it. We resolve and check your URL on the server: reaching /latest/meta-data/ (inventory) is not the same as reaching the credentials, and the server will tell you so. If you know an encoding trick that genuinely normalizes to the metadata IP, it will work — but a userinfo or mapped-address form whose real host is NOT the metadata service will be rejected as a bypass that doesn't normalize.'\n\nReconstruct the request The Griot made and submit it in the import field. There is no flag hidden in a file or a banner here — the server releases the per-intern flag only when your URL actually reaches the IAM credentials path on the metadata host with a role name appended. The XXE artefact (04-import-xxe.xml, file:///etc/passwd) in the evidence pack is a second abuse of this same server-side-fetch feature; reference it in your finding.\n\nIn the pentest finding (task 9) you will be asked to paste the full /latest/meta-data/iam/security-credentials/<role> path and the role name, name this class precisely (SSRF), give the cloud-side mitigation (IMDSv2), and one architectural control beyond \"validate the input\" that would have stopped it.\n\nReference: OWASP Top 10 2021 A10 Server-Side Request Forgery; CWE-918 (SSRF); MITRE ATT&CK T1190; AWS IMDSv2 documentation (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/configuring-instance-metadata-service.html).",
   "maxPoints": 15,
   "kind": "FLAG",
   "widget": "VULN_APP_SIM",
   "widgetConfig": {
     "scenario": "import",
-    "triggers": [
-      {
-        "match": "169.254.169.254",
-        "renderKind": "json",
-        "response": "{\n  \"fetching\": \"http://169.254.169.254/latest/meta-data/\",\n  \"status\": 200,\n  \"body\": {\n    \"ami-id\": \"ami-0abcdef1234567890\",\n    \"instance-id\": \"i-0a1b2c3d4e5f67890\",\n    \"instance-type\": \"t3.medium\",\n    \"placement\": {\"region\": \"af-south-1\", \"availability-zone\": \"af-south-1a\"},\n    \"iam\": {\n      \"security-credentials\": {\n        \"sankofa-prod-role\": {\n          \"AccessKeyId\": \"ASIAREDACTED00000001\",\n          \"SecretAccessKey\": \"REDACTED/REDACTED/REDACTED+REDACTED\",\n          \"Token\": \"IQoJb3JpZ2luX2VjREDACTEDREDACTED==\",\n          \"Expiration\": \"2024-01-14T06:00:00Z\",\n          \"Type\": \"AWS-HMAC\"\n        }\n      }\n    },\n    \"flag\": \"{flag}\"\n  }\n}"
-      },
-      {
-        "regex": "localhost|127\\.0\\.0\\.1|0\\.0\\.0\\.0",
-        "renderKind": "text",
-        "response": "Fetch attempted: internal address blocked by application-layer filter.\nTry the cloud metadata range instead."
-      }
-    ],
+    "verify": {
+      "kind": "ssrf",
+      "metadataIp": "169.254.169.254",
+      "iamPath": "/latest/meta-data/iam/security-credentials/"
+    },
+    "triggers": [],
     "fallback": {
-      "response": "Fetching URL...\n\nHTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: 0\n\n(empty response body)"
+      "response": "Enter the URL the server should fetch, then click Fetch to verify it against the metadata service."
     }
   },
   "flagSalt": "stage-2-task-6-salt",
