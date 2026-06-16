@@ -354,7 +354,7 @@ export default function WebTerminal({ config, context, onAnswerChange }: WidgetP
       if (j.ok && typeof j.flag === "string") {
         onAnswerChange?.({ flag: j.flag, verified: true });
         setVerifyOk(true);
-        setVerifyMsg("Verified — the flag has been placed in the answer box below.");
+        setVerifyMsg("✓ Verified. Your flag is now filled into the \"Your answer\" box below — scroll down and click Submit. You do not type the TRAN{…} yourself.");
       } else {
         setVerifyMsg(j.message ?? j.error ?? "Verification failed.");
       }

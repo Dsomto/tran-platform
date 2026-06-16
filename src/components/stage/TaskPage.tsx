@@ -153,7 +153,18 @@ export default function TaskPageClient(props: TaskPageProps) {
           kind={props.widgetKind}
           config={props.widgetConfig}
           context={props.context}
-          onAnswerChange={setAnswer}
+          onAnswerChange={(a) => {
+            setAnswer(a);
+            // Server-verified FLAG tasks (T3 SQLi / T6 SSRF) return the per-intern
+            // flag through the widget on success and emit `verified: true`. Prefill
+            // the answer box so "the flag has been placed in the answer box below"
+            // is actually true. Gated on `verified` so normal flag-widget output
+            // (e.g. the terminal echoing its client-side flag on every command)
+            // never auto-fills and leaks the answer.
+            if (props.kind === "FLAG" && a.verified === true && typeof a.flag === "string" && a.flag) {
+              setFlag(a.flag);
+            }
+          }}
         />
       </section>
 

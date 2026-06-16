@@ -255,7 +255,9 @@ export default function VulnAppSim({ config, context, onAnswerChange }: WidgetPr
               </pre>
             ) : verified ? (
               <pre className="font-mono text-sm text-emerald-200 whitespace-pre-wrap break-all">
-                Verified — the flag has been placed in the answer box below.
+                ✓ Verified. Your flag is now filled into the &quot;Your answer&quot; box
+                below — scroll down and click Submit. You do not type the TRAN&#123;…&#125;
+                yourself.
               </pre>
             ) : (
               <pre className="font-mono text-sm text-white/60 whitespace-pre-wrap break-all">
