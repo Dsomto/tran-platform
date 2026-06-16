@@ -35,6 +35,31 @@ function deliverableSlug(deliverable: string): string {
   );
 }
 
+/** Stage 2 capstone templates — one editable file per deliverable, hosted under
+ *  /public/capstone/stage-2/. Surfaced as download links in the FAQ below. */
+const STAGE_2_TEMPLATES = [
+  {
+    code: "D1",
+    slug: "stage-2-d1-recon-template",
+    title: "Intrusion reconstruction & access timeline",
+  },
+  {
+    code: "D2",
+    slug: "stage-2-d2-exploit-template",
+    title: "Exploitation proof pack — the full kill-chain",
+  },
+  {
+    code: "D3",
+    slug: "stage-2-d3-report-template",
+    title: "Penetration test finding + board brief",
+  },
+  {
+    code: "D4",
+    slug: "stage-2-d4-ethics-template",
+    title: "The ethics call (exactly 2 pages)",
+  },
+] as const;
+
 export default async function FAQPage() {
   const session = await requireAuth();
 
@@ -197,6 +222,68 @@ export default async function FAQPage() {
                 deliverables as one combined document or as four separate files
                 (D1–D4) — graders accept either, as long as all four areas are
                 covered.
+              </p>
+            </Section>
+          )}
+
+          {currentStage === "STAGE_2" && (
+            <Section
+              icon={FileSignature}
+              title="Start from the templates — one per deliverable"
+            >
+              <p>
+                Don&apos;t build D1–D4 from a blank page. Each deliverable has
+                its <strong>own editable template</strong> with the headings,
+                tables, citation placeholders, and the grader&apos;s
+                discrimination bars already laid out. Replace every{" "}
+                <code>[ bracketed prompt ]</code> with your own work and delete
+                the grey instruction lines before you submit.
+              </p>
+              <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-900 dark:bg-rose-500/15 dark:border-rose-500/30 dark:text-rose-200 text-sm">
+                These are <strong>scaffolds, not answers.</strong> They give you
+                the shape of a top-band submission — they can&apos;t do the work
+                for you. The SQLi and SSRF payloads are checked on the server,
+                and two graders read D4 for your own voice. A template handed in
+                with the brackets still in scores zero for that section.
+              </div>
+
+              <div className="space-y-2">
+                {STAGE_2_TEMPLATES.map((t) => (
+                  <div
+                    key={t.slug}
+                    className="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-surface p-3"
+                  >
+                    <span className="inline-flex items-center justify-center shrink-0 w-9 h-7 rounded-md bg-blue/10 text-blue text-xs font-bold font-mono">
+                      {t.code}
+                    </span>
+                    <span className="text-sm font-semibold text-foreground flex-1 min-w-[12rem]">
+                      {t.title}
+                    </span>
+                    <a
+                      href={`/capstone/stage-2/${t.slug}.docx`}
+                      download
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue text-white text-xs font-semibold hover:bg-blue/90"
+                    >
+                      <FileSignature className="h-3.5 w-3.5" /> .docx
+                    </a>
+                    <a
+                      href={`/capstone/stage-2/${t.slug}.pdf`}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-blue/40 bg-surface text-blue dark:text-blue-300 text-xs font-semibold hover:bg-blue/10"
+                    >
+                      <FileText className="h-3.5 w-3.5" /> .pdf
+                    </a>
+                  </div>
+                ))}
+              </div>
+
+              <p className="text-sm text-muted-foreground">
+                Open the <strong>.docx</strong> in Google Docs (File → Open →
+                Upload) or in Word and edit directly. The <strong>.pdf</strong>{" "}
+                is a read-only preview of the same thing. Remember:{" "}
+                <strong>one file per deliverable</strong> — do not merge D1–D4
+                into a single document.
               </p>
             </Section>
           )}
@@ -398,6 +485,57 @@ export default async function FAQPage() {
               </li>
             </ul>
           </Section>
+
+          {currentStage === "STAGE_2" && (
+            <Section icon={HelpCircle} title="Stage 2 — questions we keep getting">
+              <Q q="Task 3 / Task 6 say “✓ Verified” — do I still type the flag myself?">
+                No. Task 3 (SQL injection) and Task 6 (SSRF) are checked on the
+                server: when your payload is correct, the flag is generated for
+                you and dropped into the &ldquo;Your answer&rdquo; box. Scroll
+                down and click <strong>Submit</strong> — you do not type the{" "}
+                <code>{"TRAN{…}"}</code> yourself. If the box ever looks empty
+                after &ldquo;Verified&rdquo;, hard-refresh (Ctrl/Cmd+Shift+R) and
+                re-run your payload.
+              </Q>
+              <Q q="Is Task 4 a SQL injection challenge?">
+                No — Task 4 is a <strong>cross-site scripting (XSS)</strong> task.
+                The customer search field reflects what you type back into the
+                page without escaping it; your job is to craft input the browser
+                would run as markup, and confirm the injection point. See the
+                task&apos;s references — OWASP A03:2021 Injection / the XSS
+                Prevention Cheat Sheet, CWE-79. Telling it apart from the SQLi
+                task is part of the test.
+              </Q>
+              <Q q="The deliverable mentions a “BoltCash launch timeline” — which evidence file is that?">
+                It isn&apos;t a file. The BoltCash timeline is in your stage
+                briefing / notices: <strong>BoltCash ships in ~6 weeks</strong>.
+                Use that 6-week window as the urgency anchor for your
+                business-impact section, and take the affected-record count from{" "}
+                <code>05-exfil-sample.csv</code>. You&apos;re not missing an
+                artefact.
+              </Q>
+              <Q q="How many findings are there? The task won’t tell me what’s broken.">
+                That&apos;s deliberate. Part of Stage 2 is deciding for yourself
+                what is and isn&apos;t a real, exploitable finding — and
+                disproving the one that looks worse than it is. Catalogue every
+                weakness you can prove from the source, the tokens, and the
+                capture, and cite the exact line or request for each.
+              </Q>
+              <Q q="The task pages are dark and the light/dark toggle doesn’t change them — is that broken?">
+                No, that&apos;s intentional. The task environment (terminal, log
+                viewer, app simulator) is a fixed dark console theme. The
+                light/dark toggle styles the main dashboard — profile, reports,
+                leaderboard, team — not the task pages.
+              </Q>
+              <Q q="Where do I download the Stage 2 evidence pack?">
+                On the capstone page (<code>/dashboard/reports/STAGE_2</code>) and
+                on the Stage 2 landing page: the five files — the recovered login
+                source, the HTTP capture, the tokens, the XML import, and the
+                exfil sample. Download each, analyse it locally, and cite specific
+                lines in your deliverables.
+              </Q>
+            </Section>
+          )}
 
           <Section icon={HelpCircle} title="The other questions we keep getting">
             <Q q="Can I work with another intern?">
