@@ -22,10 +22,12 @@ https://ubuntubridgeinitiatives.org/capstone/stage-2/00-mission-brief.pdf
 
 **Editable templates — one per deliverable — are on your dashboard FAQ** (`/dashboard/faq`, the "Start from the templates" section) and direct-linked below. Each opens in Google Docs or Word; replace every `[ bracketed prompt ]`, delete the grey instruction lines, and submit one file per deliverable. They are **scaffolds, not answers** — the SQLi/SSRF payloads are server-checked and D4 is read for your own voice, so a template handed in with the brackets still in scores zero.
 
-- **D1 — Intrusion reconstruction & access timeline:** https://ubuntubridgeinitiatives.org/capstone/stage-2/stage-2-d1-recon-template.docx ( [.pdf preview](https://ubuntubridgeinitiatives.org/capstone/stage-2/stage-2-d1-recon-template.pdf) )
-- **D2 — Exploitation proof pack (the kill-chain):** https://ubuntubridgeinitiatives.org/capstone/stage-2/stage-2-d2-exploit-template.docx ( [.pdf preview](https://ubuntubridgeinitiatives.org/capstone/stage-2/stage-2-d2-exploit-template.pdf) )
-- **D3 — Penetration test finding + board brief:** https://ubuntubridgeinitiatives.org/capstone/stage-2/stage-2-d3-report-template.docx ( [.pdf preview](https://ubuntubridgeinitiatives.org/capstone/stage-2/stage-2-d3-report-template.pdf) )
-- **D4 — The ethics call:** https://ubuntubridgeinitiatives.org/capstone/stage-2/stage-2-d4-ethics-template.docx ( [.pdf preview](https://ubuntubridgeinitiatives.org/capstone/stage-2/stage-2-d4-ethics-template.pdf) )
+- **D1 — Intrusion reconstruction & access timeline:** https://ubuntubridgeinitiatives.org/capstone/stage-2/stage-2-d1-recon-template.docx
+- **D2 — Exploitation proof pack (the kill-chain):** https://ubuntubridgeinitiatives.org/capstone/stage-2/stage-2-d2-exploit-template.docx
+- **D3 — Penetration test finding + board brief:** https://ubuntubridgeinitiatives.org/capstone/stage-2/stage-2-d3-report-template.docx
+- **D4 — The ethics call:** https://ubuntubridgeinitiatives.org/capstone/stage-2/stage-2-d4-ethics-template.docx
+
+The files are **.docx** so you can edit them straight in Google Docs or Word. Want a PDF to keep? Finish your document and use **File → Download → PDF** — that gives you a clean PDF of your own work.
 
 Full sample reports for a *different* fictional client are published on the capstone page (`/dashboard/reports/STAGE_2`). Use the samples to study the form and length — **do not copy the content.**
 

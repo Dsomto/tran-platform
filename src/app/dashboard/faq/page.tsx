@@ -60,6 +60,36 @@ const STAGE_2_TEMPLATES = [
   },
 ] as const;
 
+/** Plain-language "what to actually do + where the marks are" for each Stage 2
+ *  deliverable. Mirrors the template guidance as web content, so interns get
+ *  the full picture even without opening a download. */
+const STAGE_2_PLAYBOOK = [
+  {
+    code: "D1",
+    title: "Intrusion reconstruction & access timeline (3–5 pages)",
+    do: "Build a UTC timeline from the first scan to the first data exfil, one row per attacker action (Time · Event · Source artefact · Why it matters), with a sentence of commentary under each row.",
+    win: "Prove the first LIVE data came from Elasticsearch, not Redis, using the clock (03:06:44 is after the scan was cut off at 03:06:12). Name the attacker IP by behaviour — the python-requests user-agent that actually retrieved .env — not by who appeared first.",
+  },
+  {
+    code: "D2",
+    title: "Exploitation proof pack — the kill-chain (3–5 pages)",
+    do: "One section per link, in exploit order: SQL injection → reflected XSS → stored XSS → SSRF. For each, paste your EXACT payload and the VERBATIM server/lab response (your flag) that proves it worked.",
+    win: "The SQLi and SSRF payloads are checked on the server — a described exploit scores nothing. Include your first failed attempt for both. Keep reflected XSS (search field) and stored XSS (notes) in separate sections — confusing them is the most common mistake.",
+  },
+  {
+    code: "D3",
+    title: "Pen-test finding + board brief (3–5 pages)",
+    do: "Pick ONE vuln (SQLi or SSRF). Write the formal finding — Title, CVSS v3.1 vector, reproduction with a curl, impact, root cause, the fix AND what would NOT fix it, OWASP+CWE+MITRE refs, evidence appendix, retest plan, proof of work — then a one-page jargon-free board brief.",
+    win: "Correct CVSS vector (the SSRF usually scores higher — scope change to cloud credentials). Name the root CAUSE (string-concatenated SQL), not the symptom ('input not validated'). Citing a decoy as load-bearing costs you (−4).",
+  },
+  {
+    code: "D4",
+    title: "The ethics call — exactly 2 pages",
+    do: "Two one-page answers in your own voice: the scope-line/real-PII dilemma, and the out-of-scope host you discover. Name the ISC2 Code of Ethics canon AND the NDPA obligation that applies, and say what the right choice costs you.",
+    win: "Anchor every answer to what YOU did in Stage 2. Two graders read D4 independently; if both find it generic or untraceable to your own work, it is treated as not submitted.",
+  },
+] as const;
+
 export default async function FAQPage() {
   const session = await requireAuth();
 
@@ -264,15 +294,7 @@ export default async function FAQPage() {
                       download
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue text-white text-xs font-semibold hover:bg-blue/90"
                     >
-                      <FileSignature className="h-3.5 w-3.5" /> .docx
-                    </a>
-                    <a
-                      href={`/capstone/stage-2/${t.slug}.pdf`}
-                      target="_blank"
-                      rel="noreferrer noopener"
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-blue/40 bg-surface text-blue dark:text-blue-300 text-xs font-semibold hover:bg-blue/10"
-                    >
-                      <FileText className="h-3.5 w-3.5" /> .pdf
+                      <FileSignature className="h-3.5 w-3.5" /> Download .docx
                     </a>
                   </div>
                 ))}
@@ -280,11 +302,132 @@ export default async function FAQPage() {
 
               <p className="text-sm text-muted-foreground">
                 Open the <strong>.docx</strong> in Google Docs (File → Open →
-                Upload) or in Word and edit directly. The <strong>.pdf</strong>{" "}
-                is a read-only preview of the same thing. Remember:{" "}
+                Upload) or in Word and edit directly. Everything the template
+                tells you is also written out below in{" "}
+                <strong>&ldquo;How to nail each deliverable&rdquo;</strong> — so
+                if a download ever looks off, the FAQ on this page is the
+                canonical guide. Remember:{" "}
                 <strong>one file per deliverable</strong> — do not merge D1–D4
                 into a single document.
               </p>
+            </Section>
+          )}
+
+          {currentStage === "STAGE_2" && (
+            <Section icon={CheckCircle2} title="How to nail each deliverable">
+              <p>
+                This is the whole template in plain words. Do the lab first and
+                keep a scratch file — payloads, server responses, timestamps,
+                your flags. Then build each deliverable from it.
+              </p>
+              <div className="space-y-3">
+                {STAGE_2_PLAYBOOK.map((d) => (
+                  <div
+                    key={d.code}
+                    className="rounded-xl border border-border bg-surface p-4"
+                  >
+                    <div className="flex items-center gap-2.5 mb-2.5">
+                      <span className="inline-flex items-center justify-center shrink-0 w-9 h-7 rounded-md bg-blue/10 text-blue text-xs font-bold font-mono">
+                        {d.code}
+                      </span>
+                      <h3 className="text-sm font-bold text-foreground">
+                        {d.title}
+                      </h3>
+                    </div>
+                    <div className="space-y-1.5 text-sm leading-relaxed">
+                      <p>
+                        <span className="font-semibold text-foreground">
+                          Do this:
+                        </span>{" "}
+                        <span className="text-foreground/80">{d.do}</span>
+                      </p>
+                      <p>
+                        <span className="font-semibold text-foreground">
+                          Where the marks are:
+                        </span>{" "}
+                        <span className="text-foreground/80">{d.win}</span>
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Section>
+          )}
+
+          {currentStage === "STAGE_2" && (
+            <Section
+              icon={HelpCircle}
+              title="Stage 2 — the questions we keep getting"
+            >
+              <Q q="How do I actually submit Stage 2? (step by step)">
+                Write your four documents (D1–D4) in Google Docs or Word. Put
+                all four in <strong>one</strong> Google Drive folder named{" "}
+                <code>UBI-STAGE2_&lt;Surname&gt;_&lt;InternCode&gt;</code>. Set the
+                folder sharing to <strong>&ldquo;Anyone with the link →
+                Viewer&rdquo;</strong> and check it in an incognito window. Then
+                go to <code>/dashboard/reports/STAGE_2</code>, paste the{" "}
+                <strong>folder URL</strong>, type your{" "}
+                <strong>75-word executive summary</strong>, and click Submit. You
+                can re-submit any time until Stage 2 closes.
+              </Q>
+              <Q q="The template looked off when I opened it. What do I use?">
+                Open the <strong>.docx</strong> (the download button above) in
+                Google Docs (File → Open → Upload) or Word — it carries the
+                branded layout, headings, tables, and prompts. If you ever want a
+                PDF, finish your doc and use{" "}
+                <strong>File → Download → PDF</strong> — that gives you a clean
+                PDF of your own work. Either way, everything the template says is
+                also written out in{" "}
+                <strong>&ldquo;How to nail each deliverable&rdquo;</strong> above,
+                so this FAQ page is always the canonical guide.
+              </Q>
+              <Q q="What goes in the 75-word executive summary?">
+                Four things, in plain English: which vulnerability you wrote up
+                in D3, the root cause in one line, the highest-risk impact, and
+                your CVSS base score. It is typed into the form on the platform —{" "}
+                <strong>not</strong> inside any of the four documents.
+              </Q>
+              <Q q="How do I prove the SQL injection / SSRF actually worked?">
+                Paste your <strong>exact payload</strong> and the{" "}
+                <strong>verbatim server response</strong> (your flag or the
+                verifier&apos;s success output). These two are checked on the
+                server — a described exploit scores nothing, a working one
+                scores. Also paste your <strong>first failed attempt</strong> and
+                one line on why it failed; a clean one-shot with no failure reads
+                as copied.
+              </Q>
+              <Q q="Reflected vs stored XSS — how do I tell them apart in my write-up?">
+                <strong>Reflected</strong> lives in the request and is echoed
+                back in that same response (the search field) — blast radius is
+                &ldquo;anyone who clicks my crafted link.&rdquo;{" "}
+                <strong>Stored</strong> is saved server-side (the notes/comments
+                feature) and fires for <em>every</em> viewer of the page, no link
+                needed. Give them <strong>separate sections</strong> in D2 —
+                merging them costs marks.
+              </Q>
+              <Q q="The brief points at Redis, but is that right?">
+                No — that is the trap. The first <em>live</em> customer data came
+                from the unauthenticated <strong>Elasticsearch</strong> service.
+                Prove it with the clock: the first live query at{" "}
+                <code>03:06:44</code> happened <em>after</em> the scan was cut off
+                at <code>03:06:12</code>. Citing Redis (or an inline{" "}
+                <code>TRAN&#123;not-here&#125;</code> token) as load-bearing loses
+                points in D1 and again in D3.
+              </Q>
+              <Q q="Which IP is the attacker?">
+                Not the first one to touch <code>/legacy-admin</code>. The
+                attacker is the source whose user-agent is a tool
+                (<code>python-requests</code>) and that actually{" "}
+                <strong>retrieved <code>.env</code></strong>. Attribute by
+                behaviour, not by order of appearance.
+              </Q>
+              <Q q="What CVSS do I use, and can a decoy really cost me marks?">
+                Use a <strong>CVSS v3.1 vector</strong> in D3 and justify each
+                metric — the SSRF often scores higher because it changes scope
+                (web app → cloud credentials). And yes: citing a decoy as
+                load-bearing evidence is an explicit deduction (−4 in D3), so
+                trust the timestamps over the banner.
+              </Q>
             </Section>
           )}
 
