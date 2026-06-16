@@ -20,7 +20,14 @@ https://ubuntubridgeinitiatives.org/capstone/stage-2/00-mission-brief.pdf
 
 ## Templates & samples
 
-Editable templates (one per deliverable) and full sample reports for a *different* fictional client are published on the capstone page (`/dashboard/reports/STAGE_2`). Use the samples to study the form and length — **do not copy the content.** If a link 404s, the file is still being published; check the capstone page.
+**Editable templates — one per deliverable — are on your dashboard FAQ** (`/dashboard/faq`, the "Start from the templates" section) and direct-linked below. Each opens in Google Docs or Word; replace every `[ bracketed prompt ]`, delete the grey instruction lines, and submit one file per deliverable. They are **scaffolds, not answers** — the SQLi/SSRF payloads are server-checked and D4 is read for your own voice, so a template handed in with the brackets still in scores zero.
+
+- **D1 — Intrusion reconstruction & access timeline:** https://ubuntubridgeinitiatives.org/capstone/stage-2/stage-2-d1-recon-template.docx ( [.pdf preview](https://ubuntubridgeinitiatives.org/capstone/stage-2/stage-2-d1-recon-template.pdf) )
+- **D2 — Exploitation proof pack (the kill-chain):** https://ubuntubridgeinitiatives.org/capstone/stage-2/stage-2-d2-exploit-template.docx ( [.pdf preview](https://ubuntubridgeinitiatives.org/capstone/stage-2/stage-2-d2-exploit-template.pdf) )
+- **D3 — Penetration test finding + board brief:** https://ubuntubridgeinitiatives.org/capstone/stage-2/stage-2-d3-report-template.docx ( [.pdf preview](https://ubuntubridgeinitiatives.org/capstone/stage-2/stage-2-d3-report-template.pdf) )
+- **D4 — The ethics call:** https://ubuntubridgeinitiatives.org/capstone/stage-2/stage-2-d4-ethics-template.docx ( [.pdf preview](https://ubuntubridgeinitiatives.org/capstone/stage-2/stage-2-d4-ethics-template.pdf) )
+
+Full sample reports for a *different* fictional client are published on the capstone page (`/dashboard/reports/STAGE_2`). Use the samples to study the form and length — **do not copy the content.**
 
 ---
 
