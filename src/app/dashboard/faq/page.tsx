@@ -40,23 +40,23 @@ function deliverableSlug(deliverable: string): string {
 const STAGE_2_TEMPLATES = [
   {
     code: "D1",
-    slug: "stage-2-d1-recon-template",
-    title: "Intrusion reconstruction & access timeline",
+    slug: "stage-2-d1-findings-template",
+    title: "Findings catalogue (and the decoy you disprove)",
   },
   {
     code: "D2",
-    slug: "stage-2-d2-exploit-template",
-    title: "Exploitation proof pack — the full kill-chain",
+    slug: "stage-2-d2-chain-template",
+    title: "Exploit chain + CVSS and business impact",
   },
   {
     code: "D3",
     slug: "stage-2-d3-report-template",
-    title: "Penetration test finding + board brief",
+    title: "The report Bayo acts on (+ detection stopgaps)",
   },
   {
     code: "D4",
     slug: "stage-2-d4-ethics-template",
-    title: "The ethics call (exactly 2 pages)",
+    title: "Ethics stance (300–500 words)",
   },
 ] as const;
 
@@ -66,27 +66,27 @@ const STAGE_2_TEMPLATES = [
 const STAGE_2_PLAYBOOK = [
   {
     code: "D1",
-    title: "Intrusion reconstruction & access timeline (3–5 pages)",
-    do: "Build a UTC timeline from the first scan to the first data exfil, one row per attacker action (Time · Event · Source artefact · Why it matters), with a sentence of commentary under each row.",
-    win: "Prove the first LIVE data came from Elasticsearch, not Redis, using the clock (03:06:44 is after the scan was cut off at 03:06:12). Name the attacker IP by behaviour — the python-requests user-agent that actually retrieved .env — not by who appeared first.",
+    title: "Findings catalogue (and the decoy you disprove)",
+    do: "Catalogue every weakness you can substantiate from the evidence pack — one row each: a one-line description, the class (OWASP 2021 category AND CWE id), and the exact line or request that proves it (quote it). Then handle the decoy: the one construct that looks hand-rolled and dangerous — decide if it is exploitable and prove your verdict either way.",
+    win: "Nobody tells you how many findings there are — coverage with quotable evidence is the work. Correct OWASP + CWE on every row. A confident, mechanism-level disproof of the decoy scores as hard as a real finding; flagging a safe construct Critical costs you.",
   },
   {
     code: "D2",
-    title: "Exploitation proof pack — the kill-chain (3–5 pages)",
-    do: "One section per link, in exploit order: SQL injection → reflected XSS → stored XSS → SSRF. For each, paste your EXACT payload and the VERBATIM server/lab response (your flag) that proves it worked.",
-    win: "The SQLi and SSRF payloads are checked on the server — a described exploit scores nothing. Include your first failed attempt for both. Keep reflected XSS (search field) and stored XSS (notes) in separate sections — confusing them is the most common mistake.",
+    title: "Exploit chain + CVSS and business impact",
+    do: "Rebuild the attacker's path as one chain — first contact to exfiltration. Give every hop a concrete PoC (the exact request, the forged token shown as header.payload.signature, or the exact XML body), reconcile each to a line in the HTTP capture, and end at the exfil sample. Then score every finding with a full CVSS 3.1 vector string and quantify impact.",
+    win: "PoCs, not prose — show the artefact. Every hop reconciles to a capture line; the chain runs unbroken to the 312-row PII export. CVSS as a complete vector (a bare number is rejected), with scope reasoning. Impact in customers and naira, tied to the BoltCash launch clock.",
   },
   {
     code: "D3",
-    title: "Pen-test finding + board brief (3–5 pages)",
-    do: "Pick ONE vuln (SQLi or SSRF). Write the formal finding — Title, CVSS v3.1 vector, reproduction with a curl, impact, root cause, the fix AND what would NOT fix it, OWASP+CWE+MITRE refs, evidence appendix, retest plan, proof of work — then a one-page jargon-free board brief.",
-    win: "Correct CVSS vector (the SSRF usually scores higher — scope change to cloud credentials). Name the root CAUSE (string-concatenated SQL), not the symptom ('input not validated'). Citing a decoy as load-bearing costs you (−4).",
+    title: "The report Bayo acts on (+ detection stopgaps)",
+    do: "Write the finished 6–8 page pentest report engineering will use: exec summary a CFO understands, short threat model, the findings tied to evidence, the decoy you disproved, the exploit chain, CVSS + money impact, a remediation order, and two deployable detection stopgaps for your most dangerous findings.",
+    win: "Rank remediation by RISK REDUCTION PER HOUR OF EFFORT, not severity alone — and defend the order. Stopgaps must name an exact field/pattern (a SIEM query or WAF rule) and an expected false-positive rate. Stating the disproved decoy buys trust. Cut any finding not tied to a line of evidence.",
   },
   {
     code: "D4",
-    title: "The ethics call — exactly 2 pages",
-    do: "Two one-page answers in your own voice: the scope-line/real-PII dilemma, and the out-of-scope host you discover. Name the ISC2 Code of Ethics canon AND the NDPA obligation that applies, and say what the right choice costs you.",
-    win: "Anchor every answer to what YOU did in Stage 2. Two graders read D4 independently; if both find it generic or untraceable to your own work, it is treated as not submitted.",
+    title: "Ethics stance — 300–500 words",
+    do: "One continuous response in your own voice on the pressure call: what you say to the journalist who wants 'off the record', what you will and won't put in writing, how you handle evidence that could implicate a senior colleague, and the one action you take regardless of your manager. Cite at least one ISC2 canon by number and the NDPA breach-notification duty.",
+    win: "Anchor at least one sentence to your own Stage 2 work. Make a real decision with consequences, not a balanced essay. Graders scan this one hardest for AI — two read it independently, and if both find it generic or untraceable to your work, it is treated as not submitted.",
   },
 ] as const;
 
@@ -271,10 +271,11 @@ export default async function FAQPage() {
               </p>
               <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-900 dark:bg-rose-500/15 dark:border-rose-500/30 dark:text-rose-200 text-sm">
                 These are <strong>scaffolds, not answers.</strong> They give you
-                the shape of a top-band submission — they can&apos;t do the work
-                for you. The SQLi and SSRF payloads are checked on the server,
-                and two graders read D4 for your own voice. A template handed in
-                with the brackets still in scores zero for that section.
+                the shape of a top-band submission — but the findings, the
+                evidence quotes, the CVSS vectors, the decoy verdict, and your
+                ethics call are yours to do. The capstone is graded by humans
+                against the evidence pack; a template handed in with the brackets
+                still in scores zero for that section.
               </div>
 
               <div className="space-y-2">
@@ -316,9 +317,12 @@ export default async function FAQPage() {
           {currentStage === "STAGE_2" && (
             <Section icon={CheckCircle2} title="How to nail each deliverable">
               <p>
-                This is the whole template in plain words. Do the lab first and
-                keep a scratch file — payloads, server responses, timestamps,
-                your flags. Then build each deliverable from it.
+                This is the whole template in plain words. Read the five
+                evidence files closely first and keep a working note — the lines
+                you will quote, the tokens you decode, the capture timestamps,
+                the exfil numbers. Then build each deliverable from it. The
+                capstone is paper-based: no scans, no live targets — everything
+                you need is in the evidence pack.
               </p>
               <div className="space-y-3">
                 {STAGE_2_PLAYBOOK.map((d) => (
@@ -359,74 +363,82 @@ export default async function FAQPage() {
               icon={HelpCircle}
               title="Stage 2 — the questions we keep getting"
             >
+              <Q q="The desk tasks are also labelled D1–D4 — is the capstone the same thing?">
+                No — they are two separate pieces of work. The{" "}
+                <strong>desk tasks</strong> are the in-platform lab you click
+                through. The <strong>capstone</strong> is the four documents
+                (D1–D4) you write <em>off-platform</em> from the evidence pack and
+                submit as one Drive folder — and it is the part that carries the
+                bulk of your Stage 2 score. The capstone D1–D4 are: D1 Findings
+                catalogue, D2 Exploit chain + CVSS &amp; impact, D3 the report
+                Bayo acts on, D4 Ethics stance. Those are what the templates above
+                cover. <strong>Do not scrap them</strong> — that <em>is</em> the
+                capstone.
+              </Q>
               <Q q="How do I actually submit Stage 2? (step by step)">
-                Write your four documents (D1–D4) in Google Docs or Word. Put
-                all four in <strong>one</strong> Google Drive folder named{" "}
+                Write your four documents (D1–D4) in Google Docs or Word. Put all
+                four in <strong>one</strong> Google Drive folder named{" "}
                 <code>UBI-STAGE2_&lt;Surname&gt;_&lt;InternCode&gt;</code>. Set the
                 folder sharing to <strong>&ldquo;Anyone with the link →
-                Viewer&rdquo;</strong> and check it in an incognito window. Then
-                go to <code>/dashboard/reports/STAGE_2</code>, paste the{" "}
-                <strong>folder URL</strong>, type your{" "}
-                <strong>75-word executive summary</strong>, and click Submit. You
+                Viewer&rdquo;</strong> and check it in an incognito window. Then go
+                to <code>/dashboard/reports/STAGE_2</code>, paste the{" "}
+                <strong>folder URL</strong>, write a short{" "}
+                <strong>executive summary</strong> (a few sentences for a
+                board-level reader — up to 5,000 characters), and click Submit. You
                 can re-submit any time until Stage 2 closes.
               </Q>
-              <Q q="The template looked off when I opened it. What do I use?">
+              <Q q="The download looked off when I opened it. What do I use?">
                 Open the <strong>.docx</strong> (the download button above) in
-                Google Docs (File → Open → Upload) or Word — it carries the
-                branded layout, headings, tables, and prompts. If you ever want a
-                PDF, finish your doc and use{" "}
-                <strong>File → Download → PDF</strong> — that gives you a clean
-                PDF of your own work. Either way, everything the template says is
-                also written out in{" "}
+                Google Docs (File → Open → Upload) or Word — it carries the branded
+                layout, headings, tables, and prompts. If you ever want a PDF,
+                finish your doc and use <strong>File → Download → PDF</strong> for a
+                clean copy of your own work. Either way, everything the template
+                says is also written out in{" "}
                 <strong>&ldquo;How to nail each deliverable&rdquo;</strong> above,
                 so this FAQ page is always the canonical guide.
               </Q>
-              <Q q="What goes in the 75-word executive summary?">
-                Four things, in plain English: which vulnerability you wrote up
-                in D3, the root cause in one line, the highest-risk impact, and
-                your CVSS base score. It is typed into the form on the platform —{" "}
+              <Q q="What goes in the executive summary on the platform?">
+                A few plain-English sentences for a board-level reader: the worst
+                thing an attacker can do with this app, how many customers and
+                roughly how much money is at risk, and the single fix you would do
+                first. It is typed into the submission form —{" "}
                 <strong>not</strong> inside any of the four documents.
               </Q>
-              <Q q="How do I prove the SQL injection / SSRF actually worked?">
-                Paste your <strong>exact payload</strong> and the{" "}
-                <strong>verbatim server response</strong> (your flag or the
-                verifier&apos;s success output). These two are checked on the
-                server — a described exploit scores nothing, a working one
-                scores. Also paste your <strong>first failed attempt</strong> and
-                one line on why it failed; a clean one-shot with no failure reads
-                as copied.
+              <Q q="How do I prove a finding — is anything checked on the server?">
+                No. The capstone is <strong>paper-based and human-graded</strong> —
+                there is no live target and nothing auto-checks your work. You
+                prove a finding by <strong>quoting the exact line or request</strong>{" "}
+                that shows it (from the source, the tokens, the XML, or the capture)
+                and giving a reproducible PoC — the exact request, the forged token
+                shown as <code>header.payload.signature</code>, or the exact XML
+                body. A described exploit scores nothing; a shown one scores.
               </Q>
-              <Q q="Reflected vs stored XSS — how do I tell them apart in my write-up?">
-                <strong>Reflected</strong> lives in the request and is echoed
-                back in that same response (the search field) — blast radius is
-                &ldquo;anyone who clicks my crafted link.&rdquo;{" "}
-                <strong>Stored</strong> is saved server-side (the notes/comments
-                feature) and fires for <em>every</em> viewer of the page, no link
-                needed. Give them <strong>separate sections</strong> in D2 —
-                merging them costs marks.
+              <Q q="How many findings are there, and is there really a decoy?">
+                Nobody tells you the count — finding them all is the work.
+                Catalogue every weakness you can substantiate from the source, the
+                three tokens, the XML import, and the capture. And yes: one
+                construct looks hand-rolled and dangerous but may be safe. Decide
+                whether it is exploitable and <strong>prove your verdict either
+                way</strong> — a mechanism-level disproof scores as hard as a real
+                finding, and flagging a safe construct Critical costs you. Trust the
+                code, not the developer&apos;s comments.
               </Q>
-              <Q q="The brief points at Redis, but is that right?">
-                No — that is the trap. The first <em>live</em> customer data came
-                from the unauthenticated <strong>Elasticsearch</strong> service.
-                Prove it with the clock: the first live query at{" "}
-                <code>03:06:44</code> happened <em>after</em> the scan was cut off
-                at <code>03:06:12</code>. Citing Redis (or an inline{" "}
-                <code>TRAN&#123;not-here&#125;</code> token) as load-bearing loses
-                points in D1 and again in D3.
+              <Q q="How do I score CVSS, and what about the chain?">
+                Give every substantiated finding a full{" "}
+                <strong>CVSS 3.1 vector string</strong> — a bare number is rejected.
+                Justify the non-obvious metrics, especially any{" "}
+                <strong>scope change (S:C)</strong> where a flaw in{" "}
+                <code>/legacy-admin/</code> yields access or data for the wider
+                platform. Where two weaknesses only matter together, score the{" "}
+                <strong>chain</strong>, not just the parts.
               </Q>
-              <Q q="Which IP is the attacker?">
-                Not the first one to touch <code>/legacy-admin</code>. The
-                attacker is the source whose user-agent is a tool
-                (<code>python-requests</code>) and that actually{" "}
-                <strong>retrieved <code>.env</code></strong>. Attribute by
-                behaviour, not by order of appearance.
-              </Q>
-              <Q q="What CVSS do I use, and can a decoy really cost me marks?">
-                Use a <strong>CVSS v3.1 vector</strong> in D3 and justify each
-                metric — the SSRF often scores higher because it changes scope
-                (web app → cloud credentials). And yes: citing a decoy as
-                load-bearing evidence is an explicit deduction (−4 in D3), so
-                trust the timestamps over the banner.
+              <Q q="What must D4 (the ethics stance) cite?">
+                At least one <strong>ISC2 Code of Ethics canon, by number</strong>,
+                and the <strong>NDPA</strong> breach-notification duty that applies
+                once you have confirmed PII left the building. 300–500 words, your
+                own voice, and anchor at least one sentence to your own Stage 2
+                work — two graders read it independently and a generic, untraceable
+                answer is treated as not submitted.
               </Q>
             </Section>
           )}

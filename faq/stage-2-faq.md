@@ -22,10 +22,10 @@ https://ubuntubridgeinitiatives.org/capstone/stage-2/00-mission-brief.pdf
 
 **Editable templates — one per deliverable — are on your dashboard FAQ** (`/dashboard/faq`, the "Start from the templates" section) and direct-linked below. Each opens in Google Docs or Word; replace every `[ bracketed prompt ]`, delete the grey instruction lines, and submit one file per deliverable. They are **scaffolds, not answers** — the SQLi/SSRF payloads are server-checked and D4 is read for your own voice, so a template handed in with the brackets still in scores zero.
 
-- **D1 — Intrusion reconstruction & access timeline:** https://ubuntubridgeinitiatives.org/capstone/stage-2/stage-2-d1-recon-template.docx
-- **D2 — Exploitation proof pack (the kill-chain):** https://ubuntubridgeinitiatives.org/capstone/stage-2/stage-2-d2-exploit-template.docx
-- **D3 — Penetration test finding + board brief:** https://ubuntubridgeinitiatives.org/capstone/stage-2/stage-2-d3-report-template.docx
-- **D4 — The ethics call:** https://ubuntubridgeinitiatives.org/capstone/stage-2/stage-2-d4-ethics-template.docx
+- **D1 — Findings catalogue (and the decoy you disprove):** https://ubuntubridgeinitiatives.org/capstone/stage-2/stage-2-d1-findings-template.docx
+- **D2 — Exploit chain + CVSS and business impact:** https://ubuntubridgeinitiatives.org/capstone/stage-2/stage-2-d2-chain-template.docx
+- **D3 — The report Bayo acts on (+ detection stopgaps):** https://ubuntubridgeinitiatives.org/capstone/stage-2/stage-2-d3-report-template.docx
+- **D4 — Ethics stance:** https://ubuntubridgeinitiatives.org/capstone/stage-2/stage-2-d4-ethics-template.docx
 
 The files are **.docx** so you can edit them straight in Google Docs or Word. Want a PDF to keep? Finish your document and use **File → Download → PDF** — that gives you a clean PDF of your own work.
 
@@ -118,12 +118,14 @@ Not as a separate platform submission — but **keep notes as you go**: every pa
 
 ## What are the four deliverables?
 
-1. **D1 — Intrusion reconstruction & access timeline** (3–5 pages)
-2. **D2 — Exploitation proof pack: the full kill-chain** (3–5 pages)
-3. **D3 — Penetration test finding + board brief** (3–5 pages)
-4. **D4 — The ethics call** (exactly 2 pages) — the judgment essay, last deliverable
+1. **D1 — Findings catalogue (and the decoy you disprove)** — every weakness you can substantiate from the evidence, each tied to an exact line, plus the one decoy you exploit or disprove
+2. **D2 — Exploit chain + CVSS and business impact** — the attacker's path rebuilt as one chain, a PoC per hop, a CVSS 3.1 vector per finding, impact in customers and naira
+3. **D3 — The report Bayo acts on (+ detection stopgaps)** (6–8 pages) — the finished pentest report: exec summary, threat model, findings, the disproved decoy, remediation order by risk-reduction-per-hour, and two detection stopgaps
+4. **D4 — Ethics stance** (300–500 words) — the call you make under pressure, citing an ISC2 canon by number and the NDPA duty
 
-Total intern-written work: 11–17 pages. Each is its own file (see saving rules below).
+Each is its own file (see saving rules below).
+
+> Note: the deliverables above are the **canonical Stage 2 capstone** — they match the submission form and the dashboard FAQ. Older drafts of this document described a different D1–D4 (intrusion timeline / kill-chain / board brief); ignore those, this list is current.
 
 ## Where does the writing happen?
 
