@@ -375,6 +375,20 @@ export default async function FAQPage() {
                 cover. <strong>Do not scrap them</strong> — that <em>is</em> the
                 capstone.
               </Q>
+              <Q q="Tasks 1–6 say to write my findings up in &ldquo;task 9&rdquo; — where is task 9?">
+                &ldquo;Task 9&rdquo; is the old name for the pentest write-up, from
+                before Stage 2 was restructured — and a few task descriptions
+                still carry that label. There is <strong>no in-platform task 9
+                any more</strong>: the lab is tasks 1–8, and the pentest finding
+                became the <strong>capstone</strong>. So everything tasks 1–6 tell
+                you to &ldquo;save for task 9&rdquo; — the service that gave first
+                live data, the attacker IP, your SQLi payload and column count,
+                the XSS class, the SSRF metadata path and role — goes into your
+                capstone documents: <strong>catalogue every weakness in D1, chain
+                them in D2, and write the formal report in D3.</strong> Follow the
+                capstone instructions; the &ldquo;task 9&rdquo; wording is just a
+                leftover label.
+              </Q>
               <Q q="How do I actually submit Stage 2? (step by step)">
                 Write your four documents (D1–D4) in Google Docs or Word. Put all
                 four in <strong>one</strong> Google Drive folder named{" "}
