@@ -248,6 +248,68 @@ export default async function GradePage({
         </section>
       )}
 
+      {report.stage === "STAGE_2" && (
+        <section className="mb-6 bg-amber-50 border border-amber-300 rounded-xl p-5">
+          <h2 className="text-sm font-semibold text-amber-900 mb-3 uppercase tracking-wide">
+            Grading resources
+          </h2>
+
+          <div className="mb-4">
+            <a
+              href="/grading/f94119af-0265-4b32-983f-0cbdff2596bc/stage-2-marking-guide.pdf"
+              target="_blank"
+              rel="noreferrer noopener"
+              className="inline-flex items-center gap-1.5 text-amber-900 underline font-semibold text-sm hover:text-amber-950"
+            >
+              Open the Stage 2 marking guide (PDF, graders only) →
+            </a>
+            <p className="text-xs text-amber-800/80 mt-0.5">
+              The capstone rubric (D1–D4, 120 pts): per-deliverable answer keys,
+              scoring bands, the canonical exploit chain and CVSS vectors, AI-use
+              signals, and the decoy. Keep this open in a tab while you grade.
+            </p>
+          </div>
+
+          <div>
+            <p className="text-xs font-semibold text-amber-900 uppercase tracking-wide mb-2">
+              Evidence pack — for verifying the intern&apos;s citations
+            </p>
+            <ul className="space-y-1.5 text-sm">
+              <li>
+                <a href="/capstone/stage-2/01-legacy-admin-login.php" target="_blank" rel="noreferrer noopener" className="text-amber-800 underline hover:text-amber-950 font-mono text-xs">
+                  01-legacy-admin-login.php
+                </a>
+                <span className="text-xs text-amber-800/80"> — recovered login source (SQLi, MD5, JWT alg:none, hardcoded secret, open redirect, cookie flags resolve here by line)</span>
+              </li>
+              <li>
+                <a href="/capstone/stage-2/02-attacker-http-capture.txt" target="_blank" rel="noreferrer noopener" className="text-amber-800 underline hover:text-amber-950 font-mono text-xs">
+                  02-attacker-http-capture.txt
+                </a>
+                <span className="text-xs text-amber-800/80"> — the 02:14–02:31 UTC session (D2 chain hops + capture-line citations resolve here)</span>
+              </li>
+              <li>
+                <a href="/capstone/stage-2/03-legacy-admin-tokens.txt" target="_blank" rel="noreferrer noopener" className="text-amber-800 underline hover:text-amber-950 font-mono text-xs">
+                  03-legacy-admin-tokens.txt
+                </a>
+                <span className="text-xs text-amber-800/80"> — the three JWTs (alg:none / no-expiry / hardcoded-secret findings)</span>
+              </li>
+              <li>
+                <a href="/capstone/stage-2/04-import-xxe.xml" target="_blank" rel="noreferrer noopener" className="text-amber-800 underline hover:text-amber-950 font-mono text-xs">
+                  04-import-xxe.xml
+                </a>
+                <span className="text-xs text-amber-800/80"> — the XXE import body (file:///etc/passwd) — the XXE finding resolves here</span>
+              </li>
+              <li>
+                <a href="/capstone/stage-2/05-exfil-sample.csv" target="_blank" rel="noreferrer noopener" className="text-amber-800 underline hover:text-amber-950 font-mono text-xs">
+                  05-exfil-sample.csv
+                </a>
+                <span className="text-xs text-amber-800/80"> — 20-row sample of the 312-record export (D2 business-impact numbers resolve here)</span>
+              </li>
+            </ul>
+          </div>
+        </section>
+      )}
+
       {report.attachmentUrl && (
         <section className="mb-6 bg-white border border-border rounded-xl p-5">
           <h2 className="text-sm font-semibold text-foreground mb-2 uppercase tracking-wide">
