@@ -39,6 +39,18 @@ Stage 2 has two halves. The **lab** is eight in-platform tasks, all **auto-grade
 
 > The lab is auto-scored and weighted in separately by programme staff. **Your number is the capstone score out of 120, recorded as a percentage** (points earned ÷ 120 × 100). The advance/eliminate cutoff is set by programme staff in the promotion flow — your job is an accurate score, not to decide who passes. Grade honestly and leave a one-line justification on every deliverable; an intern may be eliminated on your number.
 
+## Quick-grade sheet — every row on one screen
+
+Tally straight off this; the full answer key for each row is in the per-deliverable sections below.
+
+| Deliverable | Scoring rows (points) | Total |
+|---|---|---:|
+| **D1 — Findings catalogue** | findings 1–5 catalogued w/ class+evidence (12) · stored-XSS+XXE (5) · access-control set (4) · method (3) · the decoy (6) | **30** |
+| **D2 — Exploit chain + CVSS + impact** | chain in order, reconciled to capture (12) · verbatim PoC per hop (8) · CVSS vectors defended (8) · impact in customers+naira (7) | **35** |
+| **D3 — The report Bayo acts on** | exec summary (6) · threat model (4) · findings tied to evidence (8) · disproved decoy stated (3) · exploit chain (5) · remediation order by effort (8) · two detection stopgaps (6) | **40** |
+| **D4 — Ethics stance** | all four prompts answered (6) · ISC2 canon by number (3) · NDPA §40/§41 tied to PII (3) · own voice + anchored to own work (3) | **15** |
+| | **Capstone total** | **120** |
+
 ## How to grade — step by step
 
 **Total time per submission: 30–40 minutes.** Take a break between submissions; the third in a row gets harsher than the first.
@@ -50,7 +62,7 @@ Stage 2 has two halves. The **lab** is eight in-platform tasks, all **auto-grade
 5. **Grade D4 (Ethics) last.** Short, but the highest AI-suspicion deliverable — read for a real decision in the intern's own voice.
 6. **Open the grading page** at `/admin/grading/STAGE_2/<internCode>` and enter your per-deliverable scores.
 7. **Write a 50–100 word grader note.** Required. One strength, one weakness, the deliverable you re-read first.
-8. **Submit.** Your score is hidden from the second grader until they submit too. A large disagreement triggers a super-admin tie-break — that is normal.
+8. **Submit.** Your score is hidden from the second grader until they submit too. A disagreement of **more than 12 points** (on the 0–100 percentage) between the two graders triggers a super-admin tie-break — that is normal, not a fault.
 
 ## The scale — use it on every scoring row
 
@@ -78,6 +90,23 @@ If you reasonably believe a deliverable was produced by an LLM, **tick the amber
 - Confident **business impact with round invented numbers** that don't trace to `05-exfil-sample.csv` or the 312-row figure.
 
 Strong writing alone is **not** evidence of AI.
+
+## Worked example — the bands in action
+
+Three short before/after examples so two graders land on the same band. The principle every time: **evidence + correct class = Full; right idea, no proof = ~Half; wrong or asserted = 0.**
+
+**D1, a findings row (the SQL injection):**
+- **Full:** "SQL injection in the login query — A03 / CWE-89. `01-...login.php` ~64–67 builds the query by concatenation: `WHERE username = '" . $username . "'`; the capture confirms exploitation at `02:15:31` (`admin' OR '1'='1` → 302). Confidence: High." *(class + CWE + quoted line + corroborating capture line → Full.)*
+- **~Half:** "There is a SQL injection in the login. High severity." *(right finding, no line quoted, no CWE → half.)*
+- **0:** "SQL injection — CWE-79." *(wrong CWE — that's XSS — and no evidence → zero that row.)*
+
+**D2, a CVSS vector:**
+- **Full:** "`CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N` — network-reachable, no auth needed (that's the bug), full read of the 312-row table." *(complete vector + reasoning tied to the metrics.)*
+- **~Half:** "CVSS 9.1 (Critical)." *(score with no vector → half at best; a bare number is a documented AI tell.)*
+
+**D4, the ethics stance:**
+- **Full:** "I tell the journalist nothing, on or off the record — ISC2 Canon II (act honourably, honestly, legally) and our NDA both bind me; 'off the record' with someone I know is exactly the trap. The SQLi I proved in D2 confirmed customer PII left the building, so NDPA §40 already obliges us to notify the NDPC…" *(decision + canon by number + NDPA section + anchored to their own work → Full.)*
+- **0:** "Ethics are important in cybersecurity. One must always act with integrity and follow the law and protect data." *(generic, fits any cohort, no decision, no citation → zero; flag for AI.)*
 
 ---
 
@@ -179,6 +208,8 @@ The intern rebuilds the attacker's path as one chain, gives every hop a verbatim
 
 *The **scope change (S:C)** on the JWT finding is the senior insight — the legacy-admin token is honoured by a different security authority (the internal microservice). Reward interns who argue it; do not penalise a defended `S:U`.*
 
+> **If you're not technical — how to score a CVSS vector without being a pentester.** You do **not** need to recompute scores. Check three things: (1) it is a **complete vector string** (eight `XX:Y` metrics, `AV:` … `A:`), not a bare number; (2) the intern **wrote a sentence justifying it** (e.g. "no auth needed, so `PR:N`"); (3) it isn't self-contradictory (don't accept "reachable over the internet, no login" alongside `AV:L` or `PR:H`). If all three hold, score it **Full** even if you'd have nudged a metric — defensible variation is fine. A score with no vector → **half**. A vector that flatly contradicts the finding, or that you suspect is wrong but can't judge → score what you can and **flag it for the technical lead** rather than guess.
+
 **Business impact:** **312 customers**, PII + financial (names, emails, account numbers, balances). Using `05-exfil-sample.csv`, balances run into the hundreds of thousands of naira each (sample max ~₦950,000) — a defensible exposure estimate is in the **tens of millions of naira** plus NDPA breach exposure. Tie it to **BoltCash launching in ~6 weeks** (the risk is now, not someday). Reward stated assumptions over a confident bare number.
 
 **Scoring (35 pts):**
@@ -223,9 +254,11 @@ Red flags: a report that just re-lists findings by CVSS and calls that a remedia
 
 300–500 words, the intern's own voice. The setup: the breach is public (TechCabal ran it), a journalist the intern knows personally asks for "background, off the record," and a senior colleague is about to take the fall while the intern holds the timeline proving who knew what. PII has confirmed left the building.
 
-**What full credit looks like:** a *real decision*, not a balanced essay — they answer all four prompts (what they tell the journalist and why; what they will/won't put in writing; how they handle evidence that could protect or implicate the colleague; the one action they take regardless of their manager), they cite **at least one ISC2 Code of Ethics canon by number** and make it load-bearing, they name the **NDPA breach-notification duty** (notify the NDPC, and affected data subjects where high risk — tied to the 312 customers), and at least one sentence is **anchored to their own Stage 2 work**.
+**What full credit looks like:** a *real decision*, not a balanced essay — they answer all four prompts (what they tell the journalist and why; what they will/won't put in writing; how they handle evidence that could protect or implicate the colleague; the one action they take regardless of their manager), they cite **at least one ISC2 Code of Ethics canon by number** and make it load-bearing, they name the **NDPA 2023 breach-notification duty by section — §40 (notify the NDPC) and §41 (notify affected data subjects where the breach is high-risk)** — tied to the 312 customers, and at least one sentence is **anchored to their own Stage 2 work**.
 
 *ISC2 canons, for your reference (interns must cite by number): (I) Protect society, the common good, public trust, and the infrastructure; (II) Act honourably, honestly, justly, responsibly, legally; (III) Provide diligent and competent service to principals; (IV) Advance and protect the profession.*
+
+*NDPA 2023, for your reference: **§40** — controller must notify the Commission (NDPC) of a personal-data breach (within 72 hours of becoming aware); **§41** — notify affected data subjects where the breach is likely to result in high risk to their rights; **§44** — sets the fine ceiling (the greater of ₦10m or 2% of annual gross revenue for a data controller of major importance). Interns need not cite all three — §40 and/or §41 with correct substance is full credit; reward a §44 reference to the fine ceiling but don't require it.*
 
 **Scoring (15 pts):**
 
@@ -233,7 +266,7 @@ Red flags: a report that just re-lists findings by CVSS and calls that a remedia
 |---|---:|---|
 | Answers all four prompts with a clear, owned decision | 6 | Journalist + in-writing + colleague + the non-negotiable action |
 | ISC2 canon cited by number and load-bearing | 3 | Drives the reasoning, not name-dropped |
-| NDPA breach-notification duty, tied to confirmed PII | 3 | Names the duty + connects it to the 312 records |
+| NDPA breach-notification duty, cited by section, tied to confirmed PII | 3 | Names §40 and/or §41 with correct substance + connects it to the 312 records |
 | Own voice + anchored to their own findings (anti-AI) | 3 | A sentence only this intern could have written |
 
 Red flags: a generic ethics essay that fits any cohort or any breach (strongest AI tell in this stage — flag it); reciting policy with no decision; no canon number; no NDPA. Two graders read every D4 independently; if both find it generic or untraceable to the intern's own work, treat it as not submitted.
