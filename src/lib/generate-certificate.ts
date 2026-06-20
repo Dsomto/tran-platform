@@ -165,11 +165,23 @@ export function generateStageCertificate(opts: {
       });
 
     // ── 7. Recipient name — large serif italic ────────────
+    // Auto-fit: long names shrink so they never collide with the gold
+    // side frames. One line always, centred across the page.
+    const nameMaxW = 600;
+    let nameSize = 40;
+    doc.font("Times-BoldItalic");
+    while (nameSize > 22 && doc.fontSize(nameSize).widthOfString(fullName) > nameMaxW) {
+      nameSize -= 1;
+    }
     doc
-      .fontSize(40)
+      .fontSize(nameSize)
       .font("Times-BoldItalic")
       .fillColor(COLORS.navy)
-      .text(fullName, 0, 252, { align: "center", width: pageW });
+      .text(fullName, 0, 252 + (40 - nameSize) * 0.5, {
+        align: "center",
+        width: pageW,
+        lineBreak: false,
+      });
 
     // Underline rule with a small gold diamond at the centre
     const nameRuleY = 312;
@@ -211,8 +223,9 @@ export function generateStageCertificate(opts: {
         characterSpacing: 0.3,
       });
 
-    // ── 10. The gold seal, left, beside the name ──────────
-    drawSeal(doc, 116, 248, 40);
+    // ── 10. The gold seal, top-right corner — clear of the name ──
+    // Kept out of the name's row so long names are never covered.
+    drawSeal(doc, pageW - 92, 92, 30);
 
     // ── 11. Two signatures, with date + id centred between ──
     const footY = pageH - 128;
