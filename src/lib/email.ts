@@ -54,6 +54,17 @@ async function sendOne(
 
 const FROM = `"Somto from Ubuntu Bridge Initiative" <noreply@ubuntubridgeinitiatives.org>`;
 
+// Generic transactional send for one-off admin emails (e.g. Stage 2 re-share
+// requests) where the caller has already rendered subject + html. Goes out
+// from the standard Somto/UBI From address via the same SMTP path as the rest.
+export async function sendRawHtmlEmail(
+  to: string,
+  subject: string,
+  html: string
+): Promise<void> {
+  await sendOne("send", { from: FROM, to, subject, html });
+}
+
 export async function sendApplicationConfirmation(
   to: string,
   fullName: string

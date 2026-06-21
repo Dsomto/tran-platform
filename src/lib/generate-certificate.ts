@@ -102,17 +102,23 @@ export function generateStageCertificate(opts: {
     drawTopWaves(doc, pageW);
     drawBottomWaves(doc, pageW, pageH);
 
-    // ── 3. Thin gold inner frame (hairline, premium) ──────
+    // ── 3. Fine gold frame, hairline companion, corner diamonds ──
     doc
-      .lineWidth(1.4)
+      .lineWidth(1.1)
       .strokeColor(COLORS.gold)
-      .rect(40, 40, pageW - 80, pageH - 80)
+      .rect(38, 38, pageW - 76, pageH - 76)
       .stroke();
     doc
       .lineWidth(0.4)
       .strokeColor(COLORS.rule)
-      .rect(46, 46, pageW - 92, pageH - 92)
+      .rect(45, 45, pageW - 90, pageH - 90)
       .stroke();
+    // small gold lozenges at the inner-frame corners — a quiet premium touch
+    for (const [dx, dy] of [
+      [45, 45], [pageW - 45, 45], [45, pageH - 45], [pageW - 45, pageH - 45],
+    ] as const) {
+      drawDiamond(doc, dx, dy, 3, COLORS.gold);
+    }
 
     // ── 4. Organisation mark ──────────────────────────────
     doc
@@ -153,6 +159,19 @@ export function generateStageCertificate(opts: {
         width: pageW,
         characterSpacing: 9,
       });
+    // Thin gold rules flanking the subtitle, each ending in a small diamond
+    const subY = 204;
+    for (const dir of [-1, 1] as const) {
+      const inner = cx + dir * 150;
+      const outer = cx + dir * 215;
+      doc
+        .moveTo(inner, subY)
+        .lineTo(outer, subY)
+        .lineWidth(0.8)
+        .strokeColor(COLORS.gold)
+        .stroke();
+      drawDiamond(doc, outer, subY, 2.5, COLORS.gold);
+    }
 
     // ── 6. Presented-to caption ───────────────────────────
     doc
@@ -212,12 +231,21 @@ export function generateStageCertificate(opts: {
         { align: "center", width: bodyW, lineGap: 3 }
       );
 
-    // ── 9. Competencies — small italic, gold dot dividers ──
+    // ── 9. Competencies — tracked label, then italic with gold dividers ──
+    doc
+      .fontSize(7.5)
+      .font("Helvetica-Bold")
+      .fillColor(COLORS.gold)
+      .text("COMPETENCIES DEMONSTRATED", 0, 374, {
+        align: "center",
+        width: pageW,
+        characterSpacing: 3,
+      });
     doc
       .fontSize(9.5)
       .font("Times-Italic")
       .fillColor(COLORS.muted)
-      .text(competencies.join("    •    "), 0, 384, {
+      .text(competencies.join("    •    "), 0, 390, {
         align: "center",
         width: pageW,
         characterSpacing: 0.3,

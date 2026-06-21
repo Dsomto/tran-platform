@@ -66,6 +66,7 @@ export async function GET(
       issuedAt: report.gradedAt ?? new Date(),
       letterId: passLetterIdFor(report.id),
       nextStageLabel,
+      stageKey: report.stage,
     });
 
     const safeName = fullName.replace(/[^A-Za-z0-9\s-]/g, "").replace(/\s+/g, "-");

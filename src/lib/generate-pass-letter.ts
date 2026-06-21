@@ -16,6 +16,22 @@ const C = {
   paper: "#FFFFFF",
 };
 
+// What the intern actually did in each stage, in the Sankofa case voice —
+// one flowing sentence, so the letter reads as personal to the work rather
+// than a generic template. Keyed by stage; falls back to a neutral line.
+const STAGE_WORK: Record<string, string> = {
+  STAGE_0:
+    "you worked the authentication logs, separated the real intrusion from the noise, briefed it to people who do not speak security, and made the ethical call when it would have been easier not to",
+  STAGE_1:
+    "you chose the right cryptography for the job, showed exactly where a weak scheme breaks, weighed the symmetric against the asymmetric trade-offs, and handled keys in a way that holds up under scrutiny",
+  STAGE_2:
+    "you ran a full security assessment of our application, surfaced the real vulnerabilities and did not fall for the decoy, reconstructed the exploit chain from first access to data exfiltration with the severity scored honestly, wrote remediation our engineers can actually act on, and made the right ethics call on the breach",
+  STAGE_3:
+    "you built incident playbooks a tired analyst can follow, reconstructed the timeline out of messy logs, contained the incident without taking the business offline, and wrote the post-mortem that changes how we work",
+  STAGE_4:
+    "you wrote policy people will actually read, briefed risk to a board in their language, mapped our controls to ISO 27001 honestly, and measured the improvement that followed",
+};
+
 // In-world promotion letter from Sankofa Digital — the case company the intern
 // has been working inside all stage. The certificate is the real UBI credential;
 // this letter is the story reward, a "well done, you are promoted" from the
@@ -28,8 +44,16 @@ export function generatePassLetter(opts: {
   issuedAt: Date;
   letterId: string;
   nextStageLabel?: string;
+  stageKey?: string; // e.g. "STAGE_2"; used to look up what they did. Falls back to stageLabel.
 }): Promise<Buffer> {
-  const { fullName, stageLabel, score, passingScore, issuedAt, letterId, nextStageLabel } = opts;
+  const { fullName, stageLabel, score, passingScore, issuedAt, letterId, nextStageLabel, stageKey } = opts;
+  const resolvedStageKey =
+    stageKey ??
+    (() => {
+      const m = stageLabel.match(/(\d+)/);
+      return m ? `STAGE_${m[1]}` : "STAGE_0";
+    })();
+  const stageWork = STAGE_WORK[resolvedStageKey];
   const firstName = (fullName.trim().split(/\s+/)[0] || fullName).trim();
   const issuedStr = issuedAt.toLocaleDateString("en-GB", {
     day: "numeric", month: "long", year: "numeric",
@@ -110,6 +134,13 @@ export function generatePassLetter(opts: {
         `${stageLabel}, and your work was held to the same standard we hold our own ` +
         `analysts to. It cleared that bar, and it did so honestly.`
     );
+
+    if (stageWork) {
+      para(
+        `Across this stage ${stageWork}. That is not classroom work, it is the job, and ` +
+          `you did it on a live brief.`
+      );
+    }
 
     para(
       `Your capstone and write-ups were assessed against the programme rubric and scored ` +
