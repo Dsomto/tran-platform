@@ -310,6 +310,75 @@ export default async function GradePage({
         </section>
       )}
 
+      {report.stage === "STAGE_3" && (
+        <section className="mb-6 bg-amber-50 border border-amber-300 rounded-xl p-5">
+          <h2 className="text-sm font-semibold text-amber-900 mb-3 uppercase tracking-wide">
+            Grading resources
+          </h2>
+
+          <div className="mb-4">
+            <a
+              href="/grading/79417183-0b45-48c1-a38a-29ba2dcf5a8f/stage-3-marking-guide.pdf"
+              target="_blank"
+              rel="noreferrer noopener"
+              className="inline-flex items-center gap-1.5 text-amber-900 underline font-semibold text-sm hover:text-amber-950"
+            >
+              Open the Stage 3 marking guide (PDF, graders only) →
+            </a>
+            <p className="text-xs text-amber-800/80 mt-0.5">
+              The capstone rubric (D1–D5, 120 pts): the full incident
+              reconstruction (master answer key), per-deliverable scoring tables,
+              the ATT&CK mapping, the three decoys to watch, and AI-use signals.
+              Keep this open in a tab while you grade.
+            </p>
+          </div>
+
+          <div>
+            <p className="text-xs font-semibold text-amber-900 uppercase tracking-wide mb-2">
+              Evidence pack — for verifying the intern&apos;s citations
+            </p>
+            <ul className="space-y-1.5 text-sm">
+              <li>
+                <a href="/capstone/stage-3/01-process-listing.txt" target="_blank" rel="noreferrer noopener" className="text-amber-800 underline hover:text-amber-950 font-mono text-xs">
+                  01-process-listing.txt
+                </a>
+                <span className="text-xs text-amber-800/80"> — Volatility pslist (D1 triage + the .helper/curl/scp processes resolve here)</span>
+              </li>
+              <li>
+                <a href="/capstone/stage-3/02-filesystem-index.txt" target="_blank" rel="noreferrer noopener" className="text-amber-800 underline hover:text-amber-950 font-mono text-xs">
+                  02-filesystem-index.txt
+                </a>
+                <span className="text-xs text-amber-800/80"> — changed files + contents (sudoers, .bashrc hook, .helper, the .griot.txt note)</span>
+              </li>
+              <li>
+                <a href="/capstone/stage-3/03-syslog.txt" target="_blank" rel="noreferrer noopener" className="text-amber-800 underline hover:text-amber-950 font-mono text-xs">
+                  03-syslog.txt
+                </a>
+                <span className="text-xs text-amber-800/80"> — the kill-chain syslog (D2 timeline rows resolve here by line)</span>
+              </li>
+              <li>
+                <a href="/capstone/stage-3/04-siem-export.csv" target="_blank" rel="noreferrer noopener" className="text-amber-800 underline hover:text-amber-950 font-mono text-xs">
+                  04-siem-export.csv
+                </a>
+                <span className="text-xs text-amber-800/80"> — SIEM alerts (corroborates the beacon, exfil, sudo-misuse)</span>
+              </li>
+              <li>
+                <a href="/capstone/stage-3/05-memory-strings.txt" target="_blank" rel="noreferrer noopener" className="text-amber-800 underline hover:text-amber-950 font-mono text-xs">
+                  05-memory-strings.txt
+                </a>
+                <span className="text-xs text-amber-800/80"> — memdump strings (C2 domain, cron create+delete, the base64 &ldquo;junk&rdquo; decoy)</span>
+              </li>
+              <li>
+                <a href="/capstone/stage-3/06-netflow.csv" target="_blank" rel="noreferrer noopener" className="text-amber-800 underline hover:text-amber-950 font-mono text-xs">
+                  06-netflow.csv
+                </a>
+                <span className="text-xs text-amber-800/80"> — netflow (confirms exfil volume; the 445/3389/5432 flows are OTHER hosts — the lateral-movement decoy)</span>
+              </li>
+            </ul>
+          </div>
+        </section>
+      )}
+
       {report.attachmentUrl && (
         <section className="mb-6 bg-white border border-border rounded-xl p-5">
           <h2 className="text-sm font-semibold text-foreground mb-2 uppercase tracking-wide">
