@@ -13,6 +13,7 @@ datasource db {
 enum Role {
   INTERN
   GRADER
+  ANALYST
   ADMIN
   SUPER_ADMIN
 }
@@ -771,4 +772,73 @@ model PasswordResetToken {
 
   @@index([userId])
   @@index([expiresAt])
+}
+
+// ─── PROGRAMME FEEDBACK / OUTCOMES SURVEY ──────────────────
+// One FeedbackInvite per person we ask (active interns AND eliminated alumni,
+// who can no longer log in). The token drives a public, no-login form at
+// /feedback/<token>. Active interns also reach the same form in-dashboard.
+// A single FeedbackResponse links back to its invite (when there is one).
+
+model FeedbackInvite {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  token       String    @unique
+  email       String
+  name        String?
+  // Segmentation captured at invite time so analytics can slice outcomes by
+  // how far someone got without re-deriving it later.
+  lastStage   Int?      // last stage number reached (-1 none .. 10 finalist)
+  outcome     String?   // "passed" | "eliminated" | "active" | "no_submit"
+  track       String?
+  sentAt      DateTime?
+  respondedAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  response    FeedbackResponse?
+
+  @@index([email])
+  @@index([respondedAt])
+  @@index([outcome])
+}
+
+model FeedbackResponse {
+  id        String          @id @default(auto()) @map("_id") @db.ObjectId
+  inviteId  String?         @unique @db.ObjectId
+  invite    FeedbackInvite? @relation(fields: [inviteId], references: [id])
+
+  // Identity (carried from the invite, or self-reported on the public form).
+  email     String?
+  name      String?
+
+  // ── Career outcomes ──
+  employmentStatus String?   // employed_related | employed_unrelated | freelancing | internship | studying | seeking | other
+  roleTitle        String?
+  employer         String?
+  salaryBand       String?   // e.g. "<100k" | "100-300k" | "300-600k" | ">600k" | "prefer_not"
+  timeToHire       String?   // "still_seeking" | "<1m" | "1-3m" | "3-6m" | ">6m"
+  programmeHelped  String?   // "yes" | "partly" | "no"  — did the programme help you land it
+
+  // ── Programme impact ──
+  npsScore         Int?      // 0-10 likelihood to recommend
+  wouldRecommend   String?   // "yes" | "maybe" | "no"
+  confidenceBefore Int?      // 1-5 confidence in getting a security role BEFORE
+  confidenceAfter  Int?      // 1-5 confidence in getting a security role AFTER
+  mostHelpful      String?
+  biggestChallenge String?
+  howToImprove     String?
+  skillsGained     String[]  @default([])
+  testimonial      String?
+  consentToShare   Boolean?  // may we quote your testimonial publicly
+
+  // ── Demographics / equity ──
+  country          String?
+  gender           String?
+  ageRange         String?
+  employmentBefore String?   // employment status BEFORE the programme
+
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([employmentStatus])
+  @@index([programmeHelped])
 }

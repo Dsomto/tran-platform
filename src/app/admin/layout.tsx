@@ -18,7 +18,12 @@ export default async function AdminLayout({
     notFound();
   }
 
-  if (session.role !== "ADMIN" && session.role !== "SUPER_ADMIN" && session.role !== "GRADER") {
+  if (
+    session.role !== "ADMIN" &&
+    session.role !== "SUPER_ADMIN" &&
+    session.role !== "GRADER" &&
+    session.role !== "ANALYST"
+  ) {
     notFound();
   }
 
@@ -28,6 +33,18 @@ export default async function AdminLayout({
     session.role === "GRADER" &&
     pathname !== "/admin/reports" &&
     !pathname.startsWith("/admin/reports/")
+  ) {
+    notFound();
+  }
+
+  // ANALYST is read-only: it can see the analytics dashboard and nothing else
+  // under /admin. Everything outside /admin/analytics 404s for them (the
+  // /setup-2fa allowance lets them complete 2FA enrollment first).
+  if (
+    session.role === "ANALYST" &&
+    pathname !== "/admin/analytics" &&
+    !pathname.startsWith("/admin/analytics/") &&
+    !pathname.startsWith("/setup-2fa")
   ) {
     notFound();
   }

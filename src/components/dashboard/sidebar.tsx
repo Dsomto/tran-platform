@@ -37,12 +37,16 @@ import { LogoMark } from "@/components/logo";
 import { useState } from "react";
 
 interface SidebarProps {
-  role: "INTERN" | "GRADER" | "ADMIN" | "SUPER_ADMIN";
+  role: "INTERN" | "GRADER" | "ANALYST" | "ADMIN" | "SUPER_ADMIN";
   userName: string;
 }
 
 const graderLinks = [
   { href: "/admin/reports", label: "Grading Queue", icon: Gavel },
+];
+
+const analystLinks = [
+  { href: "/admin/analytics", label: "Analytics", icon: TrendingUp },
 ];
 
 const internLinks = [
@@ -55,6 +59,7 @@ const internLinks = [
   { href: "/dashboard/team", label: "My Team", icon: Users },
   { href: "/dashboard/meetings", label: "Meetings", icon: Video },
   { href: "/dashboard/feedback", label: "Feedback", icon: MessageSquare },
+  { href: "/dashboard/survey", label: "Outcomes Survey", icon: ClipboardList },
   { href: "/dashboard/faq", label: "Deliverables FAQ", icon: FileQuestion },
   { href: "/dashboard/settings/security", label: "Security", icon: Shield },
 ];
@@ -80,6 +85,8 @@ const adminLinks = [
   { href: "/admin/announcements", label: "Announcements", icon: Megaphone },
   { href: "/admin/leaderboard", label: "Leaderboard", icon: BarChart3 },
   { href: "/admin/insights", label: "Insights", icon: TrendingUp },
+  { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
+  { href: "/admin/feedback-invites", label: "Feedback Invites", icon: MessageSquare },
   { href: "/admin/emails", label: "Email Queue", icon: Mail },
 ];
 
@@ -109,6 +116,8 @@ export function Sidebar({ role, userName }: SidebarProps) {
       ? internLinks
       : role === "GRADER"
       ? graderLinks
+      : role === "ANALYST"
+      ? analystLinks
       : adminLinks.filter(
           (l) => l.href !== "/admin/broadcast" || role === "SUPER_ADMIN"
         );

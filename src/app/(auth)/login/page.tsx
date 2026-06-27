@@ -44,6 +44,8 @@ function LoginPageInner() {
       router.push("/admin");
     } else if (role === "GRADER") {
       router.push("/admin/reports");
+    } else if (role === "ANALYST") {
+      router.push("/admin/analytics");
     } else {
       router.push("/dashboard");
     }

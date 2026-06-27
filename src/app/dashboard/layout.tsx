@@ -30,6 +30,12 @@ export default async function DashboardLayout({
     redirect("/admin/reports");
   }
 
+  // Analysts are read-only and have no intern dashboard — send them to their
+  // analytics view rather than letting them fall through into intern pages.
+  if (session.role === "ANALYST") {
+    redirect("/admin/analytics");
+  }
+
   // First-login password change: as long as PublicApplication.loginPassword
   // is set (the plaintext temp password we generated and emailed), the intern
   // is still on the temp password. Send them to /change-password until they

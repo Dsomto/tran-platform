@@ -11,7 +11,7 @@ export interface SessionUser {
   email: string;
   firstName: string;
   lastName: string;
-  role: "INTERN" | "GRADER" | "ADMIN" | "SUPER_ADMIN";
+  role: "INTERN" | "GRADER" | "ANALYST" | "ADMIN" | "SUPER_ADMIN";
   avatarUrl: string | null;
 }
 
@@ -207,6 +207,20 @@ export async function requireGrader(): Promise<SessionUser> {
 export function isGrader(session: SessionUser | null): boolean {
   if (!session) return false;
   return session.role === "GRADER" || session.role === "ADMIN" || session.role === "SUPER_ADMIN";
+}
+
+// Read-only analytics access. ANALYST accounts can see /admin/analytics and
+// nothing else (enforced in the admin layout). Admins can see it too.
+export async function requireAnalyst(): Promise<SessionUser> {
+  const session = await requireAuth();
+  if (
+    session.role !== "ANALYST" &&
+    session.role !== "ADMIN" &&
+    session.role !== "SUPER_ADMIN"
+  ) {
+    redirect("/dashboard");
+  }
+  return session;
 }
 
 // Account-level lockout after N failed logins. Lasts LOCKOUT_MINUTES.
