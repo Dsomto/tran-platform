@@ -74,8 +74,11 @@ function Setup2FAInner() {
       if (!res.ok) {
         setError(j.error || "Verification failed.");
       } else {
-        // Bounce them back to /admin (or whatever they were trying to reach).
-        router.push("/admin");
+        // Route to the role's home. /dashboard is the universal entry: its
+        // layout redirects admins to /admin, graders to /admin/reports, and
+        // analysts to /admin/analytics, so every privileged role lands in the
+        // right place (analysts are gated out of /admin itself).
+        router.push("/dashboard");
         router.refresh();
       }
     } catch {
