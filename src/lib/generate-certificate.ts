@@ -30,10 +30,10 @@ const STAGE_COMPETENCIES: Record<string, string[]> = {
     "Writing fixes devs will use",
   ],
   STAGE_3: [
-    "Playbooks for tired analysts",
-    "Timelines from messy logs",
-    "Containment without outage",
-    "Post-mortems that change things",
+    "Process triage",
+    "Incident timeline reconstruction",
+    "IOC validation",
+    "Executive incident reporting",
   ],
   STAGE_4: [
     "Policy people actually read",
@@ -69,6 +69,11 @@ export function generateStageCertificate(opts: {
   stageKey?: string; // optional, used to look up competencies. Falls back if missing.
 }): Promise<Buffer> {
   const { fullName, stageLabel, score, passingScore, issuedAt, certId, stageKey } = opts;
+  const certificateStageLabel = stageLabel
+    .replace(/[—–]/g, ":")
+    .replace(/\s+:\s+/g, ": ")
+    .replace(/\s+/g, " ")
+    .trim();
 
   const resolvedKey =
     stageKey ??
@@ -134,7 +139,7 @@ export function generateStageCertificate(opts: {
       .fontSize(8)
       .font("Helvetica")
       .fillColor(COLORS.muted)
-      .text("Cybersecurity Internship · The Root Access Network", 0, 100, {
+      .text("Cybersecurity Internship | The Root Access Network", 0, 100, {
         align: "center",
         width: pageW,
         characterSpacing: 2,
@@ -183,27 +188,21 @@ export function generateStageCertificate(opts: {
         width: pageW,
       });
 
-    // ── 7. Recipient name — large serif italic ────────────
-    // Auto-fit: long names shrink so they never collide with the gold
-    // side frames. One line always, centred across the page.
-    const nameMaxW = 600;
-    let nameSize = 40;
-    doc.font("Times-BoldItalic");
-    while (nameSize > 22 && doc.fontSize(nameSize).widthOfString(fullName) > nameMaxW) {
-      nameSize -= 1;
-    }
-    doc
-      .fontSize(nameSize)
-      .font("Times-BoldItalic")
-      .fillColor(COLORS.navy)
-      .text(fullName, 0, 252 + (40 - nameSize) * 0.5, {
+    const nameLayout = layoutRecipientName(doc, fullName, 560);
+    const nameLineHeight = nameLayout.size * 1.12;
+    const nameBlockHeight = nameLayout.lines.length * nameLineHeight;
+    const nameTop = nameLayout.lines.length === 1 ? 258 : 244;
+    doc.fontSize(nameLayout.size).font("Times-BoldItalic").fillColor(COLORS.navy);
+    nameLayout.lines.forEach((line, i) => {
+      doc.text(line, 0, nameTop + i * nameLineHeight, {
         align: "center",
         width: pageW,
         lineBreak: false,
       });
+    });
 
     // Underline rule with a small gold diamond at the centre
-    const nameRuleY = 312;
+    const nameRuleY = Math.max(312, nameTop + nameBlockHeight + 12);
     const ruleHalf = 210;
     doc
       .moveTo(cx - ruleHalf, nameRuleY)
@@ -218,25 +217,27 @@ export function generateStageCertificate(opts: {
     drawDiamond(doc, cx, nameRuleY, 4.5, COLORS.gold);
 
     // ── 8. Citation line ──────────────────────────────────
-    const bodyW = 470;
+    const bodyW = 500;
+    const bodyY = nameRuleY + 20;
     doc
       .fontSize(12)
       .font("Times-Roman")
       .fillColor(COLORS.inkSoft)
       .text(
-        `for outstanding work in ${stageLabel} of the Ubuntu Bridge cybersecurity internship, ` +
-          `achieving a final score of ${score} out of 100 against a ${passingScore} pass mark.`,
+        `for successfully completing ${certificateStageLabel} in the Ubuntu Bridge Cybersecurity Internship, ` +
+          `with a final score of ${score} out of 100 against a ${passingScore} pass mark.`,
         cx - bodyW / 2,
-        332,
+        bodyY,
         { align: "center", width: bodyW, lineGap: 3 }
       );
 
     // ── 9. Competencies — tracked label, then italic with gold dividers ──
+    const competencyLabelY = bodyY + 46;
     doc
       .fontSize(7.5)
       .font("Helvetica-Bold")
       .fillColor(COLORS.gold)
-      .text("COMPETENCIES DEMONSTRATED", 0, 374, {
+      .text("COMPETENCIES DEMONSTRATED", 0, competencyLabelY, {
         align: "center",
         width: pageW,
         characterSpacing: 3,
@@ -245,7 +246,7 @@ export function generateStageCertificate(opts: {
       .fontSize(9.5)
       .font("Times-Italic")
       .fillColor(COLORS.muted)
-      .text(competencies.join("    •    "), 0, 390, {
+      .text(competencies.join("  |  "), 0, competencyLabelY + 16, {
         align: "center",
         width: pageW,
         characterSpacing: 0.3,
@@ -265,8 +266,8 @@ export function generateStageCertificate(opts: {
 
     const sigW = 200;
     const signers = [
-      { x: 104, sig: "Okoma Somto", name: "Okoma Somtochukwu", title: "Head of Programme · TRAN" },
-      { x: pageW - 104 - sigW, sig: "Quadri O.", name: "Quadri Omoloju", title: "Founder · TRAN" },
+      { x: 104, sig: "Okoma Somto", name: "Okoma Somtochukwu", title: "Head of Programme, TRAN" },
+      { x: pageW - 104 - sigW, sig: "Quadri O.", name: "Quadri Omoloju", title: "Founder, TRAN" },
     ];
     for (const s of signers) {
       doc
@@ -294,7 +295,7 @@ export function generateStageCertificate(opts: {
           align: "center",
           characterSpacing: 1.2,
         });
-    }
+}
 
     // ── 12. Issue date + certificate id, centred in the gap ──
     doc
@@ -315,6 +316,60 @@ export function generateStageCertificate(opts: {
 
     doc.end();
   });
+	}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function layoutRecipientName(doc: any, fullName: string, maxWidth: number): { lines: string[]; size: number } {
+  const name = fullName.trim().replace(/\s+/g, " ") || "Ubuntu Bridge Intern";
+  doc.font("Times-BoldItalic");
+
+  const canUseSingleLine = name.length <= 34 || wordsCount(name) <= 3;
+  if (canUseSingleLine) {
+    for (let size = 36; size >= 25; size--) {
+      if (doc.fontSize(size).widthOfString(name) <= maxWidth) {
+        return { lines: [name], size };
+      }
+    }
+  }
+
+  for (let size = 32; size >= 25; size--) {
+    if (name.length <= 38 && doc.fontSize(size).widthOfString(name) <= maxWidth) {
+      return { lines: [name], size };
+    }
+  }
+
+  const words = name.split(" ");
+  if (words.length === 1) {
+    for (let size = 25; size >= 18; size--) {
+      if (doc.fontSize(size).widthOfString(name) <= maxWidth) {
+        return { lines: [name], size };
+      }
+    }
+    return { lines: [name], size: 18 };
+  }
+
+  let bestLines: [string, string] = [words[0], words.slice(1).join(" ")];
+  let bestWidth = Number.POSITIVE_INFINITY;
+  for (let i = 1; i < words.length; i++) {
+    const first = words.slice(0, i).join(" ");
+    const second = words.slice(i).join(" ");
+    const widest = Math.max(doc.fontSize(30).widthOfString(first), doc.fontSize(30).widthOfString(second));
+    if (widest < bestWidth) {
+      bestLines = [first, second];
+      bestWidth = widest;
+    }
+  }
+
+  for (let size = 32; size >= 21; size--) {
+    const fits = bestLines.every((line) => doc.fontSize(size).widthOfString(line) <= maxWidth);
+    if (fits) return { lines: bestLines, size };
+  }
+
+  return { lines: bestLines, size: 21 };
+}
+
+function wordsCount(value: string): number {
+  return value.split(" ").filter(Boolean).length;
 }
 
 // ── Wave bands ──────────────────────────────────────────
