@@ -115,6 +115,12 @@ export function generateDiscontinuationLetter(opts: {
     );
 
     para(
+      `If you apply again for the next cohort, the fact that you stayed with the programme up to ` +
+        `${stageLabel} will count in your favour. We will treat that progress as meaningful ` +
+        `evidence of your persistence and practical commitment when reviewing your next application.`
+    );
+
+    para(
       `Thank you for the work and effort you put in over the course of this stage. We wish you ` +
         `every success in your next endeavour.`
     );

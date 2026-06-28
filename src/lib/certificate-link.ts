@@ -120,3 +120,30 @@ export function passLetterUrl(opts: {
   const sig = passLetterShareSig(opts.reportId, opts.internId);
   return `${opts.origin.replace(/\/$/, "")}/api/pass-letter/${opts.reportId}?sig=${sig}`;
 }
+
+// Proof-of-work badge for Stage 3 passers. Kept on its own scope so a
+// certificate or letter URL cannot be replayed against the badge endpoint.
+export function proofBadgeShareSig(reportId: string, internId: string): string {
+  return shortHmac(documentSigningSecret(), `proof-badge:${reportId}:${internId}`, 16);
+}
+
+export function isValidProofBadgeShareSig(
+  reportId: string,
+  internId: string,
+  sig: string | null
+): boolean {
+  return validShareSig("proof-badge", reportId, internId, sig);
+}
+
+export function proofBadgeIdFor(reportId: string): string {
+  return shortHmac(documentSigningSecret(), `proof-badge-id:${reportId}`, 12).toUpperCase();
+}
+
+export function proofBadgeUrl(opts: {
+  origin: string;
+  reportId: string;
+  internId: string;
+}): string {
+  const sig = proofBadgeShareSig(opts.reportId, opts.internId);
+  return `${opts.origin.replace(/\/$/, "")}/api/proof-of-work-badge/${opts.reportId}?sig=${sig}`;
+}

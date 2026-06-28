@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { logger } from "@/lib/logger";
-import { certificateUrl, letterUrl, passLetterUrl } from "@/lib/certificate-link";
+import { certificateUrl, letterUrl, passLetterUrl, proofBadgeUrl } from "@/lib/certificate-link";
 import { ELIMINATION_GRACE_MS } from "@/lib/elimination-grace";
 import { recordAudit, auditMetaFromRequest } from "@/lib/audit";
 import { stageTerminalScores, combinedFinalScore } from "@/lib/stage-score";
@@ -812,6 +812,8 @@ async function handleFinalize(
     if (r.status === "PENDING_PROMOTION") {
       const certUrlValue = certificateUrl({ origin, reportId: r.id, internId: r.intern.id });
       const passLetterUrlValue = passLetterUrl({ origin, reportId: r.id, internId: r.intern.id });
+      const proofBadgeUrlValue =
+        stage === "STAGE_3" ? proofBadgeUrl({ origin, reportId: r.id, internId: r.intern.id }) : null;
       const feedbackUrl = `${origin.replace(/\/$/, "")}/dashboard/reports`;
       const issuedAt = new Date();
       const ops: Prisma.PrismaPromise<unknown>[] = [
@@ -833,6 +835,7 @@ async function handleFinalize(
               passingScore: threshold,
               certUrl: certUrlValue,
               letterPdfUrl: passLetterUrlValue,
+              proofBadgeUrl: proofBadgeUrlValue,
               feedbackUrl,
               slackUrl,
               issuedAt,
@@ -846,6 +849,7 @@ async function handleFinalize(
               passingScore: threshold,
               certUrl: certUrlValue,
               passLetterUrl: passLetterUrlValue,
+              proofBadgeUrl: proofBadgeUrlValue,
             },
           },
         }),
@@ -926,6 +930,7 @@ async function handleFinalize(
               passingScore: threshold,
               certUrl: null,
               letterPdfUrl,
+              proofBadgeUrl: null,
               feedbackUrl,
               slackUrl,
               issuedAt,
@@ -1046,6 +1051,7 @@ function renderResultEmail(opts: {
   passingScore: number;
   certUrl: string | null;
   letterPdfUrl: string | null;
+  proofBadgeUrl?: string | null;
   feedbackUrl: string;
   slackUrl: string;
   issuedAt?: Date;
@@ -1059,6 +1065,7 @@ function renderResultEmail(opts: {
     passingScore,
     certUrl,
     letterPdfUrl,
+    proofBadgeUrl,
     feedbackUrl,
     slackUrl,
     issuedAt = new Date(),
@@ -1089,7 +1096,7 @@ function renderResultEmail(opts: {
       </div>
 
       <p style="font-size:14px;line-height:1.7;color:#334155;margin:0 0 10px;font-weight:600;">
-        Three things to do this weekend:
+        ${proofBadgeUrl ? "Four" : "Three"} things to do this weekend:
       </p>
       <ol style="font-size:14px;line-height:1.75;color:#334155;margin:0 0 22px;padding-left:20px;">
         <li style="margin-bottom:6px;">
@@ -1100,6 +1107,14 @@ function renderResultEmail(opts: {
           <strong>Keep your letter.</strong> A note from Sankofa confirming you
           cleared this stage and where you go next. Good for your own records.
         </li>
+        ${
+          proofBadgeUrl
+            ? `<li style="margin-bottom:6px;">
+                <strong>Save your proof-of-work badge.</strong> It is a shareable
+                Stage 3 badge for the incident response work you completed in this capstone.
+              </li>`
+            : ""
+        }
         <li>
           <strong>Join the cohort Slack.</strong> Most of the practical help,
           mentor office hours, and back-and-forth happens there, not on the
@@ -1111,6 +1126,13 @@ function renderResultEmail(opts: {
         ${certUrl ? ctaButton(certUrl, "Download your certificate", "#2563EB") : ""}
         ${letterPdfUrl ? `&nbsp;&nbsp;${ctaButton(letterPdfUrl, "Download your letter", "#0A1F44")}` : ""}
       </div>
+      ${
+        proofBadgeUrl
+          ? `<div style="margin:0 0 10px;">
+              ${ctaButton(proofBadgeUrl, "Download proof-of-work badge", "#047857")}
+            </div>`
+          : ""
+      }
       <div style="margin:0 0 18px;">
         ${slackUrl ? ctaButton(slackUrl, "Join the cohort Slack", "#4A154B") : ""}
       </div>
@@ -1165,6 +1187,11 @@ function renderResultEmail(opts: {
         <li style="margin-bottom:6px;">
           A formal end-of-programme letter (PDF below) for your records,
           signed by the programme office.
+        </li>
+        <li style="margin-bottom:6px;">
+          If you apply again for the next cohort, reaching Stage ${stageNumber}
+          in this cohort will count in your favour. We will take that persistence
+          seriously when reviewing your next application.
         </li>
         <li>
           You're still on our list for town halls, alumni events, and the

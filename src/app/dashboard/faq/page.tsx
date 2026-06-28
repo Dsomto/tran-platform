@@ -90,50 +90,46 @@ const STAGE_2_PLAYBOOK = [
   },
 ] as const;
 
-/** Stage 3 capstone deliverables — one editable file per deliverable, hosted
- *  under /public/capstone/stage-3/ as both .docx and .pdf. */
+/** Stage 3 capstone templates — one editable file per deliverable, hosted under
+ *  /public/capstone/stage-3/ as .docx (editable) + .pdf (preview). */
 const STAGE_3_TEMPLATES = [
   { code: "D1", slug: "stage-3-process-triage-template", title: "Process triage" },
   { code: "D2", slug: "stage-3-incident-timeline-template", title: "Incident timeline" },
   { code: "D3", slug: "stage-3-iocs-template", title: "IOC list" },
   { code: "D4", slug: "stage-3-attack-map-template", title: "MITRE ATT&CK technique map" },
-  {
-    code: "D5",
-    slug: "stage-3-incident-report-template",
-    title: "Formal incident report (5–7 pages)",
-  },
+  { code: "D5", slug: "stage-3-incident-report-template", title: "Incident report (PICERL)" },
 ] as const;
 
 const STAGE_3_PLAYBOOK = [
   {
     code: "D1",
-    title: "Process triage from the memory listing",
-    do: "From the pre-parsed process listing, name your THREE most suspicious processes. Quote the exact line for each (PID, parent, user, command), and give a one-sentence ruling on how you ruled out a false positive.",
-    win: "Three real suspects, each with the line quoted — an unknown path or an unexpected parent, not a vibe. A genuine false-positive ruling per process (judgement, not paranoia), and corroboration from the syslog/SIEM rather than the process table alone.",
+    title: "Process triage",
+    do: "From the memory process listing, name your three most suspicious processes. Quote the exact line for each (PID, parent, user, command), and give a one-sentence ruling on how you ruled out a false positive.",
+    win: "Three real suspects, each with the line quoted — not a vague list. A genuine false-positive ruling per process (don't flag the browser or the web server as the threat). Corroborate with a syslog or SIEM line.",
   },
   {
     code: "D2",
-    title: "The incident timeline",
-    do: "One event per row (timestamp UTC · phase · event · source file · evidence line), in strict order, covering initial access → privilege escalation → persistence → C2 → exfiltration attempt → containment.",
-    win: "Strict UTC order with real timestamps; every row cited to a source line; all phases present (the exfil and containment rows are the ones weak timelines miss). The netflow has unrelated background/lateral flows from other hosts — don't attribute them to this incident.",
+    title: "Incident timeline",
+    do: "One event per row — timestamp (UTC) · event · source file · evidence — covering initial access → privilege escalation → persistence → C2 → lateral movement → exfiltration → containment.",
+    win: "Strict UTC order, every row tied to a source line. Handle lateral movement honestly: the SMB/RDP/Postgres flows are OTHER hosts, so 'no lateral movement confirmed from this host' is the full-credit answer — do not invent it.",
   },
   {
     code: "D3",
     title: "IOC list",
-    do: "Extract the indicators another analyst could block or hunt for — IPs, URLs/domains, file paths, persistence artefacts, accounts/keys — each tied to the source file and line. STIX 2.1 JSON of a subset is optional bonus.",
-    win: "Coverage across types (not just the C2 IP), provenance on every row, exact/deduplicated values. False-positive discipline is graded: benign internal/OS infrastructure (internal DNS, NTP, the host's own address) is NOT an IOC.",
+    do: "Extract the indicators by type — IPs, domains/URLs, file paths, persistence artefacts, user-agents, accounts — each tied to where you saw it (file + line). A STIX 2.1 bundle is an optional bonus.",
+    win: "Coverage across types with provenance on every row. False-positive discipline: do not list internal DNS/NTP/update endpoints or the host itself, and do not decode the base64 'junk' string and list it. Exact, deduplicated values.",
   },
   {
     code: "D4",
     title: "MITRE ATT&CK technique map",
-    do: "Map each behaviour in your timeline to a specific ATT&CK technique ID (and sub-technique where it applies), verified on attack.mitre.org, with the evidence line that supports it.",
-    win: "Specific IDs (Txxxx + sub-technique), each genuinely matching what the evidence shows — a plausible-but-wrong ID loses the row. Cover the chain initial access → exfiltration, and keep every row traceable to its timeline event.",
+    do: "Map each behaviour from your timeline to a specific ATT&CK technique ID (and sub-technique where it applies). Browse attack.mitre.org to get the IDs right; cite the evidence per row.",
+    win: "Specific IDs (Txxxx.xxx), verified on attack.mitre.org, that genuinely match the behaviour the evidence shows. Cover the chain from initial access through exfiltration. A plausible ID that doesn't match the evidence loses the row.",
   },
   {
     code: "D5",
-    title: "The formal incident report (5–7 pages)",
-    do: "The cover report for the CISO + Legal: executive summary, scope, timeline summary, root cause, what was accessed, containment, eradication, lessons learned, policy changes — folding in D1–D4.",
-    win: "A jargon-free exec summary a non-analyst can act on; root cause stated as a cause (the foothold + how it became persistent root), not 'malware ran'; the exfiltrated data named precisely; and full consistency with your D1–D4 — contradictions across your own pack cost marks.",
+    title: "Incident report (PICERL)",
+    do: "The full NIST 800-61r2 PICERL report (1,500+ words): executive summary, scope, preparation, identification, containment, eradication, recovery, lessons, a 12+ row timeline table with H/M/L confidence, ATT&CK summary, risk register, references, evidence appendix, a rejected-alternate-theory section, and 'one mistake I almost made'. Submit the Google Doc link + a 100-word abstract.",
+    win: "A stand-alone executive summary; root cause stated as a cause, not 'malware ran'; a timeline that isn't all 'High' confidence; owned + dated lessons; specific rejected-theory and one-mistake sections (the AI-resistant ones); and 8+ real citations including NIST by section, ATT&CK IDs, CISA, a detection reference, and NDPA §40.",
   },
 ] as const;
 
@@ -665,6 +661,163 @@ export default async function FAQPage() {
                 <strong>&ldquo;Open my feedback&rdquo;</strong> link in your result
                 email with the folder link and the submission timestamp — that is
                 the channel that can correct a grading error.
+              </Q>
+            </Section>
+          )}
+
+          {currentStage === "STAGE_3" && (
+            <Section
+              icon={FileSignature}
+              title="Start from the templates — one per deliverable"
+            >
+              <p>
+                Each of the five deliverables has its{" "}
+                <strong>own template</strong> — the headings, tables, and a{" "}
+                &ldquo;what we&apos;re looking for&rdquo; checklist already laid
+                out. Replace every <code>[ bracketed prompt ]</code> with your own
+                work and delete the grey instruction lines before you submit.
+              </p>
+              <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-900 dark:bg-rose-500/15 dark:border-rose-500/30 dark:text-rose-200 text-sm">
+                These are <strong>scaffolds, not answers.</strong> The findings,
+                the timeline, the IOCs, the ATT&amp;CK IDs, and the report are
+                yours to do from the evidence pack — graded by humans. A template
+                handed in with the brackets still in scores zero for that section.
+              </div>
+              <div className="space-y-2">
+                {STAGE_3_TEMPLATES.map((t) => (
+                  <div
+                    key={t.slug}
+                    className="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-surface p-3"
+                  >
+                    <span className="inline-flex items-center justify-center shrink-0 w-9 h-7 rounded-md bg-blue/10 text-blue text-xs font-bold font-mono">
+                      {t.code}
+                    </span>
+                    <span className="text-sm font-semibold text-foreground flex-1 min-w-[12rem]">
+                      {t.title}
+                    </span>
+                    <a
+                      href={`/capstone/stage-3/${t.slug}.docx`}
+                      download
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue text-white text-xs font-semibold hover:bg-blue/90"
+                    >
+                      <FileSignature className="h-3.5 w-3.5" /> .docx
+                    </a>
+                    <a
+                      href={`/capstone/stage-3/${t.slug}.pdf`}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-blue/40 bg-surface text-blue dark:text-blue-300 text-xs font-semibold hover:bg-blue/10"
+                    >
+                      <FileText className="h-3.5 w-3.5" /> .pdf
+                    </a>
+                  </div>
+                ))}
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Open the <strong>.docx</strong> in Google Docs (File → Open →
+                Upload) or Word and edit directly; the <strong>.pdf</strong> is a
+                read-only preview. Everything the template says is also written
+                out below in{" "}
+                <strong>&ldquo;How to nail each deliverable&rdquo;</strong>, so if
+                a download ever looks off, this FAQ is the canonical guide.
+              </p>
+            </Section>
+          )}
+
+          {currentStage === "STAGE_3" && (
+            <Section icon={CheckCircle2} title="How to nail each deliverable">
+              <p>
+                Stage 3 is a full incident-response project. Keep a{" "}
+                <strong>running findings log</strong> from the very first desk
+                task — every artefact, evidence path, IP, file, hash, and
+                timestamp, with the exact line. The five written deliverables are
+                assembled from that log; you cannot write them from memory.
+              </p>
+              <div className="space-y-3">
+                {STAGE_3_PLAYBOOK.map((d) => (
+                  <div
+                    key={d.code}
+                    className="rounded-xl border border-border bg-surface p-4"
+                  >
+                    <div className="flex items-center gap-2.5 mb-2.5">
+                      <span className="inline-flex items-center justify-center shrink-0 w-9 h-7 rounded-md bg-blue/10 text-blue text-xs font-bold font-mono">
+                        {d.code}
+                      </span>
+                      <h3 className="text-sm font-bold text-foreground">
+                        {d.title}
+                      </h3>
+                    </div>
+                    <div className="space-y-1.5 text-sm leading-relaxed">
+                      <p>
+                        <span className="font-semibold text-foreground">
+                          Do this:
+                        </span>{" "}
+                        <span className="text-foreground/80">{d.do}</span>
+                      </p>
+                      <p>
+                        <span className="font-semibold text-foreground">
+                          Where the marks are:
+                        </span>{" "}
+                        <span className="text-foreground/80">{d.win}</span>
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Section>
+          )}
+
+          {currentStage === "STAGE_3" && (
+            <Section
+              icon={HelpCircle}
+              title="Stage 3 — the questions we keep getting"
+            >
+              <Q q="Where does &ldquo;One mistake I almost made&rdquo; go — in the Google Doc or the answer box?">
+                <strong>Inside the Google Doc.</strong> It is a required section
+                of the incident report (near the end, with the rejected-alternate-theory
+                section). The answer box on the task only takes the{" "}
+                <strong>Doc link plus your 100-word abstract</strong> — not the
+                report content. Same for the timeline, ATT&amp;CK table, and
+                everything else: it all lives in the Doc; the box just points to
+                it.
+              </Q>
+              <Q q="Do I have to complete every deliverable, or can I just do the high-point ones?">
+                Do them all. Each deliverable is its <strong>own graded
+                section</strong>, and your Stage 3 score is the total across all
+                five — the advance cutoff and the leaderboard both use that full
+                score, so a deliverable you skip is a zero you can&apos;t earn
+                back elsewhere. Banking the two biggest and stopping leaves marks
+                (and rank) on the table.
+              </Q>
+              <Q q="I was told I didn't submit a deliverable that I actually did. How do I avoid that?">
+                Put <strong>all five deliverables in one Drive folder</strong>,
+                name each file clearly (D1–D5 or the deliverable name), and set the{" "}
+                <strong>folder and every file</strong> to &ldquo;Anyone with the
+                link → Viewer.&rdquo; Open the folder link in an incognito window
+                before the deadline — if you can read every file logged out, the
+                grader can. If you believe a submitted deliverable was missed in
+                grading, raise it through the <strong>feedback link in your result
+                email</strong> with your folder link and the file names — that is
+                the channel that gets reviewed.
+              </Q>
+              <Q q="The desk tasks feel like a capstone on their own. How do I keep up?">
+                They are demanding by design — Stage 3 is a full IR engagement.
+                The trick is that the written deliverables <em>reuse</em> your
+                desk-task work: the timeline, the IOC list, the ATT&amp;CK map,
+                and the report are all built from the notes you take while doing
+                the hands-on tasks. Capture everything as you go — especially the
+                lateral-movement evidence (or your proof that there is none) — and
+                the write-ups go much faster.
+              </Q>
+              <Q q="How long does the incident report need to be, and what structure?">
+                <strong>Minimum 1,500 words</strong>, in the NIST 800-61r2{" "}
+                <strong>PICERL</strong> structure — executive summary, scope,
+                preparation, identification, containment, eradication, recovery,
+                lessons learned, a 12+ row timeline table (with H/M/L confidence),
+                ATT&amp;CK summary, risk register, references (8+), evidence
+                appendix, a rejected-alternate-theory section, and &ldquo;one
+                mistake I almost made.&rdquo; The D5 template lays out every
+                section — start from it.
               </Q>
             </Section>
           )}
