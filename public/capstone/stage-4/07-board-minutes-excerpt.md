@@ -33,9 +33,9 @@ saved?
 
 ## Tabled Motion
 
-Motion: approve an immediate 12-month security uplift budget covering legacy
-system retirement, SOC correlation rules, DPO escalation workflow, and quarterly
-external assurance.
+Motion: approve the first 90 days of a security uplift programme covering
+legacy-system containment, SOC correlation rules, DPO escalation workflow, and
+the controls needed to justify any later 12-month spend.
 
 Status: tabled until management returns with a risk-ranked roadmap, named
 owners, and cost bands.

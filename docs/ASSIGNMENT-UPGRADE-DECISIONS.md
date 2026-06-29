@@ -97,7 +97,7 @@ Every task now carries a `Reference:` line in the description. Standards I used:
 - **MITRE ATT&CK** — T1078, T1083, T1110, T1190, T1546.004, T1548.003, T1568, T1071.001, T1041, T1595, T1027.003.
 - **MITRE D3FEND** — counter-techniques required on Stage 4 task 5.
 - **CWE** — 79, 89, 321, 353, 506, 532, 538, 540, 918.
-- **NDPA 2023** — §40 (breach notification), §41 (data-subject notification), §44 (fine ceiling).
+- **GDPR** — Article 33 (breach notification), Article 34 (data-subject notification), Article 83 (fine exposure).
 - **ISO 27001:2022 Annex A** (the 93-control 2022 taxonomy, not the 14-area 2013 edition).
 - **NIST CSF 2.0** (the 6-function GV-added Feb 2024 taxonomy, not 1.1).
 - **GTFOBins** for the privesc shell-escape.
@@ -124,7 +124,7 @@ This won't *stop* AI use entirely (nothing will). It raises the floor on what ge
 - **Stage 1** — crypto/secrets investigation. Two MCQs converted to research writeups requiring citation of FIPS / RFC / CVE. Board brief is now structured with mandatory NIST + OWASP + CVE citation.
 - **Stage 2** — full attack chain. Vuln-class telegraphing stripped from task 4 description. SSRF (task 6) requires looking up the metadata IP yourself. Pentest finding (task 9) moved to Google Doc with full structured template + CVSS scoring.
 - **Stage 3** — full IR project. Expanded 3 → 7. New lateral/C2 LOG_VIEWER lab with 3 tabs (DNS / proxy / EDR process tree). IR report capstone is 1,500 words, 14 sections, PICERL-structured, 8+ citations.
-- **Stage 4** — board-level capstone. Expanded 3 → 6. Risk register / NDPA letter / board memo / 30-60-90 / control mapping all Google-link with required NIST CSF 2.0 + ISO 27001:2022 Annex A + MITRE D3FEND mapping per row. Track selection stays in-platform.
+- **Stage 4** — board-level capstone. Expanded 3 → 6. Risk register / GDPR letter / board memo / 30-60-90 / control mapping all Google-link with required NIST CSF 2.0 + ISO 27001:2022 Annex A + MITRE D3FEND where relevant. Final ethics stance + track selection stays in-platform.
 
 ---
 
@@ -221,7 +221,7 @@ stage-3/task-5.json  (NEW    — timeline WRITEUP, was old task-2 content, stren
 stage-3/task-6.json  (NEW    — ATT&CK mapping table, Google Doc)
 stage-3/task-7.json  (NEW    — PICERL IR report capstone, Google Doc, 1,500 words)
 stage-4/task-1.json  (rewrite — Google Doc risk register, citation bar)
-stage-4/task-2.json  (rewrite — Google Doc NDPA notification letter, NDPA citations)
+stage-4/task-2.json  (rewrite — Google Doc GDPR notification letter, GDPR citations)
 stage-4/task-3.json  (NEW    — board slide memo, Google Doc, 1 page discipline)
 stage-4/task-4.json  (NEW    — 30/60/90 roadmap, Google Doc, 9 mandatory rows)
 stage-4/task-5.json  (NEW    — control mapping NIST CSF / ISO 27001 / D3FEND, Google Doc)

@@ -176,17 +176,24 @@ export const EVIDENCE_PACK: Record<StageKey, EvidenceFile[]> = {
   ],
   STAGE_4: [
     {
+      filename: "00-stage-4-evidence-pack.md",
+      url: "/capstone/stage-4/00-stage-4-evidence-pack.md",
+      description:
+        "READ THIS FIRST. All-in-one Stage 4 artefact pack with every template and input copied into one document.",
+      bytes: 21016,
+    },
+    {
       filename: "breach-notification-template.md",
       url: "/capstone/stage-4/breach-notification-template.md",
       description:
-        "NDPA 2023 Section 40 breach-notification skeleton. Fill every [BRACKETED] field from evidence collected across Stages 0–3.",
-      bytes: 2500,
+        "GDPR Article 33 breach-notification skeleton. Fill every [BRACKETED] field from evidence collected across Stages 0–3.",
+      bytes: 3285,
     },
     {
       filename: "risk-register-template.csv",
       url: "/capstone/stage-4/risk-register-template.csv",
       description:
-        "5-row risk register skeleton with NIST CSF 2.0 + ISO 27001:2022 Annex A columns. R-001 pre-filled as the worked example.",
+        "5-row risk register skeleton with residual risk, NIST CSF 2.0, and ISO 27001:2022 Annex A columns. R-001 pre-filled as the worked example.",
     },
     {
       filename: "board-memo-template.md",
@@ -198,7 +205,7 @@ export const EVIDENCE_PACK: Record<StageKey, EvidenceFile[]> = {
       filename: "30-60-90-roadmap-template.md",
       url: "/capstone/stage-4/30-60-90-roadmap-template.md",
       description:
-        "30/60/90 remediation roadmap skeleton — action / owner / budget tier / Stage 1–3 evidence cite / CSF 2.0 / ISO 27001 columns + deferral list.",
+        "30/60/90 remediation roadmap skeleton — action / owner / budget tier / dependencies / acceptance criteria / evidence / CSF 2.0 / ISO 27001 columns + deferral list.",
     },
     {
       filename: "control-mapping-skeleton.csv",
@@ -218,7 +225,21 @@ export const EVIDENCE_PACK: Record<StageKey, EvidenceFile[]> = {
       url: "/capstone/stage-4/07-board-minutes-excerpt.md",
       description:
         "Board minutes excerpt listing resolved and open questions your memo, notification letter, and roadmap must anticipate.",
-      bytes: 1575,
+      bytes: 1607,
+    },
+    {
+      filename: "08-front-page-amaka.md",
+      url: "/capstone/stage-4/08-front-page-amaka.md",
+      description:
+        "Plain-text transcript of the Lagos Ledger front page alleging Amaka Eze was The Griot; includes the breadcrumb trail back through Stages 0–3.",
+      bytes: 6961,
+    },
+    {
+      filename: "08-front-page-amaka.html",
+      url: "/capstone/stage-4/08-front-page-amaka.html",
+      description:
+        "Designed newspaper-cover version of the Amaka reveal; use it for the press-risk, insider-risk, and ethics judgement calls.",
+      bytes: 10401,
     },
   ],
 };

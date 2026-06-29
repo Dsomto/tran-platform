@@ -106,10 +106,11 @@ Goal: translate technical incident into business risk and a credible plan.
 | Task | Pts | Strong looks like | Insufficient looks like |
 |---|---|---|---|
 | Five-entry risk register | 20 | Real risks with likelihood/impact and sane scoring | Generic risks; arbitrary scores |
-| GDPR 72-hour breach letter | 20 | Hits the required notification elements; right tone; on-time framing | Misses mandatory content; wrong audience |
-| Map incident to NIST CSF 2.0 | 20 | Correct Functions/Categories tied to the incident | Name-drops CSF with no mapping |
-| 12-month remediation roadmap | 20 | Sequenced, realistic, owners + horizons | Wish-list with no sequencing |
-| Track-selection rationale (binding) | 20 | Honest fit between strengths and chosen track | No reasoning; contradicts their work |
+| GDPR 72-hour breach letter | 15 | Hits required Article 33 elements; exact clock; right tone; on-time framing | Misses mandatory content; wrong audience |
+| Board slide memo | 15 | Board-safe numbers, one ask, tradeoff, anticipated questions | Too technical; no decision for the board |
+| 30/60/90 remediation roadmap | 20 | Sequenced, realistic, owners, dependencies, acceptance criteria | Wish-list with no sequencing |
+| Control mapping | 15 | Correct CSF/ISO/D3FEND mappings tied to evidence | Framework name-dropping with no evidence |
+| Ethics stance + track selection | 15 | Names the Amaka tradeoff honestly, then gives a grounded track choice | Performs certainty; no reasoning; contradicts their work |
 
 Red flags: compliance theatre with no link to the actual incident.
 

@@ -132,7 +132,7 @@ const ROOMS: Record<StageSlug, Room> = {
     debrief:
       "The Griot is named. Welcome to TRAN properly — pick your track. Week 6 you specialise.",
     learningObjectives:
-      "- Defence-in-depth, zero trust (NIST 800-207)\n- NIST CSF 2.0, ISO 27001:2022\n- NDPR 2019 + NDPA 2023, GDPR\n- PICERL, risk assessment, BC/DR\n- SABSA / TOGAF basics, executive comms",
+      "- Defence-in-depth, zero trust (NIST 800-207)\n- NIST CSF 2.0, ISO 27001:2022\n- GDPR breach notification and ethics under uncertainty\n- PICERL, risk assessment, BC/DR\n- SABSA / TOGAF basics, executive comms",
     themeColor: "#22d3ee",
     totalPoints: 250,
     passThreshold: 70,

@@ -85,7 +85,7 @@ const STAGE_2_PLAYBOOK = [
   {
     code: "D4",
     title: "Ethics stance — 300–500 words",
-    do: "One continuous response in your own voice on the pressure call: what you say to the journalist who wants 'off the record', what you will and won't put in writing, how you handle evidence that could implicate a senior colleague, and the one action you take regardless of your manager. Cite at least one ISC2 canon by number and the NDPA breach-notification duty.",
+    do: "One continuous response in your own voice on the pressure call: what you say to the journalist who wants 'off the record', what you will and won't put in writing, how you handle evidence that could implicate a senior colleague, and the one action you take regardless of your manager. Cite at least one ISC2 canon by number and the GDPR breach-notification duty.",
     win: "Anchor at least one sentence to your own Stage 2 work. Make a real decision with consequences, not a balanced essay. Graders scan this one hardest for AI — two read it independently, and if both find it generic or untraceable to your work, it is treated as not submitted.",
   },
 ] as const;
@@ -129,7 +129,7 @@ const STAGE_3_PLAYBOOK = [
     code: "D5",
     title: "Incident report (PICERL)",
     do: "The full NIST 800-61r2 PICERL report (1,500+ words): executive summary, scope, preparation, identification, containment, eradication, recovery, lessons, a 12+ row timeline table with H/M/L confidence, ATT&CK summary, risk register, references, evidence appendix, a rejected-alternate-theory section, and 'one mistake I almost made'. Submit the Google Doc link + a 100-word abstract.",
-    win: "A stand-alone executive summary; root cause stated as a cause, not 'malware ran'; a timeline that isn't all 'High' confidence; owned + dated lessons; specific rejected-theory and one-mistake sections (the AI-resistant ones); and 8+ real citations including NIST by section, ATT&CK IDs, CISA, a detection reference, and NDPA §40.",
+    win: "A stand-alone executive summary; root cause stated as a cause, not 'malware ran'; a timeline that isn't all 'High' confidence; owned + dated lessons; specific rejected-theory and one-mistake sections (the AI-resistant ones); and 8+ real citations including NIST by section, ATT&CK IDs, CISA, a detection reference, and GDPR Article 33.",
   },
 ] as const;
 
@@ -491,7 +491,7 @@ export default async function FAQPage() {
               </Q>
               <Q q="What must D4 (the ethics stance) cite?">
                 At least one <strong>ISC2 Code of Ethics canon, by number</strong>,
-                and the <strong>NDPA</strong> breach-notification duty that applies
+                and the <strong>GDPR</strong> breach-notification duty that applies
                 once you have confirmed PII left the building. 300–500 words, your
                 own voice, and anchor at least one sentence to your own Stage 2
                 work — two graders read it independently and a generic, untraceable

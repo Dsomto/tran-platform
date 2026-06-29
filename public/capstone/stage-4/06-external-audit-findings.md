@@ -34,7 +34,7 @@ OWNER ACCEPTS / DISPUTES / DEFERS:
 
 The Data Protection Officer was not notified until approximately 36 hours
 after Security had enough evidence to suspect customer data exposure. While
-NDPA Section 40 includes a 72-hour notification clock, the deeper issue is the
+GDPR Article 33 includes a 72-hour notification clock, the deeper issue is the
 absence of a trigger that brings the DPO into the response room early.
 
 Recommendation: add DPO notification to the high-severity incident checklist,

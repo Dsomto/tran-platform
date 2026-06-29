@@ -178,15 +178,15 @@ export const STAGE_STORIES: Record<StageSlug, StageStory> = {
       role: "General Counsel",
       lines: [
         "{firstName} — Ifeoma, General Counsel. Sit. We're out of time, and I would rather you heard this from me than from the Chair at 09:01.",
-        "Tomorrow the board sits. Three people, three questions: did customer PII leave, are we in breach, and what does next year of security spend cost. They will not ask about ATT&CK technique IDs. They will quote your numbers back at you.",
-        "The mission board gets you board-ready. The capstone is the package that goes on the record — risk register, the NDPA breach-notification letter to the NDPC, the roadmap. My draft and yours are submitted together; reconcile them before nine.",
-        "This is the last chapter you walk in as a candidate. When the Chair signs, you pick your track and it is binding. Walk in knowing which one.",
+        "Tomorrow the board sits. Three people, three questions: did customer PII leave, are we in breach, and what do the first ninety days of security spend buy us. They will not ask about ATT&CK technique IDs. They will quote your numbers back at you.",
+        "The mission board gets you board-ready. The capstone is the package that goes on the record — risk register, the GDPR breach-notification letter, the roadmap, the mapping, and the ethics call on Amaka. My draft and yours are submitted together; reconcile them before nine.",
+        "This is the last chapter you walk in as a candidate. When the Chair signs, you pick your track and it is binding. Walk in knowing which one, and what kind of professional you are willing to become.",
       ],
     },
     tasksTeach:
       "Risk-register, regulatory and roadmap drills — the rehearsal for the package you put in front of the board.",
     reportTo: "the Sankofa Digital Board",
     cliffhanger:
-      "The Chair signed off. You are no longer a candidate — you are an analyst, on the track you chose. The Griot is still out there. But that is the story of the programme that comes next.",
+      "The Chair signed off. You are no longer a candidate — you are an analyst, on the track you chose. The Griot was inside the house. What you do with that truth is the story of the programme that comes next.",
   },
 };

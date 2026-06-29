@@ -12,9 +12,9 @@ before you submit.
 
 **Three numbers anchoring the slide:**
 
-1. `[N] customer PII records exposed` — cite: `[Stage 2 task 1 — ES customer_pii index, 84,210 docs]`
-2. `[N] minutes from initial access to root` — cite: `[Stage 3 task 5 timeline]`
-3. `₦[N]M estimated NDPC fine ceiling` — cite: `[NDPA 2023 §44 — 2% of annual turnover OR ₦10M, whichever is greater]`
+1. `[N.k] customer PII records exposed` — cite: `[Stage 2 task 1 — ES customer_pii index, 84.2k docs]`
+2. `[Nm] from initial access to root` — cite: `[Stage 3 task 5 timeline]`
+3. `€[N]M estimated GDPR fine exposure` — cite: `[GDPR Article 83 — up to €10M/2% or €20M/4%, depending on infringement class]`
 
 **One chart description (one paragraph):**
 
@@ -39,9 +39,9 @@ before vs after each of the five risks from your risk register.]`
 
 **Anticipated board questions + your one-line answers:**
 
-- Q: `[the question she most fears]`  /  A: `[your one-line answer]`
-- Q: `[…]`  /  A: `[…]`
-- Q: `[…]`  /  A: `[…]`
+- Q: `[Open Question Q1 from 07-board-minutes-excerpt.md]`  /  A: `[your one-line answer]`
+- Q: `[Open Question Q2 from 07-board-minutes-excerpt.md]`  /  A: `[…]`
+- Q: `[Open Question Q3 from 07-board-minutes-excerpt.md]`  /  A: `[…]`
 
 **Tradeoff decision (60+ words):**
 
@@ -50,12 +50,18 @@ before vs after each of the five risks from your risk register.]`
 will do it with less coverage). The reason X comes first is <evidence-
 backed risk-reduction it buys>." Generic "no trade-offs needed" loses.]`
 
+**Press-risk line (≤35 words):**
+
+`[One sentence the CEO can use if asked whether Amaka was The Griot. It must
+separate confirmed evidence, allegation, and next action.]`
+
 **Evidence appendix:**
 
 - `[Stage X task Y — what claim it supports]`
-- `[NDPA 2023 §XX]`
+- `[GDPR Article XX]`
 - `[NIST CSF 2.0 — function.category id]`
 - `[MITRE ATT&CK — T1234 id]`
+- `[07-board-minutes-excerpt.md — which open question it answers]`
 
 **One mistake I almost made (50+ words):**
 

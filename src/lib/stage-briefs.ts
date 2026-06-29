@@ -270,7 +270,7 @@ export const STAGE_BRIEFS: Record<
       "D2 — Tier-1 dismissal pattern: SD-40812 plus ≥ 3 other ticket IDs, with verbatim disposition + notes quotes",
       "D3 — Business impact + next steps: headline finding, three 72-hour actions, one systemic policy recommendation",
       "D4 — Judgment essay: an ethics call (manager pressuring you to drop the case) + an open-ended SIEM alert scenario, both AI-resistant",
-      "Citation discipline: every claim ties to a file / line / ticket plus an external reference (NIST, MITRE, ISO, CVE, ISC2, NDPA) where research applies",
+      "Citation discipline: every claim ties to a file / line / ticket plus an external reference (NIST, MITRE, ISO, CVE, ISC2, GDPR) where research applies",
     ],
   },
 
@@ -498,7 +498,7 @@ export const STAGE_BRIEFS: Record<
       "The decrypted files point at a path: sankofa.internal/legacy-admin/. It is a Django app from 2019 that was supposed to be decommissioned two years ago. Tunde confirms it is still online and publicly reachable — and as of this morning, the press knows it too.",
       "You are writing the pentest-style findings report Bayo, the Head of Engineering, will actually act on. Nobody is going to tell you what is wrong with this app — finding it is the job. Prove each weakness from the evidence, rank it by business risk, tell the team what to fix first, and tell them what to watch while the holes are still open. You have a week. The team has two, and they no longer have the luxury of arguing about it.",
       "You will not run any scans against real infrastructure. Every weakness you need is already sitting in the source, the captures, and the sample tokens. You read them in the browser, no install needed.",
-      "Your evidence pack: the recovered login source, an edge-proxy capture of the attacker's 02:14–02:31 UTC session with the analyst annotations stripped off — you reconstruct the path yourself — the three JWTs the app handed out, an XML import body the attacker submitted, and a redacted twenty-row sample of what left the building (you'll quantify impact from it here, and it feeds the NDPA letter in Stage 4). The recovered source still carries the original developer's comments. Some of them flag a bug honestly; some flag nothing while the bug sits two lines down. Trust the code, not the margin. What is wrong, how many, and how they chain is for you to discover.",
+      "Your evidence pack: the recovered login source, an edge-proxy capture of the attacker's 02:14–02:31 UTC session with the analyst annotations stripped off — you reconstruct the path yourself — the three JWTs the app handed out, an XML import body the attacker submitted, and a redacted twenty-row sample of what left the building (you'll quantify impact from it here, and it feeds the GDPR letter in Stage 4). The recovered source still carries the original developer's comments. Some of them flag a bug honestly; some flag nothing while the bug sits two lines down. Trust the code, not the margin. What is wrong, how many, and how they chain is for you to discover.",
     ],
     cast: [
       {
@@ -614,9 +614,9 @@ export const STAGE_BRIEFS: Record<
         id: "d4-ethics-stance",
         title: "D4 — Ethics stance: the call you make under pressure",
         description:
-          "300–500 words, your own writing — graders scan this one hardest for AI patterns. The breach is public: TechCabal ran it this morning, the support queue is on fire, and a journalist you know personally DMs you asking for 'just background, off the record' on what really happened with /legacy-admin/. Separately, someone senior is about to take the fall for the app outliving its kill date, and you hold the timeline that proves who knew what. Write your response: what you say to the journalist and why, what you will and will not put in writing, how you handle the evidence that could protect or implicate a colleague, and the one action you take regardless of what your manager prefers. Name at least one ISC2 Code of Ethics canon (by number) and the NDPA duty that applies once you have confirmed PII left the building.",
+          "300–500 words, your own writing — graders scan this one hardest for AI patterns. The breach is public: TechCabal ran it this morning, the support queue is on fire, and a journalist you know personally DMs you asking for 'just background, off the record' on what really happened with /legacy-admin/. Separately, someone senior is about to take the fall for the app outliving its kill date, and you hold the timeline that proves who knew what. Write your response: what you say to the journalist and why, what you will and will not put in writing, how you handle the evidence that could protect or implicate a colleague, and the one action you take regardless of what your manager prefers. Name at least one ISC2 Code of Ethics canon (by number) and the GDPR notification duty that applies once you have confirmed PII left the building.",
         deliverable:
-          "D4 — Ethics stance (Google Doc or DOCX, 300–500 words, your own writing; cites the ISC2 canon by number and the relevant NDPA section)",
+          "D4 — Ethics stance (Google Doc or DOCX, 300–500 words, your own writing; cites the ISC2 canon by number and the relevant GDPR article)",
       },
     ],
     resourcesDriveUrl:
@@ -643,7 +643,7 @@ export const STAGE_BRIEFS: Record<
       "D1 — Findings catalogue: every weakness cited to the exact source line / token / capture request (OWASP + CWE), with a confidence rating, plus the disproved decoy and the mechanism that makes it safe",
       "D2 — Exploit chain + impact: a reproducible PoC per hop reconciled to the un-annotated capture and ending at the exfil sample; a CVSS vector per finding; impact quantified in customers and naira",
       "D3 — The report: executive summary, threat model, findings tied to evidence, remediation ordered by risk reduction per hour, and two deployable detection stopgaps",
-      "D4 — Ethics stance: 300–500 words, your own writing, the press / disclosure call, citing an ISC2 canon by number and the NDPA duty",
+      "D4 — Ethics stance: 300–500 words, your own writing, the press / disclosure call, citing an ISC2 canon by number and the GDPR duty",
     ],
     commsThread: [
       {
@@ -775,7 +775,7 @@ export const STAGE_BRIEFS: Record<
       },
       {
         kind: "notice",
-        text: "72-hour clock for GDPR notification started at 04:12 UTC on 2024-06-08. Counsel knows the exact second. If you reference \"the clock\" in your report, that's what you mean.",
+        text: "72-hour clock for GDPR Article 33 notification started at 04:12 UTC on 2024-01-15. Counsel knows the exact second. If you reference \"the clock\" in your report, that's what you mean.",
         meta: "pinned by Counsel Ifeoma",
       },
       {
@@ -871,10 +871,10 @@ export const STAGE_BRIEFS: Record<
     label: "Stage 4",
     subtitle: "Governance & Risk — The Debrief",
     missionBrief: [
-      "Tomorrow at 09:00 you are in front of Sankofa's board. Three members: the Chair, the CFO, and an independent director who used to chair a bank. They do not care about MITRE ATT&CK technique IDs. They care about three things: did customer PII leave the building, are we in breach of GDPR/NDPA, and what does the next twelve months of security spend need to look like.",
+      "Tomorrow at 09:00 you are in front of Sankofa's board. Three members: the Chair, the CFO, and an independent director who used to chair a bank. They do not care about MITRE ATT&CK technique IDs. They care about three things: did customer PII leave the building, does this trigger GDPR notification duties, and which first ninety days of security spend earn the rest of the programme.",
       "This is the capstone. You are no longer a technical analyst — you are the voice the board hears. Every artefact you submit lives on the record. Every number gets quoted back at you.",
       "When the chair signs off on your package, you are no longer a candidate. You pick your specialist track — SOC, Ethical Hacking, or GRC — and the next chapter of your work is the one you chose.",
-      "Your evidence pack has seven files. Five are templates you complete: breach-notification-template.md (NDPA Section 40 skeleton with bracketed fields), risk-register-template.csv (five-row register with NIST CSF 2.0 + ISO 27001:2022 Annex A columns; R-001 worked as an example), board-memo-template.md (one-page slide memo — title, three numbers, ask, tradeoff), 30-60-90-roadmap-template.md (nine-row roadmap plus a mandatory deferral list), and control-mapping-skeleton.csv (eight-row mapping across NIST CSF 2.0, ISO 27001:2022 Annex A, and MITRE D3FEND). Two are inputs you must explicitly respond to: 06-external-audit-findings.md (three KPMG-style findings on the IR response — accept, dispute, or defer each), and 07-board-minutes-excerpt.md (board questions you must answer head-on in the memo and the NDPA letter).",
+      "Open 00-stage-4-evidence-pack.md first if you want everything in one place. Your evidence pack has ten downloadable files: one all-in-one pack, five templates you complete, and four input artefacts. The templates are breach-notification-template.md (GDPR Article 33 skeleton with bracketed fields), risk-register-template.csv (five-row register with NIST CSF 2.0 + ISO 27001:2022 Annex A columns; R-001 worked as an example), board-memo-template.md (one-page slide memo — title, three numbers, ask, tradeoff), 30-60-90-roadmap-template.md (nine-row roadmap plus a mandatory deferral list), and control-mapping-skeleton.csv (eight-row mapping across NIST CSF 2.0, ISO 27001:2022 Annex A, and MITRE D3FEND). The inputs are 06-external-audit-findings.md, 07-board-minutes-excerpt.md, 08-front-page-amaka.md, and 08-front-page-amaka.html.",
     ],
     cast: [
       {
@@ -905,7 +905,7 @@ export const STAGE_BRIEFS: Record<
         name: "Counsel Ifeoma Okeke",
         role: "General Counsel",
         tag: "Sits beside you at the table",
-        bio: "Briefs the board on regulatory exposure. Your GDPR notification letter and her draft go in together. Reconcile them before the meeting.",
+        bio: "Briefs the board on regulatory exposure. Your GDPR Article 33 notification letter and her draft go in together. Reconcile them before the meeting.",
         alignment: "ally",
         greeting: "We submit one letter. Reconcile your draft with mine before nine.",
       },
@@ -913,17 +913,17 @@ export const STAGE_BRIEFS: Record<
         name: "Adaobi Nnamdi",
         role: "Liaison, Data Protection Authority",
         tag: "Receives the 72-hour notification",
-        bio: "Will read the Section 40 letter twice — once for what it says, once for what it doesn't. She has seen worse, and she has seen better. Be neither.",
+        bio: "Will read the Article 33 letter twice — once for what it says, once for what it doesn't. She has seen worse, and she has seen better. Be neither.",
         alignment: "external",
         greeting: "Be plain. Be specific. We'll get along.",
       },
       {
         name: "Amaka Eze",
-        role: "Head of Security",
-        tag: "Hands you the floor",
-        bio: "Sits at the back. Will not speak unless asked. The room learns from how she reacts to your answers — make sure those reactions match what you intend.",
-        alignment: "ally",
-        greeting: "Take the floor. I'm not rescuing you.",
+        role: "Head of Security, suspended pending investigation",
+        tag: "Was trusted until this morning",
+        bio: "The leaked front page names her as The Griot. Counsel says the evidence is strong enough for board action, not clean enough for public certainty. Do not turn uncertainty into theatre.",
+        alignment: "unknown",
+        greeting: "If you name me, be exact. If you don't, be honest about why.",
       },
     ],
     termsAndPolicies: [
@@ -952,6 +952,11 @@ export const STAGE_BRIEFS: Record<
         kind: "alert",
         text: "Babatunde will ask \"what is the worst case?\" three separate times during your briefing. Each time, give a different defensible answer. The same answer twice is taken as evasion.",
         meta: "Counsel's pre-brief notes",
+      },
+      {
+        kind: "alert",
+        text: "A front page just named Amaka as The Griot. Counsel's instruction: separate confirmed evidence, public allegation, and board-action threshold. Blur those three and you fail the room.",
+        meta: "08-front-page-amaka package · 06:20 today",
       },
       {
         kind: "notice",
@@ -986,29 +991,36 @@ export const STAGE_BRIEFS: Record<
         id: "gdpr-notification-letter",
         title: "GDPR 72-hour breach notification letter",
         description:
-          "Draft the Article 33 notification to the supervisory authority under GDPR. State the controller + DPO, category + approximate volume of affected subjects, nature of breach, consequences, containment, remediation roadmap. Use the template in the resources as your starting point.",
+          "Draft the Article 33 notification to the lead supervisory authority under GDPR. State the controller + DPO, category + approximate volume of affected subjects, exact 72-hour deadline, nature of breach, consequences, containment, remediation roadmap, and whether Article 34 data-subject notice is required. Use the template in the resources as your starting point.",
         deliverable: "gdpr-notification-letter (Google Doc)",
       },
       {
-        id: "nist-mapping",
-        title: "Map the incident to NIST CSF 2.0",
+        id: "board-memo",
+        title: "Board slide memo",
         description:
-          "For each of the five core functions (Identify, Protect, Detect, Respond, Recover — plus the new Govern), name which subcategory Sankofa failed and the specific evidence that shows the failure.",
-        deliverable: "csf-mapping (Google Doc or MS Word)",
+          "Create the CEO's one-slide memo: compact title, three board-safe numbers, one chart description, one ask, speaking notes, anticipated questions, and a tradeoff decision tied to evidence.",
+        deliverable: "board-memo (Google Doc)",
       },
       {
         id: "roadmap",
-        title: "12-month remediation roadmap",
+        title: "30/60/90 remediation roadmap",
         description:
-          "Build a quarter-by-quarter roadmap (Q1–Q4) with the controls you would implement, rough cost ranges in USD, and the owner by role. Prioritise by risk reduction per dollar.",
-        deliverable: "remediation-roadmap (Google Doc, 1–2 pages)",
+          "Build the first ninety days only: required controls, rough cost tiers in naira, dependencies, acceptance criteria, owner by role, and explicit deferrals. Prioritise by risk reduction per naira.",
+        deliverable: "30-60-90-remediation-roadmap (Google Doc, 1–2 pages)",
+      },
+      {
+        id: "control-mapping",
+        title: "Control mapping",
+        description:
+          "Map the observed weaknesses to NIST CSF 2.0, ISO 27001:2022 Annex A, and MITRE D3FEND. Include evidence, mapping confidence, and the source that verified each framework ID.",
+        deliverable: "control-mapping (Google Doc or MS Word, with a table inside)",
       },
       {
         id: "track-rationale",
-        title: "Track-selection rationale (binding)",
+        title: "Ethics stance + track-selection rationale",
         description:
-          "Write the 400-word rationale for your chosen track (SOC / Ethical Hacking / GRC). Cover: the work that clicked for you, the work that did not, one concrete 12-month goal, one 90-day skill gap, and why the other two tracks are not your fit.",
-        deliverable: "track-selection (Google Doc)",
+          "Write the final in-platform judgement call. First: your ethics stance on the Amaka reveal, where no option is clean. Then: your binding track rationale (SOC / Ethical Hacking / GRC), grounded in the work you did across the programme.",
+        deliverable: "track-selection (in-platform)",
       },
     ],
     resourcesDriveUrl:
@@ -1037,11 +1049,11 @@ export const STAGE_BRIEFS: Record<
     ],
     sections: [
       "One-paragraph situation summary - what the board reads first, with counts tied to Stage 2 and Stage 3 evidence",
-      "Regulatory + governance synthesis (NDPA letter cites the external audit findings and board minutes)",
+      "Regulatory + governance synthesis (GDPR letter cites the external audit findings and board minutes)",
       "Risk register entries arising from the incident (row 1 must respond to board open question Q3)",
       "Control gaps against NIST CSF 2.0 and ISO 27001:2022, with evidence from at least two stages per gap",
-      "12-month remediation roadmap tied to board questions, audit recommendations, owners, and cost bands",
-      "Your track-selection rationale, grounded in the evidence work you performed across all stages",
+      "30/60/90 remediation roadmap tied to board questions, audit recommendations, owners, dependencies, acceptance criteria, and cost bands",
+      "Your ethics stance on the Amaka reveal, then your track-selection rationale grounded in the evidence work you performed across all stages",
     ],
   },
 };
