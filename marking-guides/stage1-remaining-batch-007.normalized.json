@@ -1,0 +1,18 @@
+[
+  {
+    "reportId": "6a2c3aa687ceb377892c1095",
+    "name": "Amna Zafar",
+    "task3": 10,
+    "task6": 16,
+    "task7": 16,
+    "task10": 13,
+    "capstone": 4,
+    "fabricationPenalty": 0,
+    "reportScore": 59,
+    "cannotAssess": false,
+    "seniorReviewFlag": false,
+    "flagReason": "",
+    "missingPieces": "The capstone folder did not contain the required D1-D4 report deliverables; it only included partial artefact notes for AES, ROT13, and JWTs.",
+    "feedback": "Your in-platform work is much stronger than the capstone folder, especially Task 6 and Task 7 where the hash markers, rotation order, alg:none root cause, and server-side fixes are handled well. Task 3 correctly avoids inventing a full plaintext for Artefact A, but it should state more directly that the Vigenere text is unrecoverable from the supplied evidence rather than suggesting tampering or partial alignment. Task 10 answers the integrity question well, but the board brief should have focused Q1 more clearly on key exposure and cited lab evidence, not mainly on token authentication. The major loss is the capstone: the submitted folder does not contain D1, D3, or D4, and D2 only covers a few artefacts while omitting the HS256 tamper trap and layered memo. For future submissions, make sure the Drive folder contains the final report files, not just working notes or copied artefact pages."
+  }
+]

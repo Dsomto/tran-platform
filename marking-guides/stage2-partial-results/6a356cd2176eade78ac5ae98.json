@@ -1,0 +1,16 @@
+{
+  "reportId": "6a356cd2176eade78ac5ae98",
+  "name": "Enyi Jerry",
+  "d1": 19,
+  "d2": 0,
+  "d3": 9,
+  "d4": 5,
+  "rawPoints": 33,
+  "fabricationPenalty": 0,
+  "reportScore": 28,
+  "cannotAssess": false,
+  "seniorReviewFlag": false,
+  "feedback": "Enyi, you submitted three of the four deliverables (D1 findings, D3 report, D4 ethics), and I graded each of those on its own merits. Your D1 findings catalogue is the strongest part of the work: you cleanly nailed the SQL injection via string concatenation in the login query, the unsalted MD5 password hashing, the JWT alg:none acceptance, the unvalidated open redirect through the ?next parameter, and the session cookie missing its Secure flag, each with a real evidence line and a sensible OWASP and CWE pairing. Where D1 lost ground is that you logged a reflected XSS row tied to the error message rather than the stored XSS beacon at 02:18:47 that the engagement actually contained, your hardcoded-secret reasoning got tangled together with the HS256 verification path, and three genuine findings never appear at all: the missing token expiry, the XXE reading file:///etc/passwd, and the path traversal that pulled root:x:0:0 at 02:24:02. A couple of your rows are also duplicates of the same SQLi or restate the same session issue, so they padded the count without adding a distinct finding. Your D3 report shows you understood the business stakes, since the executive summary names the 312 affected customers, the roughly 10 million naira exposure, and the six-week BoltCash runway, but the two highest-weight parts of that deliverable, the effort-ordered remediation roadmap and the two detection stopgaps, were left as the bracketed template placeholders with no real fixes, no field or pattern names, and no false-positive estimates, so I could only credit the framing you actually wrote. Your D4 answered just one of the four ethics prompts and cited ISC2 canons 2 and 4 by number, which is good instinct, but it stopped short of the NDPA 2023 specifics (section 40 with the NDPC 72-hour clock and section 41 on data subjects) and the text carried OCR-style garbling that made it read as a rough draft. I want to be clear and fair about the gaps: D2, the exploit chain and CVSS scoring, was not in your folder at all, so it scored zero, and the unfinished placeholder portions of D3 and the three unanswered D4 prompts could not earn credit because there was nothing there to assess, not because I doubted you. None of this is a fabrication issue; the evidence you did cite lines up with the real artefacts, so there is no penalty, just unfinished work. The single most important next step is to build out the missing D2 exploit chain with the timestamped attacker timeline and a justified CVSS vector for the SQLi, since that deliverable is worth 35 points and is currently a clean zero that is fully recoverable.",
+  "flagReason": "",
+  "missingPieces": "D2 exploit chain and CVSS (entire deliverable, scored 0). D3 remediation roadmap and both detection stopgaps left as empty template placeholders. D1 missing: token expiry CWE-613, XXE CWE-611, path traversal CWE-22; stored XSS logged as wrong instance. D4 only 1 of 4 prompts answered; no NDPA s40/s41/72h specifics."
+}

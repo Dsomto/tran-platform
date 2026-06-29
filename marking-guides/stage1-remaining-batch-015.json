@@ -1,0 +1,18 @@
+[
+  {
+    "reportId": "6a2c395125ef5e5fbd8d5317",
+    "name": "Daniel Afolabi",
+    "task3": 9,
+    "task6": 13,
+    "task7": 16,
+    "task10": 13,
+    "capstone": 30,
+    "fabricationPenalty": 5,
+    "reportScore": 76,
+    "cannotAssess": false,
+    "seniorReviewFlag": false,
+    "flagReason": "",
+    "missingPieces": "Task 3 did not clearly state Artefact A was intentionally unrecoverable; capstone Artefact 04 used an invented cracked secret and forged token.",
+    "feedback": "Your Task 7 answer is strong because it identifies the alg none header, the empty signature segment, CVE-2015-9235, and why algorithm allow-listing is the real fix. Task 3 gets the Base64 and hex plaintexts right, but Artefact A needed a clearer conclusion that the Vigenere item cannot be solved from the supplied evidence, not just that it was partially recovered. Task 6 has the right overall hash families and urgency order, although the citation support and a few format claims are not tight enough for full credit. The capstone is well organized in D1, D3, and D4, especially the cost-aware controls, but D2 loses heavily on Artefact 04 because the claimed `admin2021` crack and forged token are not supported by the evidence. The correct Artefact 04 path was to prove the captured token was tampered, recover the real source secret, and forge the valid amaka.eze token, so the fabricated crack receives the required flat penalty."
+  }
+]

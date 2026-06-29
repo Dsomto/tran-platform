@@ -1,0 +1,16 @@
+{
+  "reportId": "6a3510794c275bb8cdab10bc",
+  "name": "Favour Ugochi Ogbonnaya",
+  "d1": 25,
+  "d2": 22,
+  "d3": 37,
+  "d4": 14,
+  "rawPoints": 98,
+  "fabricationPenalty": 0,
+  "reportScore": 82,
+  "cannotAssess": false,
+  "seniorReviewFlag": false,
+  "missingPieces": "",
+  "flagReason": "",
+  "feedback": "D1 is a strong catalogue. You nailed SQL injection (A03/CWE-89, lines 42-43, capture 02:15:31 with the admin' OR '1'='1 to 302), alg:none (line 38, Token 2), XXE (CWE-611), path traversal (02:24:02), unsalted MD5 (CWE-916), the open redirect (CWE-601, I accept your A04 framing over the A01 in the key since the CWE and the capture are right), and the insecure cookie (CWE-614). Two real findings are missing though: the stored XSS in the comments (capture 02:18:47, the cookie beacon to 185.220.101.9:8443, A03/CWE-79) and the hardcoded JWT secret sankofa-legacy-admin-2019 (CWE-798). Your finding 7 also misreads the no-expiry bug as iat clock drift; the actual issue is that tokens carry no exp at all (CWE-613 is the right number, your mechanism story is not). Your decoy work is the highlight of D1: you correctly named the b64url padding helper as the safe construct, proved it fails closed at the mechanism level, and you did not fall into the trap of calling alg:none the decoy, which is exactly right because that token is live on the shared internal service. D2 is the weakest deliverable. Your CVSS vectors are complete and justified, and the S:C scope change on alg:none with the internal-API reasoning is the senior insight we wanted, but you scored SQL injection 9.8 with A:H; the auth bypass does not touch availability, so it is AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N at about 9.1. Your chain in D2 is only four hops and misses the recon (02:14:08), the failed guess (02:14:55), the stored XSS (02:18:47), and the open redirect (02:21:13), and you mislabelled the 02:16:04 bulk PII pull as a scouting timestamp; reconcile every hop to its own capture line next time. The impact math is good and honest: 312 customers, a transparent 20-record sample average, and roughly 63M NGN projected with the BoltCash launch tie-in, and you showed your assumptions rather than dropping a bare number. D3 is excellent and carries the report. The exec summary lands on customers and naira, the threat model pulls in the /api/v1/internal scope comment, the earliest-break fix (block /legacy-admin/ at the edge) is right, and crucially your remediation table is ordered by effort versus risk reduction with hours and percentages rather than by CVSS, which is the discipline most reports miss. Both detection stopgaps give an exact field and a false-positive rate (the alg:none header signature at ~0.1% and the SQLi WAF rule at 2-3%), so that row is full. D4 answers all four prompts in a clear owned voice anchored to your own line-42 finding, cites ISC2 Canon I by number and load-bearing, and ties the breach to the 312 customers, but your NDPA section is wrong: the 72-hour NDPC notification duty is section 40 and the data-subject notification on high risk is section 41, not section 31. The single most important fix: complete your finding catalogue and your exploit chain so the two missing findings (stored XSS and the hardcoded secret) and every capture timestamp are accounted for, and correct the SQLi vector to A:N."
+}

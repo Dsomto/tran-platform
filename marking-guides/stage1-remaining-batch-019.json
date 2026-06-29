@@ -1,0 +1,18 @@
+[
+  {
+    "reportId": "6a2c3a72ccc9ab03b15f1b13",
+    "name": "Enyi Jerry",
+    "task3": 8,
+    "task6": 7,
+    "task7": 8,
+    "task10": 8,
+    "capstone": 21,
+    "fabricationPenalty": 0,
+    "reportScore": 52,
+    "cannotAssess": false,
+    "seniorReviewFlag": false,
+    "flagReason": "",
+    "missingPieces": "Task 6 and Task 7 are incomplete; capstone D2 does not solve Artefact 04 and D3 controls do not map to at least two findings each.",
+    "feedback": "Your Task 3 answer gets the Base64 and hex plaintexts mostly right and correctly avoids inventing a full plaintext for Artefact A, but it needed a clearer Vigenere classification and stronger source support than a general web article. Task 6 has the right broad order for MD5 and SHA-256 risk, but it misstates SHA-256 as reversible, misnames Argon2id, and does not give enough structured evidence for the four hash families. Task 7 identifies alg none as the central issue, but it is missing a full segment decode, the empty signature explanation, the required RFC section detail, and a clear CVE-supported comparison. The capstone template has some usable D1 and D2 work, especially AES, ROT13, JWT basics, and the layered memo, but Artefact 04 is not solved and the D3 controls each map too narrowly. The ethics section makes the right confidentiality choice, but the canon explanation and wording need to be cleaner and more precise."
+  }
+]

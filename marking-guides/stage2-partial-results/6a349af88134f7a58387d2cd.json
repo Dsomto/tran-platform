@@ -1,0 +1,13 @@
+{
+  "reportId": "6a349af88134f7a58387d2cd",
+  "d1": 0,
+  "d2": 0,
+  "d3": 0,
+  "d4": 13,
+  "rawPoints": 13,
+  "fabricationPenalty": 0,
+  "reportScore": 11,
+  "cannotAssess": false,
+  "seniorReviewFlag": false,
+  "feedback": "You submitted a single PDF containing D4, your ethics stance, and on its own terms it is a strong, mature piece of work. You answer all four prompts in a clearly anchored first-person voice: you turn down the journalist's off-the-record DM and explain why off the record is a liability rather than a favour in a live incident, you define narrowly what you will and will not put in writing, you commit to presenting the decommissioning timeline factually to the security authority rather than handing it selectively to anyone who would use it as a shield or a weapon, and you name the action you take regardless of internal preference. You cite ISC2 Canon I and Canon II correctly by number and use Canon I well as the tiebreaker when obligations to the client and to the public pull apart. On the NDPA you correctly identify Sankofa as data controller, the duty to notify the regulator within the statutory window, and the duty to notify affected data subjects where the breach is high risk, anchored to the 312 customers and your own decode of the exfil. The one factual slip is that you name NITDA as the notifying authority when under the NDPA 2023 the supervisory authority is the NDPC; the obligations themselves are right, so this cost you only a small deduction rather than the row. Where I have to be honest with you is that this submission contained only D4. D1 the findings, D2 the exploit chain and CVSS, and D3 the written report were not present at your link, so each of those three deliverables scored zero, and that is why your overall number is low despite the quality of the ethics page. Nothing about the missing work reflects on the D4 you wrote; it simply was not there to grade. The single most important next step is to submit D1, D2, and D3, since those three carry 105 of the 120 marks and are the bulk of what this capstone is testing."
+}

@@ -1,0 +1,16 @@
+{
+  "reportId": "6a34817ed1f840ad82c26a5b",
+  "name": "Daniel Williams",
+  "d1": 26,
+  "d2": 34,
+  "d3": 38,
+  "d4": 13,
+  "rawPoints": 111,
+  "fabricationPenalty": 0,
+  "reportScore": 93,
+  "cannotAssess": false,
+  "seniorReviewFlag": false,
+  "flagReason": "",
+  "missingPieces": "Stored XSS (CWE-79) and path traversal (CWE-22) are absent from the D1 catalogue proper (they appear only in D2/D3). NDPA section numbers (40 and 41) not cited.",
+  "feedback": "D1 is strong. You catalogued eight of the ten canonical findings with class, CWE, and a quoted line: SQL injection (CWE-89 at 02:15:31), unsalted MD5 (CWE-916), alg:none (CWE-347), hardcoded secret sankofa-legacy-admin-2019 (line 30), missing expiry (CWE-613), insecure cookie (CWE-614), open redirect (CWE-601 to 185.220.101.9:8443), and XXE (CWE-611). Your decoy work is exactly right, you named the tempting hash_equals construct on line 53, proved it constant-time at the mechanism level, and correctly pinned the real danger on alg:none and the line 30 secret, so that was full credit. What cost you in D1 was that stored XSS in comments (CWE-79, the cookie beacon at 02:18:47) and path traversal (CWE-22, files/?path=/etc/passwd at 02:24:02) never appear in the D1 catalogue itself, you substituted role escalation and user enumeration instead, so two of the ten are missing from the place they were graded. D2 is excellent: every hop reconciles to a capture timestamp, the PoC is verbatim per hop including both forged tokens, your S:C justification for F-02 and F-03 tying the legacy panel to /api/v1/internal is precisely the senior insight we wanted, and your impact section states its assumptions and lands on 312 customers and roughly NGN 63 million with the BoltCash clock. The one CVSS slip is F-01, you scored A:H for 9.8 where the bypass does not touch availability, so the defensible vector is AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N at about 9.1. D3 is a report Bayo can act on: the executive summary is jargon-free and ends on the customers-and-naira headline, the threat model names the Tor exit node, the decoy is restated correctly, and your remediation table is genuinely ordered by effort-to-risk, you even flagged that MD5 ranks below the cookie fix despite a higher CVSS because it needs a migration, which is the reasoning we were looking for. Your two stopgaps are concrete with exact fields and honest false-positive rates, the alg:none prefix rule at zero FP and the SQLi 302 SIEM alert scoped to unknown source IPs. Watch the small internal CVSS inconsistencies between your D2 and D3 tables for open redirect and F-05, they should match. D4 answers all four prompts in your own voice, cites Canon I and Canon II by number and load-bearing, and anchors to your own NGN 63 million figure, but it stops short on the NDPA: you name the notification duty and the 312 customers but write \"statutory window\" rather than citing section 40 (notify NDPC within 72 hours) and section 41 (notify data subjects on high risk), which is the one thing that row needed. No fabrication anywhere, every figure and timestamp traces to the evidence. The single most important fix is to pull stored XSS and path traversal into the D1 catalogue itself with their CWE and quoted lines, since a finding only counts where it is catalogued."
+}

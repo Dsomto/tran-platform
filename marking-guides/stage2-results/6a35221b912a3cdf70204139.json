@@ -1,0 +1,16 @@
+{
+  "reportId": "6a35221b912a3cdf70204139",
+  "name": "Egwu Victor Uche",
+  "d1": 30,
+  "d2": 35,
+  "d3": 40,
+  "d4": 14,
+  "rawPoints": 119,
+  "fabricationPenalty": 0,
+  "reportScore": 99,
+  "cannotAssess": false,
+  "seniorReviewFlag": false,
+  "flagReason": "",
+  "missingPieces": "D4 names the NDPA breach duty in substance (notify the commission and the 312 data subjects) but does not cite the section numbers (40 for the 72-hour NDPC notification, 41 for notifying data subjects on high risk). Cookie missing Secure/SameSite (CWE-614) is the one of the ten findings not catalogued in D1, though the access-control row still earns full credit on path-traversal plus open-redirect.",
+  "feedback": "This is one of the strongest capstones in the cohort, and it earns near-full marks on the merits, not on generosity. On D1 you catalogued essentially the whole pack with quoted evidence lines: the string-concatenation SQLi (CWE-89) tied to 02:15:31 admin' OR '1'='1, unsalted MD5 (you used CWE-328, a defensible variant of the key's CWE-916), alg:none accepted (CWE-347, Token 2), no token expiry (CWE-613), the hardcoded sankofa-legacy-admin-2019 secret (CWE-798), stored XSS with the cookie beacon to 185.220.101.9:8443, XXE (CWE-611), path traversal to /etc/passwd, and open redirect via next. You even added the reflected XSS as an eleventh finding. The decoy was handled exactly right: you named the hash_equals HS256 branch, proved it is constant-time at the mechanism level, and correctly placed the real danger on alg:none and the hardcoded secret. The only finding you did not log is the cookie missing Secure and SameSite (CWE-614), but the access-control row still fills out on path-traversal plus open-redirect, so D1 is full. D2 is excellent: the chain runs in order with verbatim PoC per hop, every CVSS vector is complete and justified, your SQLi vector AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N at 9.1 matches the key including A:N, and your scope-change call to 9.7 on the JWT findings is anchored to the source comment about the shared /api/v1/internal service, which is the senior insight we look for. The impact is sized honestly: 312 rows, roughly 63 million naira from the 20-row average with the assumption stated, tied to the BoltCash launch in six weeks. D3 is a clean engineering read with a jargon-free exec summary that lands on customers and naira, a real threat model, the decoy disproved, the earliest-break fix at hop one, and crucially a remediation table ordered by effort-to-risk rather than CVSS, which you state outright when you put SQLi first ahead of three higher-scoring findings. Both detection stopgaps name the exact field and a reasoned false-positive rate, the O'Brien example for the SQLi regex being a nice touch. D4 is the only place you left points: you answer all four prompts in your own voice, cite ISC2 Canon 1 load-bearing, and anchor to the same 312 figure from your own report, but you reference the NDPA in name only without the section numbers. To make D4 full next time, cite section 40 for the 72-hour notification to the NDPC and section 41 for notifying the 312 data subjects on high risk. The single most important fix is small: pin the NDPA breach duty to its section numbers so the legal obligation is concrete rather than gestured at."
+}

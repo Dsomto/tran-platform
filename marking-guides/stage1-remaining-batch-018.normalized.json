@@ -1,0 +1,18 @@
+[
+  {
+    "reportId": "6a2c30788f091901111e77be",
+    "name": "Muhammad Ibrahim",
+    "task3": 5,
+    "task6": 14,
+    "task7": 16,
+    "task10": 12,
+    "capstone": 31,
+    "fabricationPenalty": 0,
+    "reportScore": 78,
+    "cannotAssess": false,
+    "seniorReviewFlag": false,
+    "flagReason": "",
+    "missingPieces": "Task 3 Artefacts B and C have incorrect plaintext; capstone Artefact 04 is incomplete.",
+    "feedback": "Your Task 7 answer is strong and correctly identifies the empty signature, alg none bypass, CVE-2015-9235, and the need for a strict algorithm allow-list. Task 6 identifies the hash families and urgency order well, though some security-strength claims are overstated and the citation support could be tighter. Task 3 loses significant credit because Artefact B adds an extra word and Artefact C gives a different plaintext from the expected answer, even though your Artefact A reasoning avoids inventing a full recovery. The capstone D1, D3, and D4 are solid, with clear controls and a good confidentiality stance. The main capstone gap is Artefact 04, where you describe the weak HS256 attack path but do not prove the captured token was tampered, recover the real leaked source secret, or produce the valid amaka.eze forged token."
+  }
+]

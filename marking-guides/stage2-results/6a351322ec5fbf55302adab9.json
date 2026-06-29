@@ -1,0 +1,16 @@
+{
+  "reportId": "6a351322ec5fbf55302adab9",
+  "name": "Nelson-King Nelson",
+  "d1": 30,
+  "d2": 25,
+  "d3": 38,
+  "d4": 12,
+  "rawPoints": 105,
+  "fabricationPenalty": 0,
+  "reportScore": 88,
+  "cannotAssess": false,
+  "seniorReviewFlag": false,
+  "flagReason": "",
+  "missingPieces": "D2 chain omits the stored XSS (02:18:47) and open redirect (02:21:13) hops; SQLi CVSS marked A:H (9.8) instead of A:N (~9.1); no senior insight on forged super_admin token reaching the shared /api/v1/internal service (S:C). D4 cites NDPA 2023 by name only, no section 40 (72h NDPC) or section 41 (data-subject notice).",
+  "feedback": "D1 is excellent and is the high point of this submission. You catalogued all ten of the planted findings with quoted evidence, correct OWASP categories, and CWE IDs, and you went past the minimum with the role-trust and username-enumeration extras. SQL injection (A03/CWE-89) carries the concatenated MD5 login line, the hardcoded secret sankofa-legacy-admin-2019 (A02/CWE-798), alg:none (A07), no exp/nbf (CWE-613), stored XSS with the 185.220.101.9:8443 cookie beacon, XXE file:///etc/passwd, path traversal, open redirect, and the missing Secure/SameSite cookie are all here and proved. Your CWE-327 for MD5 and CWE-345 for alg:none are defensible class variants, so they keep full credit. The decoy is handled correctly: you named hash_equals and proved it safe at the mechanism level as a constant-time comparison rather than inventing an exploit, which is exactly right. D2 is the weakest deliverable. Your CVSS table is mostly complete with justifications, but the SQLi vector should be AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N for about 9.1, not A:H for 9.8, because an auth bypass does not degrade availability. The bigger gap is the chain itself: you compressed it to five hops and dropped the stored XSS hop at 02:18:47 and the open redirect hop at 02:21:13 even though you found both in D1, so the timeline does not fully reconcile to the captures. You also missed the senior insight that a forged super_admin token reaches the shared /api/v1/internal service, which is a scope change to S:C. Your ₦78M impact with a stated ₦250k average assumption is acceptable because you showed your working, though balances actually run up to roughly 950k. D3 is very strong: the executive summary lands on a customers-and-naira headline, the threat model names the external attacker and IP, the decoy is disproved correctly, the earliest-break fix is correctly identified as the SQL injection, your remediation is ordered explicitly by risk reduction per engineering effort rather than CVSS, and both detection stopgaps give an exact log field and a false-positive rationale. The only soft spot is that the XSS and XXE evidence cells were left empty in the report table. D4 answers all four prompts in your own voice, cites ISC2 Canon I and Canon II load-bearingly, and anchors to your 312-record finding, but you cited the NDPA 2023 only by name. The single most important fix is to cite the NDPA by section in D4, section 40 for the 72-hour NDPC notification and section 41 for notifying the 312 affected data subjects, and to reconcile every chain hop in D2 back to its capture timestamp."
+}

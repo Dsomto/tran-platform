@@ -1,0 +1,7 @@
+name,email,reportId,reason
+Anamali Solomon Chukwunekwu,anamalisolomon@gmail.com,6a352f691c8807e0829c7bfa,"The capstone folder (https://drive.google.com/drive/folders/1SbSEj4FFUINmTlx5eZEncdAco3-siBke) lists four files by name (D1 - Findings catalogue id 1Wrv8C-srVTSOVL9OTL9-SFPsRChHP2gc, D2 - Exploit chain + CVSS and business impact id 1im7IHD2VWBLwZhVkOIoUKwEaUhjswPpd, D3 - Pentest Report id 1zl0p05PmJ"
+Faridi hant iddy,iddyfaridi@gmail.com,6a338fd4511f93a08446e08b,The capstone submission link is a Microsoft OneDrive folder (1drv.ms / onedrive.live.com). It is not machine readable from this environment. WebFetch followed the 1drv.ms redirect to the onedrive.live.com folder view and returned only the 'Microsoft OneDrive' page header with no file listing and no 
+Alayo Michael Adetola,alayomichaeladetola@gmail.com,6a355941c00d593b5bb1feae,"All four substantive deliverables missing; mobilebasic document contained only headings D1, D2, D3, and D4."
+Matthew Solomon,matthewsolomon165@gmail.com,6a3561d42cfd27b4b1c9c0c7,All four deliverables unreadable; Drive folder listing returned a Google sign-in and storage-access wall instead of file links.
+Mkhuseli Gqagqa,mkhustergqagqa@gmail.com,6a35629e6df9ddfe00c83670,All four deliverables unreadable; the OneDrive link returned a blocked request page and no file ids or document content were accessible.
+Katlego Sekonya,katlegosekonya52@gmail.com,6a35771d4154eade57cd99d5,All four deliverables unreadable; embedded and direct Drive folder views returned a Google sign-in or cookie-access page rather than file links.

@@ -922,7 +922,7 @@ export const STAGE_BRIEFS: Record<
         role: "Head of Security, suspended pending investigation",
         tag: "Was trusted until this morning",
         bio: "The leaked front page names her as The Griot. Counsel says the evidence is strong enough for board action, not clean enough for public certainty. Do not turn uncertainty into theatre.",
-        alignment: "unknown",
+        alignment: "adversary",
         greeting: "If you name me, be exact. If you don't, be honest about why.",
       },
     ],

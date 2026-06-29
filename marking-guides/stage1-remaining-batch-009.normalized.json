@@ -1,0 +1,18 @@
+[
+  {
+    "reportId": "6a2c3588948050dbf2f7d620",
+    "name": "Katlego Sekonya",
+    "task3": 8,
+    "task6": 14,
+    "task7": 16,
+    "task10": 15,
+    "capstone": 21,
+    "fabricationPenalty": 0,
+    "reportScore": 74,
+    "cannotAssess": false,
+    "seniorReviewFlag": false,
+    "flagReason": "",
+    "missingPieces": "Capstone D2 omitted Artefact 04 and gave incorrect recovered plaintext for Artefacts 01, 02, and 05.",
+    "feedback": "Your platform write-ups show good understanding of the alg:none JWT root cause, the MD5 then SHA-256 rotation order, and the difference between encoding and encryption. Task 3 loses marks because Artefact A needed a clear unrecoverable conclusion, and the Base64 plaintext for Artefact B was not copied accurately. The major weakness is the capstone appendix: D2 gives the wrong plaintext for the AES artefact, treats the wrong Vigenere text as a capstone classical cipher answer, omits Artefact 04, and gives the wrong layered memo plaintext. D3 is more useful because the controls are practical and mostly cost-aware, but it is built on several incorrect D2 artefact interpretations. Next time, verify each recovered plaintext against the provided artefact before using it as evidence in the board report."
+  }
+]

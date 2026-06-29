@@ -1,0 +1,16 @@
+{
+  "reportId": "6a34459f1a0dd2c26eb28172",
+  "name": "Kyrian Ugboma",
+  "d1": 30,
+  "d2": 31,
+  "d3": 38,
+  "d4": 15,
+  "rawPoints": 114,
+  "fabricationPenalty": 0,
+  "reportScore": 95,
+  "cannotAssess": false,
+  "seniorReviewFlag": false,
+  "flagReason": "",
+  "missingPieces": "",
+  "feedback": "D1 is excellent. You catalogued all ten of the core findings with class, CWE, and a quoted line for each, and you went further with the forged Token 2 and Token 3 entries. SQL injection at lines 64 to 67 with the 02:15:31 capture, unsalted MD5 at line 66, alg:none at lines 48 to 49, the hardcoded secret sankofa-legacy-admin-2019 at line 30, missing expiry at lines 76 to 81, stored XSS with the cookie beacon to 185.220.101.9:8443, XXE with the file:///etc/passwd entity, path traversal returning root:x:0:0, open redirect, and the cookie missing Secure are all here and all evidenced. Best of all you nailed the decoy, naming hash_equals at line 53 and proving it safe at the mechanism level because it is constant time, while correctly placing the real JWT bugs in alg:none and the hardcoded secret. That is exactly the verdict the key wants, full marks on D1. D2 is strong. Your seven hops are reconciled to capture timestamps and each carries a verbatim PoC, and you supplied complete CVSS vector strings with a justifying sentence for all ten findings. Two small things cost you here. The SQL injection bypass does not hit availability, so the vector should be AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N for about 9.1, not A:H at 9.8, because the login bypass reads and writes data but does not take the service down. And while your naira breakdown with stated assumptions is good and ties to the 312 rows and the BoltCash six week window, you stopped short of summing the actual account_balance_ngn figures from the exfil sample, where balances run up to roughly 950k and total tens of millions, and you did not explicitly name the forged super_admin token reaching the shared /api/v1/internal service as the reason scope changes. D3 is near complete. The executive summary is jargon-free and lands on 312 customers and the naira headline, every finding is tied to evidence, the decoy is restated correctly, and your remediation table is ordered by effort to risk rather than CVSS severity, which is precisely the discipline being tested, with prepared statements named as the earliest chain break. The only soft spots are a thin threat model and detection stopgaps that name the right log field, req.body.username and the import XML body, but give the false positive rate only as the word low rather than an actual estimated rate. D4 is full marks. You answered all four prompts in your own voice, held the line on the journalist, kept your written tickets to facts and line numbers, escalated the colleague evidence to the Head of Security as a short memo, and made breach reporting your non-negotiable action. You cited ISC2 Canon I and Canon II load bearing and tied NDPA section 40 and the 72 hour clock directly to the 312 rows of PII. For completeness next time also cite section 41 on notifying the data subjects when the risk is high, and watch the spelling, it is NDPA not NPDA. The single most important fix is your SQL injection CVSS: a pure authentication bypass is A:N, so correct that vector to roughly 9.1 rather than inflating to 9.8 with A:H."
+}

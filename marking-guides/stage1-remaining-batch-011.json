@@ -1,0 +1,18 @@
+[
+  {
+    "reportId": "6a2c371bcc14576e19a23c0c",
+    "name": "Daniel Williams",
+    "task3": 8,
+    "task6": 10,
+    "task7": 11,
+    "task10": 13,
+    "capstone": 24,
+    "fabricationPenalty": 0,
+    "reportScore": 66,
+    "cannotAssess": false,
+    "seniorReviewFlag": false,
+    "flagReason": "",
+    "missingPieces": "Capstone D2 omitted Artefact 04; Task 7 did not clearly identify the empty signature segment and used the wrong CVE reference.",
+    "feedback": "Your capstone appendix handles the AES, ROT13, JWT table, and layered memo better than the in-platform work, and the final layered memo plaintext is correctly recovered. The platform Task 7 answer loses marks because the third JWT segment should be explicitly identified as empty, the expected vulnerability reference is CVE-2015-9235, and the citation discussion drifts away from RFC 7519 Section 6.1. Task 6 identifies the main hash families, but it needs stronger compare-two reasoning, sectioned citations, and the exact safety parameter explanation for full credit. The largest capstone gap is the missing Artefact 04 HS256 analysis, which required proving the captured token was tampered and recovering the real secret from leaked source rather than skipping the row. Your ethics response also needed to avoid sharing technical artefacts privately before authorization, because Sankofa's board and security leadership control that disclosure."
+  }
+]

@@ -1,0 +1,16 @@
+{
+  "reportId": "6a35194d84a3df48407537ab",
+  "name": "Shedrach Nohense",
+  "d1": 24,
+  "d2": 32,
+  "d3": 29,
+  "d4": 15,
+  "rawPoints": 100,
+  "fabricationPenalty": 0,
+  "reportScore": 83,
+  "cannotAssess": false,
+  "seniorReviewFlag": false,
+  "flagReason": "",
+  "missingPieces": "",
+  "feedback": "D1 is a strong, well evidenced catalogue. You captured nine of the ten real findings with correct CWE and a quoted line each, F-01 SQLi (CWE-89, capture 02:15:31), F-02 unsalted MD5 (CWE-916), F-03 alg:none (CWE-347, Token 2), F-04 no expiry (CWE-613), F-05 cookie no Secure (CWE-614), F-06 path traversal (CWE-22, 02:24:02), F-07 stored XSS (CWE-79, 02:18:47), F-08 XXE (CWE-611) and F-09 hardcoded secret (CWE-321). The one place D1 fell down is the decoy. You labelled the open redirect as the false positive, but the open redirect is a real finding (capture 02:21:13 shows the 302 to 185.220.101.9:8443, A01/CWE-601), and the actual safe construct you were meant to disprove is the HS256 verify branch using hash_equals(), which is constant time and therefore sound, the real auth bugs being alg:none and the hardcoded secret. That single mistake cost you both the decoy row and the open redirect as a tenth finding. D2 is the best part of the submission. The timeline reconstructs recon, SQLi at 02:15:31, the 312 row pull at 02:16:04, stored XSS at 02:18:47, XXE at 02:23:41 and path traversal at 02:24:02, each tied to a capture line, and your verbatim PoCs (the admin' OR '1'='1 payload, the decoded alg:none token, the XXE body, the /files/?path=/etc/passwd request) are exactly what we want to see. Two notes, you dropped the open redirect hop from the chain because you treated it as a decoy, and on F-01 you scored A:H for 9.8 when the login bypass does not touch availability, so the correct vector is AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N at about 9.1. Your BoltCash chain row did capture the senior insight with S:C reaching /api/v1/internal, which is good. The impact figure of about 132 million naira scaled from the 20 row sample average with the assumption stated is well argued. D3 reads cleanly, the exec summary lands on 312 customers and the naira headline and the 72 hour NDPC duty, the STRIDE model maps to evidence, and your two detection stopgaps name exact fields and justified false positive rates (under 0.5 percent for the WAF rule, about 2 percent for the SIEM query). The disproved finding section repeats the open redirect error and so scores nothing there, and your remediation order is argued by entry path rather than strictly by effort to risk, which is why that row is not full, the 30 minute XXE fix sitting last is the tell. D4 is excellent and full marks, all four prompts are answered in your own voice, you cite ISC2 Canon 1 by number load bearing, and you tie NDPA Section 40 and the 72 hour clock directly to the 312 customers. The single most important fix is to learn the decoy, prove the hash_equals branch safe at the mechanism level and keep the open redirect as a genuine finding, that one correction would have lifted both D1 and D3."
+}

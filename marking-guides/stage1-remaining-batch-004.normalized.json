@@ -1,0 +1,18 @@
+[
+  {
+    "reportId": "6a2c350dbd302e11bd069576",
+    "name": "Prosper Eromonsele",
+    "task3": 12,
+    "task6": 16,
+    "task7": 16,
+    "task10": 16,
+    "capstone": 28,
+    "fabricationPenalty": 0,
+    "reportScore": 88,
+    "cannotAssess": false,
+    "seniorReviewFlag": false,
+    "flagReason": "",
+    "missingPieces": "Capstone D2 Artefact 04 did not recover the source secret, prove the captured token signature failed, or explain why the token was not crackable; D3 controls were not cost-aware.",
+    "feedback": "This is a strong report with excellent in-platform work: Task 3 correctly refuses to invent plaintext for the Vigenere artefact, and Tasks 6, 7, and 10 are precise and well cited. The main capstone weakness is D2 Artefact 04, where you describe offline analysis but do not show the correct conclusion that the captured HS256 token was tampered, recover the real secret from leaked source, or explain why this was not a normal wordlist crack. D2 Artefact 05 also needs the exact final plaintext, not only a summary of what the memo described. D3 lists five relevant controls and maps them to findings, but the brief required cost awareness for each control, so engineering effort, tool cost, or operating impact needed to be stated. Keep the evidence-driven style, but make the appendix prove every required artefact all the way to the answer key."
+  }
+]

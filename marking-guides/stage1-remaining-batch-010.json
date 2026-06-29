@@ -1,0 +1,18 @@
+[
+  {
+    "reportId": "6a2c3698333324118699c36b",
+    "name": "Oluwafisayomi Adekoya",
+    "task3": 12,
+    "task6": 16,
+    "task7": 16,
+    "task10": 13,
+    "capstone": 27,
+    "fabricationPenalty": 0,
+    "reportScore": 84,
+    "cannotAssess": false,
+    "seniorReviewFlag": false,
+    "flagReason": "",
+    "missingPieces": "Capstone D2 did not solve Artefact 04 using the leaked source secret, and Artefact 05 final plaintext was not exact.",
+    "feedback": "Your platform work is strong: Task 3 correctly refuses to invent plaintext for the Vigenere artefact, and Tasks 6 and 7 show precise reasoning about hash markers, rotation priority, and alg:none acceptance. The capstone is organized and practical, especially D3 where the controls include cost and implementation detail. The main reason this does not reach the highest band is D2 Artefact 04, where the correct answer was to prove the captured HS256 token was tampered, recover the real secret from leaked source, and explain why this was not a normal hashcat crack. Artefact 05 also needed the exact final plaintext, not a near reconstruction with altered words. Your board brief is useful, but Q1 should anchor more directly to the key exposure lesson from the stage artefacts rather than leaning on unrelated staging API-key details."
+  }
+]
