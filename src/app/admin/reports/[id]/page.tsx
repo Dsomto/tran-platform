@@ -101,6 +101,14 @@ export default async function GradePage({
             </span>
           )}
         </div>
+        <a
+          href="/admin/reports/rubric"
+          target="_blank"
+          rel="noreferrer noopener"
+          className="inline-flex items-center gap-1.5 mt-3 text-sm font-semibold text-blue underline hover:text-blue/80"
+        >
+          Open the grading rubric &amp; standard (score bands, integrity rules, feedback standard) →
+        </a>
       </header>
 
       {report.reportUrl && (

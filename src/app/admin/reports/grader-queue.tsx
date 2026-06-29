@@ -15,6 +15,7 @@ import {
   Users,
   ExternalLink,
   Search,
+  BookOpen,
 } from "lucide-react";
 
 interface QueueItem {
@@ -173,6 +174,13 @@ export function GraderQueue({
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <a
+            href="/admin/reports/rubric"
+            className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-semibold rounded-lg border border-blue/30 bg-blue/5 text-blue hover:bg-blue/10"
+          >
+            <BookOpen className="h-4 w-4" />
+            Grading rubric
+          </a>
           {isSuper && (
             <button
               onClick={releaseStale}
