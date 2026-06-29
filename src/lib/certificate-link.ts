@@ -64,6 +64,19 @@ export function certificateUrl(opts: {
   return `${opts.origin.replace(/\/$/, "")}/api/certificate/${opts.reportId}?sig=${sig}`;
 }
 
+// Public, human-facing verification page for a certificate. This is the URL we
+// put in the LinkedIn "Credential URL" field — it shows the holder, the title,
+// the issue date and a verified badge, and links to the PDF. Reuses the same
+// "share" signature as the certificate download so one link covers both.
+export function verifyUrl(opts: {
+  origin: string;
+  reportId: string;
+  internId: string;
+}): string {
+  const sig = certificateShareSig(opts.reportId, opts.internId);
+  return `${opts.origin.replace(/\/$/, "")}/verify/${opts.reportId}?sig=${sig}`;
+}
+
 // Same HMAC pattern for the end-of-programme discontinuation letter sent to
 // interns who did not meet the passing threshold. Different scope string
 // ("letter") so a leaked certificate sig cannot be reused on the letter URL

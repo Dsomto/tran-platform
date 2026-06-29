@@ -2,6 +2,7 @@ import Link from "next/link";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { FileText, Clock, CheckCircle2, XCircle, AlertTriangle, Award, FileSignature } from "lucide-react";
+import { LinkedInIcon } from "@/components/icons/linkedin";
 import { certificateShareSig, letterShareSig, passLetterShareSig } from "@/lib/certificate-link";
 import { isReportResultReleased } from "@/lib/report-visibility";
 
@@ -127,6 +128,15 @@ export default async function ReportsPage() {
                       >
                         <FileSignature className="h-4 w-4" />
                         Achievement letter
+                      </a>
+                      <a
+                        href={`/verify/${r.id}?sig=${certificateShareSig(r.id, intern.id)}`}
+                        target="_blank"
+                        rel="noreferrer noopener"
+                        className="inline-flex items-center gap-1.5 justify-center px-3 py-2 text-sm font-medium rounded-lg border border-[#0A66C2]/30 bg-[#0A66C2]/5 text-[#0A66C2] hover:bg-[#0A66C2]/10 dark:text-[#70b5f9]"
+                      >
+                        <LinkedInIcon className="h-4 w-4" />
+                        Add to LinkedIn
                       </a>
                     </>
                   )}
