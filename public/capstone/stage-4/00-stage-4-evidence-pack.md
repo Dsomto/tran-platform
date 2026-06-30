@@ -15,7 +15,7 @@ the artefacts and templates needed for all six Stage 4 tasks.
 8. `08-front-page-amaka.md` - plain-text newspaper transcript.
 9. `08-front-page-amaka.html` - designed newspaper cover.
 
-The designed newspaper cover uses `amaka-eze-cover.png` as a fictional training
+The designed newspaper cover uses `amaka-eze-cover.jpg` as a fictional training
 portrait. If your browser supports it, open:
 
 `/capstone/stage-4/08-front-page-amaka.html`
@@ -359,7 +359,7 @@ owners, and cost bands.
 **By Nkem Afolabi, Investigations Desk**  
 **Dateline:** Lagos, 06:20 WAT  
 **Designed cover:** `08-front-page-amaka.html`  
-**Portrait used in the cover:** `amaka-eze-cover.png`  
+**Portrait used in the cover:** `amaka-eze-cover.jpg`  
 **Training note:** This is a fictional newspaper artefact for the Sankofa Digital incident simulation.
 
 For three weeks Sankofa Digital used one name for the attacker: **The Griot**.

@@ -176,10 +176,17 @@ export const EVIDENCE_PACK: Record<StageKey, EvidenceFile[]> = {
   ],
   STAGE_4: [
     {
+      filename: "stage-4-artefacts.html",
+      url: "/capstone/stage-4/stage-4-artefacts.html",
+      description:
+        "READ THIS FIRST. Every Stage 4 artefact, template, and input in one readable document (open in a browser, print to PDF if you want a copy).",
+      bytes: 31066,
+    },
+    {
       filename: "00-stage-4-evidence-pack.md",
       url: "/capstone/stage-4/00-stage-4-evidence-pack.md",
       description:
-        "READ THIS FIRST. All-in-one Stage 4 artefact pack with every template and input copied into one document.",
+        "Same all-in-one pack in plain Markdown, if you prefer the raw text.",
       bytes: 21016,
     },
     {

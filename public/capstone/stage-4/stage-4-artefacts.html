@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Stage 4 — Full Artefact Pack | Ubuntu Bridge Initiative</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;max-width:880px;margin:0 auto;padding:40px 24px 80px;color:#0F172A;line-height:1.65;font-size:15px;}
+  h1{font-size:26px;font-weight:800;letter-spacing:-0.5px;border-bottom:3px solid #2563EB;padding-bottom:10px;margin-top:48px;color:#0F172A;}
+  h1:first-of-type{margin-top:0;}
+  h2{font-size:20px;font-weight:700;margin-top:32px;color:#1E293B;}
+  h3{font-size:16px;font-weight:700;margin-top:24px;color:#334155;}
+  hr{border:none;border-top:1px solid #E2E8F0;margin:40px 0;}
+  table{border-collapse:collapse;width:100%;margin:18px 0;font-size:13px;}
+  th,td{border:1px solid #CBD5E1;padding:8px 10px;text-align:left;vertical-align:top;}
+  th{background:#F1F5F9;font-weight:700;}
+  tr:nth-child(even) td{background:#F8FAFC;}
+  code{background:#F1F5F9;padding:2px 6px;border-radius:4px;font-size:13px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;}
+  pre{background:#0F172A;color:#E2E8F0;padding:16px;border-radius:10px;overflow-x:auto;font-size:13px;}
+  pre code{background:none;padding:0;color:inherit;}
+  blockquote{border-left:4px solid #2563EB;margin:16px 0;padding:4px 18px;color:#475569;background:#F8FAFC;}
+  a{color:#2563EB;}
+  ul,ol{padding-left:24px;}
+  .ubi-banner{background:linear-gradient(135deg,#0F172A,#2563EB);color:#fff;padding:22px 26px;border-radius:14px;margin-bottom:8px;}
+  .ubi-banner .t{font-size:12px;letter-spacing:2px;text-transform:uppercase;opacity:.8;}
+  .ubi-banner .n{font-size:20px;font-weight:800;margin-top:4px;}
+  @media print{body{padding:0;max-width:none;} a{color:#0F172A;}}</style>
+</head>
+<body>
+<div class="ubi-banner"><div class="t">Ubuntu Bridge Initiative · Stage 4 · Governance &amp; Risk</div><div class="n">Full Artefact Pack — every template and input in one document</div></div>
+<header id="title-block-header">
+<h1 class="title">Stage 4 — Full Artefact Pack | Ubuntu Bridge
+Initiative</h1>
+</header>
+<h1 id="stage-4-evidence-pack---sankofa-digital-board-debrief">Stage 4
+Evidence Pack - Sankofa Digital Board Debrief</h1>
+<p>Use this document if you cannot find the separate Stage 4 downloads.
+It contains the artefacts and templates needed for all six Stage 4
+tasks.</p>
+<h2 id="quick-index">Quick Index</h2>
+<ol type="1">
+<li><code>breach-notification-template.md</code> - GDPR Article 33
+notification letter.</li>
+<li><code>risk-register-template.csv</code> - five-row risk register
+skeleton.</li>
+<li><code>board-memo-template.md</code> - CEO board slide memo
+skeleton.</li>
+<li><code>30-60-90-roadmap-template.md</code> - remediation roadmap
+skeleton.</li>
+<li><code>control-mapping-skeleton.csv</code> - NIST CSF / ISO 27001 /
+MITRE D3FEND mapping table.</li>
+<li><code>06-external-audit-findings.md</code> - audit findings
+excerpt.</li>
+<li><code>07-board-minutes-excerpt.md</code> - board questions and
+tabled motion.</li>
+<li><code>08-front-page-amaka.md</code> - plain-text newspaper
+transcript.</li>
+<li><code>08-front-page-amaka.html</code> - designed newspaper
+cover.</li>
+</ol>
+<p>The designed newspaper cover uses <code>amaka-eze-cover.jpg</code> as
+a fictional training portrait. If your browser supports it, open:</p>
+<p><code>/capstone/stage-4/08-front-page-amaka.html</code></p>
+<hr />
+<h1 id="1-gdpr-article-33-breach-notification-template">1. GDPR Article
+33 Breach Notification Template</h1>
+<pre class="text"><code>================================================================
+TEMPLATE - GDPR Article 33 breach notification
+Use this as a starting point. Do not copy-paste blindly. Every
+[BRACKETED] field is yours to fill from the evidence you have.
+================================================================
+
+[ORG_LETTERHEAD]
+
+The Lead Supervisory Authority
+[SUPERVISORY AUTHORITY ADDRESS]
+
+[DATE]
+
+Filing deadline: [04:12 UTC / 05:12 WAT on 2024-01-18]
+
+Re: Notification of Personal Data Breach - pursuant to Article 33
+of the General Data Protection Regulation
+
+Dear Supervisory Authority,
+
+1. CONTROLLER
+
+   Sankofa Digital Limited, RC [NUMBER], registered office at
+   [ADDRESS]. Data Protection Officer: [DPO NAME], [DPO EMAIL].
+
+2. NATURE OF BREACH
+
+   On [DATE OF DISCOVERY] our security team confirmed that an
+   unauthorised actor had been present in our environment from
+   approximately [DATE OF FIRST ACCESS]. Initial access was via
+   [BRIEF DESCRIPTION - one sentence, no jargon]. The actor was
+   contained on [CONTAINMENT DATE].
+
+   This notification is [BEFORE / AFTER] the Article 33 72-hour
+   filing deadline.
+
+3. CATEGORIES AND VOLUME OF DATA SUBJECTS AFFECTED
+
+   - Approximately [N] data subjects.
+   - Categories of personal data: [e.g. name, email, account
+     identifier, redacted/last-4 of bank record].
+   - Special categories: [None / specify].
+
+4. CONSEQUENCES
+
+   [ONE PARAGRAPH - what is the likely consequence to the affected
+   subjects? Identity-theft risk, financial-loss risk, reputational
+   harm? Be honest, be specific.]
+
+5. CONTAINMENT AND REMEDIATION
+
+   - [ACTION 1 - taken on DATE]
+   - [ACTION 2 - taken on DATE]
+   - [ACTION 3 - planned for DATE]
+
+6. ASSUMPTIONS, UNKNOWNS, AND UPDATE COMMITMENT
+
+   Confirmed: [WHAT IS EVIDENCED]. Still under evidence-locker review:
+   [WHAT MAY CHANGE]. If [TRIGGER] changes the affected-count or risk
+   assessment, [OWNER ROLE] will send a supplemental notice within
+   [TIMEBOX].
+
+7. CONTACT FOR FURTHER INFORMATION
+
+   [DPO NAME], [DPO TITLE]
+   [DPO EMAIL], [DPO PHONE]
+
+We commit to keeping the Commission updated as the investigation
+progresses. We are available for any clarification the Commission
+may require.
+
+Yours faithfully,
+
+[NAME]
+[TITLE - e.g. Chief Executive Officer]
+Sankofa Digital Limited
+
+================================================================
+NOTES TO THE INTERN (delete this block before submission)
+================================================================
+
+- GDPR Article 33 requires notification within 72 hours of becoming
+  aware of the breach, unless the personal data breach is unlikely
+  to result in risk to the rights and freedoms of natural persons.
+- GDPR Article 34 governs communication to affected data subjects
+  where the breach is likely to result in a high risk.
+- For this exercise, awareness starts at 04:12 UTC on 2024-01-15.
+  The 72-hour deadline is 04:12 UTC / 05:12 WAT on 2024-01-18.
+- &quot;Likely to result in risk&quot; is a judgement call. State your
+  judgement with one line of reasoning in section 4.
+- Do not over-claim what you know. Do not under-claim either.
+  Both create future legal exposure.
+- The Commission reads tone. Be plain. Be calm. Be specific.
+================================================================</code></pre>
+<hr />
+<h1 id="2-risk-register-template">2. Risk Register Template</h1>
+<pre class="csv"><code>id,risk_statement,likelihood_1_5,likelihood_rationale,impact_1_5,impact_rationale,control_concrete,owner_role,residual_risk_1_5_and_decision,iso_27001_2022_annex_a,nist_csf_2_0_category,evidence_cite_stage_task
+R-001,&quot;Adversary regains foothold via the same workstation persistence mechanism (.bashrc-sourced binary) if it is not removed and audited.&quot;,4,&quot;The mechanism is present today and survives any single user re-login. Demonstrated working against o.adegoke (Stage 3 task 1).&quot;,4,&quot;One workstation gives the attacker lateral movement to any internal service o.adegoke can reach - including the legacy admin app and the cloud metadata service.&quot;,Deploy Wazuh FIM agents on 100% of in-scope endpoints with rules for additions to ~/.bashrc / ~/.profile / .config/autostart/*.desktop and any new file under /var/lib/* outside a known package. 30-day retention.,Head of Security Engineering,&quot;2 - reduce; accept only after 30 days of clean FIM alerts.&quot;,A.8.7 + A.8.16,DE.CM-01,Stage 3 task 1 + task 2
+R-002,,,,,,,,,,,
+R-003,,,,,,,,,,,
+R-004,,,,,,,,,,,
+R-005,,,,,,,,,,,</code></pre>
+<hr />
+<h1 id="3-board-memo-template">3. Board Memo Template</h1>
+<h2
+id="board-memo-template---sankofa-digital-breach-of-2024-01-14">BOARD
+MEMO TEMPLATE - Sankofa Digital breach of 2024-01-14</h2>
+<p>Use this as the starting skeleton for your one-slide board memo.
+Replace every <code>[BRACKETED]</code> field. Delete this notes block
+before you submit.</p>
+<p><strong>Slide title (&lt;= 8 words, active voice):</strong></p>
+<p><code>[e.g. Sankofa breach - board action required]</code></p>
+<p><strong>Three numbers anchoring the slide:</strong></p>
+<ol type="1">
+<li><code>[N.k] customer PII records exposed</code> - cite:
+<code>[Stage 2 task 1 - ES customer_pii index, 84.2k docs]</code></li>
+<li><code>[Nm] from initial access to root</code> - cite:
+<code>[Stage 3 task 5 timeline]</code></li>
+<li><code>€[N]M estimated GDPR fine exposure</code> - cite:
+<code>[GDPR Article 83 - up to €10M/2% or €20M/4%, depending on infringement class]</code></li>
+</ol>
+<p><strong>One chart description (one paragraph):</strong></p>
+<p><code>[Describe the chart. The chart compares one before / one after under the proposed control. Examples that pass: time-to-detect before vs after the proposed control; mean attacker dwell-time before vs after; risk score before vs after each of the five risks from your risk register.]</code></p>
+<p><strong>The ask (&lt;= 80 words):</strong></p>
+<blockquote>
+<p><code>[The board is being asked to authorise: &lt;action&gt;; &lt;budget tier S/M/L&gt;; &lt;owner role&gt;. The reason this comes first is &lt;specific risk-reduction it buys, cited to Stage X task Y&gt;.]</code></p>
+</blockquote>
+<p><strong>Speaking notes (five short bullets, &lt;= 25 words each,
+plain language):</strong></p>
+<ul>
+<li><code>[...]</code></li>
+<li><code>[...]</code></li>
+<li><code>[...]</code></li>
+<li><code>[...]</code></li>
+<li><code>[...]</code></li>
+</ul>
+<p><strong>Anticipated board questions + your one-line
+answers:</strong></p>
+<ul>
+<li>Q: <code>[Open Question Q1 from 07-board-minutes-excerpt.md]</code>
+/ A: <code>[your one-line answer]</code></li>
+<li>Q: <code>[Open Question Q2 from 07-board-minutes-excerpt.md]</code>
+/ A: <code>[...]</code></li>
+<li>Q: <code>[Open Question Q3 from 07-board-minutes-excerpt.md]</code>
+/ A: <code>[...]</code></li>
+</ul>
+<p><strong>Tradeoff decision (60+ words):</strong></p>
+<p><code>[Name one trade-off the board must accept to approve the ask. Format: "To do X by [date], we will NOT do Y (or we will delay it to Q3, or we will do it with less coverage). The reason X comes first is &lt;evidence-backed risk-reduction it buys&gt;." Generic "no trade-offs needed" loses.]</code></p>
+<p><strong>Press-risk line (&lt;=35 words):</strong></p>
+<p><code>[One sentence the CEO can use if asked whether Amaka was The Griot. It must separate confirmed evidence, allegation, and next action.]</code></p>
+<p><strong>Evidence appendix:</strong></p>
+<ul>
+<li><code>[Stage X task Y - what claim it supports]</code></li>
+<li><code>[GDPR Article XX]</code></li>
+<li><code>[NIST CSF 2.0 - function.category id]</code></li>
+<li><code>[MITRE ATT&amp;CK - T1234 id]</code></li>
+<li><code>[07-board-minutes-excerpt.md - which open question it answers]</code></li>
+</ul>
+<p><strong>One mistake I almost made (50+ words):</strong></p>
+<p><code>[A specific moment in drafting this slide where you nearly picked the wrong third number. Be specific.]</code></p>
+<hr />
+<h1 id="4-30--60--90-remediation-roadmap-template">4. 30 / 60 / 90
+Remediation Roadmap Template</h1>
+<h2 id="required-table">Required table</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Window (30 / 60 / 90 days from board-approval)</th>
+<th>Action (concrete, verb-first)</th>
+<th>Owner role</th>
+<th>Budget tier (S &lt; N5M / M N5-25M / L N25M+)</th>
+<th>Dependency or blocker</th>
+<th>Acceptance criterion</th>
+<th>Stage 1-3 evidence cite</th>
+<th>NIST CSF 2.0 function.category</th>
+<th>ISO 27001:2022 Annex A control</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Days 0-30</td>
+<td>Rotate every credential and IAM role token that touched workstation
+10.0.1.87.</td>
+<td>Head of Cloud Platform</td>
+<td>S</td>
+<td>Confirm asset/user/token inventory from Stage 3 evidence.</td>
+<td>100% of identified credentials rotated; no old token authenticates
+in audit log.</td>
+<td>Stage 3 task 1</td>
+<td>RS.MI-01</td>
+<td>A.5.16</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Days 0-30</td>
+<td><code>[Action - verb first]</code></td>
+<td><code>[Owner role]</code></td>
+<td><code>[S/M/L]</code></td>
+<td><code>[Dependency/blocker]</code></td>
+<td><code>[Auditable pass/fail criterion]</code></td>
+<td><code>[Stage X task Y]</code></td>
+<td><code>[NIST CSF id]</code></td>
+<td><code>[ISO 27001 id]</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td>Days 0-30</td>
+<td><code>[...]</code></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>4</td>
+<td>Days 31-60</td>
+<td><code>[...]</code></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>5</td>
+<td>Days 31-60</td>
+<td><code>[...]</code></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>6</td>
+<td>Days 31-60</td>
+<td><code>[...]</code></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>7</td>
+<td>Days 61-90</td>
+<td><code>[...]</code></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>8</td>
+<td>Days 61-90</td>
+<td><code>[...]</code></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>9</td>
+<td>Days 61-90</td>
+<td><code>[...]</code></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>You must add one more row for interim security leadership and
+privileged-access separation after the Amaka allegation. You may add up
+to 2 additional rows of your own choosing. Maximum 12 rows.</p>
+<h2 id="deferral-list">Deferral list</h2>
+<p>After the 30/60/90 table, name at least three real items from Stages
+1-3 that you are deliberately NOT scheduling inside this 90-day window,
+and why each one waits.</p>
+<p><code>[Item 1]:</code> <code>[...]</code></p>
+<p><code>[Item 2]:</code> <code>[...]</code></p>
+<p><code>[Item 3]:</code> <code>[...]</code></p>
+<h2 id="audit-findings-response">Audit findings response</h2>
+<p>Use <code>06-external-audit-findings.md</code> and
+<code>08-front-page-amaka.md</code>. For each finding, state whether
+this roadmap accepts, disputes, or defers it. Cite the roadmap row that
+implements the response, or the deferral-list item that explains why it
+waits. Include one sentence on why the interim-security- leadership row
+is not optional.</p>
+<ul>
+<li>Finding 1: <code>[ACCEPTS / DISPUTES / DEFERS]</code> -
+<code>[...]</code></li>
+<li>Finding 2: <code>[ACCEPTS / DISPUTES / DEFERS]</code> -
+<code>[...]</code></li>
+<li>Finding 3: <code>[ACCEPTS / DISPUTES / DEFERS]</code> -
+<code>[...]</code></li>
+</ul>
+<hr />
+<h1 id="5-control-mapping-skeleton">5. Control Mapping Skeleton</h1>
+<pre class="csv"><code>row,observed_weakness_from_stages_1_3,stage_task_evidence,nist_csf_2_0_function_category,iso_27001_2022_annex_a,mitre_d3fend_counter_technique,mapping_confidence_h_m_l,source_checked
+1,Unauthenticated Elasticsearch index exposing customer PII,Stage 2 task 1 - scan-vuln.txt + es-intern_access.json,PR.DS-01,A.8.3 + A.8.24,D3-NTA (Network Traffic Analysis),H - direct exposure evidence and exact data-security mapping,NIST CSF 2.0 + ISO 27001:2022 Annex A + MITRE D3FEND
+2,Plaintext credentials and base64 &#39;API key&#39; in committed config files,Stage 1 task 1 + task 8 - config.env + .creds.bak,,,,,
+3,SQL injection in login form (evidence in MySQL general log),Stage 2 task 3 - mysql-general.log line 03:09:44,,,,,
+4,Reflected and stored XSS in admin dashboard,Stage 2 tasks 4 and 5 - search + notes endpoints,,,,,
+5,SSRF to cloud metadata service (IMDSv1 in use),Stage 2 task 6 - 169.254.169.254/latest/meta-data/,,,,,
+6,&quot;Time-unlimited NOPASSWD: less /var/log/* sudoers grant&quot;,Stage 3 task 3 - /etc/sudoers.d/90-ops,,,,,
+7,Shell-config persistence in user .bashrc (not caught by crontab/systemd audits),Stage 3 task 2 - /home/o.adegoke/.bashrc,,,,,
+8,Periodic HTTPS beacon to non-allow-listed external domain,Stage 3 task 4 - gri0t-c2.dynamic-update.net:443,,,,,</code></pre>
+<hr />
+<h1 id="6-external-audit-findings-excerpt">6. External Audit Findings
+Excerpt</h1>
+<p>Source: independent post-incident review, working excerpt for the
+board pack. Amaka: "Use this as a governance artefact, not as gospel. If
+you agree, say why. If you dispute, cite the evidence that changes the
+conclusion."</p>
+<h2 id="finding-1---incident-response-cycle-exceeded-benchmark">Finding
+1 - Incident response cycle exceeded benchmark</h2>
+<p>The review team observed approximately seven calendar days between
+the first relevant alert cluster and formal containment. Comparable
+fintech response programmes in this review set average approximately
+four days for similar severity events. The delay increased uncertainty
+around affected records and forced legal to work from partial facts.</p>
+<p>Recommendation: define severity-based containment authority for
+Security, including documented criteria for isolating a host before full
+business-owner approval.</p>
+<p>OWNER ACCEPTS / DISPUTES / DEFERS:</p>
+<h2 id="finding-2---tier-1-dismissal-pattern-was-systemic">Finding 2 -
+Tier-1 dismissal pattern was systemic</h2>
+<p>The Q2 ticket history shows repeated low-friction closure of related
+alerts, including SD-40812 and later tickets linked to host-87 activity.
+This was not a single analyst error; the process allowed repeated
+closure without mandatory correlation across user leave status, source
+IP, and host telemetry.</p>
+<p>Recommendation: require correlation review for any repeated user,
+source IP, or host within a rolling seven-day window before Tier 1 may
+close as benign.</p>
+<p>OWNER ACCEPTS / DISPUTES / DEFERS:</p>
+<h2
+id="finding-3---dpo-notification-lag-created-governance-risk">Finding 3
+- DPO notification lag created governance risk</h2>
+<p>The Data Protection Officer was not notified until approximately 36
+hours after Security had enough evidence to suspect customer data
+exposure. While GDPR Article 33 includes a 72-hour notification clock,
+the deeper issue is the absence of a trigger that brings the DPO into
+the response room early.</p>
+<p>Recommendation: add DPO notification to the high-severity incident
+checklist, with owner, timestamp, and escalation evidence captured in
+the case record.</p>
+<p>OWNER ACCEPTS / DISPUTES / DEFERS:</p>
+<hr />
+<h1 id="7-board-minutes-excerpt">7. Board Minutes Excerpt</h1>
+<p>Meeting: special board session after Q2 incident disclosure</p>
+<p>Amaka: "This is the room your memo must survive. Answer the open
+questions directly, especially where a control decision has a cost."</p>
+<h2 id="resolved-questions">Resolved Questions</h2>
+<p>Q1: Did customer data leave Sankofa control?<br />
+Resolved: Yes, based on the Stage 3 exfil evidence and the Stage 2
+redacted customer_pii sample. The board asked management to use a
+conservative affected count until the offline evidence locker is
+reconciled.</p>
+<p>Q2: Was the legacy-admin system still in business use?<br />
+Resolved: Yes. Engineering confirmed the system remained reachable for
+support fallbacks despite prior decommission plans.</p>
+<p>Q3: Who owns customer and regulator communications?<br />
+Resolved: General Counsel owns regulator submissions; Comms owns
+customer language; Security owns the evidence appendix and technical
+accuracy.</p>
+<h2 id="open-questions">Open Questions</h2>
+<p>Q1: Which single control would have broken the exploit chain
+earliest: removing legacy-admin, fixing JWT validation, disabling XML
+external entities, or isolating host-87 sooner?</p>
+<p>Q2: How many affected customers should we cite before the offline
+evidence locker review is complete?</p>
+<p>Q3: If we had isolated host-87 at 02:15 instead of 04:08, what would
+we have saved?</p>
+<h2 id="tabled-motion">Tabled Motion</h2>
+<p>Motion: approve the first 90 days of a security uplift programme
+covering legacy-system containment, SOC correlation rules, DPO
+escalation workflow, and the controls needed to justify any later
+12-month spend.</p>
+<p>Status: tabled until management returns with a risk-ranked roadmap,
+named owners, and cost bands.</p>
+<hr />
+<h1 id="8-lagos-ledger-front-page-transcript">8. Lagos Ledger Front Page
+Transcript</h1>
+<h2 id="the-griot-sat-beside-the-board">THE GRIOT SAT BESIDE THE
+BOARD</h2>
+<h3
+id="leaked-addendum-names-amaka-eze-sankofas-trusted-head-of-security-as-the-insider-behind-the-breach-persona">Leaked
+addendum names Amaka Eze, Sankofa's trusted Head of Security, as the
+insider behind the breach persona</h3>
+<p><strong>By Nkem Afolabi, Investigations Desk</strong><br />
+<strong>Dateline:</strong> Lagos, 06:20 WAT<br />
+<strong>Designed cover:</strong>
+<code>08-front-page-amaka.html</code><br />
+<strong>Portrait used in the cover:</strong>
+<code>amaka-eze-cover.jpg</code><br />
+<strong>Training note:</strong> This is a fictional newspaper artefact
+for the Sankofa Digital incident simulation.</p>
+<p>For three weeks Sankofa Digital used one name for the attacker:
+<strong>The Griot</strong>. It was a useful name because it sounded
+distant. The board heard it and pictured someone outside the company
+wall, someone watching from an offshore server, someone who did not know
+the coffee machine on level 9 was broken.</p>
+<p>That story collapsed this morning.</p>
+<p>Documents reviewed by <em>The Lagos Ledger</em> say the breach
+investigation now points to a person who sat inside the war room,
+chaired security reviews, signed off on analyst notes, and approved the
+exception path that let the attacker move while everyone else waited for
+permission.</p>
+<p><strong>This is it: the Griot was not only inside Sankofa. The Griot
+was Amaka Eze, Head of Security.</strong></p>
+<p>The leaked board addendum says investigators have <strong>high
+confidence</strong> that Amaka operated the Griot identity or directed
+the person using it. Counsel's margin note is careful: "Strong enough
+for board action. Not clean enough for public certainty without
+process." That distinction now sits at the centre of Sankofa's hardest
+governance decision.</p>
+<h2 id="what-changed-overnight">What changed overnight</h2>
+<p>The addendum identifies four facts now under legal hold:</p>
+<ol type="1">
+<li>A break-glass security account used during the breach window was
+approved from Amaka's privileged-access queue, not from the normal
+change channel.</li>
+<li>The host-87 containment delay benefited the attacker and matched an
+exception route only Security leadership could approve without a second
+sign-off.</li>
+<li>The Stage 1 cipher note that once read like a threat - "Let Amaka
+know the group is sated" - now reads like an internal status
+signal.</li>
+<li>A draft control-mapping note reused phrases from Amaka's earlier
+board language almost word for word: "fund prevention before prevention
+fails in public."</li>
+</ol>
+<p>None of those facts alone proves identity. Together, they explain how
+someone who knew Sankofa's control language, escalation rituals, and
+blind spots could make an external attacker feel plausible for so
+long.</p>
+<h2 id="the-breadcrumbs-readers-missed">The breadcrumbs readers
+missed</h2>
+<ul>
+<li><strong>Stage 0:</strong> Amaka reopened Q2 ticket
+<code>SD-40812</code> after the previous analyst closed it as "probably
+nothing."</li>
+<li><strong>Stage 1 task 1:</strong> Amaka placed the staging-server zip
+in front of the intern.</li>
+<li><strong>Stage 1 task 3:</strong> The decoded line "Let Amaka know
+the group is sated" was too strange to ignore.</li>
+<li><strong>Stage 1 task 10:</strong> "Amaka signs this before it goes
+up" looked like normal governance.</li>
+<li><strong>Stage 2:</strong> The legacy admin chain required knowledge
+of the old export path, token behaviour, and analyst dashboard
+habits.</li>
+<li><strong>Stage 3 task 1:</strong> host-87 was not isolated until
+after the decisive window.</li>
+<li><strong>Stage 3 task 3:</strong> The time-unlimited
+<code>NOPASSWD: less /var/log/*</code> grant was framed as temporary
+diagnostics.</li>
+<li><strong>Stage 3 task 7:</strong> A rejected alternate theory said
+"possible insider abuse" but stopped short of naming the control
+owner.</li>
+</ul>
+<p>The reveal shocks because it was never a magic twist. It was a
+control-owner story, and the artefacts kept saying so.</p>
+<h2 id="why-would-she-do-it">Why would she do it?</h2>
+<p>People close to Amaka describe someone who had spent three years
+asking for a legacy-system retirement budget and being told to "sequence
+it behind growth." One former colleague said the old admin platform
+became personal after a family cooperative lost money in a fraud wave
+tied to stale customer records at another fintech. She rarely spoke
+about it, but when she did, the phrasing was almost always the same:
+"Nobody funds prevention until prevention fails in public."</p>
+<p>The leaked notes suggest a motive more complicated than theft and
+less innocent than whistleblowing. Amaka may have believed a controlled
+breach would force the board to fund prevention: expose the legacy admin
+risk, force Legal into the room early, make a quiet failure visible
+before a worse one arrived.</p>
+<p>If that was the plan, it failed at the line that matters. Real
+customer data appears to have left Sankofa control. Real people may need
+GDPR Article 34 notice. A controlled burn still burns.</p>
+<h2 id="the-governance-failure-behind-the-person">The governance failure
+behind the person</h2>
+<p>The easy story is "rogue insider." The harder story is that Sankofa
+built a system where one trusted person could approve privileged access,
+shape the incident narrative, influence containment decisions, and
+remain the board's main interpreter of the facts.</p>
+<p>The GRC failure is not only that Amaka may have crossed an ethical
+line. It is that the line had no independent monitor. Segregation of
+duties failed. Privileged access review failed. Exception expiry failed.
+Board challenge failed. Legal escalation arrived after the facts were
+already being framed.</p>
+<p>The board's ethical problem now has no clean answer:</p>
+<ul>
+<li>Name Amaka publicly and Sankofa may punish before process, weaken
+the investigation, and expose itself to defamation or labour-law
+claims.</li>
+<li>Hide her role and Sankofa may look like it protects executives while
+customers carry the harm.</li>
+<li>Use role-based language and the press may call it evasion.</li>
+<li>Reduce the breach to one person's motive and the board may avoid
+funding the controls that would have stopped any insider with the same
+power.</li>
+</ul>
+<h2 id="editorial-note-for-the-board-pack">Editorial note for the board
+pack</h2>
+<p>This front page is an external-pressure artefact. Treat it as a
+source of public risk, stakeholder questions, and ethics tension, not as
+the sole source of technical proof. Where it makes a factual claim, tie
+your response back to Stages 0-3 artefacts, the legal-hold addendum,
+GDPR Article 33/34 duties, and the board's obligation to act without
+pretending uncertainty is innocence.</p>
+</body>
+</html>
