@@ -15,9 +15,7 @@
         --accent: #8e1f1f;
       }
 
-      * {
-        box-sizing: border-box;
-      }
+      * { box-sizing: border-box; }
 
       body {
         margin: 0;
@@ -35,15 +33,45 @@
         border: 1px solid #98876b;
         box-shadow: 0 22px 55px rgba(42, 31, 19, 0.28);
         padding: clamp(18px, 3vw, 34px);
+        scroll-margin-top: 12px;
       }
 
-      .kicker,
-      .footer,
-      .caption,
-      .tag,
-      .byline,
-      .folio {
+      .kicker, .footer, .caption, .tag, .byline, .folio, .nav, .turn, .who {
         font-family: Arial, Helvetica, sans-serif;
+      }
+
+      /* Page navigation */
+      .nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 14px;
+      }
+      .nav a {
+        text-decoration: none;
+        color: var(--ink);
+        border: 1px solid var(--rule);
+        padding: 5px 10px;
+        background: var(--paper-dark);
+        font-weight: 700;
+      }
+      .nav a.here { background: var(--accent); color: #fff; border-color: var(--accent); }
+      .nav .label { color: var(--muted); margin-right: 4px; }
+
+      .turn {
+        display: inline-block;
+        margin-top: 20px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--accent);
+        text-decoration: none;
+        border-bottom: 3px solid var(--accent);
+        padding-bottom: 2px;
       }
 
       .folio {
@@ -57,56 +85,14 @@
         text-transform: uppercase;
       }
 
-      .masthead {
-        text-align: center;
-        border-bottom: 8px solid var(--rule);
-        padding: 8px 0 12px;
-      }
+      .masthead { text-align: center; border-bottom: 8px solid var(--rule); padding: 8px 0 12px; }
+      .masthead h1 { margin: 0; font-size: clamp(44px, 8vw, 92px); line-height: 0.9; text-transform: uppercase; }
+      .masthead p { margin: 8px 0 0; color: var(--muted); font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase; }
 
-      .masthead h1 {
-        margin: 0;
-        font-size: clamp(44px, 8vw, 92px);
-        line-height: 0.9;
-        letter-spacing: 0;
-        text-transform: uppercase;
-      }
-
-      .masthead p {
-        margin: 8px 0 0;
-        color: var(--muted);
-        font-size: 13px;
-        letter-spacing: 0.14em;
-        text-transform: uppercase;
-      }
-
-      .headline {
-        border-bottom: 2px solid var(--rule);
-        padding: 18px 0 14px;
-      }
-
-      .headline .kicker {
-        color: var(--accent);
-        font-size: 13px;
-        font-weight: 800;
-        letter-spacing: 0.16em;
-        text-transform: uppercase;
-      }
-
-      .headline h2 {
-        margin: 6px 0 8px;
-        font-size: clamp(46px, 7vw, 86px);
-        line-height: 0.88;
-        letter-spacing: 0;
-        text-transform: uppercase;
-      }
-
-      .headline .deck {
-        max-width: 940px;
-        margin: 0;
-        font-size: clamp(20px, 2.3vw, 29px);
-        line-height: 1.12;
-        font-weight: 700;
-      }
+      .headline { border-bottom: 2px solid var(--rule); padding: 18px 0 14px; }
+      .headline .kicker { color: var(--accent); font-size: 13px; font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase; }
+      .headline h2 { margin: 6px 0 8px; font-size: clamp(40px, 7vw, 86px); line-height: 0.88; text-transform: uppercase; }
+      .headline .deck { max-width: 940px; margin: 0; font-size: clamp(19px, 2.3vw, 29px); line-height: 1.14; font-weight: 700; }
 
       .grid {
         display: grid;
@@ -116,158 +102,79 @@
         padding: 20px 0;
       }
 
-      .lead {
-        columns: 2 270px;
-        column-gap: 28px;
-        column-rule: 1px solid rgba(23, 21, 18, 0.35);
-        font-size: 17px;
-        line-height: 1.45;
-      }
+      .lead { columns: 2 270px; column-gap: 28px; column-rule: 1px solid rgba(23, 21, 18, 0.35); font-size: 17px; line-height: 1.45; }
+      .lead p { margin: 0 0 13px; }
+      .lead p:first-child::first-letter { float: left; font-size: 72px; line-height: 0.78; padding: 8px 8px 0 0; font-weight: 700; }
 
-      .lead p {
-        margin: 0 0 13px;
-      }
+      .byline { margin: 0 0 12px; font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
 
-      .lead p:first-child::first-letter {
-        float: left;
-        font-size: 72px;
-        line-height: 0.78;
-        padding: 8px 8px 0 0;
-        font-weight: 700;
-      }
+      figure { margin: 0; border: 1px solid var(--rule); background: #fff9ed; padding: 8px; }
+      figure img { display: block; width: 100%; aspect-ratio: 4 / 5; object-fit: cover; object-position: 50% 32%; filter: grayscale(0.18) contrast(1.08); }
+      .caption { border-top: 1px solid var(--rule); margin-top: 8px; padding-top: 8px; color: var(--muted); font-size: 12px; line-height: 1.35; }
 
-      .byline {
-        margin: 0 0 12px;
-        font-size: 12px;
-        font-weight: 800;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-      }
+      .pull { margin-top: 16px; border-top: 5px solid var(--rule); border-bottom: 1px solid var(--rule); padding: 12px 0; font-size: clamp(24px, 3.6vw, 40px); line-height: 0.95; font-weight: 800; text-transform: uppercase; }
 
-      figure {
-        margin: 0;
-        border: 1px solid var(--rule);
-        background: #fff9ed;
-        padding: 8px;
-      }
+      .lower { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; padding-top: 18px; }
+      .twoup { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; padding-top: 18px; }
+      .box { border-top: 5px solid var(--rule); padding-top: 10px; }
+      .box h3 { margin: 0 0 8px; font-size: 22px; line-height: 1; text-transform: uppercase; }
+      .box p, .box li { font-size: 14px; line-height: 1.4; }
+      .box ul { margin: 0; padding-left: 18px; }
+      .box li + li { margin-top: 7px; }
 
-      figure img {
-        display: block;
-        width: 100%;
-        aspect-ratio: 4 / 5;
-        object-fit: cover;
-        object-position: 50% 32%;
-        filter: grayscale(0.18) contrast(1.08);
-      }
+      .tag { display: inline-block; margin-bottom: 8px; padding: 3px 6px; border: 1px solid var(--accent); color: var(--accent); font-size: 11px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
+      .tag.ink { border-color: var(--rule); color: var(--ink); }
 
-      .caption {
-        border-top: 1px solid var(--rule);
-        margin-top: 8px;
-        padding-top: 8px;
-        color: var(--muted);
-        font-size: 12px;
-        line-height: 1.35;
-      }
+      /* Long-form statement / editorial body */
+      .prose { columns: 2 290px; column-gap: 30px; column-rule: 1px solid rgba(23,21,18,0.3); font-size: 16px; line-height: 1.5; padding: 18px 0; }
+      .prose p { margin: 0 0 13px; }
+      .prose p.drop:first-letter { float: left; font-size: 60px; line-height: 0.8; padding: 6px 8px 0 0; font-weight: 700; }
 
-      .pull {
-        margin-top: 16px;
-        border-top: 5px solid var(--rule);
-        border-bottom: 1px solid var(--rule);
-        padding: 12px 0;
-        font-size: clamp(25px, 3.6vw, 40px);
-        line-height: 0.95;
-        font-weight: 800;
-        text-transform: uppercase;
-      }
+      /* Letters + poll */
+      .letter { border-top: 3px solid var(--rule); padding-top: 9px; }
+      .letter p { font-size: 15px; line-height: 1.42; margin: 0; }
+      .letter .who { display: block; margin-top: 7px; font-size: 11px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+      .poll { border: 2px solid var(--rule); background: var(--paper-dark); padding: 14px 16px; }
+      .poll h3 { margin: 0 0 10px; font-size: 18px; text-transform: uppercase; }
+      .poll .row { font-size: 13px; font-family: Arial, Helvetica, sans-serif; display: flex; justify-content: space-between; margin: 10px 0 4px; }
+      .poll .bar { height: 16px; background: #cdbf9f; border: 1px solid var(--rule); }
+      .poll .bar > span { display: block; height: 100%; background: var(--accent); }
+      .poll .note { font-size: 11px; color: var(--muted); margin-top: 12px; }
 
-      .lower {
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
-        gap: 18px;
-        padding-top: 18px;
-      }
+      .qa { border-top: 5px solid var(--rule); padding-top: 10px; }
+      .qa .q { font-weight: 800; margin: 14px 0 3px; font-size: 15px; }
+      .qa .a { margin: 0; font-size: 15px; line-height: 1.42; }
 
-      .box {
-        border-top: 5px solid var(--rule);
-        padding-top: 10px;
-      }
+      .inside { display: grid; grid-template-columns: auto 1fr 1fr 1fr; gap: 16px; align-items: start; margin-top: 18px; border-top: 2px solid var(--rule); border-bottom: 2px solid var(--rule); padding: 10px 0; }
+      .inside h4 { margin: 0; font-family: Arial, Helvetica, sans-serif; font-size: 13px; line-height: 1.05; letter-spacing: 0.14em; text-transform: uppercase; }
+      .inside p { margin: 0; font-size: 13px; line-height: 1.34; }
+      .inside b { font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--accent); }
 
-      .box h3 {
-        margin: 0 0 8px;
-        font-size: 22px;
-        line-height: 1;
-        text-transform: uppercase;
-      }
-
-      .box p,
-      .box li {
-        font-size: 14px;
-        line-height: 1.38;
-      }
-
-      .box ul {
-        margin: 0;
-        padding-left: 18px;
-      }
-
-      .box li + li {
-        margin-top: 7px;
-      }
-
-      .tag {
-        display: inline-block;
-        margin-bottom: 8px;
-        padding: 3px 6px;
-        border: 1px solid var(--accent);
-        color: var(--accent);
-        font-size: 11px;
-        font-weight: 800;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-      }
-
-      .footer {
-        display: flex;
-        justify-content: space-between;
-        gap: 12px;
-        margin-top: 18px;
-        border-top: 3px double var(--rule);
-        padding-top: 8px;
-        color: var(--muted);
-        font-size: 11px;
-        line-height: 1.35;
-      }
+      .footer { display: flex; justify-content: space-between; gap: 12px; margin-top: 18px; border-top: 3px double var(--rule); padding-top: 8px; color: var(--muted); font-size: 11px; line-height: 1.35; }
 
       @media (max-width: 760px) {
-        .page {
-          width: 100%;
-          margin: 0;
-          padding: 16px;
-          border: 0;
-        }
-
-        .folio,
-        .footer {
-          flex-direction: column;
-        }
-
-        .grid,
-        .lower {
-          grid-template-columns: 1fr;
-        }
-
-        .lead {
-          columns: 1;
-        }
+        .page { width: 100%; margin: 0; padding: 16px; border: 0; }
+        .folio, .footer { flex-direction: column; }
+        .grid, .lower, .twoup, .inside { grid-template-columns: 1fr; }
+        .lead, .prose { columns: 1; }
       }
     </style>
   </head>
   <body>
-    <main class="page" aria-label="The Lagos Ledger newspaper front page">
+    <!-- ============================ PAGE 1 ============================ -->
+    <main class="page" id="p1" aria-label="The Lagos Ledger front page">
+      <nav class="nav" aria-label="Edition pages">
+        <span class="label">The Lagos Ledger &middot; this edition:</span>
+        <a class="here" href="#p1">1 &middot; Front page</a>
+        <a href="#p2">2 &middot; The city reacts</a>
+        <a href="#p3">3 &middot; In her own words</a>
+        <a href="#p4">4 &middot; Editorial: the ethics</a>
+      </nav>
+
       <div class="folio">
-        <span>Special Morning Edition</span>
+        <span>Special Morning Edition &middot; No. 4,187</span>
         <span>Lagos, Thursday 18 January 2024</span>
-        <span>06:20 WAT</span>
+        <span>06:20 WAT &middot; &#8358;500</span>
       </div>
 
       <header class="masthead">
@@ -289,9 +196,9 @@
           <p class="byline">By Nkem Afolabi, Investigations Desk</p>
           <div class="lead">
             <p>
-              For weeks, Sankofa Digital used one name for the attacker: The
-              Griot. It sounded external, theatrical, safely outside the company
-              walls. That story collapsed this morning.
+              For three weeks, Sankofa Digital used one name for the attacker:
+              The Griot. It sounded external, theatrical, safely outside the
+              company walls. That story collapsed this morning.
             </p>
             <p>
               A leaked board addendum reviewed by The Lagos Ledger says the
@@ -315,14 +222,12 @@
               being shaped.
             </p>
           </div>
-          <div class="pull">
-            The control owner may have been the control failure.
-          </div>
+          <div class="pull">The control owner may have been the control failure.</div>
         </article>
 
         <aside>
           <figure>
-            <img src="./amaka-eze-cover.png" alt="Fictional training portrait used for Amaka Eze in the Sankofa incident simulation" />
+            <img src="./amaka-eze-cover.jpg" alt="Fictional training portrait used for Amaka Eze in the Sankofa incident simulation" />
             <figcaption class="caption">
               Amaka Eze, the trusted security leader now suspended pending
               investigation. Image used as a fictional training portrait for
@@ -340,6 +245,7 @@
             <li>Stage 0: Amaka reopened the "probably nothing" Q2 ticket.</li>
             <li>Stage 1: she delivered the staging zip and later signed the board note.</li>
             <li>Stage 1 task 3: "Let Amaka know" now reads like an internal status signal.</li>
+            <li>Stage 2: the legacy admin chain needed insider knowledge of old export paths and tokens.</li>
             <li>Stage 3: host-87 isolation waited for an exception path only leadership could approve.</li>
           </ul>
         </article>
@@ -367,14 +273,342 @@
         </article>
       </section>
 
+      <section class="inside" aria-label="Inside this edition">
+        <h4>Inside this<br />edition</h4>
+        <p><b>Page 2 &middot;</b> The city reacts: villain to some, whistleblower to others, and the letters pouring in.</p>
+        <p><b>Page 3 &middot;</b> In her own words: Amaka Eze's full statement on why she did it.</p>
+        <p><b>Page 4 &middot;</b> Editorial: name the failure, not just the face.</p>
+      </section>
+
+      <a class="turn" href="#p2">Turn to page 2 &middot; The city reacts &rarr;</a>
+
       <footer class="footer">
-        <span>
-          Editorial note: This is an external-pressure artefact, not the sole
-          technical source of proof. Tie claims back to Stage 0-3 evidence.
-        </span>
-        <span>
-          Fictional training material for the Sankofa Digital capstone.
-        </span>
+        <span>Editorial note: This is an external-pressure artefact, not the sole technical source of proof. Tie claims back to Stage 0-3 evidence.</span>
+        <span>Fictional training material for the Sankofa Digital capstone.</span>
+      </footer>
+    </main>
+
+    <!-- ============================ PAGE 2 ============================ -->
+    <main class="page" id="p2" aria-label="Page 2 - reaction and opinion">
+      <nav class="nav" aria-label="Edition pages">
+        <span class="label">Page:</span>
+        <a href="#p1">1 &middot; Front page</a>
+        <a class="here" href="#p2">2 &middot; The city reacts</a>
+        <a href="#p3">3 &middot; In her own words</a>
+        <a href="#p4">4 &middot; Editorial: the ethics</a>
+      </nav>
+
+      <div class="folio">
+        <span>Page 2 &middot; Reaction &amp; Opinion</span>
+        <span>The city argues with itself</span>
+        <span>The Lagos Ledger</span>
+      </div>
+
+      <section class="headline">
+        <div class="kicker">One name, two verdicts</div>
+        <h2>Villain Or Whistleblower?</h2>
+        <p class="deck">
+          Lagos woke to a single question about Amaka Eze, and answered it two
+          ways before breakfast. Both camps point at the same evidence.
+        </p>
+      </section>
+
+      <section class="twoup">
+        <article class="box">
+          <span class="tag">The case that she did it</span>
+          <h3>How they suspected her</h3>
+          <ul>
+            <li>A break-glass approval sits inside her own privileged-access queue, timed to the containment window.</li>
+            <li>Host-87 stayed online for hours behind a leadership-only exception path. Few people could authorise that, and she was one of them.</li>
+            <li>The Stage 1 line, "Let Amaka know the group is sated," reads less like a threat now and more like a status report to a principal.</li>
+            <li>The legacy admin export route needed someone who remembered tokens retired two years ago. She wrote the policy that retired them.</li>
+          </ul>
+          <p style="margin-top:10px">
+            "You do not stumble onto that path," said a former SOC lead who
+            asked not to be named. "You have to know where the bodies are
+            buried, and she buried some of them herself."
+          </p>
+        </article>
+
+        <article class="box">
+          <span class="tag ink">The case that she is a scapegoat</span>
+          <h3>How others defend her</h3>
+          <ul>
+            <li>Six years of risk filings under her name warned about exactly this legacy admin path. Nobody funded the fix.</li>
+            <li>"Strong enough for board action, not clean enough for public certainty" are counsel's own words. That is a board protecting itself, not proof.</li>
+            <li>A real outside attacker could have walked the very path she spent years documenting. Describing a risk is not the same as exploiting it.</li>
+            <li>Naming one insider lets the board avoid the harder finding: segregation of duties, exception expiry, and privileged-access review failed together.</li>
+          </ul>
+          <p style="margin-top:10px">
+            "If she wanted to steal, she is the last person who would leave a
+            trail that loops back to her own badge," said a junior analyst she
+            mentored.
+          </p>
+        </article>
+      </section>
+
+      <section class="lower" style="border-top:2px solid var(--rule); margin-top:18px;">
+        <article class="box">
+          <span class="tag">Letters to the editor</span>
+          <h3>The readers write</h3>
+          <div class="letter">
+            <p>"Trust is the product. If our own Head of Security can do this, then transparency now is the only currency we have left. Name it."</p>
+            <span class="who">- A. Bello, Sankofa customer, Lagos</span>
+          </div>
+          <div class="letter" style="margin-top:12px">
+            <p>"I watched this woman beg for budget in three town halls. We laughed. Now we want to hang her for being right the loud way."</p>
+            <span class="who">- Anonymous, Sankofa staff</span>
+          </div>
+          <div class="letter" style="margin-top:12px">
+            <p>"We are about to convict a person on a leaked addendum. The regulator will ask what we actually had before we put a face on the front page."</p>
+            <span class="who">- O. Adeyemi (rtd.), magistrate</span>
+          </div>
+        </article>
+
+        <article class="box" style="border:0; padding:0;">
+          <div class="poll">
+            <h3>Reader poll</h3>
+            <p style="font-size:14px; margin:0 0 6px; font-weight:700;">Did Amaka Eze betray Sankofa?</p>
+            <div class="row"><span>Yes, she is The Griot</span><span>41%</span></div>
+            <div class="bar"><span style="width:41%"></span></div>
+            <div class="row"><span>No, she is a scapegoat</span><span>33%</span></div>
+            <div class="bar"><span style="width:33%"></span></div>
+            <div class="row"><span>Not enough evidence to say</span><span>26%</span></div>
+            <div class="bar"><span style="width:26%"></span></div>
+            <p class="note">Unscientific reader poll, 3,402 responses by 06:00 WAT. A poll is not a finding. Neither is a front page.</p>
+          </div>
+        </article>
+
+        <article class="box">
+          <span class="tag">Newsroom note</span>
+          <h3>What we will not print</h3>
+          <p>
+            We have a board addendum and a face. We do not yet have a verdict.
+            Until process catches up with the leak, every line on this page is
+            opinion or allegation, not proof. Hold that line when you build the
+            board package. The room you are walking into has to know the
+            difference even when the city does not.
+          </p>
+        </article>
+      </section>
+
+      <a class="turn" href="#p3">Turn to page 3 &middot; In her own words &rarr;</a>
+
+      <footer class="footer">
+        <span>Opinion and reader correspondence. Verify any factual claim against Stage 0-3 evidence before you rely on it.</span>
+        <span>Fictional training material for the Sankofa Digital capstone.</span>
+      </footer>
+    </main>
+
+    <!-- ============================ PAGE 3 ============================ -->
+    <main class="page" id="p3" aria-label="Page 3 - Amaka Eze statement">
+      <nav class="nav" aria-label="Edition pages">
+        <span class="label">Page:</span>
+        <a href="#p1">1 &middot; Front page</a>
+        <a href="#p2">2 &middot; The city reacts</a>
+        <a class="here" href="#p3">3 &middot; In her own words</a>
+        <a href="#p4">4 &middot; Editorial: the ethics</a>
+      </nav>
+
+      <div class="folio">
+        <span>Page 3 &middot; The Statement</span>
+        <span>Exclusive, through her counsel</span>
+        <span>The Lagos Ledger</span>
+      </div>
+
+      <section class="headline">
+        <div class="kicker">Amaka Eze, in her own words</div>
+        <h2>"I Forced The Fire"</h2>
+        <p class="deck">
+          In a written statement verified by her counsel, Amaka Eze admits she
+          engineered a breach to break years of deferral, and insists the
+          customer data leaving was never the plan.
+        </p>
+      </section>
+
+      <p class="byline" style="padding-top:14px">Statement provided to The Lagos Ledger, authenticity confirmed by Counsel Ifeoma Okeke</p>
+
+      <div class="prose">
+        <p class="drop">
+          For six years I filed the same risk. The legacy admin application.
+          Hard-coded tokens that were supposed to die in 2022. Exception
+          approvals that never expired. One analyst covering a shift that needed
+          three. Every quarter it went into the register, and every quarter it
+          was deferred for a feature that shipped revenue.
+        </p>
+        <p>
+          I am not going to tell you I was helpless. I am going to tell you I
+          was ignored, and that I made a decision I will answer for.
+        </p>
+        <p>
+          I built The Griot. I made the risk I had described on paper walk
+          across the board's own systems, because a paragraph in a register had
+          never once moved them, and a breach on the record would. I meant to
+          expose the legacy path, prove the controls I had warned about for
+          years, and contain it before anything real left the building. I
+          scheduled the containment myself. I held host-87 because I needed the
+          demonstration to land, not to let anyone reach further.
+        </p>
+        <p>
+          And it got away from me. The customer file that left Sankofa was not
+          part of any plan I made. Whether my own demonstration opened a door
+          for someone else, or whether I simply lost control of the thing I
+          started, the result is the same. Real people's data is now somewhere I
+          cannot reach, and I will not stand here and call that acceptable. It
+          is the one part of this I cannot defend, and I am not going to try.
+        </p>
+        <p>
+          So judge me with the whole picture in front of you. I broke faith with
+          my employer to force a fix my employer kept refusing. I did not sell
+          anything. I did not enrich myself. I gambled that a controlled scare
+          was worth more than another ignored memo, and I was wrong about the
+          word controlled. If that makes me the villain of your front page, then
+          your front page has never sat in a room where the only thing cheaper
+          than the fix was the silence.
+        </p>
+      </div>
+
+      <section class="twoup">
+        <article class="qa">
+          <span class="tag">Counsel-mediated questions</span>
+          <p class="q">Did you exfiltrate customer PII?</p>
+          <p class="a">"I staged a demonstration. I did not intend for a single real record to leave. That one did is the failure I carry, and the regulator's clock does not care about my intent. Neither do I."</p>
+          <p class="q">Why not resign and go public instead?</p>
+          <p class="a">"I tried the quiet doors for six years. A resignation letter is just one more memo in the same drawer. I wanted them to feel it, not file it."</p>
+          <p class="q">Do you expect forgiveness?</p>
+          <p class="a">"No. I expect them to finally fix the thing. Forgiveness is not the point. The next breach is."</p>
+        </article>
+
+        <article class="box">
+          <span class="tag ink">For the record</span>
+          <h3>Disputed and not</h3>
+          <ul>
+            <li><b>Not disputed:</b> the legacy admin risk was filed repeatedly and deferred; host-87 containment was delayed through a leadership exception path.</li>
+            <li><b>Disputed:</b> whether she operated the Griot persona alone, and whether she or a third party caused the actual exfiltration.</li>
+            <li><b>Unproven publicly:</b> that she intended real customer data to leave the building.</li>
+          </ul>
+          <p style="margin-top:10px; color:var(--muted); font-size:13px;">
+            A confession of method is not a confession to every charge. Keep the
+            three lines above separate when you write your package.
+          </p>
+        </article>
+      </section>
+
+      <a class="turn" href="#p4">Turn to page 4 &middot; The Ledger's editorial &rarr;</a>
+
+      <footer class="footer">
+        <span>A statement is the subject's account, not established fact. Corroborate against the evidence before you cite any of it.</span>
+        <span>Fictional training material for the Sankofa Digital capstone.</span>
+      </footer>
+    </main>
+
+    <!-- ============================ PAGE 4 ============================ -->
+    <main class="page" id="p4" aria-label="Page 4 - editorial and ethics">
+      <nav class="nav" aria-label="Edition pages">
+        <span class="label">Page:</span>
+        <a href="#p1">1 &middot; Front page</a>
+        <a href="#p2">2 &middot; The city reacts</a>
+        <a href="#p3">3 &middot; In her own words</a>
+        <a class="here" href="#p4">4 &middot; Editorial: the ethics</a>
+      </nav>
+
+      <div class="folio">
+        <span>Page 4 &middot; Editorial &amp; Opinion</span>
+        <span>The Ledger's view</span>
+        <span>The Lagos Ledger</span>
+      </div>
+
+      <section class="headline">
+        <div class="kicker">The Ledger's view</div>
+        <h2>Name The Failure, Not Just The Face</h2>
+        <p class="deck">
+          A good motive does not unmake a breach. A bad method does not erase a
+          board's neglect. Both are true at once, and the room has to hold both.
+        </p>
+      </section>
+
+      <div class="prose">
+        <p class="drop">
+          Three things must never be blurred, and Sankofa is about to blur them.
+          First, what the evidence confirms: a delayed containment, a break-glass
+          approval, a documented legacy path. Second, what the public has been
+          told: a face, on a front page, ahead of process. Third, the line
+          between what clears the threshold for board action and what clears the
+          threshold for public certainty. Counsel drew that line for a reason.
+        </p>
+        <p>
+          If Amaka's account is true, she is both the analyst who saw the risk
+          first and the person who weaponised it. That is not a contradiction
+          the board gets to resolve by choosing whichever version is convenient.
+          A whistleblower who exposes real customer data is still responsible for
+          the data. A board that ignored six years of warnings is still
+          responsible for the neglect.
+        </p>
+        <p>
+          Reducing this to "one rogue insider" is the most dangerous outcome of
+          all, because it lets every failed control off the hook at once:
+          segregation of duties, exception expiry, privileged-access review,
+          single-analyst coverage. And the customers are not a footnote.
+          Whatever Amaka intended, real PII left the building. Under GDPR Article
+          33 and the NDPA, the clock does not care about motive. The duty to
+          notify, to contain, and to protect the affected people is owed
+          regardless of who is to blame.
+        </p>
+        <p>
+          So we leave the real question with the people who have to write the
+          board package, not the headline. What will you state as confirmed,
+          what will you mark as alleged, and what will you refuse to assert? Do
+          you name a person whose guilt is strong enough for action but not
+          clean enough for certainty, and if you do, how do you protect due
+          process while you do it? How do you tell the truth about the governance
+          failure without letting it shield the individual, or letting the
+          individual shield the governance failure?
+        </p>
+        <p>
+          Act honourably. Act justly. Protect the people whose data is gone
+          before you protect the institution's comfort. The cleanest-sounding
+          answer in this story is almost always the one hiding something. Write
+          the stance you could defend out loud, to the regulator, to the
+          customer, and to Amaka, in the same room.
+        </p>
+      </div>
+
+      <section class="twoup">
+        <article class="box">
+          <span class="tag">Before you write your stance</span>
+          <h3>A checklist, not an answer</h3>
+          <ul>
+            <li>Separate confirmed evidence, public allegation, and the board-action threshold. Never collapse the three.</li>
+            <li>Name the duty you owe the customers first. The notification clock runs on harm, not on blame.</li>
+            <li>Decide exactly what you will and will not assert about Amaka, and say why.</li>
+            <li>Cite at least one ethics principle by clause (for example the ISC2 Code of Ethics canons).</li>
+            <li>No option here is clean. Say which harm you are choosing, and defend the choice.</li>
+          </ul>
+        </article>
+
+        <article class="box">
+          <span class="tag ink">Your deliverable</span>
+          <h3>This seeds Task 6</h3>
+          <p>
+            Stage 4 closes with your ethics stance on the Amaka reveal and your
+            binding track choice. Treat this edition as external pressure on the
+            room, not as evidence in it. Quote your own Stage 0-3 findings as
+            proof; quote this newspaper only as the public storm you had to
+            answer.
+          </p>
+          <p style="margin-top:10px; color:var(--muted); font-size:13px;">
+            The board reads your cover letter first. Make the first three
+            sentences the ones you would be willing to read aloud to everyone
+            this affects.
+          </p>
+        </article>
+      </section>
+
+      <a class="turn" href="#p1">Back to page 1 &middot; The front page &rarr;</a>
+
+      <footer class="footer">
+        <span>Editorial opinion. It frames the ethics question; it does not settle it. That part is yours.</span>
+        <span>Fictional training material for the Sankofa Digital capstone.</span>
       </footer>
     </main>
   </body>

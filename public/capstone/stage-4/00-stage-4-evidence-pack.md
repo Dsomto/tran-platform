@@ -5,15 +5,15 @@ the artefacts and templates needed for all six Stage 4 tasks.
 
 ## Quick Index
 
-1. `breach-notification-template.md` - GDPR Article 33 notification letter.
-2. `risk-register-template.csv` - five-row risk register skeleton.
-3. `board-memo-template.md` - CEO board slide memo skeleton.
-4. `30-60-90-roadmap-template.md` - remediation roadmap skeleton.
-5. `control-mapping-skeleton.csv` - NIST CSF / ISO 27001 / MITRE D3FEND mapping table.
-6. `06-external-audit-findings.md` - audit findings excerpt.
-7. `07-board-minutes-excerpt.md` - board questions and tabled motion.
-8. `08-front-page-amaka.md` - plain-text newspaper transcript.
-9. `08-front-page-amaka.html` - designed newspaper cover.
+1. [GDPR Article 33 breach-notification letter](#sec-1) (`breach-notification-template.md`)
+2. [Five-row risk register](#sec-2) (`risk-register-template.csv`)
+3. [CEO board slide memo](#sec-3) (`board-memo-template.md`)
+4. [30/60/90 remediation roadmap](#sec-4) (`30-60-90-roadmap-template.md`)
+5. [Control mapping — NIST CSF / ISO 27001 / MITRE D3FEND](#sec-5) (`control-mapping-skeleton.csv`)
+6. [External audit findings excerpt](#sec-6) (`06-external-audit-findings.md`)
+7. [Board minutes — questions and tabled motion](#sec-7) (`07-board-minutes-excerpt.md`)
+8. [Lagos Ledger newspaper transcript](#sec-8) (`08-front-page-amaka.md`)
+9. [Designed newspaper (4 pages: front page, the city reacts, her statement, ethics editorial)](08-front-page-amaka.html) (`08-front-page-amaka.html`)
 
 The designed newspaper cover uses `amaka-eze-cover.jpg` as a fictional training
 portrait. If your browser supports it, open:
@@ -22,7 +22,7 @@ portrait. If your browser supports it, open:
 
 ---
 
-# 1. GDPR Article 33 Breach Notification Template
+# 1. GDPR Article 33 Breach Notification Template {#sec-1}
 
 ```text
 ================================================================
@@ -123,7 +123,7 @@ NOTES TO THE INTERN (delete this block before submission)
 
 ---
 
-# 2. Risk Register Template
+# 2. Risk Register Template {#sec-2}
 
 ```csv
 id,risk_statement,likelihood_1_5,likelihood_rationale,impact_1_5,impact_rationale,control_concrete,owner_role,residual_risk_1_5_and_decision,iso_27001_2022_annex_a,nist_csf_2_0_category,evidence_cite_stage_task
@@ -136,7 +136,7 @@ R-005,,,,,,,,,,,
 
 ---
 
-# 3. Board Memo Template
+# 3. Board Memo Template {#sec-3}
 
 ## BOARD MEMO TEMPLATE - Sankofa Digital breach of 2024-01-14
 
@@ -197,7 +197,7 @@ Use this as the starting skeleton for your one-slide board memo. Replace every
 
 ---
 
-# 4. 30 / 60 / 90 Remediation Roadmap Template
+# 4. 30 / 60 / 90 Remediation Roadmap Template {#sec-4}
 
 ## Required table
 
@@ -243,7 +243,7 @@ leadership row is not optional.
 
 ---
 
-# 5. Control Mapping Skeleton
+# 5. Control Mapping Skeleton {#sec-5}
 
 ```csv
 row,observed_weakness_from_stages_1_3,stage_task_evidence,nist_csf_2_0_function_category,iso_27001_2022_annex_a,mitre_d3fend_counter_technique,mapping_confidence_h_m_l,source_checked
@@ -259,7 +259,7 @@ row,observed_weakness_from_stages_1_3,stage_task_evidence,nist_csf_2_0_function_
 
 ---
 
-# 6. External Audit Findings Excerpt
+# 6. External Audit Findings Excerpt {#sec-6}
 
 Source: independent post-incident review, working excerpt for the board pack.
 Amaka: "Use this as a governance artefact, not as gospel. If you agree,
@@ -305,7 +305,7 @@ OWNER ACCEPTS / DISPUTES / DEFERS:
 
 ---
 
-# 7. Board Minutes Excerpt
+# 7. Board Minutes Excerpt {#sec-7}
 
 Meeting: special board session after Q2 incident disclosure
 
@@ -350,7 +350,7 @@ owners, and cost bands.
 
 ---
 
-# 8. Lagos Ledger Front Page Transcript
+# 8. Lagos Ledger Front Page Transcript {#sec-8}
 
 ## THE GRIOT SAT BESIDE THE BOARD
 
