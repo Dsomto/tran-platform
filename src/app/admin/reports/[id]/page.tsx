@@ -387,6 +387,64 @@ export default async function GradePage({
         </section>
       )}
 
+      {report.stage === "STAGE_4" && (
+        <section className="mb-6 bg-amber-50 border border-amber-300 rounded-xl p-5">
+          <h2 className="text-sm font-semibold text-amber-900 mb-3 uppercase tracking-wide">
+            Grading resources
+          </h2>
+
+          <div className="mb-4">
+            <a
+              href="/grading/202a7418-740d-44cf-b520-71d25741f590/stage-4-marking-guide.html"
+              target="_blank"
+              rel="noreferrer noopener"
+              className="inline-flex items-center gap-1.5 text-amber-900 underline font-semibold text-sm hover:text-amber-950"
+            >
+              Open the Stage 4 marking guide (graders only) →
+            </a>
+            <p className="text-xs text-amber-800/80 mt-0.5">
+              The capstone rubric (6 deliverables, 330 pts): the answer key for the
+              risk register, the Article 33 / NDPA letter, the board memo, the
+              30/60/90 roadmap, the control mapping, and the Amaka ethics + track
+              call — plus the planted governance traps and AI-use signals. Keep it
+              open in a tab while you grade.
+            </p>
+          </div>
+
+          <div>
+            <p className="text-xs font-semibold text-amber-900 uppercase tracking-wide mb-2">
+              Input artefacts — for verifying the intern&apos;s citations
+            </p>
+            <ul className="space-y-1.5 text-sm">
+              <li>
+                <a href="/capstone/stage-4/stage-4-artefacts.html" target="_blank" rel="noreferrer noopener" className="text-amber-800 underline hover:text-amber-950 font-mono text-xs">
+                  stage-4-artefacts.html
+                </a>
+                <span className="text-xs text-amber-800/80"> — all-in-one pack (every template + input in one document)</span>
+              </li>
+              <li>
+                <a href="/capstone/stage-4/06-external-audit-findings.md" target="_blank" rel="noreferrer noopener" className="text-amber-800 underline hover:text-amber-950 font-mono text-xs">
+                  06-external-audit-findings.md
+                </a>
+                <span className="text-xs text-amber-800/80"> — the 3 audit findings the roadmap must answer (accept/dispute/defer)</span>
+              </li>
+              <li>
+                <a href="/capstone/stage-4/07-board-minutes-excerpt.md" target="_blank" rel="noreferrer noopener" className="text-amber-800 underline hover:text-amber-950 font-mono text-xs">
+                  07-board-minutes-excerpt.md
+                </a>
+                <span className="text-xs text-amber-800/80"> — resolved + 3 OPEN questions the board memo must answer; the account-number trap</span>
+              </li>
+              <li>
+                <a href="/capstone/stage-4/08-front-page-amaka.html" target="_blank" rel="noreferrer noopener" className="text-amber-800 underline hover:text-amber-950 font-mono text-xs">
+                  08-front-page-amaka.html
+                </a>
+                <span className="text-xs text-amber-800/80"> — the Lagos Ledger (the Amaka allegation the ethics stance + press line must handle)</span>
+              </li>
+            </ul>
+          </div>
+        </section>
+      )}
+
       {report.attachmentUrl && (
         <section className="mb-6 bg-white border border-border rounded-xl p-5">
           <h2 className="text-sm font-semibold text-foreground mb-2 uppercase tracking-wide">
