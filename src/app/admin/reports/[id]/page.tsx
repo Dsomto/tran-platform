@@ -442,6 +442,45 @@ export default async function GradePage({
               </li>
             </ul>
           </div>
+
+          <div className="mt-4">
+            <p className="text-xs font-semibold text-amber-900 uppercase tracking-wide mb-2">
+              Cross-stage evidence — to verify the intern&apos;s &quot;Stage X task Y&quot; citations
+            </p>
+            <p className="text-xs text-amber-800/80 mb-2">
+              Stage 4 answers cite back to the breach the intern investigated in Stages 1-3. Open the
+              source pack to check any cited finding (risk register, control mapping, board numbers).
+            </p>
+            <ul className="space-y-1.5 text-sm">
+              <li>
+                <span className="text-xs font-semibold text-amber-900">Stage 2 (web breach): </span>
+                {["01-legacy-admin-login.php","02-attacker-http-capture.txt","03-legacy-admin-tokens.txt","04-import-xxe.xml","05-exfil-sample.csv"].map((f, i) => (
+                  <span key={f}>
+                    {i > 0 ? " · " : ""}
+                    <a href={`/capstone/stage-2/${f}`} target="_blank" rel="noreferrer noopener" className="text-amber-800 underline hover:text-amber-950 font-mono text-xs">{f}</a>
+                  </span>
+                ))}
+              </li>
+              <li>
+                <span className="text-xs font-semibold text-amber-900">Stage 3 (incident): </span>
+                {["01-process-listing.txt","02-filesystem-index.txt","03-syslog.txt","04-siem-export.csv","05-memory-strings.txt","06-netflow.csv"].map((f, i) => (
+                  <span key={f}>
+                    {i > 0 ? " · " : ""}
+                    <a href={`/capstone/stage-3/${f}`} target="_blank" rel="noreferrer noopener" className="text-amber-800 underline hover:text-amber-950 font-mono text-xs">{f}</a>
+                  </span>
+                ))}
+              </li>
+              <li>
+                <span className="text-xs font-semibold text-amber-900">Stage 1 (crypto): </span>
+                {["01-aes-ciphertext.txt","02-classical-cipher.txt","03-jwts.txt","04-weak-jwt-hmac.txt","05-layered-recon-note.txt"].map((f, i) => (
+                  <span key={f}>
+                    {i > 0 ? " · " : ""}
+                    <a href={`/capstone/stage-1/${f}`} target="_blank" rel="noreferrer noopener" className="text-amber-800 underline hover:text-amber-950 font-mono text-xs">{f}</a>
+                  </span>
+                ))}
+              </li>
+            </ul>
+          </div>
         </section>
       )}
 
