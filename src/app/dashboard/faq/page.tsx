@@ -133,6 +133,59 @@ const STAGE_3_PLAYBOOK = [
   },
 ] as const;
 
+/** Stage 4 templates + input artefacts, hosted under /public/capstone/stage-4/.
+ *  The all-in-one pack collects every one into a single readable document. */
+const STAGE_4_TEMPLATES = [
+  { file: "stage-4-artefacts.html", title: "All-in-one artefact pack", note: "READ THIS FIRST — every template and input in one document" },
+  { file: "risk-register-template.csv", title: "Risk register template", note: "Five-row register, R-001 worked as the example" },
+  { file: "breach-notification-template.md", title: "Breach notification letter (Article 33 / NDPA)", note: "Fill every [bracketed] field from your Stage 0-3 evidence" },
+  { file: "board-memo-template.md", title: "Board slide memo (one page)", note: "Title, three numbers, one ask, one tradeoff" },
+  { file: "30-60-90-roadmap-template.md", title: "30/60/90 remediation roadmap", note: "Nine-row roadmap + mandatory deferral list" },
+  { file: "control-mapping-skeleton.csv", title: "Control mapping skeleton", note: "NIST CSF 2.0 + ISO 27001:2022 + MITRE D3FEND" },
+] as const;
+
+const STAGE_4_INPUTS = [
+  { file: "06-external-audit-findings.md", title: "External audit findings (input)" },
+  { file: "07-board-minutes-excerpt.md", title: "Board minutes excerpt (input)" },
+  { file: "08-front-page-amaka.html", title: "Lagos Ledger front page (input)" },
+] as const;
+
+/** Answers to the questions the cohort is actually asking in the channel. */
+const STAGE_4_FAQ = [
+  {
+    q: "Are we getting templates? Where are the Stage 4 artefacts?",
+    a: "Yes, everything is live. Open the all-in-one pack first, then grab any individual template below. Every Stage 4 file is also on your stage board under the evidence pack: the risk register, the breach-notification letter, the board memo, the 30/60/90 roadmap, the control-mapping skeleton, plus the four inputs (external audit findings, board minutes, and the Lagos Ledger front page).",
+  },
+  {
+    q: "The evidence feels scattered across many files. Is there an organised version?",
+    a: "Stage 4 deliberately mimics a real board debrief, where evidence comes from several parties and from your own earlier work, so it is meant to feel busy. To make it manageable it is all collected in the all-in-one pack above. Open that first. Your four Stage 4 inputs are in the pack; the rest of your evidence is the work you already produced in Stages 0 to 3, which you cite back to.",
+  },
+  {
+    q: "Is the desk task the same as the capstone? Do they use the same evidence?",
+    a: "In Stage 4 the six desk tasks ARE the capstone, there is no separate capstone exercise. They are one board package built from one evidence base: the four Stage 4 input artefacts plus the findings you generated across Stages 0 to 3. It feels like the same incident throughout because it is; each deliverable views it through a different governance lens (risk, regulator, board, roadmap, controls, ethics).",
+  },
+  {
+    q: "Task 3, the board memo, mentions a slide. Is it a PowerPoint?",
+    a: "No. It is a one-page memo written in a Google Doc, laid out like a single slide: a compact title, three board-safe numbers, one chart described in words, one ask, speaking notes, anticipated questions, and one tradeoff decision. Submit a Google Doc, not a .pptx.",
+  },
+  {
+    q: "How do I fit everything Task 3 asks for into one page?",
+    a: "One page is the test, a board reads a slide, not an essay. Keep the three numbers and the single ask front and centre, push detail into terse bullets under speaking notes and anticipated questions, and cut anything that is not a number, an ask, or a one-line reason. Tight margins, 11pt, and bullet fragments are fine. If it will not fit, you are writing prose where the board wants headlines.",
+  },
+  {
+    q: "The brief lists certain columns but the template has extra ones. Which do I follow, and are the extras compulsory?",
+    a: "Follow the template, it is the graded format and a superset of the brief. The brief lists the bare minimum; the template adds the columns where the marks actually live, your likelihood and impact rationale, residual risk and decision, the framework mappings, and the evidence citation. Keep every column and fill the rationale and evidence ones properly. Do not drop a required column, and do not treat the helper columns as optional padding.",
+  },
+  {
+    q: "The templates say to cite previous-stage tasks like 'Stage 3 Task 1'. Do I cite a Stage 4 task, or the capstone?",
+    a: "Neither, you cite the evidence you produced in the earlier stage. 'Stage 3 Task 1' means your Stage 3 process-triage work; 'Stage 2 Task 1' means your Stage 2 scan findings. The evidence-citation column points every roadmap row, risk-register row, and control-mapping row back to the earlier-stage work that justifies it. You are grounding each governance decision in evidence you already generated, not in another Stage 4 deliverable.",
+  },
+  {
+    q: "Where did we use an Elasticsearch figure in Stage 2? I only ran XSS on a search bar, is that the evidence?",
+    a: "Different finding. The Elasticsearch item is the unauthenticated Elasticsearch index that exposed customer PII, and it is in your Stage 2 evidence pack (scan-vuln.txt and es-intern_access.json), not the XSS you ran on the search bar. For control mapping you map weaknesses observed across Stages 1 to 3, and the Elasticsearch PII exposure is one of them, used as the worked example in the skeleton's first row. Your XSS finding is a separate weakness you map on its own row.",
+  },
+] as const;
+
 export default async function FAQPage() {
   const session = await requireAuth();
 
@@ -261,6 +314,73 @@ export default async function FAQPage() {
               ))}
             </div>
           </Section>
+
+          {currentStage === "STAGE_4" && (
+            <Section icon={FileSignature} title="Templates & the all-in-one artefact pack — live now">
+              <p>
+                Everything for Stage 4 is here. Open the{" "}
+                <strong>all-in-one pack first</strong> to see every template and
+                input in one document, then pull the individual file you need.
+                These are <strong>scaffolds, not answers</strong> — the findings,
+                numbers, and citations are yours to do from your Stage 0-3 evidence.
+              </p>
+              <div className="space-y-2">
+                {STAGE_4_TEMPLATES.map((t) => (
+                  <div
+                    key={t.file}
+                    className="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-surface p-3"
+                  >
+                    <FileText className="h-4 w-4 text-blue shrink-0" />
+                    <div className="flex-1 min-w-[180px]">
+                      <p className="font-semibold text-foreground text-sm">{t.title}</p>
+                      <p className="text-xs text-muted-foreground">{t.note}</p>
+                    </div>
+                    <a
+                      href={`/capstone/stage-4/${t.file}`}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue text-white text-xs font-semibold hover:bg-blue/90"
+                    >
+                      Open →
+                    </a>
+                  </div>
+                ))}
+              </div>
+              <p className="text-sm text-muted-foreground mt-3">
+                Input artefacts (read, don&apos;t fill):{" "}
+                {STAGE_4_INPUTS.map((t, i) => (
+                  <span key={t.file}>
+                    {i > 0 ? " · " : ""}
+                    <a
+                      href={`/capstone/stage-4/${t.file}`}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      className="text-blue underline hover:text-blue/80"
+                    >
+                      {t.title}
+                    </a>
+                  </span>
+                ))}
+              </p>
+            </Section>
+          )}
+
+          {currentStage === "STAGE_4" && (
+            <Section icon={HelpCircle} title="Common questions">
+              <div className="space-y-4">
+                {STAGE_4_FAQ.map((item) => (
+                  <div key={item.q} className="rounded-xl border border-border bg-surface p-4">
+                    <p className="font-semibold text-foreground mb-1.5">{item.q}</p>
+                    <p className="text-sm text-foreground/85 leading-relaxed">{item.a}</p>
+                  </div>
+                ))}
+              </div>
+              <p className="text-sm text-muted-foreground mt-2">
+                More questions land in the cohort channel and get answered here. If
+                something is unclear, ask and it will be added.
+              </p>
+            </Section>
+          )}
 
           {currentStage === "STAGE_1" && (
             <Section icon={FileSignature} title="Start from the template">
