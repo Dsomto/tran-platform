@@ -22,6 +22,7 @@ import {
   Mail,
   History,
   Download,
+  HelpCircle,
 } from "lucide-react";
 import type { StageBrief, CastMember, BulletinKind } from "@/lib/stage-briefs";
 import type { EvidenceFile } from "@/lib/evidence-pack";
@@ -516,6 +517,13 @@ export function StageLanding({
                 </li>
               ))}
             </ul>
+            <Link
+              href="/dashboard/faq"
+              className={`mt-3 flex items-center gap-2 rounded-lg border ${theme.dividerClass} ${theme.accentTextClass} px-3 py-2.5 text-sm font-semibold hover:underline`}
+            >
+              <HelpCircle className="w-4 h-4 shrink-0" />
+              Templates and answers to common questions are in the Deliverables FAQ →
+            </Link>
           </div>
         )}
 
