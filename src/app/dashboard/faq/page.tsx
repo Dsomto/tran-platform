@@ -155,7 +155,7 @@ const STAGE_4_INPUTS = [
 const STAGE_4_FAQ = [
   {
     q: "How do I submit Stage 4? (read this first)",
-    a: "You submit ONCE, as a single Google Drive folder. Put all six deliverables (each its own Google Doc) into one folder, set it to 'anyone with the link can view', then go to Dashboard → Reports → Stage 4, paste the folder link, write a short executive summary, and submit. Do NOT hand the six tasks in one by one on the mission board — those individual submissions are not what the graders receive. If you already submitted them separately, please bundle all six into one folder and submit that folder before the deadline.",
+    a: "Two places, and only these two. FIVE of the six deliverables are documents that go in ONE Google Drive folder: the risk register, the breach-notification letter, the board memo, the 30/60/90 roadmap, and the control mapping. Put those five Docs in one folder, set it to 'anyone with the link can view', then go to Dashboard → Reports → Stage 4, paste the folder link, write a short executive summary, and submit. The SIXTH deliverable — your ethics stance + track selection — is NOT a file and does NOT go in the folder; you type it directly in the platform, in the 'Ethics Stance + Binding Track Rationale' task on your Stage 4 board, and submit it there (your track choice is final once graded). So your Drive folder has five files, plus the ethics/track written in-platform.",
   },
   {
     q: "Are we getting templates? Where are the Stage 4 artefacts?",
@@ -167,7 +167,7 @@ const STAGE_4_FAQ = [
   },
   {
     q: "Is the desk task the same as the capstone? Do they use the same evidence?",
-    a: "Yes, they are the same six pieces of work, and you submit them together as the capstone folder (see the first question above), not as six separate mission-board submissions. They share one evidence base: the four Stage 4 input artefacts plus the findings you generated across Stages 0 to 3. It feels like the same incident throughout because it is; each deliverable views it through a different governance lens (risk, regulator, board, roadmap, controls, ethics).",
+    a: "They are the same six pieces of work. Five of them (risk register, letter, board memo, roadmap, control mapping) you submit together as the capstone folder at Dashboard → Reports → Stage 4. The sixth (ethics stance + track selection) you submit in the platform, in its own task on your Stage 4 board. They share one evidence base: the four Stage 4 input artefacts plus the findings you generated across Stages 0 to 3. It feels like the same incident throughout because it is; each deliverable views it through a different governance lens (risk, regulator, board, roadmap, controls, ethics).",
   },
   {
     q: "Task 3, the board memo, mentions a slide. Is it a PowerPoint?",
