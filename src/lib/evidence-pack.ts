@@ -176,10 +176,17 @@ export const EVIDENCE_PACK: Record<StageKey, EvidenceFile[]> = {
   ],
   STAGE_4: [
     {
+      filename: "stage-4-submission-guide.html",
+      url: "/capstone/stage-4/stage-4-submission-guide.html",
+      description:
+        "HOW TO SUBMIT — read before you hand in. The folder template (which six docs go where), the step-by-step submission, and a pre-submit checklist. Stage 4 is ONE folder at Dashboard → Reports → Stage 4, not six separate task submissions.",
+      bytes: 13985,
+    },
+    {
       filename: "stage-4-artefacts.html",
       url: "/capstone/stage-4/stage-4-artefacts.html",
       description:
-        "READ THIS FIRST. Every Stage 4 artefact, template, and input in one readable document (open in a browser, print to PDF if you want a copy).",
+        "Every Stage 4 artefact, template, and input in one readable document (open in a browser, print to PDF if you want a copy).",
       bytes: 31066,
     },
     {

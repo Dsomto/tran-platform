@@ -136,7 +136,8 @@ const STAGE_3_PLAYBOOK = [
 /** Stage 4 templates + input artefacts, hosted under /public/capstone/stage-4/.
  *  The all-in-one pack collects every one into a single readable document. */
 const STAGE_4_TEMPLATES = [
-  { file: "stage-4-artefacts.html", title: "All-in-one artefact pack", note: "READ THIS FIRST — every template and input in one document" },
+  { file: "stage-4-submission-guide.html", title: "Submission guide & folder template", note: "HOW TO SUBMIT — the folder template, the steps, and a pre-submit checklist. Read before you hand in." },
+  { file: "stage-4-artefacts.html", title: "All-in-one artefact pack", note: "Every template and input in one document" },
   { file: "risk-register-template.csv", title: "Risk register template", note: "Five-row register, R-001 worked as the example" },
   { file: "breach-notification-template.md", title: "Breach notification letter (Article 33 / NDPA)", note: "Fill every [bracketed] field from your Stage 0-3 evidence" },
   { file: "board-memo-template.md", title: "Board slide memo (one page)", note: "Title, three numbers, one ask, one tradeoff" },

@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Stage 4 — Submission Guide &amp; Folder Template | Ubuntu Bridge Initiative</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;max-width:860px;margin:0 auto;padding:36px 24px 80px;color:#0F172A;line-height:1.6;font-size:15px;}
+  h1{font-size:27px;font-weight:800;letter-spacing:-0.5px;margin:0 0 4px;}
+  h2{font-size:20px;font-weight:800;margin-top:32px;padding-bottom:8px;border-bottom:2px solid #2563EB;}
+  h3{font-size:16px;font-weight:700;margin-top:22px;color:#1E293B;}
+  hr{border:none;border-top:1px solid #E2E8F0;margin:30px 0;}
+  table{border-collapse:collapse;width:100%;margin:16px 0;font-size:13px;}
+  th,td{border:1px solid #CBD5E1;padding:8px 10px;text-align:left;vertical-align:top;}
+  th{background:#EFF6FF;font-weight:700;}
+  tr:nth-child(even) td{background:#F8FAFC;}
+  code{background:#F1F5F9;padding:1px 6px;border-radius:4px;font-size:13px;font-family:ui-monospace,Menlo,monospace;}
+  blockquote{border-left:4px solid #2563EB;margin:16px 0;padding:8px 18px;color:#1E293B;background:#EFF6FF;border-radius:0 8px 8px 0;font-size:15px;}
+  ul,ol{padding-left:22px;}li{margin:4px 0;}
+  ol>li{margin:8px 0;}
+  input[type=checkbox]{margin-right:6px;}
+  .gbanner{background:linear-gradient(135deg,#0F172A,#2563EB);color:#fff;padding:18px 22px;border-radius:12px;margin-bottom:16px;}
+  .gbanner .t{font-size:11px;letter-spacing:2px;text-transform:uppercase;opacity:.85;}
+  .gbanner .n{font-size:18px;font-weight:800;margin-top:3px;}
+  @media print{body{padding:0;max-width:none;}}</style>
+</head>
+<body>
+<div class="gbanner"><div class="t">Ubuntu Bridge Initiative · Stage 4 · Governance &amp; Risk</div><div class="n">Submission Guide &amp; Folder Template — read before you submit</div></div>
+<header id="title-block-header">
+<h1 class="title">Stage 4 — Submission Guide &amp; Folder Template |
+Ubuntu Bridge Initiative</h1>
+</header>
+<h1 id="stage-4--submission-guide--folder-template">Stage 4 — Submission
+Guide &amp; Folder Template</h1>
+<p><em>Ubuntu Bridge Initiative · Cybersecurity Internship · Governance
+&amp; Risk</em></p>
+<p>Read this before you submit. Stage 4 is handed in
+<strong>once</strong>, as a <strong>single Google Drive folder</strong>
+containing all six deliverables. You do <strong>not</strong> submit the
+six tasks one by one on the mission board — those do not reach the
+graders.</p>
+<hr />
+<h2 id="the-one-rule">The one rule</h2>
+<blockquote>
+<p><strong>Everything goes in ONE folder, submitted at
+<code>Dashboard → Reports → Stage 4</code>.</strong> Six Google Docs in
+one shared folder. One folder link. One executive summary. One
+submit.</p>
+</blockquote>
+<p>If you already submitted the tasks individually on the mission board,
+that is fine — just bundle all six into one folder and submit that
+folder before the deadline. The folder is the only thing your two
+graders open.</p>
+<hr />
+<h2 id="what-your-folder-must-contain--the-template">What your folder
+must contain — the template</h2>
+<p>Create six Google Docs, one per deliverable. Use these names so a
+grader can find each one instantly, and start each from its template (on
+your Stage 4 board, or in the all-in-one pack):</p>
+<table>
+<thead>
+<tr>
+<th>File name (recommended)</th>
+<th>Deliverable</th>
+<th>Start from this template</th>
+<th>What it is, in one line</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>01-risk-register</code></td>
+<td>Risk register</td>
+<td><code>risk-register-template.csv</code></td>
+<td>Five real risks, each with likelihood/impact rationale, a concrete
+control, owner, residual decision, framework IDs, evidence cite</td>
+</tr>
+<tr>
+<td><code>02-breach-notification-letter</code></td>
+<td>Article 33 / NDPA letter</td>
+<td><code>breach-notification-template.md</code></td>
+<td>The 72-hour regulator letter: controller + DPO, affected volume,
+deadline, nature, consequences, containment, Article 34 decision</td>
+</tr>
+<tr>
+<td><code>03-board-memo</code></td>
+<td>Board slide memo (1 page)</td>
+<td><code>board-memo-template.md</code></td>
+<td>One page: title, three cited numbers, chart, the ask, speaking
+notes, the three board questions, a tradeoff, the Amaka press line</td>
+</tr>
+<tr>
+<td><code>04-remediation-roadmap</code></td>
+<td>30/60/90 roadmap</td>
+<td><code>30-60-90-roadmap-template.md</code></td>
+<td>First 90 days only: concrete actions, owners, naira cost tiers,
+acceptance criteria, evidence cites, plus a deferral list</td>
+</tr>
+<tr>
+<td><code>05-control-mapping</code></td>
+<td>Control mapping</td>
+<td><code>control-mapping-skeleton.csv</code></td>
+<td>Eight weaknesses from Stages 1–3 mapped to NIST CSF 2.0 + ISO
+27001:2022 Annex A + MITRE D3FEND</td>
+</tr>
+<tr>
+<td><code>06-ethics-and-track</code></td>
+<td>Ethics stance + track</td>
+<td><em>(write in a doc)</em></td>
+<td>Your ethics call on the Amaka reveal + your binding SOC / Ethical
+Hacking / GRC choice, grounded in your programme work</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Turn a CSV template into a Google Doc:</strong> open the
+<code>.csv</code> in Google Sheets (or paste the columns into a table in
+your Doc). Graders accept a table inside a Google Doc, a Google Sheet,
+or a <code>.docx</code> — as long as every column is there.</p>
+<hr />
+<h2
+id="the-executive-summary-you-paste-this-in-the-submit-form-not-in-the-folder">The
+executive summary (you paste this in the submit form, not in the
+folder)</h2>
+<p>The board reads this first. Keep it to about 75 words, three
+sentences a chair would repeat back:</p>
+<ol type="1">
+<li><strong>What happened</strong> — "Sankofa Digital was compromised in
+Q2 2024 by…" (name the confirmed finding).</li>
+<li><strong>What it costs</strong> — the data impact (a conservative,
+cited affected-record figure) and the regulatory exposure.</li>
+<li><strong>What you are asking</strong> — the single top action the
+board must approve first.</li>
+</ol>
+<p>Do not bury the answer. If your first sentence is throat-clearing,
+rewrite it.</p>
+<hr />
+<h2 id="how-to-submit--step-by-step">How to submit — step by step</h2>
+<ol type="1">
+<li><strong>Write each deliverable as a Google Doc.</strong> Start from
+its template, replace every <code>[BRACKETED]</code> prompt with your
+own work, and <strong>delete the grey instruction lines</strong> before
+you submit. A template handed in with the brackets still in scores zero
+for that section.</li>
+<li><strong>Make one Google Drive folder.</strong> Name it
+<code>Stage 4 — Your Name</code>.</li>
+<li><strong>Put all six Docs inside it.</strong> Nothing else needs to
+be there.</li>
+<li><strong>Share the folder for viewing.</strong> Right-click the
+folder → <strong>Share</strong> → under <em>General access</em> choose
+<strong>Anyone with the link</strong> → role <strong>Viewer</strong>.
+Copy the folder link.</li>
+<li><strong>Test the link.</strong> Open it in a private / incognito
+window. If it does not open without logging in, your graders cannot read
+it and it will be marked <em>cannot assess</em>. Fix the sharing until
+it opens.</li>
+<li><strong>Submit.</strong> Go to
+<code>Dashboard → Reports → Stage 4</code>, paste the <strong>folder
+link</strong>, write your <strong>executive summary</strong>, and click
+<strong>Submit</strong>.</li>
+<li><strong>Do not touch the folder after submitting.</strong> Do not
+rename, move, or delete any file — a grader may revisit it, and a
+changed folder can break your grade.</li>
+</ol>
+<hr />
+<h2 id="pre-submit-checklist">Pre-submit checklist</h2>
+<ul class="task-list">
+<li><label><input type="checkbox" />All <strong>six</strong>
+deliverables are in <strong>one</strong> folder, each as its own
+Doc.</label></li>
+<li><label><input type="checkbox" />Folder sharing is <strong>anyone
+with the link can view</strong> — confirmed in an incognito
+window.</label></li>
+<li><label><input type="checkbox" />Every <code>[BRACKET]</code> is
+replaced and every instruction line is deleted.</label></li>
+<li><label><input type="checkbox" /><strong>Every number and claim cites
+a Stage 0–3 task</strong> (Stage 2 task 1, Stage 3 task 3,
+etc.).</label></li>
+<li><label><input type="checkbox" />The <strong>board memo fits one
+page</strong>.</label></li>
+<li><label><input type="checkbox" />The <strong>letter</strong> has a
+conservative, cited affected-record count and an <strong>Article
+34</strong> decision.</label></li>
+<li><label><input type="checkbox" />The <strong>ethics stance</strong>
+separates <em>confirmed evidence</em>, <em>public allegation</em>, and
+<em>board-action threshold</em> — it does not flatly declare Amaka
+guilty.</label></li>
+<li><label><input type="checkbox" />The <strong>roadmap</strong> has
+naira cost tiers, the interim-security-leadership row, and a
+<strong>deferral list</strong>.</label></li>
+<li><label><input type="checkbox" />Your <strong>executive
+summary</strong> is written.</label></li>
+<li><label><input type="checkbox" />You submitted at <strong>Dashboard →
+Reports → Stage 4</strong> — not by handing tasks in one by
+one.</label></li>
+</ul>
+<hr />
+<h2 id="the-mistakes-that-cost-people-marks">The mistakes that cost
+people marks</h2>
+<ul>
+<li><strong>Submitting the six tasks individually on the mission
+board.</strong> Those do not go to the graders. Use the folder.</li>
+<li><strong>A restricted folder.</strong> If the grader cannot open it,
+it is <em>cannot assess</em>, not a low score — but you do not want to
+gamble your grade on a re-share.</li>
+<li><strong>Leaving the template brackets or instruction text
+in.</strong> That section scores zero.</li>
+<li><strong>Numbers with no citation.</strong> A figure that does not
+trace to a Stage 0–3 task earns nothing, and an invented one is a
+fabrication flag.</li>
+<li><strong>A board memo that runs to three pages.</strong> One page is
+the test.</li>
+<li><strong>Declaring Amaka guilty as fact.</strong> The evidence is
+strong enough for board action, not clean enough for public certainty.
+Separate the two.</li>
+</ul>
+<p>You did the hard work across Stages 0–3. Submitting it right is the
+last, easy point to protect. One folder, six Docs, shared for viewing,
+at Dashboard → Reports → Stage 4. That is the whole job.</p>
+</body>
+</html>
