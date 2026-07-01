@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import StageShell from "@/components/stage/StageShell";
 import TaskPage from "@/components/stage/TaskPage";
+import { TrackSelector } from "@/components/stage/TrackSelector";
 import { STAGE_THEMES } from "@/components/stage/themes";
 import { getStageAccess } from "@/lib/stage-access";
 import { stageUrl } from "@/lib/stage-routes";
@@ -38,6 +39,14 @@ export default async function Stage4TaskPage({
     where: { internId: internId, assignmentId: assignment.id },
   });
 
+  // The final Stage 4 task ("Ethics Stance + Binding Track Rationale") also
+  // registers the intern's specialist track. Show the track picker on it,
+  // pre-filled with their current choice.
+  const isTrackTask = /track selection|binding track/i.test(assignment.title);
+  const internTrack = isTrackTask
+    ? (await prisma.intern.findUnique({ where: { id: internId }, select: { track: true } }))?.track ?? null
+    : null;
+
   const theme = STAGE_THEMES["stage-4"];
 
   const widgetConfig =
@@ -55,6 +64,7 @@ export default async function Stage4TaskPage({
           ← agenda · {room.title}
         </Link>
       </div>
+      {isTrackTask && <TrackSelector currentTrack={internTrack} />}
       <TaskPage
         theme={theme}
         taskId={assignment.id}
