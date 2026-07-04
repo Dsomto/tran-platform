@@ -643,9 +643,133 @@ function escapeAttr(s: string): string {
   return s.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
 }
 
+// ─── Shared body helpers for the two cohort-wide broadcasts ─────────────
+
+function paras(texts: string[]): string {
+  return texts
+    .map((t) => `<p style="margin:0 0 16px;font-size:15px;color:#1E293B;line-height:1.7;">${renderRichText(t)}</p>`)
+    .join("\n");
+}
+
+function ctaButton(text: string, url: string): string {
+  return `
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:6px 0 24px;">
+      <tr><td align="center">
+        <a href="${escapeAttr(url)}" class="ubi-cta-pulse"
+           style="display:inline-block;background:#2563EB;color:white;padding:14px 28px;border-radius:12px;text-decoration:none;font-weight:700;font-size:15px;box-shadow:0 4px 12px rgba(37,99,235,0.25);">
+          ${escapeHtml(text)}&nbsp;&nbsp;→
+        </a>
+      </td></tr>
+    </table>`;
+}
+
+function signoff(line1: string, line2: string): string {
+  return `
+    <p style="margin:18px 0 0;font-size:14px;color:#475569;line-height:1.65;">
+      ${escapeHtml(line1)}<br>
+      <span style="color:#94A3B8;font-size:13px;">${escapeHtml(line2)}</span>
+    </p>`;
+}
+
+// ─── Template 4: Cohort Update + Townhall (Email 1) ─────────────────────
+
+const COHORT_UPDATE_TOWNHALL: NewsletterTemplate = {
+  id: "cohort-update-townhall",
+  name: "Cohort Update + Townhall (Email 1)",
+  description:
+    "Warm update to EVERYONE who applied (send to Status = All). Programme progress, an honest note for those who did not continue, and today's townhall invite. Only the townhall time + link are editable.",
+  defaultSubject: "Where the Ubuntu Bridge Initiative cohort is now, and an invite for today",
+  variables: [
+    { name: "townhall_time", label: "Townhall time", placeholder: "Today, 6:00pm WAT", required: false, defaultValue: "Today, 6:00pm WAT" },
+    { name: "townhall_link", label: "Townhall link (Google Meet)", placeholder: "https://meet.google.com/...", required: false, defaultValue: "https://meet.google.com/gcx-ndkp-xmz" },
+  ],
+  render: ({ firstName, vars }) => {
+    const when = (vars.townhall_time || "Today, 6:00pm WAT").trim();
+    const link = (vars.townhall_link || "https://meet.google.com/gcx-ndkp-xmz").trim();
+    const body = `
+      <tr>
+        <td style="background:white;padding:36px 30px 28px;border-radius:0 0 14px 14px;border:1px solid #E2E8F0;border-top:none;">
+          <p style="margin:0 0 16px;font-size:15.5px;color:#0F172A;">Hi ${firstName},</p>
+          ${paras([
+            "Some months ago you applied to the first cohort of the Ubuntu Bridge Initiative cybersecurity internship. More than 2,800 people did, and we owe all of you more than a one-line decision. So here is a genuine update, whether you continued with us or not.",
+            "From that first pool, just over 500 were selected to begin, and they have been working through a demanding, hands-on programme: real investigations, live breach scenarios, and risk and governance work, not slideshows. The group has now completed Stage 4, and 176 are still standing and pushing forward. Every stage has been graded by hand, with written feedback, because people deserve to know exactly where they stand and why.",
+            "If you were not selected, or did not make it all the way through, please hear this clearly: it was competitive, not a verdict on your potential. The next cohort will open, though not immediately. This first one was intensive, and the team needs a little time to rest and rebuild before we run it again. When applications reopen, we would be glad to see you back.",
+            "In the meantime, we want to keep extending a hand to help you keep learning. So today we are hosting an open townhall, and you are invited.",
+          ])}
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:4px 0 20px;">
+            <tr><td style="background:#F0F9FF;border:1px solid #BAE6FD;border-radius:12px;padding:18px 20px;">
+              <p style="margin:0 0 6px;font-size:14px;color:#0F172A;"><strong>Topic:</strong> Finding your place in cybersecurity, and the GRC journey</p>
+              <p style="margin:0 0 6px;font-size:14px;color:#0F172A;"><strong>When:</strong> ${escapeHtml(when)}</p>
+              <p style="margin:0;font-size:14px;color:#0F172A;"><strong>Where:</strong> <a href="${escapeAttr(link)}" style="color:#2563EB;text-decoration:underline;font-weight:600;">${escapeHtml(link)}</a></p>
+            </td></tr>
+          </table>
+          ${ctaButton("Join the townhall", link)}
+          <p style="margin:0 0 16px;font-size:15px;color:#1E293B;line-height:1.7;">Come with your questions.</p>
+          ${signoff("Warm regards, Okoma Somto", "Programme Head, Ubuntu Bridge Initiative")}
+        </td>
+      </tr>`;
+    return shell({
+      title: "An update from the Ubuntu Bridge Initiative",
+      previewText: "Where the cohort is now, and an open townhall today.",
+      headerHtml: brandedHeader({
+        eyebrow: "Cohort update",
+        title: "Where we are now",
+        subtitle: "Ubuntu Bridge Initiative",
+        bgColors: "linear-gradient(135deg,#0F766E 0%,#0891B2 50%,#0EA5E9 100%)",
+      }),
+      bodyHtml: body,
+    });
+  },
+};
+
+// ─── Template 5: Scam Bank Launch (Email 2) ─────────────────────────────
+
+const SCAM_BANK: NewsletterTemplate = {
+  id: "scam-bank-launch",
+  name: "Scam Bank Launch (Email 2)",
+  description:
+    "Announces the UBI Scam Bank to EVERYONE who applied (send to Status = All). Fully pre-filled, no fields to edit.",
+  defaultSubject: "The Ubuntu Bridge Initiative Scam Bank is live",
+  variables: [],
+  render: ({ firstName }) => {
+    const url = "https://scambank.ubuntubridgeinitiatives.org/";
+    const body = `
+      <tr>
+        <td style="background:white;padding:36px 30px 28px;border-radius:0 0 14px 14px;border:1px solid #E2E8F0;border-top:none;">
+          <p style="margin:0 0 16px;font-size:15.5px;color:#0F172A;">Hi ${firstName},</p>
+          ${paras([
+            "The Ubuntu Bridge Initiative Scam Bank is now live.",
+            "This is a community-powered platform where people across the world can report scams they come across, so others can learn, check, and avoid becoming victims.",
+            "As UBI interns, we would like everyone to register and start using the platform actively.",
+            "You can report scam emails, SMS messages, WhatsApp messages, fake websites, job scams, investment scams, phishing links, and other suspicious content you come across.",
+            "The platform also lets you check whether a scam has already been reported, see scam patterns becoming common in different countries, earn badges, and appear on the leaderboard for helping protect the community.",
+            "Please also share it with your family and friends, so they can use it to report and check scams too.",
+            "The goal is simple: if one person reports a scam, another person may be saved from it.",
+            "<strong>Ubuntu. I am because we are.</strong>",
+          ])}
+          ${ctaButton("Open the Scam Bank", url)}
+          ${signoff("The Ubuntu Bridge Initiative team", "ubuntubridgeinitiatives.org")}
+        </td>
+      </tr>`;
+    return shell({
+      title: "The Ubuntu Bridge Initiative Scam Bank is live",
+      previewText: "Report scams, check scams, and help protect your community.",
+      headerHtml: brandedHeader({
+        eyebrow: "New initiative",
+        title: "The Scam Bank is live",
+        subtitle: "Ubuntu Bridge Initiative",
+        bgColors: "linear-gradient(135deg,#7C3AED 0%,#2563EB 50%,#0891B2 100%)",
+      }),
+      bodyHtml: body,
+    });
+  },
+};
+
 // ─── Registry ───────────────────────────────────────────────────────────
 
 export const NEWSLETTER_TEMPLATES: NewsletterTemplate[] = [
+  COHORT_UPDATE_TOWNHALL,
+  SCAM_BANK,
   KICKOFF,
   STAGE_REMINDER,
   PROGRAMME_UPDATE,

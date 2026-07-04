@@ -229,11 +229,11 @@ export function BroadcastClient() {
               onChange={(e) => setStatus(e.target.value)}
               className="w-full p-2 border border-border rounded-lg text-sm bg-white"
             >
-              <option value="all">All</option>
+              <option value="all">Everyone who applied (joined + eliminated)</option>
               <option value="pending">Pending</option>
               <option value="queued_approved">Awaiting welcome email</option>
-              <option value="approved">Approved</option>
-              <option value="rejected">Rejected</option>
+              <option value="approved">Approved (joined)</option>
+              <option value="rejected">Rejected (did not continue)</option>
             </select>
           </div>
           <div>
