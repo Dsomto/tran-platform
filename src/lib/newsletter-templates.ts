@@ -686,39 +686,58 @@ const COHORT_UPDATE_TOWNHALL: NewsletterTemplate = {
   render: ({ firstName, vars }) => {
     const when = (vars.townhall_time || "Today, 6:00pm WAT").trim();
     const link = (vars.townhall_link || "https://meet.google.com/gcx-ndkp-xmz").trim();
-    const body = `
-      <tr>
-        <td style="background:white;padding:36px 30px 28px;border-radius:0 0 14px 14px;border:1px solid #E2E8F0;border-top:none;">
-          <p style="margin:0 0 16px;font-size:15.5px;color:#0F172A;">Hi ${firstName},</p>
-          ${paras([
-            "Some months ago you applied to the first cohort of the Ubuntu Bridge Initiative cybersecurity internship. More than 2,800 people did, and we owe all of you more than a one-line decision. So here is a genuine update, whether you continued with us or not.",
-            "From that first pool, just over 500 were selected to begin, and they have been working through a demanding, hands-on programme: real investigations, live breach scenarios, and risk and governance work, not slideshows. The group has now completed Stage 4, and 176 are still standing and pushing forward. Every stage has been graded by hand, with written feedback, because people deserve to know exactly where they stand and why.",
-            "If you were not selected, or did not make it all the way through, please hear this clearly: it was competitive, not a verdict on your potential. The next cohort will open, though not immediately. This first one was intensive, and the team needs a little time to rest and rebuild before we run it again. When applications reopen, we would be glad to see you back.",
-            "In the meantime, we want to keep extending a hand to help you keep learning. So today we are hosting an open townhall, and you are invited.",
-          ])}
-          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:4px 0 20px;">
-            <tr><td style="background:#F0F9FF;border:1px solid #BAE6FD;border-radius:12px;padding:18px 20px;">
-              <p style="margin:0 0 6px;font-size:14px;color:#0F172A;"><strong>Topic:</strong> Finding your place in cybersecurity, and the GRC journey</p>
-              <p style="margin:0 0 6px;font-size:14px;color:#0F172A;"><strong>When:</strong> ${escapeHtml(when)}</p>
-              <p style="margin:0;font-size:14px;color:#0F172A;"><strong>Where:</strong> <a href="${escapeAttr(link)}" style="color:#2563EB;text-decoration:underline;font-weight:600;">${escapeHtml(link)}</a></p>
-            </td></tr>
-          </table>
-          ${ctaButton("Join the townhall", link)}
-          <p style="margin:0 0 16px;font-size:15px;color:#1E293B;line-height:1.7;">Come with your questions.</p>
-          ${signoff("Warm regards, Okoma Somto", "Programme Head, Ubuntu Bridge Initiative")}
-        </td>
-      </tr>`;
-    return shell({
-      title: "An update from the Ubuntu Bridge Initiative",
-      previewText: "Where the cohort is now, and an open townhall today.",
-      headerHtml: brandedHeader({
-        eyebrow: "Cohort update",
-        title: "Where we are now",
-        subtitle: "Ubuntu Bridge Initiative",
-        bgColors: "linear-gradient(135deg,#0F766E 0%,#0891B2 50%,#0EA5E9 100%)",
-      }),
-      bodyHtml: body,
-    });
+    const hero = "https://ubuntubridgeinitiatives.org/images/hero-1.jpg";
+    return `
+<div style="font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;background:#FAFAFA;padding:44px 20px;color:#111111;">
+  <div style="max-width:600px;margin:0 auto;background:#FFFFFF;border:1px solid #E5E5E5;border-radius:16px;overflow:hidden;">
+    <img src="${hero}" alt="Ubuntu Bridge Initiative cohort" width="600" style="display:block;width:100%;height:200px;object-fit:cover;border:0;" />
+    <div style="padding:32px 40px 26px;">
+      <div style="font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:#2563EB;font-weight:700;">Ubuntu Bridge Initiative &nbsp;&middot;&nbsp; Cohort 1</div>
+      <h1 style="margin:14px 0 0;font-size:32px;line-height:1.12;font-weight:800;letter-spacing:-0.9px;color:#111111;">The story so far.</h1>
+      <div style="width:44px;height:4px;background:#2563EB;border-radius:2px;margin:18px 0 0;"></div>
+      <p style="margin:16px 0 0;font-size:15px;line-height:1.6;color:#737373;">An honest update for everyone who applied, whether you continued with us or not.</p>
+    </div>
+    <div style="height:1px;background:#F0F0F0;"></div>
+    <div style="padding:30px 40px 8px;">
+      <p style="margin:0 0 18px;font-size:15px;line-height:1.78;color:#2b2b2b;">Hi ${firstName},</p>
+      <p style="margin:0 0 18px;font-size:15px;line-height:1.78;color:#2b2b2b;">I'm Somto, and I lead the programme here. A few months ago, more than <strong style="color:#111;">2,800 of you</strong> applied to the first cohort of our cybersecurity internship. You deserve more than a one-line decision, so I want to tell you the real story of what has happened since.</p>
+      <p style="margin:0 0 22px;font-size:15px;line-height:1.78;color:#2b2b2b;">Just over <strong style="color:#111;">500</strong> were selected to begin, and it is intensive. Every stage narrows the group. <strong style="color:#111;">176</strong> are still standing today, now finishing Stage 4 on governance and risk, and every single stage has been graded by hand, with written feedback, because people deserve to know exactly where they stand and why.</p>
+    </div>
+    <div style="padding:0 40px;">
+      <div style="border:1px solid #BBF7D0;background:#F0FDF4;border-radius:12px;padding:20px 22px;">
+        <div style="font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:#047857;font-weight:800;">This is what it is for</div>
+        <p style="margin:8px 0 0;font-size:15px;line-height:1.7;color:#14532D;"><strong>Two of our interns have already been hired</strong> while the programme is still running. That is the whole point, and it is only the beginning.</p>
+      </div>
+    </div>
+    <div style="padding:22px 40px 4px;">
+      <p style="margin:0 0 22px;font-size:15px;line-height:1.78;color:#2b2b2b;">Along the way we have been giving people data, so the cost of showing up never gets between them and the work. And next week we are running a selection phase to give out <strong style="color:#111;">two laptops</strong> to the interns who need them most.</p>
+      <div style="font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:#111;font-weight:700;margin:6px 0 8px;">If you did not continue</div>
+      <p style="margin:0 0 22px;font-size:14.5px;line-height:1.78;color:#525252;">Hear this clearly: it was competitive, not a verdict on your potential. The next cohort <strong style="color:#111;">will</strong> open, though not immediately. This first one is intensive, and we need a little time to rest and rebuild before we run it again. When applications reopen, I would be glad to see you back.</p>
+    </div>
+    <div style="padding:6px 40px 0;">
+      <div style="border:1px solid #BFDBFE;background:#EFF6FF;border-radius:12px;padding:22px 22px 20px;">
+        <div style="font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:#1E40AF;font-weight:800;">You are invited &nbsp;&middot;&nbsp; Today</div>
+        <p style="margin:9px 0 3px;font-size:16px;line-height:1.4;color:#111;font-weight:700;">Finding your place in cybersecurity, and the GRC journey</p>
+        <p style="margin:0 0 16px;font-size:14px;color:#1E3A8A;">${escapeHtml(when)} &middot; on Google Meet</p>
+        <a href="${escapeAttr(link)}" style="display:inline-block;background:#2563EB;color:#FFFFFF;text-decoration:none;font-weight:600;font-size:14px;padding:12px 24px;border-radius:10px;">Join the townhall</a>
+      </div>
+    </div>
+    <div style="padding:22px 40px 4px;">
+      <div style="border:1px solid #E5E7EB;background:#F8FAFC;border-radius:12px;padding:20px 22px;">
+        <div style="font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:#475569;font-weight:800;">Made possible by our sponsor</div>
+        <p style="margin:8px 0 0;font-size:14px;line-height:1.7;color:#475569;">This programme is sponsored by <strong style="color:#111;">Peter Ejiofor</strong>, Founder and CEO of <strong style="color:#111;">Ethnos Cyber</strong>. His backing is why it stays free for everyone who takes part. We are deeply grateful.</p>
+      </div>
+    </div>
+    <div style="padding:24px 40px 32px;">
+      <p style="margin:0 0 18px;font-size:15px;line-height:1.7;color:#2b2b2b;">Come with your questions. Thank you for being part of this.</p>
+      <p style="margin:0;font-size:15px;color:#111;font-weight:700;">Somto Okoma</p>
+      <p style="margin:2px 0 0;font-size:13px;color:#737373;">Head of Programme, Ubuntu Bridge Initiative</p>
+    </div>
+    <div style="background:#FAFAFA;border-top:1px solid #EEEEEE;padding:18px 40px;text-align:center;">
+      <div style="font-size:12px;color:#737373;">Ubuntu &nbsp;&middot;&nbsp; I am because we are.</div>
+    </div>
+  </div>
+</div>`;
   },
 };
 
