@@ -2,8 +2,8 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "crons": [
     {
-      "path": "/api/cron/email-drain?limit=100",
-      "schedule": "*/5 * * * *"
+      "path": "/api/cron/email-drain?limit=500",
+      "schedule": "*/2 * * * *"
     },
     {
       "path": "/api/cron/purge-eliminated",
