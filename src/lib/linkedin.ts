@@ -17,7 +17,7 @@ const STAGE_CERT_NAME: Record<string, string> = {
   STAGE_1: "Cybersecurity Internship: Applied Cryptography (Stage 1)",
   STAGE_2: "Cybersecurity Internship: Web Application Security (Stage 2)",
   STAGE_3: "Cybersecurity Internship: Incident Response (Stage 3)",
-  STAGE_4: "Cyber Core Associate (Ubuntu Bridge Cybersecurity Internship)",
+  STAGE_4: "Certified Cyber Core Associate",
   STAGE_5: "Cybersecurity Internship: Track Specialisation (Stage 5)",
 };
 
