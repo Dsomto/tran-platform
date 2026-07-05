@@ -1,7 +1,8 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { logger } from "@/lib/logger";
-import { certificateUrl, letterUrl, passLetterUrl, proofBadgeUrl } from "@/lib/certificate-link";
+import { certificateUrl, letterUrl, passLetterUrl, proofBadgeUrl, verifyUrl, certificateIdFor } from "@/lib/certificate-link";
+import { buildAddToProfileUrl } from "@/lib/linkedin";
 import { ELIMINATION_GRACE_MS } from "@/lib/elimination-grace";
 import { recordAudit, auditMetaFromRequest } from "@/lib/audit";
 import { stageTerminalScores, combinedFinalScore } from "@/lib/stage-score";
@@ -816,6 +817,13 @@ async function handleFinalize(
         stage === "STAGE_3" ? proofBadgeUrl({ origin, reportId: r.id, internId: r.intern.id }) : null;
       const feedbackUrl = `${origin.replace(/\/$/, "")}/dashboard/reports`;
       const issuedAt = new Date();
+      // Stage 4 is the Cyber Core graduation: verifiable credential + one-click
+      // "Add to LinkedIn", and a graduation-specific email (no "next stage").
+      const isStage4 = stage === "STAGE_4";
+      const verifyPageUrl = verifyUrl({ origin, reportId: r.id, internId: r.intern.id });
+      const addToLinkedInUrl = isStage4
+        ? buildAddToProfileUrl({ stageKey: stage, issuedAt, certId: certificateIdFor(r.id), certUrl: verifyPageUrl })
+        : null;
       const ops: Prisma.PrismaPromise<unknown>[] = [
         prisma.stageReport.update({
           where: { id: r.id },
@@ -826,7 +834,9 @@ async function handleFinalize(
             userId: r.intern.user.id,
             toEmail: r.intern.user.email,
             kind: "STAGE_PASSED",
-            subject: `You're in. Stage ${Number(stageNum) + 1} opens Monday.`,
+            subject: isStage4
+              ? `Congratulations, ${r.intern.user.firstName}. You are now a Cyber Core Associate.`
+              : `You're in. Stage ${Number(stageNum) + 1} opens Monday.`,
             body: renderResultEmail({
               firstName: r.intern.user.firstName,
               stageNumber: stageNum,
@@ -839,6 +849,9 @@ async function handleFinalize(
               feedbackUrl,
               slackUrl,
               issuedAt,
+              isGraduation: isStage4,
+              verifyPageUrl,
+              addToLinkedInUrl,
             }),
             context: {
               reportId: r.id,
@@ -1056,6 +1069,9 @@ function renderResultEmail(opts: {
   slackUrl: string;
   issuedAt?: Date;
   effectiveDate?: Date;
+  isGraduation?: boolean;
+  verifyPageUrl?: string | null;
+  addToLinkedInUrl?: string | null;
 }): string {
   const {
     firstName,
@@ -1070,9 +1086,72 @@ function renderResultEmail(opts: {
     slackUrl,
     issuedAt = new Date(),
     effectiveDate,
+    isGraduation = false,
+    verifyPageUrl,
+    addToLinkedInUrl,
   } = opts;
   const nextStageNum = Number(stageNumber) + 1;
   const mondayLabel = nextMondayLabel(issuedAt);
+
+  // Stage 4 is graduation to Cyber Core Associate — there is no "next stage",
+  // so it gets its own email rather than the generic "Stage N+1 opens Monday".
+  if (passed && isGraduation) {
+    const body = `
+      <div style="font-size:11px;letter-spacing:0.24em;text-transform:uppercase;color:#C9A227;font-weight:700;">
+        Ubuntu Bridge Initiative &nbsp;&middot;&nbsp; Cyber Core
+      </div>
+      <h1 style="font-size:27px;font-weight:800;line-height:1.2;margin:12px 0 8px;color:#0A1F44;">
+        Congratulations, ${firstName}.<br/>You are a Cyber Core Associate.
+      </h1>
+      <p style="font-size:15px;line-height:1.65;color:#334155;margin:0 0 22px;">
+        You have completed <strong>Cyber Core</strong>, the core programme of the Ubuntu Bridge
+        cybersecurity internship. In four weeks you carried a live breach from the first
+        dismissed alert to a board-ready close, and you are promoted from
+        <strong>Intern to Associate</strong>.
+      </p>
+
+      <div style="display:flex;gap:14px;align-items:baseline;margin:0 0 24px;padding:16px 18px;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:10px;">
+        <div style="font-size:34px;font-weight:800;color:#1E40AF;line-height:1;">${score}</div>
+        <div style="font-size:13px;color:#1E3A8A;line-height:1.4;"><strong>out of 100</strong><br/>passing mark was ${passingScore}</div>
+      </div>
+
+      <p style="font-size:14px;line-height:1.7;color:#334155;margin:0 0 10px;font-weight:600;">What is yours to keep:</p>
+      <ul style="font-size:14px;line-height:1.75;color:#334155;margin:0 0 22px;padding-left:20px;">
+        <li style="margin-bottom:6px;"><strong>Your Cyber Core certificate</strong>, signed and carrying a verification code.</li>
+        <li style="margin-bottom:6px;"><strong>Your promotion letter</strong>, the shareable one made for LinkedIn.</li>
+        <li><strong>A verifiable credential</strong> you can add to your LinkedIn profile in one click.</li>
+      </ul>
+
+      <div style="margin:0 0 12px;">
+        ${certUrl ? ctaButton(certUrl, "Download your certificate", "#2563EB") : ""}
+        ${letterPdfUrl ? `&nbsp;&nbsp;${ctaButton(letterPdfUrl, "Download your promotion letter", "#0A1F44")}` : ""}
+      </div>
+      <div style="margin:0 0 18px;">
+        ${verifyPageUrl ? ctaButton(verifyPageUrl, "View & verify your credential", "#047857") : ""}
+        ${addToLinkedInUrl ? `&nbsp;&nbsp;${ctaButton(addToLinkedInUrl, "Add to LinkedIn", "#0A66C2")}` : ""}
+      </div>
+
+      <div style="margin:6px 0 20px;padding:16px 18px;background:#F8FAFC;border-radius:10px;">
+        <p style="margin:0 0 8px;font-size:13px;font-weight:700;color:#0A1F44;letter-spacing:0.02em;text-transform:uppercase;">Now, take two weeks</p>
+        <p style="margin:0;font-size:14px;line-height:1.7;color:#334155;">
+          Rest properly. Cyber Core was intensive, and your specialisation track will ask even
+          more of you. When you return, you step into that track and pick the work back up. We will
+          be in touch for your honest feedback on how Cyber Core went, and for a photo for your records.
+        </p>
+      </div>
+
+      <div style="margin:0 0 18px;">
+        ${slackUrl ? ctaButton(slackUrl, "Join the cohort Slack", "#4A154B") : ""}
+      </div>
+
+      <p style="font-size:13px;line-height:1.6;color:#64748B;margin:22px 0 0;">
+        Your reviewer's full notes on the capstone are on your dashboard,
+        <a href="${feedbackUrl}" style="color:#2563EB;text-decoration:none;font-weight:600;">open them here</a>.
+        Welcome to the Associate cohort.
+      </p>
+    `;
+    return emailShell({ accent: "#C9A227", body });
+  }
 
   if (passed) {
     const body = `

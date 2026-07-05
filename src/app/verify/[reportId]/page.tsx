@@ -94,8 +94,13 @@ export default async function VerifyPage({
               <p className="text-xs uppercase tracking-wide text-muted">This certifies that</p>
               <h1 className="text-2xl sm:text-3xl font-bold text-foreground mt-1">{fullName}</h1>
               <p className="text-muted mt-2">
-                successfully completed <span className="font-semibold text-foreground">{stageCertName(report.stage)}</span> of
-                the UBI Cybersecurity Internship.
+                {report.stage === "STAGE_4" ? (
+                  <>was conferred the standing of <span className="font-semibold text-foreground">Cyber Core Associate</span> on
+                  completing the Ubuntu Bridge Cybersecurity Internship.</>
+                ) : (
+                  <>successfully completed <span className="font-semibold text-foreground">{stageCertName(report.stage)}</span> of
+                  the UBI Cybersecurity Internship.</>
+                )}
               </p>
             </div>
 
