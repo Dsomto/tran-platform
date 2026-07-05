@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { logger } from "@/lib/logger";
-import { certificateUrl, letterUrl, passLetterUrl, proofBadgeUrl, verifyUrl, certificateIdFor } from "@/lib/certificate-link";
+import { certificateUrl, letterUrl, passLetterUrl, proofBadgeUrl, verifyUrl, certificateIdFor, cyberCorePieceUrl } from "@/lib/certificate-link";
 import { buildAddToProfileUrl } from "@/lib/linkedin";
 import { ELIMINATION_GRACE_MS } from "@/lib/elimination-grace";
 import { recordAudit, auditMetaFromRequest } from "@/lib/audit";
@@ -824,6 +824,12 @@ async function handleFinalize(
       const addToLinkedInUrl = isStage4
         ? buildAddToProfileUrl({ stageKey: stage, issuedAt, certId: certificateIdFor(r.id), certUrl: verifyPageUrl })
         : null;
+      const piece = (p: "promotion" | "indepth" | "card" | "badge") =>
+        cyberCorePieceUrl({ origin, reportId: r.id, internId: r.intern.id, piece: p });
+      const promotionUrl = isStage4 ? piece("promotion") : null;
+      const inDepthUrl = isStage4 ? piece("indepth") : null;
+      const cardUrl = isStage4 ? piece("card") : null;
+      const badgeUrl = isStage4 ? piece("badge") : null;
       const ops: Prisma.PrismaPromise<unknown>[] = [
         prisma.stageReport.update({
           where: { id: r.id },
@@ -852,6 +858,10 @@ async function handleFinalize(
               isGraduation: isStage4,
               verifyPageUrl,
               addToLinkedInUrl,
+              promotionUrl,
+              inDepthUrl,
+              cardUrl,
+              badgeUrl,
             }),
             context: {
               reportId: r.id,
@@ -1072,6 +1082,10 @@ function renderResultEmail(opts: {
   isGraduation?: boolean;
   verifyPageUrl?: string | null;
   addToLinkedInUrl?: string | null;
+  promotionUrl?: string | null;
+  inDepthUrl?: string | null;
+  cardUrl?: string | null;
+  badgeUrl?: string | null;
 }): string {
   const {
     firstName,
@@ -1089,6 +1103,10 @@ function renderResultEmail(opts: {
     isGraduation = false,
     verifyPageUrl,
     addToLinkedInUrl,
+    promotionUrl,
+    inDepthUrl,
+    cardUrl,
+    badgeUrl,
   } = opts;
   const nextStageNum = Number(stageNumber) + 1;
   const mondayLabel = nextMondayLabel(issuedAt);
@@ -1115,20 +1133,27 @@ function renderResultEmail(opts: {
         <div style="font-size:13px;color:#1E3A8A;line-height:1.4;"><strong>out of 100</strong><br/>passing mark was ${passingScore}</div>
       </div>
 
-      <p style="font-size:14px;line-height:1.7;color:#334155;margin:0 0 10px;font-weight:600;">What is yours to keep:</p>
-      <ul style="font-size:14px;line-height:1.75;color:#334155;margin:0 0 22px;padding-left:20px;">
-        <li style="margin-bottom:6px;"><strong>Your Cyber Core certificate</strong>, signed and carrying a verification code.</li>
-        <li style="margin-bottom:6px;"><strong>Your promotion letter</strong>, the shareable one made for LinkedIn.</li>
-        <li><strong>A verifiable credential</strong> you can add to your LinkedIn profile in one click.</li>
+      <p style="font-size:14px;line-height:1.7;color:#334155;margin:0 0 10px;font-weight:600;">Your Associate package (each a download):</p>
+      <ul style="font-size:14px;line-height:1.75;color:#334155;margin:0 0 20px;padding-left:20px;">
+        <li style="margin-bottom:5px;"><strong>Certificate</strong>, signed and carrying a verification code.</li>
+        <li style="margin-bottom:5px;"><strong>Promotion letter</strong>, the shareable one made for LinkedIn.</li>
+        <li style="margin-bottom:5px;"><strong>Badge</strong>, a verifiable credential you can add to LinkedIn in one click.</li>
+        <li style="margin-bottom:5px;"><strong>Completion card</strong>, a keepsake with your name and credential ID.</li>
+        <li><strong>In-depth letter</strong>, the full story of the work you did.</li>
       </ul>
 
-      <div style="margin:0 0 12px;">
-        ${certUrl ? ctaButton(certUrl, "Download your certificate", "#2563EB") : ""}
-        ${letterPdfUrl ? `&nbsp;&nbsp;${ctaButton(letterPdfUrl, "Download your promotion letter", "#0A1F44")}` : ""}
+      <div style="margin:0 0 10px;">
+        ${certUrl ? ctaButton(certUrl, "Certificate", "#2563EB") : ""}
+        ${(promotionUrl ?? letterPdfUrl) ? `&nbsp;${ctaButton((promotionUrl ?? letterPdfUrl) as string, "Promotion letter", "#1E40AF")}` : ""}
+        ${badgeUrl ? `&nbsp;${ctaButton(badgeUrl, "Badge", "#B45309")}` : ""}
+      </div>
+      <div style="margin:0 0 14px;">
+        ${cardUrl ? ctaButton(cardUrl, "Completion card", "#0A1F44") : ""}
+        ${inDepthUrl ? `&nbsp;${ctaButton(inDepthUrl, "In-depth letter", "#334155")}` : ""}
       </div>
       <div style="margin:0 0 18px;">
-        ${verifyPageUrl ? ctaButton(verifyPageUrl, "View & verify your credential", "#047857") : ""}
-        ${addToLinkedInUrl ? `&nbsp;&nbsp;${ctaButton(addToLinkedInUrl, "Add to LinkedIn", "#0A66C2")}` : ""}
+        ${verifyPageUrl ? ctaButton(verifyPageUrl, "View & verify credential", "#047857") : ""}
+        ${addToLinkedInUrl ? `&nbsp;${ctaButton(addToLinkedInUrl, "Add to LinkedIn", "#0A66C2")}` : ""}
       </div>
 
       <div style="margin:6px 0 20px;padding:16px 18px;background:#F8FAFC;border-radius:10px;">

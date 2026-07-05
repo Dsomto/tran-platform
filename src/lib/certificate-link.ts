@@ -160,3 +160,28 @@ export function proofBadgeUrl(opts: {
   const sig = proofBadgeShareSig(opts.reportId, opts.internId);
   return `${opts.origin.replace(/\/$/, "")}/api/proof-of-work-badge/${opts.reportId}?sig=${sig}`;
 }
+
+// Cyber Core Associate package (Stage 4): promotion letter, in-depth letter,
+// completion card, badge. One "cyber-core" scope covers all of them; the piece
+// is in the path. Kept distinct from the certificate/letter scopes above.
+export function cyberCoreShareSig(reportId: string, internId: string): string {
+  return shortHmac(documentSigningSecret(), `cyber-core:${reportId}:${internId}`, 16);
+}
+
+export function isValidCyberCoreShareSig(
+  reportId: string,
+  internId: string,
+  sig: string | null
+): boolean {
+  return validShareSig("cyber-core", reportId, internId, sig);
+}
+
+export function cyberCorePieceUrl(opts: {
+  origin: string;
+  reportId: string;
+  internId: string;
+  piece: "promotion" | "indepth" | "card" | "badge";
+}): string {
+  const sig = cyberCoreShareSig(opts.reportId, opts.internId);
+  return `${opts.origin.replace(/\/$/, "")}/api/cyber-core/${opts.reportId}/${opts.piece}?sig=${sig}`;
+}
