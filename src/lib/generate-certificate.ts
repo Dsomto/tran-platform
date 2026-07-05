@@ -43,12 +43,14 @@ const STAGE_COMPETENCIES: Record<string, string[]> = {
   ],
 };
 
-// Blue / white / gold. Navy structure, blue accents, a real gold seal.
+// Navy structure, website-blue accents, a real gold seal. Blues aligned to the
+// UBI website palette (#2563EB primary, #1E40AF mid).
 const COLORS = {
   bg: "#FFFFFF",
   navy: "#0A1F44",       // deep navy — waves, title, name
   navyDeep: "#06152F",   // darkest tone, signature ink
-  blue: "#1D4ED8",       // accent blue — front wave, labels
+  blueMid: "#1E40AF",    // mid blue — wave middle band
+  blue: "#2563EB",       // accent blue — front wave, labels (website primary)
   blueLight: "#3B82F6",  // lighter blue highlight
   ink: "#0A1F44",
   inkSoft: "#33405C",
@@ -57,7 +59,19 @@ const COLORS = {
   gold: "#C9A227",       // seal gold
   goldLight: "#EBCB63",  // seal highlight
   goldDeep: "#7A5E12",   // seal outline
+  creamLight: "#FFF7DD", // emblem lines inside the gold disc
 };
+
+// Stages 0-4 combined competencies for the Cyber Core graduation certificate.
+const CYBER_CORE_COMPETENCIES = [
+  "Log & auth-trail analysis",
+  "Applied cryptography",
+  "Web exploitation & remediation",
+  "Incident timeline reconstruction",
+  "IOC validation",
+  "Board-level risk reporting",
+  "ISO 27001 & NIST CSF mapping",
+];
 
 export function generateStageCertificate(opts: {
   fullName: string;
@@ -81,7 +95,10 @@ export function generateStageCertificate(opts: {
       const m = stageLabel.match(/^Stage (\d+)/i);
       return m ? `STAGE_${m[1]}` : "STAGE_0";
     })();
-  const competencies = STAGE_COMPETENCIES[resolvedKey] ?? STAGE_COMPETENCIES.STAGE_0;
+  const isCyberCore = resolvedKey === "STAGE_4";
+  const competencies = isCyberCore
+    ? CYBER_CORE_COMPETENCIES
+    : STAGE_COMPETENCIES[resolvedKey] ?? STAGE_COMPETENCIES.STAGE_0;
 
   return new Promise((resolve, reject) => {
     const doc = new PDFDocument({
@@ -125,12 +142,16 @@ export function generateStageCertificate(opts: {
       drawDiamond(doc, dx, dy, 3, COLORS.gold);
     }
 
+    // Faint centred emblem watermark, and the small org mark at the top.
+    drawWatermark(doc, cx, pageH / 2, 118);
+    drawOrgLogo(doc, cx, 52, 26);
+
     // ── 4. Organisation mark ──────────────────────────────
     doc
       .fontSize(11)
       .font("Helvetica-Bold")
       .fillColor(COLORS.navy)
-      .text("UBUNTU BRIDGE INITIATIVE", 0, 84, {
+      .text("UBUNTU BRIDGE INITIATIVE", 0, 86, {
         align: "center",
         width: pageW,
         characterSpacing: 4,
@@ -224,15 +245,21 @@ export function generateStageCertificate(opts: {
       .font("Times-Roman")
       .fillColor(COLORS.inkSoft)
       .text(
-        `for successfully completing ${certificateStageLabel} in the Ubuntu Bridge Cybersecurity Internship, ` +
-          `with a final score of ${score} out of 100 against a ${passingScore} pass mark.`,
+        isCyberCore
+          ? `for completing Cyber Core, the core programme of the Ubuntu Bridge Cybersecurity Internship, ` +
+            `across Stages 0 to 4 with a final score of ${score} out of 100 against a ${passingScore} pass mark, ` +
+            `and being conferred the standing of Cyber Core Associate.`
+          : `for successfully completing ${certificateStageLabel} in the Ubuntu Bridge Cybersecurity Internship, ` +
+            `with a final score of ${score} out of 100 against a ${passingScore} pass mark.`,
         cx - bodyW / 2,
         bodyY,
         { align: "center", width: bodyW, lineGap: 3 }
       );
 
     // ── 9. Competencies — tracked label, then italic with gold dividers ──
-    const competencyLabelY = bodyY + 46;
+    // Extra top gap so the (longer) Cyber Core citation, which wraps to three
+    // lines, never collides with the label.
+    const competencyLabelY = bodyY + (isCyberCore ? 64 : 46);
     doc
       .fontSize(7.5)
       .font("Helvetica-Bold")
@@ -246,15 +273,19 @@ export function generateStageCertificate(opts: {
       .fontSize(9.5)
       .font("Times-Italic")
       .fillColor(COLORS.muted)
-      .text(competencies.join("  |  "), 0, competencyLabelY + 16, {
+      .text(competencies.join("   |   "), cx - 330, competencyLabelY + 16, {
         align: "center",
-        width: pageW,
+        width: 660,
         characterSpacing: 0.3,
       });
 
     // ── 10. The gold seal, top-right corner — clear of the name ──
     // Kept out of the name's row so long names are never covered.
-    drawSeal(doc, pageW - 92, 92, 30);
+    if (isCyberCore) {
+      drawCoreSeal(doc, pageW - 96, 96, 34);
+    } else {
+      drawSeal(doc, pageW - 92, 92, 30);
+    }
 
     // ── 11. Two signatures, with date + id centred between ──
     const footY = pageH - 128;
@@ -307,10 +338,20 @@ export function generateStageCertificate(opts: {
       .fontSize(7.5)
       .font("Helvetica")
       .fillColor(COLORS.muted)
-      .text(`Certificate ID  ${certId}`, 0, footY + 24, {
+      .text(`${isCyberCore ? "CREDENTIAL" : "CERTIFICATE"} ID  ${certId}`, 0, footY + 24, {
         width: pageW,
         align: "center",
         characterSpacing: 1.2,
+        lineBreak: false,
+      });
+    doc
+      .fontSize(6.5)
+      .font("Helvetica")
+      .fillColor(COLORS.muted)
+      .text("Verify at ubuntubridgeinitiatives.org/verify", 0, footY + 34, {
+        width: pageW,
+        align: "center",
+        characterSpacing: 0.6,
         lineBreak: false,
       });
 
@@ -497,4 +538,71 @@ function drawDiamond(doc: any, cx: number, cy: number, r: number, color: string)
     .lineTo(cx - r, cy)
     .closePath()
     .fill(color);
+}
+
+// ── Organisation mark: a person cradled by a bridge ─────
+// Ported 1:1 from the website SVG (100x100 space): a blue open-top cradle
+// with a navy head + shoulders. Drawn small at the top of the certificate.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function drawOrgLogo(doc: any, cx: number, topY: number, size: number): void {
+  const f = size / 100;
+  doc.save().translate(cx - size / 2, topY).scale(f);
+  doc.lineCap("round").lineWidth(13).strokeColor(COLORS.blue)
+    .path("M16 44 A34 34 0 0 0 84 44").stroke();
+  doc.fillColor(COLORS.navy).circle(50, 33, 11.5).fill();
+  doc.path("M33 60 a17 17 0 0 1 34 0 q-17 6 -34 0 z").fill();
+  doc.restore();
+}
+
+// ── Cyber Core emblem: pointy-top hexagon + centre node + 4 spokes ──
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function drawCoreEmblem(doc: any, cx: number, cy: number, R: number, color: string, w: number): void {
+  const pts: Array<[number, number]> = [];
+  for (let i = 0; i < 6; i++) {
+    const a = (Math.PI / 180) * (60 * i - 90);
+    pts.push([cx + R * Math.cos(a), cy + R * Math.sin(a)]);
+  }
+  doc.moveTo(pts[0][0], pts[0][1]);
+  for (let i = 1; i < 6; i++) doc.lineTo(pts[i][0], pts[i][1]);
+  doc.closePath().lineWidth(w).strokeColor(color).stroke();
+  doc.circle(cx, cy, R * 0.2).fill(color);
+  doc.lineWidth(w).strokeColor(color);
+  doc.moveTo(cx, cy - R * 0.32).lineTo(cx, cy - R * 0.66).stroke();
+  doc.moveTo(cx, cy + R * 0.32).lineTo(cx, cy + R * 0.7).stroke();
+  doc.moveTo(cx + R * 0.32, cy).lineTo(cx + R * 0.7, cy).stroke();
+  doc.moveTo(cx - R * 0.32, cy).lineTo(cx - R * 0.7, cy).stroke();
+}
+
+// ── Gold medallion seal with the Cyber Core emblem at its centre ──
+// Concentric gold rings, a radial-gradient gold disc, and the hexagon-core
+// emblem in cream. Matches the seal in the approved design.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function drawCoreSeal(doc: any, cx: number, cy: number, R: number): void {
+  doc.circle(cx, cy, R).lineWidth(1).strokeColor(COLORS.gold).stroke();
+  doc.circle(cx, cy, R * 0.92).lineWidth(2.4).strokeColor(COLORS.goldLight).stroke();
+  doc.circle(cx, cy, R * 0.83).lineWidth(0.7).strokeColor(COLORS.goldDeep).stroke();
+  const grad = doc.radialGradient(cx - R * 0.22, cy - R * 0.28, 0, cx, cy, R * 0.62);
+  grad.stop(0, COLORS.goldLight).stop(0.55, COLORS.gold).stop(1, COLORS.goldDeep);
+  doc.circle(cx, cy, R * 0.58).fill(grad);
+  doc.circle(cx, cy, R * 0.58).lineWidth(1).strokeColor(COLORS.goldDeep).stroke();
+  drawCoreEmblem(doc, cx, cy, R * 0.34, COLORS.creamLight, R * 0.05);
+  doc.fontSize(6).font("Helvetica-Bold").fillColor(COLORS.goldDeep)
+    .text("CYBER CORE", cx - R, cy + R * 0.64, { width: R * 2, align: "center", characterSpacing: 1.4 });
+}
+
+// ── Faint centred watermark of the emblem, behind the text ──
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function drawWatermark(doc: any, cx: number, cy: number, R: number): void {
+  doc.save().opacity(0.05);
+  drawCoreEmblem(doc, cx, cy, R, COLORS.navy, R * 0.045);
+  // outer hexagon ring
+  const pts: Array<[number, number]> = [];
+  for (let i = 0; i < 6; i++) {
+    const a = (Math.PI / 180) * (60 * i - 90);
+    pts.push([cx + R * 1.35 * Math.cos(a), cy + R * 1.35 * Math.sin(a)]);
+  }
+  doc.moveTo(pts[0][0], pts[0][1]);
+  for (let i = 1; i < 6; i++) doc.lineTo(pts[i][0], pts[i][1]);
+  doc.closePath().lineWidth(R * 0.03).strokeColor(COLORS.navy).stroke();
+  doc.restore();
 }
