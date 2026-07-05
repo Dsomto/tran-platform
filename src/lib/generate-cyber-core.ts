@@ -6,6 +6,7 @@
 // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-explicit-any
 const pdfkitMod: any = require("pdfkit");
 const PDFDocument = pdfkitMod.default || pdfkitMod;
+import { UBI_LOGO_BUFFER, UBI_LOGO_RATIO } from "./ubi-logo-data";
 
 const C = {
   navy: "#0A1F44", navyDeep: "#06152F", navyMid: "#12305f",
@@ -26,17 +27,13 @@ export type CyberCoreData = {
 };
 
 // ── shared drawing primitives ───────────────────────────
+// The approved UBI logo lockup, embedded as an image. Height derives from the
+// asset ratio. Transparent, so it drops onto light surfaces cleanly.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function orgLogo(doc: any, cx: number, topY: number, size: number, dark = false) {
-  const f = size / 100;
-  const cradle = dark ? C.blueSky : C.blue;
-  const person = dark ? C.eaf : C.navy;
-  doc.save().translate(cx - size / 2, topY).scale(f);
-  doc.lineCap("round").lineWidth(13).strokeColor(cradle).path("M16 44 A34 34 0 0 0 84 44").stroke();
-  doc.fillColor(person).circle(50, 33, 11.5).fill();
-  doc.path("M33 60 a17 17 0 0 1 34 0 q-17 6 -34 0 z").fill();
-  doc.restore();
+function logo(doc: any, x: number, y: number, width: number) {
+  doc.image(UBI_LOGO_BUFFER, x, y, { width });
 }
+const logoH = (width: number) => width / UBI_LOGO_RATIO;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function coreEmblem(doc: any, cx: number, cy: number, R: number, color: string, w: number) {
@@ -125,18 +122,16 @@ export function promotionLetter(data: CyberCoreData): Promise<Buffer> {
   // right white panel
   const rx = leftW + 34;
   const rw = W - leftW - 68;
-  orgLogo(doc, rx + 11, 34, 22);
-  doc.font("Helvetica-Bold").fontSize(12).fillColor(C.navy)
-    .text("Ubuntu Bridge Initiative", rx + 28, 40, { lineBreak: false });
+  logo(doc, rx, 24, 92);
   doc.font("Helvetica").fontSize(8).fillColor(C.muted)
     .text(`Cohort ${data.cohort}  ·  ${data.issuedAt.toLocaleDateString("en-GB", { month: "short", year: "numeric" })}`,
-      rx, 42, { width: rw, align: "right" });
-  doc.moveTo(rx, 66).lineTo(rx + rw, 66).lineWidth(1.5).strokeColor(C.navy).stroke();
+      rx, 32, { width: rw, align: "right" });
+  doc.moveTo(rx, 24 + logoH(92) + 8).lineTo(rx + rw, 24 + logoH(92) + 8).lineWidth(1.5).strokeColor(C.navy).stroke();
 
   doc.font("Helvetica-Bold").fontSize(10).fillColor(C.blue)
-    .text("PROMOTION", rx, 96, { characterSpacing: 3 });
+    .text("PROMOTION", rx, 112, { characterSpacing: 3 });
   doc.font("Times-Bold").fontSize(38).fillColor(C.navy)
-    .text(data.fullName, rx, 112, { width: rw, lineBreak: true });
+    .text(data.fullName, rx, 128, { width: rw, lineBreak: true });
   const afterName = doc.y + 6;
   doc.font("Helvetica").fontSize(15).fillColor(C.inkSoft)
     .text("is promoted from Intern to ", rx, afterName, { continued: true, width: rw })
@@ -167,17 +162,16 @@ export function inDepthLetter(data: CyberCoreData): Promise<Buffer> {
   const W = doc.page.width;
   const L = 62, R = W - 62, cw = R - L;
 
-  orgLogo(doc, L + 21, 52, 40);
-  doc.font("Helvetica-Bold").fontSize(15).fillColor(C.navy)
-    .text("Ubuntu Bridge Initiative", L + 48, 60, { lineBreak: false });
+  logo(doc, L, 46, 124);
   doc.font("Helvetica").fontSize(9).fillColor(C.muted)
-    .text(`Cybersecurity Internship\n${dateLong(data.issuedAt)}`, L, 58, { width: cw, align: "right" });
-  doc.moveTo(L, 104).lineTo(R, 104).lineWidth(2).strokeColor(C.navy).stroke();
+    .text(`Cybersecurity Internship\n${dateLong(data.issuedAt)}`, L, 54, { width: cw, align: "right" });
+  const lhRule = 46 + logoH(124) + 10;
+  doc.moveTo(L, lhRule).lineTo(R, lhRule).lineWidth(2).strokeColor(C.navy).stroke();
 
   doc.font("Helvetica-Bold").fontSize(10).fillColor(C.blue)
-    .text("A LETTER TO A CYBER CORE ASSOCIATE", L, 124, { characterSpacing: 2 });
+    .text("A LETTER TO A CYBER CORE ASSOCIATE", L, lhRule + 18, { characterSpacing: 2 });
   doc.font("Times-Bold").fontSize(21).fillColor(C.navy)
-    .text("What you did, and why it mattered", L, 140);
+    .text("What you did, and why it mattered", L, lhRule + 34);
 
   const paras = [
     `Dear ${data.firstName},`,
@@ -218,9 +212,8 @@ export function completionCard(data: CyberCoreData): Promise<Buffer> {
   const bg = doc.linearGradient(0, 0, W, H);
   bg.stop(0, C.navy).stop(0.5, C.navyMid).stop(1, C.blueMid);
   doc.rect(0, 0, W, H).fill(bg);
-  orgLogo(doc, 34, 20, 26, true);
-  doc.font("Helvetica-Bold").fontSize(9).fillColor("#CFE0FF")
-    .text("UBUNTU BRIDGE\nINITIATIVE", 52, 18, { characterSpacing: 1, lineGap: 1 });
+  doc.font("Helvetica-Bold").fontSize(10.5).fillColor("#CFE0FF")
+    .text("UBUNTU BRIDGE INITIATIVES", 22, 24, { characterSpacing: 1.6, lineBreak: false });
   doc.roundedRect(W - 96, 20, 76, 20, 4).fill(C.goldLight);
   doc.font("Helvetica-Bold").fontSize(8.5).fillColor(C.navyDeep)
     .text("ASSOCIATE", W - 96, 26, { width: 76, align: "center", characterSpacing: 1.5 });

@@ -6,6 +6,7 @@
 // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-explicit-any
 const pdfkitMod: any = require("pdfkit");
 const PDFDocument = pdfkitMod.default || pdfkitMod;
+import { UBI_LOGO_BUFFER, UBI_LOGO_RATIO } from "./ubi-logo-data";
 
 // What the intern actually did, in plain language. Short labels so the
 // list reads like a teacher wrote it on the back of a marking sheet, not
@@ -142,25 +143,17 @@ export function generateStageCertificate(opts: {
       drawDiamond(doc, dx, dy, 3, COLORS.gold);
     }
 
-    // Faint centred emblem watermark, and the small org mark at the top.
+    // Faint centred emblem watermark, and the approved UBI logo lockup on top.
     drawWatermark(doc, cx, pageH / 2, 118);
-    drawOrgLogo(doc, cx, 52, 26);
+    const logoW = 116;
+    doc.image(UBI_LOGO_BUFFER, cx - logoW / 2, 38, { width: logoW });
 
-    // ── 4. Organisation mark ──────────────────────────────
-    doc
-      .fontSize(11)
-      .font("Helvetica-Bold")
-      .fillColor(COLORS.navy)
-      .text("UBUNTU BRIDGE INITIATIVE", 0, 86, {
-        align: "center",
-        width: pageW,
-        characterSpacing: 4,
-      });
+    // ── 4. Programme sub-line (logo already carries the org name) ──
     doc
       .fontSize(8)
       .font("Helvetica")
       .fillColor(COLORS.muted)
-      .text("Cybersecurity Internship | The Root Access Network", 0, 100, {
+      .text("Cybersecurity Internship | The Root Access Network", 0, 38 + logoW / UBI_LOGO_RATIO + 7, {
         align: "center",
         width: pageW,
         characterSpacing: 2,
