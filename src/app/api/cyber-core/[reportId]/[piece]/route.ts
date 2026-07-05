@@ -47,6 +47,9 @@ export async function GET(
       return Response.json({ error: `Unknown piece "${piece}".` }, { status: 404 });
     }
 
+    if (!/^[a-f0-9]{24}$/i.test(reportId)) {
+      return Response.json({ error: "Malformed report id." }, { status: 404 });
+    }
     const sig = new URL(request.url).searchParams.get("sig");
     const report = await prisma.stageReport.findUnique({
       where: { id: reportId },
