@@ -66,12 +66,15 @@ export async function GET(
 
     const safeName = fullName.replace(/[^A-Za-z0-9\s-]/g, "").replace(/\s+/g, "-");
     const filename = `UBI-Certificate-${safeName}-${report.stage}.pdf`;
+    // inline=1 lets the verify page (the LinkedIn "credential URL" target) embed
+    // the actual certificate rather than force a download.
+    const disposition = url.searchParams.get("inline") === "1" ? "inline" : "attachment";
 
     return new Response(pdf as unknown as BodyInit, {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="${filename}"`,
+        "Content-Disposition": `${disposition}; filename="${filename}"`,
         "Cache-Control": "private, max-age=3600",
       },
     });

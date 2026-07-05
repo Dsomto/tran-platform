@@ -132,6 +132,20 @@ export default async function VerifyPage({
           </div>
         </div>
 
+        {/* The actual certificate, embedded — so this page (the LinkedIn
+            credential URL) shows a full certificate, not just metadata. */}
+        <div className="mt-6 rounded-2xl border border-border bg-surface overflow-hidden">
+          <div className="px-6 py-3 border-b border-border text-sm font-semibold text-foreground">
+            Certificate
+          </div>
+          <iframe
+            src={`${pdfUrl}${pdfUrl.includes("?") ? "&" : "?"}inline=1`}
+            title="Certificate"
+            className="w-full bg-white"
+            style={{ height: 560, border: 0 }}
+          />
+        </div>
+
         <p className="text-xs text-muted text-center mt-6">
           Anyone with this link can confirm the credential is genuine. The credential ID and this
           page are what you enter as the “Credential ID” and “Credential URL” on LinkedIn.
