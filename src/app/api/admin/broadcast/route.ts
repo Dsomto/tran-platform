@@ -32,7 +32,72 @@ type FilterInput = {
   track?: unknown;
   country?: unknown;
   stage?: unknown;
+  // Live-cohort targeting: message the people actually IN a stage right now
+  // (resolved from Intern.currentStage, not the dead PublicApplication.stage
+  // column). e.g. cohortStage="STAGE_4" reaches everyone competing in Stage 4.
+  cohortStage?: unknown;
+  cohortActive?: unknown; // "active" (default) = still in the running; "all" = include eliminated
 };
+
+const STAGE_VALUES = [
+  "STAGE_0", "STAGE_1", "STAGE_2", "STAGE_3", "STAGE_4",
+  "STAGE_5", "STAGE_6", "STAGE_7", "STAGE_8", "STAGE_9",
+] as const;
+type StageEnum = (typeof STAGE_VALUES)[number];
+
+// Accepts "STAGE_4" or a bare number ("4") and returns the Stage enum, or null.
+function stageEnumFrom(v: unknown): StageEnum | null {
+  if (typeof v === "string") {
+    const up = v.trim().toUpperCase();
+    if ((STAGE_VALUES as readonly string[]).includes(up)) return up as StageEnum;
+    if (/^\d+$/.test(up)) {
+      const s = `STAGE_${up}`;
+      if ((STAGE_VALUES as readonly string[]).includes(s)) return s as StageEnum;
+    }
+  }
+  if (typeof v === "number" && Number.isInteger(v) && v >= 0 && v <= 9) {
+    return `STAGE_${v}` as StageEnum;
+  }
+  return null;
+}
+
+const stageToNum = (s: string): number => Number(s.replace("STAGE_", ""));
+
+type AudienceRow = {
+  id: string; fullName: string; email: string;
+  status: string; trackInterest: string; country: string; stage: number;
+};
+
+// Resolve the live-cohort audience from Intern.currentStage. Returns the true
+// total plus a capped sample list (same shape the picker expects).
+async function loadCohort(
+  cohortStage: StageEnum,
+  activeOnly: boolean,
+  cap: number
+): Promise<{ list: AudienceRow[]; total: number }> {
+  const where: Prisma.InternWhereInput = { currentStage: cohortStage };
+  if (activeOnly) where.isActive = true;
+  const total = await prisma.intern.count({ where });
+  const interns = await prisma.intern.findMany({
+    where,
+    take: cap,
+    orderBy: { joinedAt: "desc" },
+    select: {
+      id: true, isActive: true, currentStage: true, track: true,
+      user: { select: { email: true, firstName: true, lastName: true } },
+    },
+  });
+  const list: AudienceRow[] = interns.map((i) => ({
+    id: i.id,
+    fullName: `${i.user.firstName ?? ""} ${i.user.lastName ?? ""}`.trim() || i.user.email,
+    email: i.user.email,
+    status: i.isActive ? "active" : "eliminated",
+    trackInterest: String(i.track ?? ""),
+    country: "",
+    stage: stageToNum(i.currentStage),
+  }));
+  return { list, total };
+}
 
 function buildWhere(f: FilterInput): Prisma.PublicApplicationWhereInput {
   const where: Prisma.PublicApplicationWhereInput = {};
@@ -65,6 +130,21 @@ export async function GET(request: NextRequest) {
   }
 
   const p = new URL(request.url).searchParams;
+
+  // Live-cohort mode takes precedence: message the people actually in a stage
+  // right now (Intern.currentStage), bypassing the PublicApplication pool.
+  const cohortStage = stageEnumFrom(p.get("cohortStage"));
+  if (cohortStage) {
+    const activeOnly = (p.get("cohortActive") ?? "active") !== "all";
+    const { list, total } = await loadCohort(cohortStage, activeOnly, PICKER_CAP);
+    return Response.json({
+      applicants: list,
+      total,
+      shown: list.length,
+      capped: total > list.length,
+    });
+  }
+
   const where = buildWhere({
     status: p.get("status"),
     track: p.get("track"),
@@ -158,17 +238,32 @@ export async function POST(request: NextRequest) {
     let applicants: { id: string; email: string; fullName: string }[];
 
     if (sendToAll) {
-      const where = buildWhere((body?.filters ?? {}) as FilterInput);
-      applicants = await prisma.publicApplication.findMany({
-        where,
-        take: SEND_ALL_CAP,
-        select: { id: true, email: true, fullName: true },
-      });
-      if (applicants.length === 0) {
-        return Response.json(
-          { error: "No applicants match those filters." },
-          { status: 409 }
-        );
+      const f = (body?.filters ?? {}) as FilterInput;
+      const cohortStage = stageEnumFrom(f.cohortStage);
+      if (cohortStage) {
+        // Live-cohort send: everyone currently in this stage.
+        const activeOnly = (typeof f.cohortActive === "string" ? f.cohortActive : "active") !== "all";
+        const { list } = await loadCohort(cohortStage, activeOnly, SEND_ALL_CAP);
+        applicants = list.map((r) => ({ id: r.id, email: r.email, fullName: r.fullName }));
+        if (applicants.length === 0) {
+          return Response.json(
+            { error: "No interns are currently in that stage." },
+            { status: 409 }
+          );
+        }
+      } else {
+        const where = buildWhere(f);
+        applicants = await prisma.publicApplication.findMany({
+          where,
+          take: SEND_ALL_CAP,
+          select: { id: true, email: true, fullName: true },
+        });
+        if (applicants.length === 0) {
+          return Response.json(
+            { error: "No applicants match those filters." },
+            { status: 409 }
+          );
+        }
       }
     } else {
       const ids: string[] = Array.isArray(body?.applicationIds)

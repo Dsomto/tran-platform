@@ -27,6 +27,11 @@ export function BroadcastClient() {
   const [track, setTrack] = useState("");
   const [country, setCountry] = useState("");
   const [stage, setStage] = useState("all");
+  // Live-cohort targeting — message the people actually IN a stage right now
+  // (resolved from Intern.currentStage). When set, it overrides the applicant
+  // filters above. "" = off.
+  const [cohortStage, setCohortStage] = useState("");
+  const [cohortActive, setCohortActive] = useState("active");
 
   const [recipients, setRecipients] = useState<Recipient[]>([]);
   const [total, setTotal] = useState(0);
@@ -65,6 +70,10 @@ export function BroadcastClient() {
       const params = new URLSearchParams({ status, stage });
       if (track) params.set("track", track);
       if (country) params.set("country", country);
+      if (cohortStage) {
+        params.set("cohortStage", cohortStage);
+        params.set("cohortActive", cohortActive);
+      }
       const res = await fetch(`/api/admin/broadcast?${params}`);
       const data = await res.json();
       if (!res.ok) {
@@ -81,7 +90,7 @@ export function BroadcastClient() {
     } finally {
       setLoading(false);
     }
-  }, [status, track, country, stage]);
+  }, [status, track, country, stage, cohortStage, cohortActive]);
 
   // Load the full pool once on mount.
   useEffect(() => {
@@ -155,7 +164,14 @@ export function BroadcastClient() {
         : { subject, message };
       const payload =
         sendMode === "all"
-          ? { ...baseFields, totpCode, sendToAll: true, filters: { status, track, country, stage } }
+          ? {
+              ...baseFields,
+              totpCode,
+              sendToAll: true,
+              filters: cohortStage
+                ? { cohortStage, cohortActive }
+                : { status, track, country, stage },
+            }
           : { ...baseFields, totpCode, applicationIds: Array.from(selected) };
       const res = await fetch("/api/admin/broadcast", {
         method: "POST",
@@ -221,7 +237,57 @@ export function BroadcastClient() {
         <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
           Filter recipients
         </h2>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+
+        {/* Live-cohort targeting — the people actually IN a stage right now. */}
+        <div className="mb-3 rounded-lg border border-blue/30 bg-blue/[0.03] p-3">
+          <div className="flex items-center gap-2 mb-2">
+            <Users className="h-4 w-4 text-blue" />
+            <span className="text-xs font-semibold text-foreground uppercase tracking-wide">
+              Message a live stage cohort
+            </span>
+          </div>
+          <p className="text-xs text-muted-foreground mb-3">
+            Reach the people <strong className="text-foreground">currently in a stage</strong> (the
+            actual interns competing, not the applicant pool). When set, this
+            overrides the applicant filters below.
+          </p>
+          <div className="grid sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs text-muted-foreground mb-1">Currently in stage</label>
+              <select
+                value={cohortStage}
+                onChange={(e) => setCohortStage(e.target.value)}
+                className="w-full p-2 border border-border rounded-lg text-sm bg-white"
+              >
+                <option value="">— off (use applicant filters) —</option>
+                {Array.from({ length: 10 }, (_, i) => (
+                  <option key={i} value={`STAGE_${i}`}>
+                    Stage {i}
+                    {i === 4 ? " (current)" : ""}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs text-muted-foreground mb-1">Who</label>
+              <select
+                value={cohortActive}
+                onChange={(e) => setCohortActive(e.target.value)}
+                disabled={!cohortStage}
+                className="w-full p-2 border border-border rounded-lg text-sm bg-white disabled:opacity-50"
+              >
+                <option value="active">Still in the running (active only)</option>
+                <option value="all">Everyone who reached this stage (incl. eliminated)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div
+          className={`grid sm:grid-cols-2 lg:grid-cols-4 gap-3 ${
+            cohortStage ? "opacity-40 pointer-events-none" : ""
+          }`}
+        >
           <div>
             <label className="block text-xs text-muted-foreground mb-1">Status</label>
             <select

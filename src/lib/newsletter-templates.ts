@@ -784,9 +784,79 @@ const SCAM_BANK: NewsletterTemplate = {
   },
 };
 
+// ─── Template: Stage 4 Result (prank teaser) ────────────────────────────
+// Flat UBI brand (not the gradient shell). Builds tension with cryptic copy
+// that never states a pass or fail, then reveals the real result lands in an
+// hour. Self-contained HTML doc so the approved flat look is preserved.
+const STAGE4_PRANK: NewsletterTemplate = {
+  id: "stage4-result-prank",
+  name: "Stage 4 Result (prank teaser)",
+  description:
+    "Playful teaser sent to the whole cohort before results. Cryptic tension, no pass/fail, reveals the real result is one hour away. Fully pre-filled.",
+  defaultSubject: "Stage 4 Result",
+  render: ({ firstName }) => `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stage 4 Result</title>
+</head>
+<body style="margin:0;padding:0;background:#FAFAFA;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#111111;-webkit-text-size-adjust:100%;">
+  <div style="display:none;max-height:0;overflow:hidden;font-size:1px;line-height:1;color:#FAFAFA;opacity:0;">Your Stage 4 outcome is ready. Please read this one carefully.</div>
+  <div style="background:#FAFAFA;padding:44px 20px;">
+    <div style="max-width:600px;margin:0 auto;background:#FFFFFF;border:1px solid #E5E5E5;border-radius:16px;overflow:hidden;">
+
+      <div style="padding:36px 40px 26px;">
+        <div style="font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:#2563EB;font-weight:700;">Ubuntu Bridge Initiative &nbsp;&middot;&nbsp; Cohort 1 &nbsp;&middot;&nbsp; Stage 4</div>
+        <h1 style="margin:14px 0 0;font-size:31px;line-height:1.12;font-weight:800;letter-spacing:-0.8px;color:#111111;">Stage 4 Result</h1>
+        <div style="width:44px;height:4px;background:#2563EB;border-radius:2px;margin:18px 0 0;"></div>
+      </div>
+
+      <div style="height:1px;background:#F0F0F0;"></div>
+
+      <div style="padding:30px 40px 4px;">
+        <p style="margin:0 0 18px;font-size:15px;line-height:1.78;color:#2b2b2b;">Hi ${firstName},</p>
+        <p style="margin:0 0 18px;font-size:15px;line-height:1.78;color:#2b2b2b;">It is done. The review closed at 14:07. The number was carried across, rounded the way it is always rounded, and then carried across again. Six deliverables. One of them mattered more than you think, and it was not the one you think.</p>
+        <p style="margin:0 0 18px;font-size:15px;line-height:1.78;color:#2b2b2b;">We checked it twice. Then a third person checked it, quietly, without being asked. The register held. The letter held. The memo did the thing memos do. Somewhere around the roadmap, someone in the room went very still.</p>
+        <p style="margin:0 0 18px;font-size:15px;line-height:1.78;color:#2b2b2b;">Your file sat between two others. To the left, a strong one. To the right, also a strong one. Yours was in the middle, doing exactly what it was always going to do. The envelope has been sealed. The envelope has been unsealed. It is, at time of writing, an envelope.</p>
+        <p style="margin:0 0 18px;font-size:15px;line-height:1.78;color:#2b2b2b;">So here it is. After everything. The moment. Your Stage 4 outcome is&hellip;</p>
+      </div>
+
+      <div style="padding:6px 40px 8px;">
+        <div style="background:#0F172A;border-radius:14px;padding:30px 26px;text-align:center;">
+          <div style="font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:#38BDF8;font-weight:800;">Your official Stage 4 outcome</div>
+          <div style="margin:16px 0 8px;font-size:27px;line-height:1.25;font-weight:800;color:#F1F5F9;letter-spacing:-0.4px;">&hellip; not in this email. &#128513;</div>
+          <div style="font-size:15px;line-height:1.7;color:#94A3B8;">You read every word of that, didn&rsquo;t you. We know. We wrote it that way.</div>
+        </div>
+      </div>
+
+      <div style="padding:24px 40px 4px;">
+        <p style="margin:0 0 18px;font-size:15px;line-height:1.78;color:#2b2b2b;">Nobody has been passed or failed here, so unclench your shoulders. This was us having a little fun with a cohort that has earned the right to be teased.</p>
+        <p style="margin:0 0 6px;font-size:16px;line-height:1.7;color:#111;font-weight:700;">Your real Stage 4 result lands in your inbox in one hour.</p>
+        <p style="margin:0 0 18px;font-size:15px;line-height:1.78;color:#2b2b2b;">Keep this tab open, keep your notifications on, and go get some water. See you in sixty minutes, for real this time.</p>
+      </div>
+
+      <div style="padding:14px 40px 32px;">
+        <p style="margin:0 0 18px;font-size:15px;line-height:1.7;color:#2b2b2b;">Almost there. Genuinely proud of how far this cohort has pushed.</p>
+        <p style="margin:0;font-size:15px;color:#111;font-weight:700;">Somto Okoma</p>
+        <p style="margin:2px 0 0;font-size:13px;color:#737373;">Head of Programme, Ubuntu Bridge Initiative</p>
+      </div>
+
+      <div style="background:#FAFAFA;border-top:1px solid #EEEEEE;padding:18px 40px;text-align:center;">
+        <div style="font-size:12px;color:#737373;">Ubuntu &nbsp;&middot;&nbsp; I am because we are.</div>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>`,
+  variables: [],
+};
+
 // ─── Registry ───────────────────────────────────────────────────────────
 
 export const NEWSLETTER_TEMPLATES: NewsletterTemplate[] = [
+  STAGE4_PRANK,
   COHORT_UPDATE_TOWNHALL,
   SCAM_BANK,
   KICKOFF,
