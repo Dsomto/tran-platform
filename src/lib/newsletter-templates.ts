@@ -752,35 +752,44 @@ const SCAM_BANK: NewsletterTemplate = {
   variables: [],
   render: ({ firstName }) => {
     const url = "https://scambank.ubuntubridgeinitiatives.org/";
-    const body = `
-      <tr>
-        <td style="background:white;padding:36px 30px 28px;border-radius:0 0 14px 14px;border:1px solid #E2E8F0;border-top:none;">
-          <p style="margin:0 0 16px;font-size:15.5px;color:#0F172A;">Hi ${firstName},</p>
-          ${paras([
-            "The Ubuntu Bridge Initiative Scam Bank is now live.",
-            "This is a community-powered platform where people across the world can report scams they come across, so others can learn, check, and avoid becoming victims.",
-            "As UBI interns, we would like everyone to register and start using the platform actively.",
-            "You can report scam emails, SMS messages, WhatsApp messages, fake websites, job scams, investment scams, phishing links, and other suspicious content you come across.",
-            "The platform also lets you check whether a scam has already been reported, see scam patterns becoming common in different countries, earn badges, and appear on the leaderboard for helping protect the community.",
-            "Please also share it with your family and friends, so they can use it to report and check scams too.",
-            "The goal is simple: if one person reports a scam, another person may be saved from it.",
-            "<strong>Ubuntu. I am because we are.</strong>",
-          ])}
-          ${ctaButton("Open the Scam Bank", url)}
-          ${signoff("The Ubuntu Bridge Initiative team", "ubuntubridgeinitiatives.org")}
-        </td>
-      </tr>`;
-    return shell({
-      title: "The Ubuntu Bridge Initiative Scam Bank is live",
-      previewText: "Report scams, check scams, and help protect your community.",
-      headerHtml: brandedHeader({
-        eyebrow: "New initiative",
-        title: "The Scam Bank is live",
-        subtitle: "Ubuntu Bridge Initiative",
-        bgColors: "linear-gradient(135deg,#7C3AED 0%,#2563EB 50%,#0891B2 100%)",
-      }),
-      bodyHtml: body,
-    });
+    return `
+<div style="font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;background:#FAFAFA;padding:44px 20px;color:#111111;">
+  <div style="max-width:600px;margin:0 auto;background:#FFFFFF;border:1px solid #E5E5E5;border-radius:16px;overflow:hidden;">
+    <div style="padding:36px 40px 26px;">
+      <div style="font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:#2563EB;font-weight:700;">Ubuntu Bridge Initiative &nbsp;&middot;&nbsp; New platform</div>
+      <h1 style="margin:14px 0 0;font-size:32px;line-height:1.12;font-weight:800;letter-spacing:-0.9px;color:#111111;">The Scam Bank is live.</h1>
+      <div style="width:44px;height:4px;background:#2563EB;border-radius:2px;margin:18px 0 0;"></div>
+      <p style="margin:16px 0 0;font-size:15px;line-height:1.6;color:#737373;">A community-powered shield against scams. Report one, and you help protect thousands.</p>
+    </div>
+    <div style="height:1px;background:#F0F0F0;"></div>
+    <div style="padding:30px 40px 8px;">
+      <p style="margin:0 0 18px;font-size:15px;line-height:1.78;color:#2b2b2b;">Hi ${firstName},</p>
+      <p style="margin:0 0 18px;font-size:15px;line-height:1.78;color:#2b2b2b;">Today we are launching the <strong style="color:#111;">Ubuntu Bridge Initiative Scam Bank</strong>, a community-powered platform where people anywhere can report the scams they come across, so others can check, learn, and avoid becoming the next victim.</p>
+      <p style="margin:0 0 22px;font-size:15px;line-height:1.78;color:#2b2b2b;">The idea is simple: <strong style="color:#111;">if one person reports a scam, another person may be saved from it.</strong></p>
+    </div>
+    <div style="padding:0 40px;">
+      <div style="border:1px solid #BFDBFE;background:#EFF6FF;border-radius:12px;padding:22px 22px 8px;">
+        <div style="font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:#1E40AF;font-weight:800;">What you can do</div>
+        <p style="margin:12px 0 14px;font-size:14.5px;line-height:1.6;color:#1E3A8A;"><strong style="color:#111;">Report</strong> scam emails, SMS and WhatsApp messages, fake websites, job and investment scams, and phishing links.</p>
+        <p style="margin:0 0 14px;font-size:14.5px;line-height:1.6;color:#1E3A8A;"><strong style="color:#111;">Check</strong> whether something has already been reported before you act on it.</p>
+        <p style="margin:0 0 14px;font-size:14.5px;line-height:1.6;color:#1E3A8A;"><strong style="color:#111;">Track</strong> the scam patterns spreading in different countries, earn badges, and climb the leaderboard for protecting the community.</p>
+      </div>
+    </div>
+    <div style="padding:24px 40px 6px;">
+      <a href="${url}" style="display:inline-block;background:#2563EB;color:#FFFFFF;text-decoration:none;font-weight:600;font-size:14px;padding:13px 28px;border-radius:10px;">Open the Scam Bank</a>
+    </div>
+    <div style="padding:14px 40px 4px;">
+      <p style="margin:0 0 18px;font-size:15px;line-height:1.78;color:#2b2b2b;">Please share it with your family and friends too, so they can report and check scams alongside you. The more people who use it, the stronger the shield.</p>
+    </div>
+    <div style="padding:8px 40px 32px;">
+      <p style="margin:0;font-size:15px;color:#111;font-weight:700;">The Ubuntu Bridge Initiative team</p>
+      <p style="margin:2px 0 0;font-size:13px;color:#737373;">ubuntubridgeinitiatives.org</p>
+    </div>
+    <div style="background:#FAFAFA;border-top:1px solid #EEEEEE;padding:18px 40px;text-align:center;">
+      <div style="font-size:12px;color:#737373;">Ubuntu &nbsp;&middot;&nbsp; I am because we are.</div>
+    </div>
+  </div>
+</div>`;
   },
 };
 
