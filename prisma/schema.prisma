@@ -830,6 +830,15 @@ model FeedbackResponse {
   testimonial      String?
   consentToShare   Boolean?  // may we quote your testimonial publicly
 
+  // ── Feedback on the people running the programme ──
+  feedbackProgrammeHead    String?  // Head of Programme
+  feedbackCoFounder        String?  // Co-founder
+  feedbackProgrammeManager String?  // Lead Programme Manager
+
+  // ── Aspirations — used to shape the town hall sessions ──
+  whereWorkGoal    String?   // where would you like to work
+  supportNeeded    String?   // what do you need from us to get there
+
   // ── Demographics / equity ──
   country          String?
   gender           String?

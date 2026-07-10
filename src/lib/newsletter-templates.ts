@@ -793,79 +793,204 @@ const SCAM_BANK: NewsletterTemplate = {
   },
 };
 
-// ─── Template: Stage 4 Result (prank teaser) ────────────────────────────
-// Flat UBI brand (not the gradient shell). Builds tension with cryptic copy
-// that never states a pass or fail, then reveals the real result lands in an
-// hour. Self-contained HTML doc so the approved flat look is preserved.
-const STAGE4_PRANK: NewsletterTemplate = {
-  id: "stage4-result-prank",
-  name: "Stage 4 Result (prank teaser)",
+// ─── Template: Weekly Webinar — Portfolio ───────────────────────────────
+// Flat UBI brand, same language as the cohort/townhall emails. The Google Meet
+// link is required so it can never go out empty.
+const WEEKLY_WEBINAR: NewsletterTemplate = {
+  id: "weekly-webinar-portfolio",
+  name: "Weekly Webinar — Portfolio (Saturday)",
   description:
-    "Playful teaser sent to the whole cohort before results. Cryptic tension, no pass/fail, reveals the real result is one hour away. Fully pre-filled.",
-  defaultSubject: "Stage 4 Result",
-  render: ({ firstName }) => `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Stage 4 Result</title>
-</head>
-<body style="margin:0;padding:0;background:#FAFAFA;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#111111;-webkit-text-size-adjust:100%;">
-  <div style="display:none;max-height:0;overflow:hidden;font-size:1px;line-height:1;color:#FAFAFA;opacity:0;">Your Stage 4 outcome is ready. Please read this one carefully.</div>
-  <div style="background:#FAFAFA;padding:44px 20px;">
-    <div style="max-width:600px;margin:0 auto;background:#FFFFFF;border:1px solid #E5E5E5;border-radius:16px;overflow:hidden;">
-
-      <div style="padding:36px 40px 26px;">
-        <div style="font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:#2563EB;font-weight:700;">Ubuntu Bridge Initiative &nbsp;&middot;&nbsp; Cohort 1 &nbsp;&middot;&nbsp; Stage 4</div>
-        <h1 style="margin:14px 0 0;font-size:31px;line-height:1.12;font-weight:800;letter-spacing:-0.8px;color:#111111;">Stage 4 Result</h1>
-        <div style="width:44px;height:4px;background:#2563EB;border-radius:2px;margin:18px 0 0;"></div>
+    "Invites the cohort to Saturday's weekly webinar on building a cybersecurity portfolio. Paste the Google Meet link before sending; date, time and speaker are pre-filled and editable.",
+  defaultSubject: "Saturday: the portfolio that replaces years of experience",
+  variables: [
+    {
+      name: "webinar_link",
+      label: "Google Meet link",
+      placeholder: "https://meet.google.com/...",
+      required: true,
+    },
+    {
+      name: "webinar_when",
+      label: "Date and time",
+      placeholder: "Saturday, 11th July 2026 · 6:00 – 7:00 PM WAT",
+      required: false,
+      defaultValue: "Saturday, 11th July 2026 · 6:00 – 7:00 PM WAT",
+    },
+    {
+      name: "speaker",
+      label: "Speaker name",
+      placeholder: "Miracle Chukwudebe",
+      required: false,
+      defaultValue: "Miracle Chukwudebe",
+    },
+  ],
+  render: ({ firstName, vars }) => {
+    const link = (vars.webinar_link || "").trim();
+    const when = (vars.webinar_when || "Saturday, 11th July 2026 · 6:00 – 7:00 PM WAT").trim();
+    const speaker = (vars.speaker || "Miracle Chukwudebe").trim();
+    return `
+<div style="font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;background:#FAFAFA;padding:44px 20px;color:#111111;">
+  <div style="max-width:600px;margin:0 auto;background:#FFFFFF;border:1px solid #E5E5E5;border-radius:16px;overflow:hidden;">
+    <div style="padding:36px 40px 26px;">
+      <div style="font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:#2563EB;font-weight:700;">Ubuntu Bridge Initiative &nbsp;&middot;&nbsp; Weekly Webinar</div>
+      <h1 style="margin:14px 0 0;font-size:31px;line-height:1.14;font-weight:800;letter-spacing:-0.9px;color:#111111;">&ldquo;You need 3 years of experience for an entry-level role.&rdquo;</h1>
+      <div style="width:44px;height:4px;background:#2563EB;border-radius:2px;margin:18px 0 0;"></div>
+      <p style="margin:16px 0 0;font-size:15px;line-height:1.6;color:#737373;">You have probably seen something similar. It can feel frustrating.</p>
+    </div>
+    <div style="height:1px;background:#F0F0F0;"></div>
+    <div style="padding:30px 40px 8px;">
+      <p style="margin:0 0 18px;font-size:15px;line-height:1.78;color:#2b2b2b;">Hi ${firstName},</p>
+      <p style="margin:0 0 18px;font-size:15px;line-height:1.78;color:#2b2b2b;">How do you gain experience when every opportunity seems to require experience first? The answer is not always another certification.</p>
+      <p style="margin:0 0 22px;font-size:15px;line-height:1.78;color:#2b2b2b;">Sometimes it is about building a portfolio that <strong style="color:#111;">demonstrates your skills before anyone asks for your CV.</strong></p>
+    </div>
+    <div style="padding:0 40px;">
+      <div style="border:1px solid #BFDBFE;background:#EFF6FF;border-radius:12px;padding:22px 22px 20px;">
+        <div style="font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:#1E40AF;font-weight:800;">This Saturday we are discussing</div>
+        <p style="margin:10px 0 0;font-size:19px;line-height:1.35;color:#111;font-weight:800;letter-spacing:-0.3px;">Building a Cybersecurity Portfolio That Replaces Years of Experience</p>
       </div>
-
-      <div style="height:1px;background:#F0F0F0;"></div>
-
-      <div style="padding:30px 40px 4px;">
-        <p style="margin:0 0 18px;font-size:15px;line-height:1.78;color:#2b2b2b;">Hi ${firstName},</p>
-        <p style="margin:0 0 18px;font-size:15px;line-height:1.78;color:#2b2b2b;">It is done. The review closed at 14:07. The number was carried across, rounded the way it is always rounded, and then carried across again. Six deliverables. One of them mattered more than you think, and it was not the one you think.</p>
-        <p style="margin:0 0 18px;font-size:15px;line-height:1.78;color:#2b2b2b;">We checked it twice. Then a third person checked it, quietly, without being asked. The register held. The letter held. The memo did the thing memos do. Somewhere around the roadmap, someone in the room went very still.</p>
-        <p style="margin:0 0 18px;font-size:15px;line-height:1.78;color:#2b2b2b;">Your file sat between two others. To the left, a strong one. To the right, also a strong one. Yours was in the middle, doing exactly what it was always going to do. The envelope has been sealed. The envelope has been unsealed. It is, at time of writing, an envelope.</p>
-        <p style="margin:0 0 18px;font-size:15px;line-height:1.78;color:#2b2b2b;">So here it is. After everything. The moment. Your Stage 4 outcome is&hellip;</p>
+    </div>
+    <div style="padding:24px 40px 4px;">
+      <p style="margin:0 0 18px;font-size:15px;line-height:1.78;color:#2b2b2b;">Our speaker, <strong style="color:#111;">${escapeHtml(speaker)}</strong>, will share practical insights on how to build a portfolio that helps you stand out, showcase your abilities, and give employers confidence in your capabilities.</p>
+      <p style="margin:0 0 22px;font-size:15px;line-height:1.78;color:#2b2b2b;">Whether you are drawn to SOC, GRC, Penetration Testing, Cloud Security, or any other cybersecurity path, your portfolio can become one of your strongest assets.</p>
+    </div>
+    <div style="padding:0 40px;">
+      <div style="border:1px solid #E5E7EB;background:#F8FAFC;border-radius:12px;padding:20px 22px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+          <tr>
+            <td style="padding:5px 0;font-size:12px;color:#64748B;width:70px;">When</td>
+            <td style="padding:5px 0;font-size:14.5px;color:#111;font-weight:700;">${escapeHtml(when)}</td>
+          </tr>
+          <tr>
+            <td style="padding:5px 0;border-top:1px solid #E5E7EB;font-size:12px;color:#64748B;">Where</td>
+            <td style="padding:5px 0;border-top:1px solid #E5E7EB;font-size:14.5px;color:#111;font-weight:700;">Google Meet</td>
+          </tr>
+        </table>
       </div>
-
-      <div style="padding:6px 40px 8px;">
-        <div style="background:#0F172A;border-radius:14px;padding:30px 26px;text-align:center;">
-          <div style="font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:#38BDF8;font-weight:800;">Your official Stage 4 outcome</div>
-          <div style="margin:16px 0 8px;font-size:27px;line-height:1.25;font-weight:800;color:#F1F5F9;letter-spacing:-0.4px;">&hellip; not in this email. &#128513;</div>
-          <div style="font-size:15px;line-height:1.7;color:#94A3B8;">You read every word of that, didn&rsquo;t you. We know. We wrote it that way.</div>
-        </div>
+    </div>
+    <div style="padding:24px 40px 8px;">
+      <a href="${escapeAttr(link)}" style="display:inline-block;background:#2563EB;color:#FFFFFF;text-decoration:none;font-weight:600;font-size:14px;padding:13px 30px;border-radius:10px;">Join the webinar</a>
+    </div>
+    <div style="padding:16px 40px 4px;">
+      <div style="border-left:3px solid #2563EB;padding:2px 0 2px 16px;">
+        <p style="margin:0;font-size:14.5px;line-height:1.7;color:#525252;">Come with an answer to this: <strong style="color:#111;">what is one project or portfolio piece that helped you get noticed early in your career?</strong> We would love to hear it on the call.</p>
       </div>
-
-      <div style="padding:24px 40px 4px;">
-        <p style="margin:0 0 18px;font-size:15px;line-height:1.78;color:#2b2b2b;">Nobody has been passed or failed here, so unclench your shoulders. This was us having a little fun with a cohort that has earned the right to be teased.</p>
-        <p style="margin:0 0 6px;font-size:16px;line-height:1.7;color:#111;font-weight:700;">Your real Stage 4 result lands in your inbox in one hour.</p>
-        <p style="margin:0 0 18px;font-size:15px;line-height:1.78;color:#2b2b2b;">Keep this tab open, keep your notifications on, and go get some water. See you in sixty minutes, for real this time.</p>
-      </div>
-
-      <div style="padding:14px 40px 32px;">
-        <p style="margin:0 0 18px;font-size:15px;line-height:1.7;color:#2b2b2b;">Almost there. Genuinely proud of how far this cohort has pushed.</p>
-        <p style="margin:0;font-size:15px;color:#111;font-weight:700;">Somto Okoma</p>
-        <p style="margin:2px 0 0;font-size:13px;color:#737373;">Head of Programme, Ubuntu Bridge Initiative</p>
-      </div>
-
-      <div style="background:#FAFAFA;border-top:1px solid #EEEEEE;padding:18px 40px;text-align:center;">
-        <div style="font-size:12px;color:#737373;">Ubuntu &nbsp;&middot;&nbsp; I am because we are.</div>
-      </div>
-
+    </div>
+    <div style="padding:26px 40px 32px;">
+      <p style="margin:0 0 18px;font-size:15px;line-height:1.7;color:#2b2b2b;">See you on Saturday.</p>
+      <p style="margin:0;font-size:15px;color:#111;font-weight:700;">Somto Okoma</p>
+      <p style="margin:2px 0 0;font-size:13px;color:#737373;">Head of Programme, Ubuntu Bridge Initiative</p>
+    </div>
+    <div style="background:#FAFAFA;border-top:1px solid #EEEEEE;padding:18px 40px;text-align:center;">
+      <div style="font-size:12px;color:#737373;">Ubuntu &nbsp;&middot;&nbsp; I am because we are.</div>
     </div>
   </div>
-</body>
-</html>`,
-  variables: [],
+</div>`;
+  },
+};
+
+// ─── Template: Three asks — feedback, photo, laptop ─────────────────────
+const THREE_ASKS: NewsletterTemplate = {
+  id: "feedback-photo-laptop",
+  name: "Feedback + Photo + Laptop application",
+  description:
+    "Asks the cohort for three things: the platform feedback form, a photo for the cohort banner (max 500KB), and the laptop application. Paste the photo-upload form link before sending.",
+  defaultSubject: "Three things we need from you (and a laptop, if you need one)",
+  variables: [
+    {
+      name: "photo_form_link",
+      label: "Photo upload form link (Google Form)",
+      placeholder: "https://forms.gle/...",
+      required: true,
+      defaultValue: "https://forms.gle/mWnjXPxXYZA9Hc7z9",
+    },
+    {
+      name: "laptop_link",
+      label: "Laptop application link",
+      placeholder: "https://forms.gle/...",
+      required: false,
+      defaultValue: "https://forms.gle/R7DQunNGdjv8tmuH7",
+    },
+    {
+      name: "laptop_deadline",
+      label: "Laptop application deadline",
+      placeholder: "Monday, 13th July 2026 · 12:00 PM WAT",
+      required: false,
+      defaultValue: "Monday, 13th July 2026 · 12:00 PM WAT",
+    },
+  ],
+  render: ({ firstName, vars }) => {
+    const photo = (vars.photo_form_link || "").trim();
+    const laptop = (vars.laptop_link || "https://forms.gle/R7DQunNGdjv8tmuH7").trim();
+    const deadline = (vars.laptop_deadline || "Monday, 13th July 2026 · 12:00 PM WAT").trim();
+    // Public form: no account, no login. Anyone with the link can fill it in.
+    const survey = "https://ubuntubridgeinitiatives.org/feedback";
+    return `
+<div style="font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;background:#FAFAFA;padding:44px 20px;color:#111111;">
+  <div style="max-width:600px;margin:0 auto;background:#FFFFFF;border:1px solid #E5E5E5;border-radius:16px;overflow:hidden;">
+    <div style="padding:36px 40px 26px;">
+      <div style="font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:#2563EB;font-weight:700;">Ubuntu Bridge Initiative &nbsp;&middot;&nbsp; Cohort 1</div>
+      <h1 style="margin:14px 0 0;font-size:32px;line-height:1.12;font-weight:800;letter-spacing:-0.9px;color:#111111;">Three things we need from you.</h1>
+      <div style="width:44px;height:4px;background:#2563EB;border-radius:2px;margin:18px 0 0;"></div>
+      <p style="margin:16px 0 0;font-size:15px;line-height:1.6;color:#737373;">Your feedback, your photo, and a laptop application if you need one.</p>
+    </div>
+    <div style="height:1px;background:#F0F0F0;"></div>
+    <div style="padding:30px 40px 8px;">
+      <p style="margin:0 0 18px;font-size:15px;line-height:1.78;color:#2b2b2b;">Hi ${firstName},</p>
+      <p style="margin:0 0 22px;font-size:15px;line-height:1.78;color:#2b2b2b;">You have given this programme a great deal. Now we are asking for three short things in return, and the first one matters most.</p>
+    </div>
+
+    <div style="padding:0 40px;">
+      <div style="border:1px solid #BFDBFE;background:#EFF6FF;border-radius:12px;padding:22px 22px 20px;">
+        <div style="font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:#1E40AF;font-weight:800;">One &nbsp;&middot;&nbsp; Your feedback</div>
+        <p style="margin:9px 0 12px;font-size:15px;line-height:1.7;color:#1E3A8A;">We do not want only kind words. We want the truth: what worked, what did not, and how we make the next cohort better. The form asks how the programme has gone, how it can improve, honest feedback on the team running it, <strong style="color:#111;">where you would like to work and what you need from us</strong>, and your own story of what this internship has changed for you.</p>
+        <p style="margin:0 0 16px;font-size:14px;line-height:1.7;color:#1E3A8A;">We would like to <strong style="color:#111;">publish some of these stories</strong>, so write yours as something you would be proud to see shared. You choose, on the form, whether we may quote you.</p>
+        <a href="${escapeAttr(survey)}" style="display:inline-block;background:#2563EB;color:#FFFFFF;text-decoration:none;font-weight:600;font-size:14px;padding:12px 26px;border-radius:10px;">Open the feedback form</a>
+      </div>
+    </div>
+
+    <div style="padding:18px 40px 0;">
+      <div style="border:1px solid #E5E7EB;background:#F8FAFC;border-radius:12px;padding:22px 22px 20px;">
+        <div style="font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:#475569;font-weight:800;">Two &nbsp;&middot;&nbsp; Your photo</div>
+        <p style="margin:9px 0 12px;font-size:15px;line-height:1.7;color:#475569;">We are making a banner for the cohort, and we would like your face on it. A clear head-and-shoulders photo is perfect.</p>
+        <p style="margin:0 0 16px;font-size:14px;line-height:1.7;color:#475569;">Please keep it <strong style="color:#111;">under 500KB</strong>. Anything larger will not be accepted.</p>
+        <a href="${escapeAttr(photo)}" style="display:inline-block;background:#0F172A;color:#FFFFFF;text-decoration:none;font-weight:600;font-size:14px;padding:12px 26px;border-radius:10px;">Send your photo</a>
+      </div>
+    </div>
+
+    <div style="padding:18px 40px 0;">
+      <div style="border:1px solid #FDE68A;background:#FFFBEB;border-radius:12px;padding:22px 22px 20px;">
+        <div style="font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:#92400E;font-weight:800;">Three &nbsp;&middot;&nbsp; Laptop application</div>
+        <p style="margin:9px 0 12px;font-size:15px;line-height:1.7;color:#78350F;">Two laptops will be awarded to interns who genuinely need them to support their cybersecurity learning, courtesy of <strong style="color:#111;">Mr Peter Ejiofor</strong>, CEO of Ethnos Cyber Ltd.</p>
+        <p style="margin:0 0 12px;font-size:14px;line-height:1.7;color:#78350F;">If you do not have access to a suitable laptop, or your current device is significantly limiting your ability to take part, we encourage you to apply.</p>
+        <p style="margin:0 0 16px;font-size:14px;line-height:1.7;color:#78350F;">Deadline: <strong style="color:#111;">${escapeHtml(deadline)}</strong></p>
+        <a href="${escapeAttr(laptop)}" style="display:inline-block;background:#B45309;color:#FFFFFF;text-decoration:none;font-weight:600;font-size:14px;padding:12px 26px;border-radius:10px;">Apply for a laptop</a>
+      </div>
+    </div>
+
+    <div style="padding:24px 40px 4px;">
+      <div style="border-left:3px solid #2563EB;padding:2px 0 2px 16px;">
+        <p style="margin:0;font-size:14.5px;line-height:1.7;color:#525252;">Coming soon on the platform: you will be able to <strong style="color:#111;">change your track and correct your name</strong> yourself. We will let you know the moment it is live.</p>
+      </div>
+    </div>
+
+    <div style="padding:26px 40px 32px;">
+      <p style="margin:0 0 18px;font-size:15px;line-height:1.7;color:#2b2b2b;">Thank you for the work you have put in. Be honest with us.</p>
+      <p style="margin:0;font-size:15px;color:#111;font-weight:700;">Somto Okoma</p>
+      <p style="margin:2px 0 0;font-size:13px;color:#737373;">Head of Programme, Ubuntu Bridge Initiative</p>
+    </div>
+    <div style="background:#FAFAFA;border-top:1px solid #EEEEEE;padding:18px 40px;text-align:center;">
+      <div style="font-size:12px;color:#737373;">Ubuntu &nbsp;&middot;&nbsp; I am because we are.</div>
+    </div>
+  </div>
+</div>`;
+  },
 };
 
 // ─── Registry ───────────────────────────────────────────────────────────
 
 export const NEWSLETTER_TEMPLATES: NewsletterTemplate[] = [
-  STAGE4_PRANK,
+  THREE_ASKS,
+  WEEKLY_WEBINAR,
   COHORT_UPDATE_TOWNHALL,
   SCAM_BANK,
   KICKOFF,

@@ -84,6 +84,11 @@ export function FeedbackForm({
       skillsGained: skills,
       testimonial: str("testimonial"),
       consentToShare: fd.get("consentToShare") === "on",
+      feedbackProgrammeHead: str("feedbackProgrammeHead"),
+      feedbackCoFounder: str("feedbackCoFounder"),
+      feedbackProgrammeManager: str("feedbackProgrammeManager"),
+      whereWorkGoal: str("whereWorkGoal"),
+      supportNeeded: str("supportNeeded"),
       country: str("country"),
       gender: str("gender"),
       ageRange: str("ageRange"),
@@ -130,10 +135,10 @@ export function FeedbackForm({
         <section className="space-y-4">
           <div className="grid sm:grid-cols-2 gap-4">
             <Q label="Your name">
-              <input name="name" defaultValue={prefillName} className={field} placeholder="Full name" />
+              <input name="name" required defaultValue={prefillName} className={field} placeholder="Full name" />
             </Q>
             <Q label="Email">
-              <input name="email" type="email" defaultValue={prefillEmail} className={field} placeholder="you@example.com" />
+              <input name="email" type="email" required defaultValue={prefillEmail} className={field} placeholder="you@example.com" />
             </Q>
           </div>
         </section>
@@ -231,6 +236,35 @@ export function FeedbackForm({
         </Q>
         <Q label="How could we improve the programme?">
           <textarea name="howToImprove" rows={3} className={field} placeholder="Anything you would change or add." />
+        </Q>
+      </section>
+
+      {/* Where you want to go — shapes the town hall sessions */}
+      <section className="space-y-4">
+        <h3 className="text-base font-bold text-foreground">Where you want to go</h3>
+        <Q label="Where would you like to work?" hint="The kind of role, company, or country you are aiming for.">
+          <textarea name="whereWorkGoal" rows={3} className={field} placeholder="A SOC role, a consultancy, remote for a UK company..." />
+        </Q>
+        <Q label="What do you need from us to get there?" hint="We use these answers to shape the town hall sessions.">
+          <textarea name="supportNeeded" rows={3} className={field} placeholder="Mentorship, CV review, interview practice, a specific skill..." />
+        </Q>
+      </section>
+
+      {/* Feedback on the team */}
+      <section className="space-y-4">
+        <h3 className="text-base font-bold text-foreground">The team</h3>
+        <p className="text-sm text-muted">
+          Be candid. This is how the people running the programme get better, and it is read
+          directly by them.
+        </p>
+        <Q label="The Head of Programme" hint="How has working with them been?">
+          <textarea name="feedbackProgrammeHead" rows={3} className={field} placeholder="What worked, what did not." />
+        </Q>
+        <Q label="The Co-founder" hint="How has working with them been?">
+          <textarea name="feedbackCoFounder" rows={3} className={field} placeholder="What worked, what did not." />
+        </Q>
+        <Q label="The Lead Programme Manager" hint="How has working with them been?">
+          <textarea name="feedbackProgrammeManager" rows={3} className={field} placeholder="What worked, what did not." />
         </Q>
       </section>
 

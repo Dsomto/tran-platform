@@ -7,7 +7,10 @@ export const dynamic = "force-dynamic";
 
 export default async function DashboardSurveyPage() {
   const session = await getSession();
-  if (!session) redirect("/login");
+  // Keep the destination: someone opening the survey link from an email while
+  // logged out lands back on the survey after signing in, instead of being
+  // dumped on the dashboard and losing the form.
+  if (!session) redirect("/login?next=/dashboard/survey");
 
   // If this intern already responded (matched by email on an invite), show a
   // short thank-you instead of the form so they can't double-submit.
