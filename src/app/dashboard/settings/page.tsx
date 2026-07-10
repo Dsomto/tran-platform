@@ -6,15 +6,18 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Settings } from "lucide-react";
 import { trackLabel } from "@/lib/utils";
 import { EggWhoami } from "@/components/dashboard/easter-eggs/widgets";
+import { TrackChangeCard } from "@/components/dashboard/track-change-card";
+import { getTrackChangeDeadline } from "@/lib/system-settings";
 
 export default async function SettingsPage() {
   const session = await getSession();
-  if (!session) redirect("/login");
+  if (!session) redirect("/login?next=/dashboard/settings");
 
   const intern = await prisma.intern.findUnique({
     where: { userId: session.id },
     select: { currentStage: true, track: true },
   });
+  const trackDeadline = await getTrackChangeDeadline();
 
   return (
     <>
@@ -25,7 +28,16 @@ export default async function SettingsPage() {
         lastName={session.lastName}
         avatarUrl={session.avatarUrl}
       />
-      <div className="flex-1 overflow-y-auto p-6">
+      <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        {intern && (
+          <div className="max-w-2xl">
+            <TrackChangeCard
+              currentTrack={intern.track}
+              deadlineIso={trackDeadline ? trackDeadline.toISOString() : null}
+            />
+          </div>
+        )}
+
         <Card variant="glass" className="max-w-2xl">
           <CardContent>
             <div className="flex items-center gap-3 mb-6">

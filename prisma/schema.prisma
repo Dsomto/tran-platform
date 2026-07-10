@@ -751,6 +751,10 @@ model SystemSetting {
   // Default false preserves the standard two-grader flow.
   soloGradingEnabled       Boolean   @default(false)
 
+  // Interns may switch their specialisation track until this moment. Null =
+  // track switching is closed. The dashboard shows a live countdown to it.
+  trackChangeDeadline      DateTime?
+
   updatedAt                DateTime  @updatedAt
   updatedById              String?   @db.ObjectId
 }

@@ -3,8 +3,9 @@ import { getSession } from "@/lib/auth";
 import { Topbar } from "@/components/dashboard/topbar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Settings } from "lucide-react";
-import { getApplicationState } from "@/lib/system-settings";
+import { getApplicationState, getTrackChangeDeadline } from "@/lib/system-settings";
 import { ApplicationWindowControls } from "./application-window-controls";
+import { TrackChangeControls } from "./track-change-controls";
 
 export default async function AdminSettingsPage() {
   const session = await getSession();
@@ -12,6 +13,7 @@ export default async function AdminSettingsPage() {
   if (session.role !== "ADMIN" && session.role !== "SUPER_ADMIN") redirect("/dashboard");
 
   const state = await getApplicationState();
+  const trackDeadline = await getTrackChangeDeadline();
 
   return (
     <>
@@ -34,6 +36,8 @@ export default async function AdminSettingsPage() {
               reason: state.reason,
             }}
           />
+
+          <TrackChangeControls initialIso={trackDeadline ? trackDeadline.toISOString() : null} />
 
           <Card variant="glass">
             <CardContent>

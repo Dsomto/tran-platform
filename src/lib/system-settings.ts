@@ -80,6 +80,33 @@ export async function setSoloGrading(enabled: boolean, updatedById?: string): Pr
   return enabled;
 }
 
+// ─── Track switching window ──────────────────────────────
+// Interns may change their specialisation track until this instant. Null means
+// switching is closed. The dashboard renders a live countdown from this value.
+export async function getTrackChangeDeadline(): Promise<Date | null> {
+  const row = await prisma.systemSetting.findUnique({
+    where: { key: "singleton" },
+    select: { trackChangeDeadline: true },
+  });
+  return row?.trackChangeDeadline ?? null;
+}
+
+export function isTrackChangeOpen(deadline: Date | null): boolean {
+  return deadline !== null && deadline.getTime() > Date.now();
+}
+
+export async function setTrackChangeDeadline(
+  deadline: Date | null,
+  updatedById?: string
+): Promise<Date | null> {
+  await prisma.systemSetting.upsert({
+    where: { key: "singleton" },
+    create: { key: "singleton", trackChangeDeadline: deadline, updatedById },
+    update: { trackChangeDeadline: deadline, updatedById },
+  });
+  return deadline;
+}
+
 export async function setApplicationWindow(
   patch: Partial<ApplicationWindow>,
   updatedById?: string
