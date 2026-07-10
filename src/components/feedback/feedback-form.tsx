@@ -257,13 +257,13 @@ export function FeedbackForm({
           Be candid. This is how the people running the programme get better, and it is read
           directly by them.
         </p>
-        <Q label="The Head of Programme" hint="How has working with them been?">
+        <Q label="Okoma Somto, Head of Programme" hint="How has working with him been?">
           <textarea name="feedbackProgrammeHead" rows={3} className={field} placeholder="What worked, what did not." />
         </Q>
-        <Q label="The Co-founder" hint="How has working with them been?">
+        <Q label="Quadri Omoloju, Co-founder" hint="How has working with him been?">
           <textarea name="feedbackCoFounder" rows={3} className={field} placeholder="What worked, what did not." />
         </Q>
-        <Q label="The Lead Programme Manager" hint="How has working with them been?">
+        <Q label="Benedicta Otoibhi, Lead Programme Manager" hint="How has working with her been?">
           <textarea name="feedbackProgrammeManager" rows={3} className={field} placeholder="What worked, what did not." />
         </Q>
       </section>
