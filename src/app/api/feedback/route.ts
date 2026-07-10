@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { randomUUID } from "crypto";
 import { prisma } from "@/lib/db";
 import { logger } from "@/lib/logger";
 import { getSession } from "@/lib/auth";
@@ -15,10 +16,16 @@ const INT = (v: unknown, lo: number, hi: number): number | null => {
   return n < lo || n > hi ? null : n;
 };
 
-// Accepts a programme-outcomes feedback response. Two entry points:
+// Accepts a programme-outcomes feedback response. Three entry points:
 //  - public tokenized form (body.token present, no session) — links to the invite
 //  - in-dashboard form (logged-in intern, no token) — identity from session
-// One response per invite; the unique inviteId index also guards double-submit.
+//  - open public form (/feedback) — no token, no session, self-reported identity
+//
+// FeedbackResponse.inviteId carries a plain unique index in MongoDB, which
+// treats null as a value: a second row with inviteId=null is rejected with a
+// duplicate-key error. So every response must carry a *distinct* inviteId. When
+// we have no invite we mint one from the submitter's email, which keeps the
+// row unique, keeps it attributable, and preserves one-response-per-person.
 export async function POST(request: NextRequest) {
   try {
     const rl = await rateLimit(getClientKey(request), RATE_LIMITS.publicForm);
@@ -66,7 +73,30 @@ export async function POST(request: NextRequest) {
         inviteId = invite.id;
       }
     }
-    // else: anonymous public submission with no token — still accepted.
+    // No invite yet: the open public form, or a logged-in intern who was never
+    // invited. Mint an invite so this row gets a distinct, non-null inviteId.
+    // Without this, Mongo's unique index rejects the second such submission.
+    if (!inviteId) {
+      if (!email) {
+        return Response.json({ error: "Your email is required." }, { status: 400 });
+      }
+      const lowerEmail = email.toLowerCase();
+      const existing = await prisma.feedbackInvite.findFirst({
+        where: { email: lowerEmail },
+        include: { response: true },
+      });
+      if (existing) {
+        if (existing.respondedAt || existing.response) {
+          return Response.json({ error: "You have already responded." }, { status: 409 });
+        }
+        inviteId = existing.id;
+      } else {
+        const minted = await prisma.feedbackInvite.create({
+          data: { token: randomUUID(), email: lowerEmail, name: name ?? null },
+        });
+        inviteId = minted.id;
+      }
+    }
 
     const data = {
       inviteId,

@@ -7,6 +7,7 @@ import { Settings } from "lucide-react";
 import { trackLabel } from "@/lib/utils";
 import { EggWhoami } from "@/components/dashboard/easter-eggs/widgets";
 import { TrackChangeCard } from "@/components/dashboard/track-change-card";
+import { NameChangeCard } from "@/components/dashboard/name-change-card";
 import { getTrackChangeDeadline } from "@/lib/system-settings";
 
 export default async function SettingsPage() {
@@ -29,6 +30,10 @@ export default async function SettingsPage() {
         avatarUrl={session.avatarUrl}
       />
       <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <div className="max-w-2xl">
+          <NameChangeCard firstName={session.firstName} lastName={session.lastName} />
+        </div>
+
         {intern && (
           <div className="max-w-2xl">
             <TrackChangeCard
@@ -55,16 +60,6 @@ export default async function SettingsPage() {
             </div>
 
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-xs font-medium text-muted mb-1">First Name</p>
-                  <p className="text-sm text-foreground">{session.firstName}</p>
-                </div>
-                <div>
-                  <p className="text-xs font-medium text-muted mb-1">Last Name</p>
-                  <p className="text-sm text-foreground">{session.lastName}</p>
-                </div>
-              </div>
               <div>
                 <p className="text-xs font-medium text-muted mb-1">Email</p>
                 <p className="text-sm text-foreground">{session.email}</p>
