@@ -1,0 +1,295 @@
+{
+  "fixtures": [
+    {
+      "case_id": "P-OPA-01",
+      "expected": {
+        "allow": false,
+        "control_id": "NF.IDENTITY.PRIVILEGED_ASSURANCE",
+        "resource_id": "asset-d738f3",
+        "violation_code": "IDENTITY_MFA_WEAK"
+      },
+      "input": {
+        "mfa": "sms",
+        "privileged": true,
+        "type": "human"
+      },
+      "resource_id": "asset-d738f3"
+    },
+    {
+      "case_id": "P-OPA-02",
+      "expected": {
+        "allow": false,
+        "control_id": "NF.IDENTITY.PRIVILEGED_ASSURANCE",
+        "resource_id": "asset-331d6f",
+        "violation_code": "IDENTITY_OWNER_MISSING"
+      },
+      "input": {
+        "credential_age_days": 20,
+        "owner": null,
+        "privileged": true,
+        "type": "service"
+      },
+      "resource_id": "asset-331d6f"
+    },
+    {
+      "case_id": "P-OPA-03",
+      "expected": {
+        "allow": false,
+        "control_id": "NF.IDENTITY.PRIVILEGED_ASSURANCE",
+        "resource_id": "asset-162e42",
+        "violation_code": "IDENTITY_CREDENTIAL_STALE"
+      },
+      "input": {
+        "credential_age_days": 180,
+        "owner": "platform",
+        "privileged": true,
+        "type": "service"
+      },
+      "resource_id": "asset-162e42"
+    },
+    {
+      "case_id": "P-OPA-04",
+      "expected": {
+        "allow": false,
+        "control_id": "NF.STORAGE.RESTRICTED_PROTECTION",
+        "resource_id": "asset-131b99",
+        "violation_code": "STORAGE_PUBLIC"
+      },
+      "input": {
+        "classification": "restricted",
+        "encryption": "customer-managed",
+        "log_sink": "audit-main",
+        "public": true
+      },
+      "resource_id": "asset-131b99"
+    },
+    {
+      "case_id": "P-OPA-05",
+      "expected": {
+        "allow": false,
+        "control_id": "NF.STORAGE.RESTRICTED_PROTECTION",
+        "resource_id": "asset-c776f0",
+        "violation_code": "STORAGE_UNENCRYPTED"
+      },
+      "input": {
+        "classification": "confidential",
+        "encryption": "none",
+        "log_sink": "audit-main",
+        "public": false
+      },
+      "resource_id": "asset-c776f0"
+    },
+    {
+      "case_id": "P-OPA-06",
+      "expected": {
+        "allow": false,
+        "control_id": "NF.STORAGE.RESTRICTED_PROTECTION",
+        "resource_id": "asset-ea13c7",
+        "violation_code": "STORAGE_LOG_MISSING"
+      },
+      "input": {
+        "classification": "restricted",
+        "encryption": "customer-managed",
+        "log_sink": null,
+        "public": false
+      },
+      "resource_id": "asset-ea13c7"
+    },
+    {
+      "case_id": "P-OPA-07",
+      "expected": {
+        "allow": false,
+        "control_id": "NF.ENDPOINT.MANAGED_HEALTH",
+        "resource_id": "asset-dff441",
+        "violation_code": "ENDPOINT_UNMANAGED"
+      },
+      "input": {
+        "disk_encrypted": true,
+        "edr_healthy": true,
+        "last_seen": "2026-07-13T07:00:00Z",
+        "managed": false
+      },
+      "resource_id": "asset-dff441"
+    },
+    {
+      "case_id": "P-OPA-08",
+      "expected": {
+        "allow": false,
+        "control_id": "NF.ENDPOINT.MANAGED_HEALTH",
+        "resource_id": "asset-1241d7",
+        "violation_code": "ENDPOINT_DISK_UNENCRYPTED"
+      },
+      "input": {
+        "disk_encrypted": false,
+        "edr_healthy": true,
+        "last_seen": "2026-07-13T07:00:00Z",
+        "managed": true
+      },
+      "resource_id": "asset-1241d7"
+    },
+    {
+      "case_id": "P-OPA-09",
+      "expected": {
+        "allow": false,
+        "control_id": "NF.ENDPOINT.MANAGED_HEALTH",
+        "resource_id": "asset-1217fb",
+        "violation_code": "ENDPOINT_EDR_UNHEALTHY"
+      },
+      "input": {
+        "disk_encrypted": true,
+        "edr_healthy": false,
+        "last_seen": "2026-07-13T07:00:00Z",
+        "managed": true
+      },
+      "resource_id": "asset-1217fb"
+    },
+    {
+      "case_id": "P-OPA-10",
+      "expected": {
+        "allow": false,
+        "control_id": "NF.ENDPOINT.MANAGED_HEALTH",
+        "resource_id": "asset-9ab9be",
+        "violation_code": "ENDPOINT_STALE"
+      },
+      "input": {
+        "disk_encrypted": true,
+        "edr_healthy": true,
+        "last_seen": "2026-07-01T07:00:00Z",
+        "managed": true
+      },
+      "resource_id": "asset-9ab9be"
+    },
+    {
+      "case_id": "P-OPA-11",
+      "expected": {
+        "allow": false,
+        "control_id": "NF.IDENTITY.PRIVILEGED_ASSURANCE",
+        "resource_id": "asset-139b25",
+        "violation_code": "EXCEPTION_EXPIRED"
+      },
+      "input": {
+        "approved_by": "ciso",
+        "compensating_control": "segmentation",
+        "expires_at": "2026-06-01T00:00:00Z",
+        "owner": "risk",
+        "reason": "legacy"
+      },
+      "resource_id": "asset-139b25"
+    },
+    {
+      "case_id": "P-OPA-12",
+      "expected": {
+        "allow": false,
+        "control_id": "NF.IDENTITY.PRIVILEGED_ASSURANCE",
+        "resource_id": "asset-250642",
+        "violation_code": "EXCEPTION_INCOMPLETE"
+      },
+      "input": {
+        "approved_by": "ciso",
+        "compensating_control": "segmentation",
+        "expires_at": "2026-08-01T00:00:00Z",
+        "owner": "risk",
+        "reason": null
+      },
+      "resource_id": "asset-250642"
+    },
+    {
+      "case_id": "P-OPA-13",
+      "expected": {
+        "allow": false,
+        "control_id": "NF.IDENTITY.PRIVILEGED_ASSURANCE",
+        "resource_id": "asset-8005ec",
+        "violation_code": "IDENTITY_MFA_WEAK"
+      },
+      "input": {
+        "mfa": "sms",
+        "privileged": true,
+        "type": "human"
+      },
+      "resource_id": "asset-8005ec"
+    },
+    {
+      "case_id": "P-OPA-14",
+      "expected": {
+        "allow": false,
+        "control_id": "NF.IDENTITY.PRIVILEGED_ASSURANCE",
+        "resource_id": "asset-1dd3f2",
+        "violation_code": "IDENTITY_OWNER_MISSING"
+      },
+      "input": {
+        "credential_age_days": 20,
+        "owner": null,
+        "privileged": true,
+        "type": "service"
+      },
+      "resource_id": "asset-1dd3f2"
+    },
+    {
+      "case_id": "P-OPA-15",
+      "expected": {
+        "allow": false,
+        "control_id": "NF.IDENTITY.PRIVILEGED_ASSURANCE",
+        "resource_id": "asset-2309c3",
+        "violation_code": "IDENTITY_CREDENTIAL_STALE"
+      },
+      "input": {
+        "credential_age_days": 180,
+        "owner": "platform",
+        "privileged": true,
+        "type": "service"
+      },
+      "resource_id": "asset-2309c3"
+    },
+    {
+      "case_id": "P-OPA-16",
+      "expected": {
+        "allow": false,
+        "control_id": "NF.STORAGE.RESTRICTED_PROTECTION",
+        "resource_id": "asset-71ce8b",
+        "violation_code": "STORAGE_PUBLIC"
+      },
+      "input": {
+        "classification": "restricted",
+        "encryption": "customer-managed",
+        "log_sink": "audit-main",
+        "public": true
+      },
+      "resource_id": "asset-71ce8b"
+    },
+    {
+      "case_id": "P-OPA-17",
+      "expected": {
+        "allow": false,
+        "control_id": "NF.STORAGE.RESTRICTED_PROTECTION",
+        "resource_id": "asset-d76d96",
+        "violation_code": "STORAGE_UNENCRYPTED"
+      },
+      "input": {
+        "classification": "confidential",
+        "encryption": "none",
+        "log_sink": "audit-main",
+        "public": false
+      },
+      "resource_id": "asset-d76d96"
+    },
+    {
+      "case_id": "P-OPA-18",
+      "expected": {
+        "allow": false,
+        "control_id": "NF.STORAGE.RESTRICTED_PROTECTION",
+        "resource_id": "asset-f3b038",
+        "violation_code": "STORAGE_LOG_MISSING"
+      },
+      "input": {
+        "classification": "restricted",
+        "encryption": "customer-managed",
+        "log_sink": null,
+        "public": false
+      },
+      "resource_id": "asset-f3b038"
+    }
+  ],
+  "interface_version": "2026-07",
+  "project": "GRC-A1",
+  "schema_version": "1.0"
+}

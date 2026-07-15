@@ -30,7 +30,12 @@ export default async function Stage0TaskPage({
   if (!room) notFound();
 
   const assignment = await prisma.assignment.findFirst({
-    where: { roomId: room.id, order: orderNum, isClosed: false },
+    where: {
+      roomId: room.id,
+      order: orderNum,
+      isClosed: false,
+      OR: [{ track: null }, { track: result.access.track }],
+    },
   });
   if (!assignment) notFound();
 

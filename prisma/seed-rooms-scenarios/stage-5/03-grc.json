@@ -1,0 +1,9 @@
+{
+  "track": "GRC",
+  "order": 1,
+  "title": "Policy as Code Under Constraint",
+  "description": "Map and implement the variant's three assigned control outcomes as a shared OPA/Rego bundle, then generate the governance report from machine-readable decisions. Pass public, hidden, malformed-input, and exception-expiry fixtures. One revision.",
+  "maxPoints": 100,
+  "kind": "UPLOAD",
+  "widget": "FILE_DOWNLOAD"
+}

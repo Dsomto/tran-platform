@@ -6,14 +6,14 @@ type PrivilegedRole = "GRADER" | "ADMIN" | "SUPER_ADMIN";
 type RouteAuth = "admin" | "grader-admin" | "ops";
 
 /**
- * Path-token routing for TRAN's foundation rooms.
+ * Path-token routing for TRAN's Foundation and Advanced rooms.
  *
- * Each of the five foundation rooms is reached via a hard-to-guess path token
+ * Each room is reached via a hard-to-guess path token
  * (instead of a subdomain, because Vercel Hobby doesn't support wildcards):
  *
  *   domain.com/<token-0>/... → /subdomains/stage-0/...
  *   domain.com/<token-1>/... → /subdomains/stage-1/...
- *   ... and so on for stages 2-4
+ *   ... and so on for stages 2-9
  *
  * Tokens live in src/lib/stage-routes.ts — rotate them there to change the URLs.
  *
@@ -139,6 +139,13 @@ function forbiddenRewrite(request: NextRequest) {
 export async function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
   const requestHeaders = withPathnameHeader(request, pathname);
+
+  if (pathname === "/advanced-stage" || pathname.startsWith("/advanced-stage/")) {
+    return NextResponse.rewrite(forbiddenRewrite(request), {
+      request: { headers: requestHeaders },
+      status: 404,
+    });
+  }
 
   // Never rewrite API routes, Next internals, static assets.
   if (

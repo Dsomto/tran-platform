@@ -1,0 +1,9 @@
+{
+  "track": "SOC_ANALYSIS",
+  "order": 1,
+  "title": "Engineer a Deception Sensor and Analysis Pipeline",
+  "description": "Deploy an isolated T-Pot sensor and build adapters, sessionization, clustering, STIX, and detection output around it. Pass three-view isolation, a sealed replay oracle, and a clean 45-minute redeploy. One revision.",
+  "maxPoints": 100,
+  "kind": "UPLOAD",
+  "widget": "FILE_DOWNLOAD"
+}

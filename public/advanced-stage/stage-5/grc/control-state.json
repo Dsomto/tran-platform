@@ -1,0 +1,41 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-13T08:00:00Z",
+  "assigned_control_outcomes": [
+    {
+      "id": "NF.IDENTITY.PRIVILEGED_ASSURANCE",
+      "rule": "Privileged human identities require phishing-resistant MFA; privileged service identities require an owner and credentials no older than 90 days."
+    },
+    {
+      "id": "NF.STORAGE.RESTRICTED_PROTECTION",
+      "rule": "Restricted or confidential storage must not be public, must be encrypted, and must reference an existing immutable log sink."
+    },
+    {
+      "id": "NF.ENDPOINT.MANAGED_HEALTH",
+      "rule": "In-scope endpoints must be managed, disk-encrypted, EDR-healthy, and seen within 24 hours of generated_at."
+    }
+  ],
+  "identities": [
+    { "id": "usr-101", "type": "human", "privileged": true, "mfa": "phishing-resistant", "last_review": "2026-06-30" },
+    { "id": "usr-102", "type": "human", "privileged": true, "mfa": "sms", "last_review": "2025-12-20" },
+    { "id": "svc-201", "type": "service", "privileged": true, "credential_age_days": 418, "owner": null },
+    { "id": "usr-103", "type": "human", "privileged": false, "mfa": "totp", "last_review": "2026-06-30" }
+  ],
+  "storage": [
+    { "id": "bucket-a", "classification": "restricted", "public": false, "encryption": "customer-managed", "log_sink": "audit-main" },
+    { "id": "bucket-b", "classification": "confidential", "public": true, "encryption": "provider-managed", "log_sink": null },
+    { "id": "archive-c", "classification": "internal", "public": false, "encryption": "none", "log_sink": "audit-main" }
+  ],
+  "endpoints": [
+    { "id": "dev-301", "managed": true, "disk_encrypted": true, "edr_healthy": true, "last_seen": "2026-07-13T07:50:00Z" },
+    { "id": "dev-302", "managed": false, "disk_encrypted": false, "edr_healthy": false, "last_seen": "2026-07-12T18:04:00Z" },
+    { "id": "dev-303", "managed": true, "disk_encrypted": true, "edr_healthy": false, "last_seen": "2026-07-13T07:58:00Z" }
+  ],
+  "logging": [
+    { "id": "audit-main", "immutable": true, "retention_days": 365, "last_event": "2026-07-13T07:59:58Z" },
+    { "id": "audit-legacy", "immutable": false, "retention_days": 14, "last_event": "2026-04-01T10:11:12Z" }
+  ],
+  "exceptions": [
+    { "id": "exc-01", "resource_id": "dev-302", "owner": "engineering-director", "reason": "legacy hardware", "approved_by": "risk-owner", "expires_at": "2026-06-30T23:59:59Z", "compensating_control": "restricted VLAN" }
+  ]
+}

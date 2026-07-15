@@ -1,0 +1,9 @@
+{
+  "track": "GRC",
+  "order": 1,
+  "title": "Automate an ISO 27001 Evidence Audit",
+  "description": "Build a hash-validating collector, deterministic sampler, and verdict generator for 18 tests across 12 controls. Pass public and hidden evidence fixtures and reproduce exact samples and nonconformities. Final revision opportunity.",
+  "maxPoints": 100,
+  "kind": "UPLOAD",
+  "widget": "FILE_DOWNLOAD"
+}

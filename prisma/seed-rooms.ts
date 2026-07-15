@@ -4,11 +4,33 @@ import { PrismaClient } from "../src/generated/prisma";
 
 const prisma = new PrismaClient();
 
-type StageSlug = "stage-0" | "stage-1" | "stage-2" | "stage-3" | "stage-4";
+type StageSlug =
+  | "stage-0"
+  | "stage-1"
+  | "stage-2"
+  | "stage-3"
+  | "stage-4"
+  | "stage-5"
+  | "stage-6"
+  | "stage-7"
+  | "stage-8"
+  | "stage-9";
+
+type StageKey =
+  | "STAGE_0"
+  | "STAGE_1"
+  | "STAGE_2"
+  | "STAGE_3"
+  | "STAGE_4"
+  | "STAGE_5"
+  | "STAGE_6"
+  | "STAGE_7"
+  | "STAGE_8"
+  | "STAGE_9";
 
 type Room = {
   slug: string;
-  stage: "STAGE_0" | "STAGE_1" | "STAGE_2" | "STAGE_3" | "STAGE_4";
+  stage: StageKey;
   order: number;
   title: string;
   codename: string;
@@ -22,6 +44,7 @@ type Room = {
 };
 
 type TaskScenario = {
+  track?: "SOC_ANALYSIS" | "ETHICAL_HACKING" | "GRC" | null;
   order: number;
   title: string;
   description: string;
@@ -137,6 +160,76 @@ const ROOMS: Record<StageSlug, Room> = {
     totalPoints: 250,
     passThreshold: 70,
   },
+  "stage-5": {
+    slug: "advanced-signal",
+    stage: "STAGE_5",
+    order: 5,
+    title: "Advanced 1 - Signal",
+    codename: "Advanced Stage - Project 1",
+    synopsis: "Build the method. Find the signal. Prove the result survives replay.",
+    briefing: "Your specialist track begins here. You receive one assigned variant, one evidence marker, and one revision. Generic work does not clear this room.",
+    debrief: "A sound method is useful only when it survives contact with a live system. Project 2 removes the clean laboratory assumptions.",
+    learningObjectives: "- Reproducible analysis or testing\n- Evidence integrity\n- Scope discipline\n- Defensible conclusions",
+    themeColor: "#16a34a",
+    totalPoints: 100,
+    passThreshold: 70,
+  },
+  "stage-6": {
+    slug: "advanced-exposure",
+    stage: "STAGE_6",
+    order: 6,
+    title: "Advanced 2 - Exposure",
+    codename: "Advanced Stage - Project 2",
+    synopsis: "Operate a real system, handle imperfect evidence, and own the safety boundary.",
+    briefing: "This room introduces operational risk. Setup, isolation, cleanup, and evidence preservation count as part of the security work.",
+    debrief: "You can operate one system. Project 3 asks whether you can design and test the architecture around it.",
+    learningObjectives: "- Operational security\n- Failure handling\n- Safety and cleanup\n- Contradiction analysis",
+    themeColor: "#d97706",
+    totalPoints: 100,
+    passThreshold: 72,
+  },
+  "stage-7": {
+    slug: "advanced-architecture",
+    stage: "STAGE_7",
+    order: 7,
+    title: "Advanced 3 - Architecture",
+    codename: "Advanced Stage - Project 3",
+    synopsis: "Build the whole design and prove both the allowed and forbidden paths.",
+    briefing: "This is the last room with a revision. The work now spans a system: architecture, controls, tests, exceptions, and evidence must agree.",
+    debrief: "The design is complete. Project 4 removes revision and puts the work under adversarial questioning.",
+    learningObjectives: "- Systems thinking\n- Positive and negative testing\n- Control design\n- Tradeoff decisions",
+    themeColor: "#2563eb",
+    totalPoints: 100,
+    passThreshold: 75,
+  },
+  "stage-8": {
+    slug: "advanced-adversity",
+    stage: "STAGE_8",
+    order: 8,
+    title: "Advanced 4 - Adversity",
+    codename: "Advanced Stage - Project 4",
+    synopsis: "No revision. Reproduce the work and defend it against unseen questions.",
+    briefing: "The submitted package is final. A recorded defense and raw artifacts determine whether the work is genuinely yours and whether the conclusions hold.",
+    debrief: "You defended a difficult build. The capstone now asks you to command a complete case while the facts move.",
+    learningObjectives: "- Advanced execution\n- Blind-spot analysis\n- Live reproduction\n- Professional defense",
+    themeColor: "#e11d48",
+    totalPoints: 100,
+    passThreshold: 78,
+  },
+  "stage-9": {
+    slug: "advanced-final-case",
+    stage: "STAGE_9",
+    order: 9,
+    title: "Advanced 5 - The Final Case",
+    codename: "Advanced Stage - Capstone",
+    synopsis: "Recover the truth, make the decision, and hold it in live defense.",
+    briefing: "No revision. The capstone combines raw execution, executive judgment, exact proof, and a live fact injection. Top-three work must remain correct when the room changes.",
+    debrief: "The case is closed. The final ranking is based on cumulative evidence, the capstone, and the live defense.",
+    learningObjectives: "- End-to-end ownership\n- Decision-making under uncertainty\n- Executive communication\n- Live defense",
+    themeColor: "#dc2626",
+    totalPoints: 100,
+    passThreshold: 80,
+  },
 };
 
 async function loadTasks(stage: StageSlug): Promise<TaskScenario[]> {
@@ -204,12 +297,13 @@ async function main() {
     let skippedAny = false;
     for (const t of tasks) {
       const existing = await prisma.assignment.findFirst({
-        where: { roomId: room.id, order: t.order },
+        where: { roomId: room.id, order: t.order, track: t.track ?? null },
         include: { _count: { select: { submissions: true } } },
       });
       const payload = {
         roomId: room.id,
         stage: spec.stage,
+        track: t.track ?? null,
         title: t.title,
         description: t.description,
         order: t.order,
@@ -246,13 +340,13 @@ async function main() {
 
     // If a room task was removed from the JSON source, close the existing DB
     // assignment so old seeded rows don't keep appearing on the mission board.
-    const taskOrders = new Set(tasks.map((t) => t.order));
+    const taskKeys = new Set(tasks.map((t) => `${t.order}:${t.track ?? "ALL"}`));
     const staleTasks = await prisma.assignment.findMany({
       where: { roomId: room.id, isClosed: false },
-      select: { id: true, order: true, title: true },
+      select: { id: true, order: true, title: true, track: true },
     });
     for (const stale of staleTasks) {
-      if (stale.order != null && taskOrders.has(stale.order)) continue;
+      if (stale.order != null && taskKeys.has(`${stale.order}:${stale.track ?? "ALL"}`)) continue;
       await prisma.assignment.update({
         where: { id: stale.id },
         data: { isClosed: true, closedAt: new Date() },
@@ -269,7 +363,11 @@ async function main() {
       where: { roomId: room.id, isClosed: false },
       select: { maxPoints: true },
     });
-    const dbTotal = actual.reduce((s, a) => s + a.maxPoints, 0) || spec.totalPoints;
+    // Advanced rooms hold one assignment per track. An intern only sees their
+    // own assignment, so summing all three would advertise a 300-point room.
+    const dbTotal = slug >= "stage-5"
+      ? Math.max(...actual.map((a) => a.maxPoints), spec.totalPoints)
+      : actual.reduce((s, a) => s + a.maxPoints, 0) || spec.totalPoints;
     if (dbTotal !== room.totalPoints) {
       await prisma.room.update({ where: { id: room.id }, data: { totalPoints: dbTotal } });
     }

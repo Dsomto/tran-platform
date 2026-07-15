@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "tests": [
+    { "id": "IDENTITY-ALLOW", "identity_policy": "allow", "boundary": "allow", "resource_policy": "allow", "trust": "allow", "expected": "allowed" },
+    { "id": "IDENTITY-DENY", "identity_policy": "deny", "boundary": "allow", "resource_policy": "allow", "trust": "allow", "expected": "denied" },
+    { "id": "BOUNDARY-DENY", "identity_policy": "allow", "boundary": "deny", "resource_policy": "allow", "trust": "allow", "expected": "denied" },
+    { "id": "RESOURCE-DENY", "identity_policy": "allow", "boundary": "allow", "resource_policy": "deny", "trust": "allow", "expected": "denied" },
+    { "id": "TRUST-DENY", "identity_policy": "allow", "boundary": "allow", "resource_policy": "allow", "trust": "deny", "expected": "denied" },
+    { "id": "CONDITION-MISMATCH", "identity_policy": "allow", "condition": false, "expected": "denied" },
+    { "id": "PASSROLE-SERVICE", "passrole": true, "passed_to_service": "lambda.amazonaws.com", "expected": "allowed" },
+    { "id": "PASSROLE-WRONG-SERVICE", "passrole": true, "passed_to_service": "ec2.amazonaws.com", "expected": "denied" },
+    { "id": "PATCH-BUSINESS", "state": "remediated", "path": "healthcheck", "expected": "allowed" },
+    { "id": "PATCH-ATTACK", "state": "remediated", "path": "secret_runtime_role", "expected": "denied" }
+  ]
+}

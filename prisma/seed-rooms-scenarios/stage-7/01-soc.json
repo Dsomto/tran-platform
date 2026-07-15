@@ -1,0 +1,9 @@
+{
+  "track": "SOC_ANALYSIS",
+  "order": 1,
+  "title": "Build a Network Detection Range as Code",
+  "description": "Build a seven-zone containerlab/FRR/nftables range with Zeek or Suricata and at least 30 automated policy tests. Pass a hidden addressing variant, hidden paths, and three fault-injection repairs. Final revision opportunity.",
+  "maxPoints": 100,
+  "kind": "UPLOAD",
+  "widget": "FILE_DOWNLOAD"
+}

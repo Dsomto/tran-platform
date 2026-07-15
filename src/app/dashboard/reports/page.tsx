@@ -17,7 +17,11 @@ const STAGE_META: Record<string, { label: string; subtitle: string }> = {
   STAGE_2: { label: "Stage 2", subtitle: "Web Application Security" },
   STAGE_3: { label: "Stage 3", subtitle: "Incident Response" },
   STAGE_4: { label: "Stage 4", subtitle: "Governance & Risk" },
-  STAGE_5: { label: "Stage 5", subtitle: "Track Specialisation" },
+  STAGE_5: { label: "Advanced 1", subtitle: "Signal" },
+  STAGE_6: { label: "Advanced 2", subtitle: "Exposure" },
+  STAGE_7: { label: "Advanced 3", subtitle: "Architecture" },
+  STAGE_8: { label: "Advanced 4", subtitle: "Adversity" },
+  STAGE_9: { label: "Advanced 5", subtitle: "The Final Case" },
 };
 
 export default async function ReportsPage() {

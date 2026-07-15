@@ -1,0 +1,9 @@
+{
+  "track": "SOC_ANALYSIS",
+  "order": 1,
+  "title": "Build a Production Hunt Engine",
+  "description": "Engineer a deterministic DuckDB hunt engine for 5-8 million hostile-quality events, three schema versions, clock offsets, aliases, malformed rows, and linked campaigns. Pass the full-pack benchmark and sealed 250,000-row holdout. One revision.",
+  "maxPoints": 100,
+  "kind": "UPLOAD",
+  "widget": "FILE_DOWNLOAD"
+}

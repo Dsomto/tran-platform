@@ -1,0 +1,9 @@
+{
+  "track": "SOC_ANALYSIS",
+  "order": 1,
+  "title": "Full Incident Response",
+  "description": "Build a parser-driven multi-host timeline, correct clocks, detect evidence tampering, reconstruct and hash the split exfiltration archive, and pass detection holdouts with raw-evidence reproduction. No revision.",
+  "maxPoints": 100,
+  "kind": "UPLOAD",
+  "widget": "FILE_DOWNLOAD"
+}

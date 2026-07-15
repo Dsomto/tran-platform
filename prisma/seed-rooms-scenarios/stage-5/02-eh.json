@@ -1,0 +1,9 @@
+{
+  "track": "ETHICAL_HACKING",
+  "order": 1,
+  "title": "Build a Recon Engine and Earn the Foothold",
+  "description": "Build a resumable scope-safe recon engine with typed XML/JSON/text adapters, wildcard handling, fallbacks, and deterministic output. Pass hidden parser/scope fixtures and the hosted target, obtain its private foothold flag, and stop. One revision.",
+  "maxPoints": 100,
+  "kind": "UPLOAD",
+  "widget": "FILE_DOWNLOAD"
+}

@@ -120,6 +120,31 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    const existing = await prisma.stageReport.findUnique({
+      where: { internId_stage: { internId: intern.id, stage } },
+      select: { submittedAt: true, version: true },
+    });
+    const maxAdvancedSubmissions =
+      stage === "STAGE_8" || stage === "STAGE_9"
+        ? 1
+        : stage === "STAGE_5" || stage === "STAGE_6" || stage === "STAGE_7"
+          ? 2
+          : null;
+    if (
+      existing?.submittedAt &&
+      maxAdvancedSubmissions !== null &&
+      existing.version >= maxAdvancedSubmissions
+    ) {
+      return Response.json(
+        {
+          error: maxAdvancedSubmissions === 1
+            ? "This Advanced project permits one submission and no revisions."
+            : "The single revision allowed for this Advanced project has already been used.",
+        },
+        { status: 409 }
+      );
+    }
+
     const report = await prisma.stageReport.upsert({
       where: { internId_stage: { internId: intern.id, stage } },
       create: {

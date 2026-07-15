@@ -1,0 +1,11 @@
+zone,vlan_id,variant_v1_cidr,variant_v2_cidr,minimum_hosts,notes
+management,10,10.51.10.0/27,10.61.10.0/27,12,network devices and admin workstation only
+finance,20,10.51.20.0/26,10.61.20.0/26,35,may reach payroll app and DNS/NTP
+engineering,30,10.51.30.0/25,10.61.30.0/25,70,may reach code service; no payroll DB
+users,40,10.51.40.0/24,10.61.40.0/24,150,general staff
+servers,50,10.51.50.0/27,10.61.50.0/27,20,internal services
+dmz,60,10.51.60.0/28,10.61.60.0/28,8,public web and relay
+guest,70,10.51.70.0/24,10.61.70.0/24,180,internet only
+
+# Use only the column for the variant shown in your room. V3-V6 use the same
+# host requirements with the second octet supplied in the private assignment.

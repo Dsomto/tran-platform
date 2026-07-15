@@ -28,7 +28,8 @@ export default async function Stage0BoardPage() {
 
   const { room, subByAssignment, allGraded } = await getBoardData(
     internId,
-    "induction-at-the-gate"
+    "induction-at-the-gate",
+    result.access.track
   );
 
   if (!room) {

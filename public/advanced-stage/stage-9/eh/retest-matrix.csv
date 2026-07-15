@@ -1,0 +1,2 @@
+finding_id,original_title,original_root_cause,original_evidence,original_severity,patched_build_hash,control_changed,retest_steps,bypass_test,actual_result,verdict,fresh_evidence,residual_risk,follow_up
+F-001,,,,,,,,,,,fixed,,

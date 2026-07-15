@@ -1,0 +1,9 @@
+{
+  "track": "GRC",
+  "order": 1,
+  "title": "Build a Breach Governance Engine",
+  "description": "Implement jurisdiction-aware trigger, population, deadline, dependency, and notice computation with source/rule traceability. Pass exact V1-V6 and hidden awareness, encryption, overlap, and threshold snapshots. No revision.",
+  "maxPoints": 100,
+  "kind": "UPLOAD",
+  "widget": "FILE_DOWNLOAD"
+}

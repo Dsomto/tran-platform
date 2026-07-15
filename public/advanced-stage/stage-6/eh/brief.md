@@ -1,0 +1,45 @@
+# Ethical Hacking Advanced 2: Root the Box
+
+## Scope and safety
+
+Only the VM image and address in `target-assignment.md` are authorized. Use a
+host-only network and a clean snapshot. No internet targets, denial of service,
+destructive persistence, or data damage. Stop after reading the assigned
+`root.txt` marker and proving effective UID 0.
+
+## Window and scoring
+
+Nine days. One revision. 100 points: scope/safety 15, enumeration and path
+selection 20, foothold 15, privilege escalation 20, exploit-chain quality 20,
+finding/remediation quality 10.
+
+## Exploit-chain contract
+
+The Python entry point must run preflight checks, accept target/port arguments,
+fail safely, preserve a transcript, distinguish stages, and provide cleanup.
+It must rerun from the clean snapshot. A Metasploit-only completion does not
+satisfy the code requirement. You may use libraries and tools if their role is
+declared and the submitted code controls the chain.
+
+The chain must discover addresses, process values, usernames, tokens, and other
+runtime identifiers; embedding values copied from one successful run fails
+reproduction. One exposed service is a rabbit hole. Reject it with evidence: version state,
+missing precondition, failed controlled test, or a stronger explanation. Do
+not call it benign merely because another path worked.
+
+## Acceptance
+
+The grader restores the target snapshot and runs your documented command five
+times. All five runs must obtain both private flags and remove every uploaded
+file, process, account, and altered setting within the timeout. A hidden variant
+changes ports, banners, and one dynamic value; only configuration changes are
+allowed. Then patch both vulnerability classes: exploit tests must fail at the
+intended preconditions while all supplied service acceptance tests remain green.
+A hard-coded local value or one-time state fails the exploit-code criterion.
+
+## Mission interface and handoff
+
+- **You receive:** a signed target assignment, authorized snapshot, configuration port, service contract, and candidate-specific flags injected by staff.
+- **You build:** a discovered-at-runtime exploit chain with preconditions, bounded proof, cleanup, patch, and reusable remediation records.
+- **You prove:** both flags originate from the assigned target and five clean executions use Stage 5 discovery output rather than embedded target values.
+- **You hand forward:** the path graph, precondition model, cleanup ledger, and remediation assertions for Stage 7.

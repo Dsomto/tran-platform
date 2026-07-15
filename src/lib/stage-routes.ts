@@ -12,6 +12,11 @@ export const STAGE_TOKENS = {
   "stage-2": "w4c7qy5dlm",
   "stage-3": "z2f8gt3kxs",
   "stage-4": "h6vb1wnq7e",
+  "stage-5": "m8qx4cv2rk",
+  "stage-6": "p3zn7wb5ft",
+  "stage-7": "r9dk2yh6vm",
+  "stage-8": "t5jg8ns3qx",
+  "stage-9": "x7lc4pf9bw",
 } as const;
 
 export type StageSlug = keyof typeof STAGE_TOKENS;

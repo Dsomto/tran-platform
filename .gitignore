@@ -29,6 +29,8 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+__pycache__/
+*.pyc
 
 # env files (can opt-in for committing if needed)
 .env*
@@ -45,3 +47,7 @@ next-env.d.ts
 
 # one-off data backups written by ops scripts — contain intern PII, never commit
 scripts/backup-*.json
+
+# Grader-only Advanced Stage keys, variants, pressure tasks, and builders.
+# Keep outside git and the deployment bundle; distribute through staff storage.
+/advanced-stage-staff/

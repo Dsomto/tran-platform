@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import type { StageTrack } from "@/lib/stage-access";
 
 // Common server-side fetch for every stage's mission-board page. Each board
 // page resolves the same shape: the Room with its ordered assignments, the
@@ -7,10 +8,18 @@ import { prisma } from "@/lib/db";
 //
 // The render is left to each stage's own page so per-stage visual flavor
 // (status word choices, layout flair) is preserved.
-export async function getBoardData(internId: string, roomSlug: string) {
+export async function getBoardData(internId: string, roomSlug: string, track: StageTrack) {
   const room = await prisma.room.findUnique({
     where: { slug: roomSlug },
-    include: { assignments: { where: { isClosed: false }, orderBy: { order: "asc" } } },
+    include: {
+      assignments: {
+        where: {
+          isClosed: false,
+          OR: [{ track: null }, { track }],
+        },
+        orderBy: { order: "asc" },
+      },
+    },
   });
 
   if (!room) {

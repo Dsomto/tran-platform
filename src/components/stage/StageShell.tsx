@@ -2,7 +2,17 @@ import Link from "next/link";
 import { ReactNode } from "react";
 
 export type StageTheme = {
-  slug: "stage-0" | "stage-1" | "stage-2" | "stage-3" | "stage-4";
+  slug:
+    | "stage-0"
+    | "stage-1"
+    | "stage-2"
+    | "stage-3"
+    | "stage-4"
+    | "stage-5"
+    | "stage-6"
+    | "stage-7"
+    | "stage-8"
+    | "stage-9";
   name: string;                 // "Induction at the Gate"
   codename: string;             // "Operation Root Access — Chapter 1"
   accent: string;               // tailwind color token e.g. "emerald"

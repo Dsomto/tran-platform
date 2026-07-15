@@ -28,7 +28,8 @@ export default async function Stage2BoardPage() {
 
   const { room, subByAssignment, allGraded } = await getBoardData(
     internId,
-    "the-attack-surface"
+    "the-attack-surface",
+    result.access.track
   );
 
   if (!room) {

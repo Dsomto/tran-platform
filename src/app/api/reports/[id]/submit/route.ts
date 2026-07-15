@@ -5,6 +5,8 @@ import { logger } from "@/lib/logger";
 import { rateLimit, rateLimitResponse, getClientKey, RATE_LIMITS } from "@/lib/rate-limit";
 import { stageRank } from "@/lib/stage-login";
 
+class ConcurrentSubmissionError extends Error {}
+
 export async function POST(
   req: NextRequest,
   ctx: { params: Promise<{ id: string }> }
@@ -65,28 +67,66 @@ export async function POST(
       );
     }
 
-    // Bump version on resubmit (anything that was already SUBMITTED/UNDER_REVIEW).
-    const isResubmit =
-      report.status === "SUBMITTED" ||
-      report.status === "UNDER_REVIEW";
+    const wasSubmitted = report.submittedAt !== null;
+    const maxAdvancedSubmissions =
+      report.stage === "STAGE_8" || report.stage === "STAGE_9"
+        ? 1
+        : report.stage === "STAGE_5" || report.stage === "STAGE_6" || report.stage === "STAGE_7"
+          ? 2
+          : null;
+    if (wasSubmitted && maxAdvancedSubmissions !== null && report.version >= maxAdvancedSubmissions) {
+      return Response.json(
+        {
+          error: maxAdvancedSubmissions === 1
+            ? "This Advanced project permits one submission and no revisions."
+            : "The single revision allowed for this Advanced project has already been used.",
+        },
+        { status: 409 }
+      );
+    }
 
-    const updated = await prisma.stageReport.update({
-      where: { id: report.id },
-      data: {
-        status: "SUBMITTED",
-        submittedAt: new Date(),
-        version: isResubmit ? report.version + 1 : report.version,
-        // Clear grader lock and previous grade on resubmit so it re-enters the queue.
-        graderId: null,
-        claimedAt: null,
-        score: null,
-        feedback: null,
-        gradedAt: null,
-      },
+    const updated = await prisma.$transaction(async (tx) => {
+      const claimed = await tx.stageReport.updateMany({
+        where: {
+          id: report.id,
+          version: report.version,
+          status: report.status,
+          submittedAt: report.submittedAt,
+        },
+        data: {
+          status: "SUBMITTED",
+          submittedAt: new Date(),
+          version: wasSubmitted ? report.version + 1 : report.version,
+          // Clear grader lock and previous grade on resubmit so it re-enters the queue.
+          graderId: null,
+          claimedAt: null,
+          score: null,
+          finalScore: null,
+          terminalScore: null,
+          feedback: null,
+          gradedAt: null,
+          divergent: false,
+          qaVerified: null,
+          qaVerifiedAt: null,
+          qaVerifiedById: null,
+        },
+      });
+
+      if (claimed.count !== 1) throw new ConcurrentSubmissionError();
+      if (wasSubmitted) {
+        await tx.reportGrade.deleteMany({ where: { reportId: report.id } });
+      }
+      return tx.stageReport.findUniqueOrThrow({ where: { id: report.id } });
     });
 
     return Response.json({ report: updated });
   } catch (error) {
+    if (error instanceof ConcurrentSubmissionError) {
+      return Response.json(
+        { error: "This report changed while it was being submitted. Refresh and try again." },
+        { status: 409 }
+      );
+    }
     // Log details server-side; never leak Prisma error names to the user.
     logger.error("submit_report_failed", error);
     return Response.json(

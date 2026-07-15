@@ -1,0 +1,9 @@
+{
+  "track": "GRC",
+  "order": 1,
+  "title": "Hardening as Code and Quantified Risk",
+  "description": "Build an idempotent Ansible hardening role with tested rollback and zero service regressions, then implement a fixture-tested quantitative risk model that funds exactly three treatments. No revision.",
+  "maxPoints": 100,
+  "kind": "UPLOAD",
+  "widget": "FILE_DOWNLOAD"
+}

@@ -1,0 +1,9 @@
+{
+  "track": "ETHICAL_HACKING",
+  "order": 1,
+  "title": "Own the Forest",
+  "description": "Discover and automate two distinct GOAD-Light attack paths, including one credential-plus-ACL/delegation chain. Pass three clean runs, then remediate both edges and validate detections against positive and benign fixtures. No revision.",
+  "maxPoints": 100,
+  "kind": "UPLOAD",
+  "widget": "FILE_DOWNLOAD"
+}

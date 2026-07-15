@@ -44,6 +44,9 @@ export async function POST(
     if (assignment.stage !== STAGE_SLUG_TO_ENUM[slug as StageSlug]) {
       return Response.json({ error: "Task belongs to a different stage" }, { status: 400 });
     }
+    if (assignment.track && assignment.track !== result.access.track) {
+      return Response.json({ error: "Task not found" }, { status: 404 });
+    }
     if (assignment.isClosed) {
       return Response.json(
         { error: "This task is closed and no longer accepts answers." },

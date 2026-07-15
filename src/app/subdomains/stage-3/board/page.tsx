@@ -36,7 +36,8 @@ export default async function Stage3BoardPage() {
 
   const { room, subByAssignment, allGraded } = await getBoardData(
     internId,
-    "inside-the-walls"
+    "inside-the-walls",
+    result.access.track
   );
 
   if (!room) {

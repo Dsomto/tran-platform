@@ -8,8 +8,13 @@
 
 import type { StageSlug } from "./stage-routes";
 
+type FoundationStageSlug = Extract<
+  StageSlug,
+  "stage-0" | "stage-1" | "stage-2" | "stage-3" | "stage-4"
+>;
+
 export interface StageLandingTheme {
-  slug: StageSlug;
+  slug: FoundationStageSlug;
   /** Static card surface — a stage-local CSS class (e.g. `stage-0-panel`).
    *  No hover movement; use for briefing sections that are not clickable. */
   panelClass: string;
@@ -44,7 +49,7 @@ export interface StageLandingTheme {
   softHoverClass: string;
 }
 
-export const STAGE_LANDING_THEMES: Record<StageSlug, StageLandingTheme> = {
+export const STAGE_LANDING_THEMES: Record<FoundationStageSlug, StageLandingTheme> = {
   "stage-0": {
     slug: "stage-0",
     panelClass: "stage-0-panel",

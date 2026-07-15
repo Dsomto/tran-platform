@@ -15,7 +15,18 @@ import {
 } from "lucide-react";
 import { EggHoverNote } from "@/components/dashboard/easter-eggs/widgets";
 
-const STAGES = ["STAGE_0", "STAGE_1", "STAGE_2", "STAGE_3", "STAGE_4"] as const;
+const STAGES = [
+  "STAGE_0",
+  "STAGE_1",
+  "STAGE_2",
+  "STAGE_3",
+  "STAGE_4",
+  "STAGE_5",
+  "STAGE_6",
+  "STAGE_7",
+  "STAGE_8",
+  "STAGE_9",
+] as const;
 type StageKey = (typeof STAGES)[number];
 
 const STAGE_NAMES: Record<StageKey, string> = {
@@ -24,6 +35,11 @@ const STAGE_NAMES: Record<StageKey, string> = {
   STAGE_2: "The Attack Surface",
   STAGE_3: "Inside the Walls",
   STAGE_4: "The Debrief",
+  STAGE_5: "Advanced · Signal",
+  STAGE_6: "Advanced · Exposure",
+  STAGE_7: "Advanced · Architecture",
+  STAGE_8: "Advanced · Adversity",
+  STAGE_9: "Advanced · The Final Case",
 };
 
 const STAGE_ENUM_TO_SLUG: Record<StageKey, StageSlug> = {
@@ -32,6 +48,11 @@ const STAGE_ENUM_TO_SLUG: Record<StageKey, StageSlug> = {
   STAGE_2: "stage-2",
   STAGE_3: "stage-3",
   STAGE_4: "stage-4",
+  STAGE_5: "stage-5",
+  STAGE_6: "stage-6",
+  STAGE_7: "stage-7",
+  STAGE_8: "stage-8",
+  STAGE_9: "stage-9",
 };
 
 function stageRank(s: string): number {

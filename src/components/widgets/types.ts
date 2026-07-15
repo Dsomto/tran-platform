@@ -17,7 +17,17 @@ export type TaskContext = {
   internCode: string;         // UBI-YYYY-NNNN — used for display
   taskId?: string;            // Assignment.id — used to POST to the /verify route
   flagSalt?: string | null;   // per-task salt
-  stage: "stage-0" | "stage-1" | "stage-2" | "stage-3" | "stage-4";
+  stage:
+    | "stage-0"
+    | "stage-1"
+    | "stage-2"
+    | "stage-3"
+    | "stage-4"
+    | "stage-5"
+    | "stage-6"
+    | "stage-7"
+    | "stage-8"
+    | "stage-9";
   accentColor?: string;       // hex — overrides the room theme
 };
 

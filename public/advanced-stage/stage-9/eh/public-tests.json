@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "tests": [
+    { "id": "AUTH-OBJECT-ALLOW", "role": "owner", "object_owner": "owner", "expected_status": 200 },
+    { "id": "AUTH-OBJECT-DENY", "role": "user", "object_owner": "other", "expected_status": 403 },
+    { "id": "AUTH-ADMIN-DENY", "role": "user", "route": "admin", "expected_status": 403 },
+    { "id": "SESSION-ROTATION", "state": "after_privilege_change", "old_session_expected": "invalid" },
+    { "id": "INPUT-BOUNDARY", "payload": "schema-invalid", "expected_status": 400 },
+    { "id": "CHAIN-RUNTIME-ID", "object_id": "changes_each_reset", "expected": "discover_not_embed" },
+    { "id": "ONE-RECORD-LIMIT", "records_requested": 1, "expected": "pass" },
+    { "id": "BULK-LIMIT", "records_requested": 2, "expected": "scope_failure" },
+    { "id": "PATCH-ROOT-CAUSE", "state": "patched", "expected": "finding_blocked_at_precondition" },
+    { "id": "PATCH-REGRESSION", "state": "patched", "fixture": "unrelated_business_path", "expected": "suite_detects_failure" }
+  ]
+}

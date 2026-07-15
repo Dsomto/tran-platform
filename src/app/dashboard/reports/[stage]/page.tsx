@@ -6,18 +6,24 @@ import { prisma } from "@/lib/db";
 import { STAGE_BRIEFS } from "@/lib/stage-briefs";
 import { EVIDENCE_PACK } from "@/lib/evidence-pack";
 import { STAGE_STORIES } from "@/lib/stage-story";
-import type { StageSlug } from "@/lib/stage-routes";
 import { isReportResultReleased, publicReportStatus } from "@/lib/report-visibility";
 import { ReportEditor } from "./report-editor";
+import {
+  advancedTrackLabel,
+  getAdvancedProject,
+  isAdvancedStage,
+  type AdvancedTrack,
+} from "@/lib/advanced-stage";
 
 // Always re-fetch — score field switched from `score` to `finalScore`.
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-type StageKey = keyof typeof STAGE_BRIEFS;
+type FoundationStageKey = keyof typeof STAGE_BRIEFS;
+type StageKey = FoundationStageKey | "STAGE_5" | "STAGE_6" | "STAGE_7" | "STAGE_8" | "STAGE_9";
 
 function isStageKey(s: string): s is StageKey {
-  return s in STAGE_BRIEFS;
+  return s in STAGE_BRIEFS || isAdvancedStage(s);
 }
 
 export default async function ReportEditorPage({
@@ -43,7 +49,13 @@ export default async function ReportEditorPage({
     prisma.stageWindow.findUnique({ where: { stage: stage as never } }),
   ]);
 
-  const brief = STAGE_BRIEFS[stage];
+  const advancedProject = isAdvancedStage(stage)
+    ? getAdvancedProject(stage, intern.track)
+    : null;
+  const brief = !advancedProject
+    ? STAGE_BRIEFS[stage as FoundationStageKey]
+    : null;
+  if (!brief && !advancedProject) notFound();
   const stageStatus = window?.status ?? "CLOSED";
   const isOpen = stageStatus === "OPEN";
   const resultReleased = isReportResultReleased(existing?.status);
@@ -58,10 +70,10 @@ export default async function ReportEditorPage({
             <Lock className="w-5 h-5 text-muted" />
           </div>
           <h1 className="text-lg font-semibold text-foreground mb-1">
-            {brief.label} is not open yet
+            {(brief?.label ?? `Advanced Project ${advancedProject?.number}`)} is not open yet
           </h1>
           <p className="text-sm text-muted-foreground mb-5">
-            The programme team has not opened {brief.label} for this cohort.
+            The programme team has not opened {brief?.label ?? `Advanced Project ${advancedProject?.number}`} for this cohort.
             You will get an email and a pinned announcement as soon as it opens.
           </p>
           <Link
@@ -76,24 +88,57 @@ export default async function ReportEditorPage({
   }
 
   // "STAGE_0" -> "stage-0" so we can pull the chapter's narrative.
-  const storySlug = `stage-${stage.split("_")[1]}` as StageSlug;
-  const story = STAGE_STORIES[storySlug];
+  const storySlug = `stage-${stage.split("_")[1]}` as keyof typeof STAGE_STORIES;
+  const story = !advancedProject ? STAGE_STORIES[storySlug] : null;
+
+  const stageLabel = advancedProject
+    ? `Advanced Project ${advancedProject.number}`
+    : brief!.label;
+  const stageSubtitle = advancedProject
+    ? `${advancedTrackLabel(intern.track as AdvancedTrack)} · ${advancedProject.title}`
+    : brief!.subtitle;
+  const missionBrief = advancedProject
+    ? [advancedProject.objective, ...advancedProject.mission]
+    : brief!.missionBrief;
+  const sectionHints = advancedProject
+    ? [
+        ...advancedProject.proof.map((item) => `Proof: ${item}`),
+        ...advancedProject.gates.map((item) => `Gate: ${item}`),
+      ]
+    : brief!.sections;
+  const folderContents = advancedProject
+    ? advancedProject.deliverables.map((deliverable, index) => ({
+        id: `advanced-${advancedProject.number}-${index + 1}`,
+        title: deliverable,
+        deliverable,
+      }))
+    : brief!.practicalTasks.map((task) => ({
+        id: task.id,
+        title: task.title,
+        deliverable: task.deliverable,
+      }));
+  const evidencePack = advancedProject
+    ? advancedProject.resources.map((resource) => ({
+        filename: resource.label,
+        url: `/api/advanced-stage/resource?${new URLSearchParams({
+          stage,
+          path: resource.href,
+        }).toString()}`,
+        description: resource.description,
+      }))
+    : EVIDENCE_PACK[stage as FoundationStageKey];
 
   return (
     <ReportEditor
       stage={stage}
-      stageLabel={brief.label}
-      stageSubtitle={brief.subtitle}
-      missionBrief={brief.missionBrief}
-      sectionHints={brief.sections}
-      chapter={story.chapter}
-      reportTo={story.reportTo}
-      folderContents={brief.practicalTasks.map((t) => ({
-        id: t.id,
-        title: t.title,
-        deliverable: t.deliverable,
-      }))}
-      evidencePack={EVIDENCE_PACK[stage]}
+      stageLabel={stageLabel}
+      stageSubtitle={stageSubtitle}
+      missionBrief={missionBrief}
+      sectionHints={sectionHints}
+      chapter={advancedProject ? advancedProject.number : story!.chapter}
+      reportTo={advancedProject ? "Advanced Assessment Panel" : story!.reportTo}
+      folderContents={folderContents}
+      evidencePack={evidencePack}
       initialReport={
         existing
           ? {
@@ -113,7 +158,15 @@ export default async function ReportEditorPage({
             }
           : null
       }
-      locked={resultReleased || !isOpen}
+      locked={
+        resultReleased ||
+        !isOpen ||
+        Boolean(
+          advancedProject &&
+          existing?.submittedAt &&
+          existing.version >= (advancedProject.number >= 4 ? 1 : 2)
+        )
+      }
     />
   );
 }

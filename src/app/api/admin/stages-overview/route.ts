@@ -5,7 +5,10 @@ import { requireApiAdmin } from "@/lib/api-auth";
 // One row per stage. Status, intern access count, submission count.
 // No deadlines, no passing-score input — those have been removed from
 // the admin UI. Passing score is set at publish-results time only.
-const STAGES = ["STAGE_0", "STAGE_1", "STAGE_2", "STAGE_3", "STAGE_4"] as const;
+const STAGES = [
+  "STAGE_0", "STAGE_1", "STAGE_2", "STAGE_3", "STAGE_4",
+  "STAGE_5", "STAGE_6", "STAGE_7", "STAGE_8", "STAGE_9",
+] as const;
 
 export async function GET() {
   try {

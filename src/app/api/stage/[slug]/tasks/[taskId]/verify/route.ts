@@ -59,6 +59,9 @@ export async function POST(
     if (assignment.stage !== STAGE_SLUG_TO_ENUM[slug as StageSlug]) {
       return Response.json({ ok: false, error: "wrong-stage" }, { status: 400 });
     }
+    if (assignment.track && assignment.track !== result.access.track) {
+      return Response.json({ ok: false, error: "task-not-found" }, { status: 404 });
+    }
     if (assignment.isClosed) {
       return Response.json({ ok: false, error: "task-closed" }, { status: 409 });
     }

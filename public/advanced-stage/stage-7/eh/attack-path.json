@@ -1,0 +1,21 @@
+{
+  "assignment": {
+    "intern_code": "",
+    "variant": "",
+    "marker": ""
+  },
+  "steps": [
+    {
+      "order": 1,
+      "principal_before": "",
+      "observed_permission": "",
+      "action": "",
+      "resource": "",
+      "cloudtrail_event_file": "",
+      "cloudtrail_event_id": "",
+      "principal_after": "",
+      "why_step_is_possible": "",
+      "least_privilege_remediation": ""
+    }
+  ]
+}

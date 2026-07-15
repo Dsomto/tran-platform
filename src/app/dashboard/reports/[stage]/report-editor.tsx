@@ -169,8 +169,11 @@ export function ReportEditor({
       setError("Paste a valid link to your report folder (Google Drive, Dropbox, etc.).");
       return;
     }
+    const noRevision = stage === "STAGE_8" || stage === "STAGE_9";
     const ok = window.confirm(
-      "Submit this report for grading? Two reviewers will read it. You can resubmit later if needed, but you cannot edit it while it is being reviewed."
+      noRevision
+        ? "Submit this report for grading? This Advanced project allows one submission and no revision. Confirm the folder, manifest, and evidence marker before continuing."
+        : "Submit this report for grading? Two reviewers will read it. You can use the stage's permitted revision later, but you cannot edit it while it is being reviewed."
     );
     if (!ok) return;
     setSubmitting(true);
@@ -410,7 +413,8 @@ export function ReportEditor({
 
       {locked && (
         <div className="mb-5 p-4 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700">
-          This report is locked — either this stage result has been released or the submission window has closed.
+          This report is locked. Its result has been released, its submission window has closed,
+          or this Advanced project has used its permitted submission attempts.
         </div>
       )}
 

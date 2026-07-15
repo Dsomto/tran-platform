@@ -227,6 +227,7 @@ model Intern {
   testimonials    Testimonial[]
   stageHistory    StageHistory[]
   reports         StageReport[]
+  advancedArtifacts AdvancedArtifactGrant[]
 
   joinedAt        DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
@@ -300,8 +301,8 @@ model Assignment {
 model Room {
   id                 String   @id @default(auto()) @map("_id") @db.ObjectId
   slug               String   @unique       // "induction-at-the-gate"
-  stage              Stage    @unique       // one room per foundation stage
-  order              Int                    // 0..4
+  stage              Stage    @unique       // one room per Foundation or Advanced stage
+  order              Int                    // 0..9
 
   title              String
   codename           String                 // "Operation Root Access — Chapter 1"
@@ -668,6 +669,35 @@ model StageAccess {
 
   @@unique([internId, stage])
   @@index([stage, lastAccessedAt(sort: Desc)])
+}
+
+// ─── ADVANCED ARTIFACT GRANT ─────────────────────────────
+// Maps one intern and stage to one participant-only archive stored outside
+// public/. The object key is resolved by the private artifact storage backend.
+model AdvancedArtifactGrant {
+  id                String    @id @default(auto()) @map("_id") @db.ObjectId
+  internId          String    @db.ObjectId
+  intern            Intern    @relation(fields: [internId], references: [id], onDelete: Cascade)
+  stage             Stage
+  track             Track
+  variant           String
+  marker            String
+  artifactKey       String
+  fileName          String
+  sha256            String
+  manifestSignature String
+  sizeBytes         Int
+  expiresAt         DateTime?
+  revokedAt         DateTime?
+  downloadCount     Int       @default(0)
+  lastDownloadedAt  DateTime?
+  createdById       String?   @db.ObjectId
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@unique([internId, stage])
+  @@index([stage, track])
+  @@index([expiresAt])
 }
 
 // ─── EMAIL QUEUE (FIFO, drained by cron at N/day) ────────

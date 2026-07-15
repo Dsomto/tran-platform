@@ -3,7 +3,7 @@ import Link from "next/link";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { Topbar } from "@/components/dashboard/topbar";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { SlackCard } from "@/components/dashboard/slack-card";
 import { stageUrl, type StageSlug } from "@/lib/stage-routes";
 import { formatDate, stageToNumber, trackLabel } from "@/lib/utils";
@@ -15,10 +15,21 @@ import {
   Star,
   Trophy,
   Lock,
+  Layers3,
 } from "lucide-react";
 import { EggHoverNote, EggProgressGlow } from "@/components/dashboard/easter-eggs/widgets";
 
-type StageEnum = "STAGE_0" | "STAGE_1" | "STAGE_2" | "STAGE_3" | "STAGE_4";
+type StageEnum =
+  | "STAGE_0"
+  | "STAGE_1"
+  | "STAGE_2"
+  | "STAGE_3"
+  | "STAGE_4"
+  | "STAGE_5"
+  | "STAGE_6"
+  | "STAGE_7"
+  | "STAGE_8"
+  | "STAGE_9";
 
 const STAGE_NAMES: Record<StageEnum, string> = {
   STAGE_0: "Induction at the Gate",
@@ -26,6 +37,11 @@ const STAGE_NAMES: Record<StageEnum, string> = {
   STAGE_2: "The Attack Surface",
   STAGE_3: "Inside the Walls",
   STAGE_4: "The Debrief",
+  STAGE_5: "Advanced · Signal",
+  STAGE_6: "Advanced · Exposure",
+  STAGE_7: "Advanced · Architecture",
+  STAGE_8: "Advanced · Adversity",
+  STAGE_9: "Advanced · The Final Case",
 };
 
 const STAGE_ENUM_TO_SLUG: Record<StageEnum, StageSlug> = {
@@ -34,6 +50,11 @@ const STAGE_ENUM_TO_SLUG: Record<StageEnum, StageSlug> = {
   STAGE_2: "stage-2",
   STAGE_3: "stage-3",
   STAGE_4: "stage-4",
+  STAGE_5: "stage-5",
+  STAGE_6: "stage-6",
+  STAGE_7: "stage-7",
+  STAGE_8: "stage-8",
+  STAGE_9: "stage-9",
 };
 
 export default async function DashboardPage() {
@@ -124,6 +145,8 @@ export default async function DashboardPage() {
   const stageEnum = intern.currentStage as StageEnum;
   const stageNum = stageToNumber(intern.currentStage);
   const stageName = STAGE_NAMES[stageEnum] ?? `Stage ${stageNum}`;
+  const isAdvancedStage = stageNum >= 5;
+  const progressIndex = isAdvancedStage ? stageNum - 5 : stageNum;
 
   const [stageWindow, report, topAnnouncement, rank, passedCount] = await Promise.all([
     prisma.stageWindow.findUnique({ where: { stage: stageEnum } }),
@@ -241,23 +264,28 @@ export default async function DashboardPage() {
               )}
             </div>
 
-            {/* Slim progress bar — 5 foundation stages (0-4) */}
+            {/* The dashboard changes from the five foundation chapters to the
+                five assigned-track projects after Stage 4. */}
             <div
               className="flex items-center gap-1 mb-2"
-              aria-label={`On stage ${stageNum} of 4 (${stageNum + 1} of 5 chapters)`}
+              aria-label={isAdvancedStage
+                ? `On advanced project ${progressIndex + 1} of 5`
+                : `On stage ${stageNum} of 4 (${stageNum + 1} of 5 chapters)`}
             >
               {Array.from({ length: 5 }).map((_, i) => (
                 <div
                   key={i}
                   className={`h-1.5 flex-1 rounded-full ${
-                    i <= stageNum ? "bg-blue" : "bg-border-light"
+                    i <= progressIndex ? "bg-blue" : "bg-border-light"
                   }`}
                 />
               ))}
             </div>
-            <EggProgressGlow value={stageNum >= 4 ? 100 : 0} className="block h-1.5 w-full -mt-1.5 mb-1" />
+            <EggProgressGlow value={!isAdvancedStage && stageNum >= 4 ? 100 : 0} className="block h-1.5 w-full -mt-1.5 mb-1" />
             <p className="text-[11px] font-mono text-muted-foreground mb-6">
-              {stageNum > 0 ? (
+              {isAdvancedStage ? (
+                <>Advanced project {progressIndex + 1} of 5 · Assigned track only</>
+              ) : stageNum > 0 ? (
                 <EggHoverNote note="You still remember the gate.">Chapter {stageNum + 1} of 5</EggHoverNote>
               ) : (
                 <>Chapter {stageNum + 1} of 5</>
@@ -266,6 +294,15 @@ export default async function DashboardPage() {
 
             {isStageOpen ? (
               <div className="flex flex-wrap gap-3">
+                {isAdvancedStage && (
+                  <Link
+                    href="/dashboard/advanced"
+                    className="inline-flex items-center gap-1.5 px-5 py-2.5 text-sm font-semibold rounded-full bg-foreground text-background hover:opacity-90 transition-opacity"
+                  >
+                    <Layers3 className="w-4 h-4" />
+                    View your track
+                  </Link>
+                )}
                 <Link
                   href={roomHref}
                   className="inline-flex items-center gap-1.5 px-5 py-2.5 text-sm font-semibold rounded-full bg-blue text-white hover:bg-blue-dark transition-colors"
@@ -312,10 +349,21 @@ export default async function DashboardPage() {
                 </span>
               </div>
             ) : (
-              <p className="text-sm text-muted leading-relaxed">
-                We&apos;ll send you an email the moment this stage opens. You&apos;ll find the
-                announcement pinned in your dashboard too.
-              </p>
+              <div className="space-y-4">
+                <p className="text-sm text-muted leading-relaxed">
+                  We&apos;ll send you an email the moment this stage opens. You&apos;ll find the
+                  announcement pinned in your dashboard too.
+                </p>
+                {isAdvancedStage && (
+                  <Link
+                    href="/dashboard/advanced"
+                    className="inline-flex items-center gap-1.5 px-5 py-2.5 text-sm font-semibold rounded-full bg-foreground text-background hover:opacity-90 transition-opacity"
+                  >
+                    <Layers3 className="w-4 h-4" />
+                    View your track
+                  </Link>
+                )}
+              </div>
             )}
           </section>
 

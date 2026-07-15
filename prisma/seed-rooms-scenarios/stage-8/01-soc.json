@@ -1,0 +1,9 @@
+{
+  "track": "SOC_ANALYSIS",
+  "order": 1,
+  "title": "Detection Engineering Under Adversary Pressure",
+  "description": "Build detection-as-code for 12 ATT&CK procedures, 24 benign controls, sequence logic, telemetry-failure classification, and automated replay. Pass canonical tests plus hidden semantic mutations and benign holdouts. No revision.",
+  "maxPoints": 100,
+  "kind": "UPLOAD",
+  "widget": "FILE_DOWNLOAD"
+}

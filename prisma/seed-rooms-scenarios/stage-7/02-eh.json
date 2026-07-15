@@ -1,0 +1,9 @@
+{
+  "track": "ETHICAL_HACKING",
+  "order": 1,
+  "title": "Compromise a Custom AWS IAM Range",
+  "description": "Analyze effective permissions in a custom V1-V6 Terraform range, reject the decoy edge, retrieve the private secret, remediate the graph without breaking workload tests, and prove complete teardown. Final revision opportunity.",
+  "maxPoints": 100,
+  "kind": "UPLOAD",
+  "widget": "FILE_DOWNLOAD"
+}

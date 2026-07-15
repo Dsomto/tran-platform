@@ -35,7 +35,8 @@ export default async function Stage4BoardPage() {
 
   const { room, subByAssignment, allGraded } = await getBoardData(
     internId,
-    "the-debrief"
+    "the-debrief",
+    result.access.track
   );
 
   if (!room) {

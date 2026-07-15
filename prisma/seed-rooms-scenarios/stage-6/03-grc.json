@@ -1,0 +1,9 @@
+{
+  "track": "GRC",
+  "order": 1,
+  "title": "Verify the Vendor, Then Decide",
+  "description": "Build schemas and validators for vendor telemetry, integrity chains, deletion state, and subprocessor graphs; reconcile technical results to contractual claims and executable launch conditions. Pass a hidden replacement export. One revision.",
+  "maxPoints": 100,
+  "kind": "UPLOAD",
+  "widget": "FILE_DOWNLOAD"
+}

@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "tests": [
+    { "id": "CONFIG-PORT", "config": { "host": "192.0.2.10", "port": 18080 }, "expected": "uses_config_not_source_constant" },
+    { "id": "CONFIG-BANNER", "input": "Service build 7f2c", "expected": "continues_without_exact_banner_match" },
+    { "id": "DYNAMIC-TOKEN", "input": { "token": "runtime-4f8a" }, "expected": "token_read_from_response" },
+    { "id": "FAILED-PREFLIGHT", "input": { "reachable": false }, "expected_exit": 2 },
+    { "id": "RABBIT-HOLE", "input": { "version_match": true, "required_precondition": false }, "expected": "reject_path" },
+    { "id": "CLEANUP-FILE", "postcondition": { "uploaded_files": 0 }, "expected": "pass" },
+    { "id": "CLEANUP-PROCESS", "postcondition": { "candidate_processes": 0 }, "expected": "pass" },
+    { "id": "CLEANUP-ACCOUNT", "postcondition": { "candidate_accounts": 0 }, "expected": "pass" },
+    { "id": "PATCH-PRECONDITION", "state": "patched", "expected_failure_stage": "vulnerability_precondition" },
+    { "id": "SERVICE-REGRESSION", "state": "patched", "service_expected": "healthy" }
+  ]
+}

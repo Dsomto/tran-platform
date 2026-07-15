@@ -65,6 +65,9 @@ const nextConfig: NextConfig = {
     "/api/letter/**": ["./node_modules/pdfkit/js/data/**"],
     "/api/pass-letter/**": ["./node_modules/pdfkit/js/data/**"],
   },
+  outputFileTracingExcludes: {
+    "**": ["./advanced-stage-staff/**", "./**/__pycache__/**"],
+  },
   async headers() {
     return [
       {

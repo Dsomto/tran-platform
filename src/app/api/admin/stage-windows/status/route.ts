@@ -4,8 +4,12 @@ import { logger } from "@/lib/logger";
 import { scheduleCohortBroadcast } from "@/lib/email";
 import { publicAppUrl } from "@/lib/public-url";
 import { requireApiSuperAdmin } from "@/lib/api-auth";
+import { auditMetaFromRequest, recordAudit } from "@/lib/audit";
 
-const STAGE_KEYS = ["STAGE_0", "STAGE_1", "STAGE_2", "STAGE_3", "STAGE_4"] as const;
+const STAGE_KEYS = [
+  "STAGE_0", "STAGE_1", "STAGE_2", "STAGE_3", "STAGE_4",
+  "STAGE_5", "STAGE_6", "STAGE_7", "STAGE_8", "STAGE_9",
+] as const;
 type StageKey = (typeof STAGE_KEYS)[number];
 
 const VALID_STATUSES = ["OPEN", "PAUSED", "CLOSED"] as const;
@@ -49,6 +53,10 @@ export async function POST(request: NextRequest) {
     }
 
     const now = new Date();
+    const previous = await prisma.stageWindow.findUnique({
+      where: { stage },
+      select: { status: true },
+    });
 
     const window = await prisma.stageWindow.upsert({
       where: { stage },
@@ -84,14 +92,14 @@ export async function POST(request: NextRequest) {
           title,
           content: message,
           authorId: session.id,
-          stage: null,
+          stage,
           track: null,
           isPinned: true,
         },
       });
 
       const interns = await prisma.intern.findMany({
-        where: { isActive: true },
+        where: { isActive: true, currentStage: stage },
         select: { user: { select: { email: true } } },
       });
       const recipients = interns.map((i) => i.user.email).filter(Boolean);
@@ -119,6 +127,21 @@ export async function POST(request: NextRequest) {
         );
       }
     }
+
+    await recordAudit({
+      actor: session,
+      action: "stage-window.status.change",
+      targetType: "STAGE_WINDOW",
+      targetId: window.id,
+      details: {
+        stage,
+        fromStatus: previous?.status ?? "CLOSED",
+        toStatus: status,
+        announcementSent: status === "OPEN" && Boolean(announce),
+        recipientCount: notifying,
+      },
+      ...auditMetaFromRequest(request),
+    });
 
     return Response.json({ window, notifying });
   } catch (error) {

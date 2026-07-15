@@ -1,0 +1,13 @@
+test_id,control_id,audit_criterion,test_procedure,sample,artifact,exact_locator,evidence_quality,result,nonconformity_id,limitation
+AT-01,A.5.15,,,,,,,,,
+AT-02,A.5.16,,,,,,,,,
+AT-03,A.5.18,,,,,,,,,
+AT-04,A.5.19,,,,,,,,,
+AT-05,A.5.24,,,,,,,,,
+AT-06,A.5.30,,,,,,,,,
+AT-07,A.6.3,,,,,,,,,
+AT-08,A.8.5,,,,,,,,,
+AT-09,A.8.8,,,,,,,,,
+AT-10,A.8.13,,,,,,,,,
+AT-11,A.8.15,,,,,,,,,
+AT-12,A.8.32,,,,,,,,,

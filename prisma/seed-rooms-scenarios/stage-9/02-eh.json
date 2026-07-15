@@ -1,0 +1,9 @@
+{
+  "track": "ETHICAL_HACKING",
+  "order": 1,
+  "title": "Full VAPT and Retest",
+  "description": "Build tests for every finding and a dynamic three-host crown-jewel chain that passes three clean snapshots. Verify patched root causes, detect the planted regression, and reproduce selected edges live. No revision.",
+  "maxPoints": 100,
+  "kind": "UPLOAD",
+  "widget": "FILE_DOWNLOAD"
+}

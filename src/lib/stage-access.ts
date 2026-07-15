@@ -5,11 +5,15 @@ import {
   stageRank,
   type StageSlug,
 } from "./stage-login";
+import { resolvedInternCode } from "./intern-code";
+
+export type StageTrack = "SOC_ANALYSIS" | "ETHICAL_HACKING" | "GRC";
 
 export interface StageAccess {
   internId: string;
   internCode: string;
   userId: string;
+  track: StageTrack;
   stageSlug: StageSlug;
   /** First + last name from the user's account — used for NDA validation. */
   fullName: string;
@@ -46,7 +50,7 @@ export async function getStageAccess(
 
   const intern = await prisma.intern.findUnique({
     where: { userId: session.id },
-    select: { id: true, currentStage: true, isActive: true, ndaSignedAt: true },
+    select: { id: true, currentStage: true, track: true, isActive: true, ndaSignedAt: true },
   });
   if (!intern || !intern.isActive) return { ok: false, reason: "no-intern" };
 
@@ -91,8 +95,9 @@ export async function getStageAccess(
     ok: true,
     access: {
       internId: intern.id,
-      internCode: publicApp?.internId ?? "UBI-?",
+      internCode: resolvedInternCode(publicApp?.internId),
       userId: session.id,
+      track: intern.track,
       stageSlug: slug,
       fullName: `${session.firstName} ${session.lastName}`.trim(),
       firstName: session.firstName.trim(),

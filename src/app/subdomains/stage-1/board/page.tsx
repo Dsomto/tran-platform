@@ -28,7 +28,8 @@ export default async function Stage1BoardPage() {
 
   const { room, subByAssignment, allGraded } = await getBoardData(
     internId,
-    "ciphers-and-secrets"
+    "ciphers-and-secrets",
+    result.access.track
   );
 
   if (!room) {

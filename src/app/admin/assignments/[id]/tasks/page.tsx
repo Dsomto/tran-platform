@@ -4,7 +4,10 @@ import { ArrowLeft, ChevronRight, FileText } from "lucide-react";
 import { requireSuperAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 
-const STAGES = ["STAGE_0", "STAGE_1", "STAGE_2", "STAGE_3", "STAGE_4"] as const;
+const STAGES = [
+  "STAGE_0", "STAGE_1", "STAGE_2", "STAGE_3", "STAGE_4",
+  "STAGE_5", "STAGE_6", "STAGE_7", "STAGE_8", "STAGE_9",
+] as const;
 type StageKey = (typeof STAGES)[number];
 
 const STAGE_NAMES: Record<StageKey, string> = {
@@ -13,6 +16,11 @@ const STAGE_NAMES: Record<StageKey, string> = {
   STAGE_2: "The Attack Surface",
   STAGE_3: "Inside the Walls",
   STAGE_4: "The Debrief",
+  STAGE_5: "Advanced · Signal",
+  STAGE_6: "Advanced · Exposure",
+  STAGE_7: "Advanced · Architecture",
+  STAGE_8: "Advanced · Adversity",
+  STAGE_9: "Advanced · The Final Case",
 };
 
 function isStageKey(v: string): v is StageKey {

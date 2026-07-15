@@ -4,7 +4,10 @@ import { prisma } from "@/lib/db";
 import { Topbar } from "@/components/dashboard/topbar";
 import { ChevronRight, Users, FileText, CheckCircle2, Lock, LockOpen, Pause } from "lucide-react";
 
-const STAGES = ["STAGE_0", "STAGE_1", "STAGE_2", "STAGE_3", "STAGE_4"] as const;
+const STAGES = [
+  "STAGE_0", "STAGE_1", "STAGE_2", "STAGE_3", "STAGE_4",
+  "STAGE_5", "STAGE_6", "STAGE_7", "STAGE_8", "STAGE_9",
+] as const;
 
 const STAGE_NAMES: Record<(typeof STAGES)[number], string> = {
   STAGE_0: "Induction at the Gate",
@@ -12,6 +15,11 @@ const STAGE_NAMES: Record<(typeof STAGES)[number], string> = {
   STAGE_2: "The Attack Surface",
   STAGE_3: "Inside the Walls",
   STAGE_4: "The Debrief",
+  STAGE_5: "Advanced · Signal",
+  STAGE_6: "Advanced · Exposure",
+  STAGE_7: "Advanced · Architecture",
+  STAGE_8: "Advanced · Adversity",
+  STAGE_9: "Advanced · The Final Case",
 };
 
 export const dynamic = "force-dynamic";

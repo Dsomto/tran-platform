@@ -1,0 +1,9 @@
+{
+  "track": "ETHICAL_HACKING",
+  "order": 1,
+  "title": "Root the Box: Exploit Chain as Code",
+  "description": "Chain two vulnerability classes from foothold to root as runtime-discovering exploit code. Pass five clean-snapshot runs, cleanup assertions, a hidden port/banner/value variant, and patched service regressions. One revision.",
+  "maxPoints": 100,
+  "kind": "UPLOAD",
+  "widget": "FILE_DOWNLOAD"
+}

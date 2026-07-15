@@ -11,6 +11,11 @@
 
 import type { StageSlug } from "./stage-routes";
 
+type FoundationStageSlug = Extract<
+  StageSlug,
+  "stage-0" | "stage-1" | "stage-2" | "stage-3" | "stage-4"
+>;
+
 export interface DeskNote {
   /** Who left the note — the lead character for this chapter. */
   from: string;
@@ -61,7 +66,7 @@ export function personalise(text: string, firstName?: string | null): string {
   return text.replaceAll("{firstName}", name || "there");
 }
 
-export const STAGE_STORIES: Record<StageSlug, StageStory> = {
+export const STAGE_STORIES: Record<FoundationStageSlug, StageStory> = {
   "stage-0": {
     chapter: 1,
     office: "SOC Bench · Floor 4 — Sankofa Digital HQ, Lagos",
