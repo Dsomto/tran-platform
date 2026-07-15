@@ -6,6 +6,7 @@ import { Sidebar } from "@/components/dashboard/sidebar";
 import { EasterEggs } from "@/components/dashboard/easter-eggs/EasterEggs";
 import { ImpersonationBanner } from "@/components/dashboard/impersonation-banner";
 import { NdaBreachBanner } from "@/components/dashboard/nda-breach-banner";
+import { stageRank } from "@/lib/stage-login";
 
 export default async function DashboardLayout({
   children,
@@ -50,6 +51,11 @@ export default async function DashboardLayout({
     redirect("/change-password");
   }
 
+  const dashboardIntern = await prisma.intern.findUnique({
+    where: { userId: session.id },
+    select: { ndaSignedAt: true, currentStage: true },
+  });
+
   // One-time NDA gate: any unsigned intern is routed to onboarding before
   // they see the rest of the dashboard. The proxy forwards `x-pathname` so
   // we can skip this when the user is already on the onboarding page —
@@ -57,11 +63,7 @@ export default async function DashboardLayout({
   const h = await headers();
   const pathname = h.get("x-pathname") ?? "";
   if (!pathname.startsWith("/dashboard/onboarding")) {
-    const intern = await prisma.intern.findUnique({
-      where: { userId: session.id },
-      select: { ndaSignedAt: true },
-    });
-    if (intern && !intern.ndaSignedAt) {
+    if (dashboardIntern && !dashboardIntern.ndaSignedAt) {
       const next = pathname && pathname.startsWith("/") ? pathname : "/dashboard";
       redirect(`/dashboard/onboarding?next=${encodeURIComponent(next)}`);
     }
@@ -86,6 +88,9 @@ export default async function DashboardLayout({
         <Sidebar
           role="INTERN"
           userName={`${session.firstName} ${session.lastName}`}
+          showAdvancedTrack={Boolean(
+            dashboardIntern && stageRank(dashboardIntern.currentStage) >= stageRank("STAGE_5")
+          )}
         />
         <main className="flex-1 flex flex-col min-w-0">
           {children}

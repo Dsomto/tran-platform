@@ -32,6 +32,7 @@ import {
   UserPlus,
   Eye,
   FileQuestion,
+  Layers3,
 } from "lucide-react";
 import { LogoMark } from "@/components/logo";
 import { useState } from "react";
@@ -39,7 +40,15 @@ import { useState } from "react";
 interface SidebarProps {
   role: "INTERN" | "GRADER" | "ANALYST" | "ADMIN" | "SUPER_ADMIN";
   userName: string;
+  showAdvancedTrack?: boolean;
 }
+
+type NavLink = {
+  href: string;
+  label: string;
+  icon: typeof LayoutDashboard;
+  advancedOnly?: boolean;
+};
 
 const graderLinks = [
   { href: "/admin/reports", label: "Grading Queue", icon: Gavel },
@@ -49,10 +58,11 @@ const analystLinks = [
   { href: "/admin/analytics", label: "Analytics", icon: TrendingUp },
 ];
 
-const internLinks = [
+const internLinks: NavLink[] = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
   { href: "/dashboard/slack", label: "Join Slack", icon: Hash },
   { href: "/dashboard/assignments", label: "Assignments", icon: BookOpen },
+  { href: "/dashboard/advanced", label: "Advanced Track", icon: Layers3, advancedOnly: true },
   { href: "/dashboard/reports", label: "Reports", icon: FileText },
   { href: "/dashboard/announcements", label: "Announcements", icon: Megaphone },
   { href: "/dashboard/leaderboard", label: "Leaderboard", icon: Trophy },
@@ -90,7 +100,7 @@ const adminLinks = [
   { href: "/admin/emails", label: "Email Queue", icon: Mail },
 ];
 
-export function Sidebar({ role, userName }: SidebarProps) {
+export function Sidebar({ role, userName, showAdvancedTrack = false }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -113,7 +123,7 @@ export function Sidebar({ role, userName }: SidebarProps) {
   // The Newsletter tab is super-admin only — a core admin never sees it.
   const links =
     role === "INTERN"
-      ? internLinks
+      ? internLinks.filter((link) => !link.advancedOnly || showAdvancedTrack)
       : role === "GRADER"
       ? graderLinks
       : role === "ANALYST"

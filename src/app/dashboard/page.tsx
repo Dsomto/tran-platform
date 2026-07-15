@@ -297,7 +297,7 @@ export default async function DashboardPage() {
                 {isAdvancedStage && (
                   <Link
                     href="/dashboard/advanced"
-                    className="inline-flex items-center gap-1.5 px-5 py-2.5 text-sm font-semibold rounded-full bg-foreground text-background hover:opacity-90 transition-opacity"
+                    className="inline-flex items-center gap-1.5 px-5 py-2.5 text-sm font-semibold rounded-full border border-blue/30 bg-blue/5 text-blue hover:bg-blue/10 transition-colors"
                   >
                     <Layers3 className="w-4 h-4" />
                     View your track
@@ -308,15 +308,17 @@ export default async function DashboardPage() {
                   className="inline-flex items-center gap-1.5 px-5 py-2.5 text-sm font-semibold rounded-full bg-blue text-white hover:bg-blue-dark transition-colors"
                 >
                   <DoorOpen className="w-4 h-4" />
-                  Enter the room
+                  {isAdvancedStage ? "Open current project" : "Enter the room"}
                 </Link>
-                <Link
-                  href={`${roomHref}#capstone`}
-                  className="inline-flex items-center gap-1.5 px-5 py-2.5 text-sm font-semibold rounded-full bg-indigo-600 text-white hover:bg-indigo-700 transition-colors shadow-sm"
-                >
-                  <Trophy className="w-4 h-4" />
-                  View your capstone
-                </Link>
+                {!isAdvancedStage && (
+                  <Link
+                    href={`${roomHref}#capstone`}
+                    className="inline-flex items-center gap-1.5 px-5 py-2.5 text-sm font-semibold rounded-full bg-indigo-600 text-white hover:bg-indigo-700 transition-colors shadow-sm"
+                  >
+                    <Trophy className="w-4 h-4" />
+                    View your capstone
+                  </Link>
+                )}
                 <Link
                   href={reportHref}
                   className="inline-flex items-center gap-1.5 px-5 py-2.5 text-sm font-medium rounded-full border border-border text-foreground hover:bg-surface-hover transition-colors"
@@ -357,7 +359,7 @@ export default async function DashboardPage() {
                 {isAdvancedStage && (
                   <Link
                     href="/dashboard/advanced"
-                    className="inline-flex items-center gap-1.5 px-5 py-2.5 text-sm font-semibold rounded-full bg-foreground text-background hover:opacity-90 transition-opacity"
+                    className="inline-flex items-center gap-1.5 px-5 py-2.5 text-sm font-semibold rounded-full border border-blue/30 bg-blue/5 text-blue hover:bg-blue/10 transition-colors"
                   >
                     <Layers3 className="w-4 h-4" />
                     View your track
