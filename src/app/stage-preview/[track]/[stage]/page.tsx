@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight, ExternalLink } from "lucide-react";
-import { ThemeToggle } from "@/components/dashboard/theme-toggle";
 import { AdvancedStageRoom } from "@/components/stage/AdvancedStageRoom";
 import {
   ADVANCED_PROJECTS,
@@ -46,6 +45,7 @@ export default async function StagePreviewDetail({
 
   return (
     <div className={`${styles.detailPage} bg-advanced-stage`}>
+      <a href="#project-brief" className={styles.skipLink}>Skip to project brief</a>
       <header className={styles.detailToolbar}>
         <Link href="/stage-preview" className={styles.backLink}>
           <ArrowLeft aria-hidden="true" /> All project pages
@@ -57,7 +57,6 @@ export default async function StagePreviewDetail({
         </div>
 
         <div className={styles.detailActions}>
-          <ThemeToggle />
           <Link href={stageUrl(project.slug)} className={styles.securedLink}>
             Open secured stage <ExternalLink aria-hidden="true" />
           </Link>
@@ -78,7 +77,7 @@ export default async function StagePreviewDetail({
         ) : <span />}
       </nav>
 
-      <main className={styles.detailCanvas}>
+      <main id="project-brief" className={styles.detailCanvas}>
         <AdvancedStageRoom
           project={project}
           track={track}

@@ -212,18 +212,31 @@ export function AdvancedStageRoom({
               <ArrowRight aria-hidden="true" />
             </a>
           )}
-          {project.resources.map((resource) => (
-            <a
-              key={resource.href}
-              href={protectedResourceHref(project.stage, resource.href)}
-              target="_blank"
-              rel="noreferrer noopener"
-            >
-              <span className="advanced-download-icon"><Download aria-hidden="true" /></span>
-              <span><strong>{resource.label}</strong><small>{resource.description}</small></span>
-              <ArrowRight aria-hidden="true" />
-            </a>
-          ))}
+          {project.resources.map((resource) => {
+            const resourceSummary = (
+              <>
+                <span className="advanced-download-icon"><Download aria-hidden="true" /></span>
+                <span><strong>{resource.label}</strong><small>{resource.description}</small></span>
+              </>
+            );
+
+            return preview ? (
+              <div key={resource.href} className="advanced-download-preview">
+                {resourceSummary}
+                <span className="advanced-download-preview__status"><LockKeyhole aria-hidden="true" /> Protected</span>
+              </div>
+            ) : (
+              <a
+                key={resource.href}
+                href={protectedResourceHref(project.stage, resource.href)}
+                target="_blank"
+                rel="noreferrer noopener"
+              >
+                {resourceSummary}
+                <ArrowRight aria-hidden="true" />
+              </a>
+            );
+          })}
         </div>
       </section>
 

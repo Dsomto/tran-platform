@@ -20,9 +20,9 @@ import {
   TestTube2,
 } from "lucide-react";
 import { LogoMark } from "@/components/logo";
-import { ThemeToggle } from "@/components/dashboard/theme-toggle";
 import {
   ADVANCED_PROJECTS,
+  ADVANCED_TRACK_OUTCOMES,
   advancedTrackLabel,
   type AdvancedTrack,
 } from "@/lib/advanced-stage";
@@ -37,9 +37,6 @@ type TrackPreview = {
   slug: "soc" | "ethical-hacking" | "grc";
   shortLabel: string;
   description: string;
-  destination: string;
-  learning: string[];
-  toolkit: string;
   icon: ComponentType<{ "aria-hidden"?: boolean }>;
 };
 
@@ -49,14 +46,6 @@ const TRACKS: TrackPreview[] = [
     slug: "soc",
     shortLabel: "SOC",
     description: "Detection, infrastructure, and incident-response engineering.",
-    destination: "Leave with a defensible detection portfolio that runs from raw telemetry to a reconstructed incident.",
-    learning: [
-      "Normalize and correlate hostile-quality security data",
-      "Build isolated sensors and network ranges as code",
-      "Test detections against attacks and benign lookalikes",
-      "Reconstruct a multi-host incident from primary evidence",
-    ],
-    toolkit: "Python · DuckDB · T-Pot · containerlab · Zeek/Suricata · Wazuh · Volatility 3",
     icon: Radar,
   },
   {
@@ -64,14 +53,6 @@ const TRACKS: TrackPreview[] = [
     slug: "ethical-hacking",
     shortLabel: "VAPT",
     description: "Authorized offensive work with strict scope and repeatable proof.",
-    destination: "Leave with a scope-safe assessment portfolio spanning automation, cloud, identity, exploitation, and retesting.",
-    learning: [
-      "Build discovery and evidence tooling that respects scope",
-      "Prove exploit chains safely and test remediation",
-      "Model attack paths across AWS IAM and Active Directory",
-      "Run a bounded assessment with cleanup and regression proof",
-    ],
-    toolkit: "Python · pytest · AWS IAM · Active Directory · BloodHound · reproducible lab automation",
     icon: Crosshair,
   },
   {
@@ -79,14 +60,6 @@ const TRACKS: TrackPreview[] = [
     slug: "grc",
     shortLabel: "GRC",
     description: "Executable governance, assurance, risk, and breach decisions.",
-    destination: "Leave with governance work that is testable, evidence-led, and connected to real technical outcomes.",
-    learning: [
-      "Turn control requirements into testable policy as code",
-      "Verify vendor claims against structured evidence",
-      "Run deterministic audits and quantified treatment choices",
-      "Build jurisdiction-aware breach decision workflows",
-    ],
-    toolkit: "Python · OPA/Rego · control evidence · audit sampling · risk models · regulatory decision logic",
     icon: Scale,
   },
 ];
@@ -152,10 +125,11 @@ export default function Page() {
 
   return (
     <div className={styles.page}>
+      <a href="#main-content" className={styles.skipLink}>Skip to programme content</a>
       <header className={styles.siteHeader}>
         <Link href="/" className={styles.brand}>
           <LogoMark size={28} />
-          <span>TRAN</span>
+          <span>UBI</span>
         </Link>
         <nav className={styles.siteNav} aria-label="Programme sections">
           <a href="#how-it-works">How it works</a>
@@ -163,16 +137,15 @@ export default function Page() {
           <a href="#resources">Resources</a>
         </nav>
         <div className={styles.headerActions}>
-          <span className={styles.environment}>Development review</span>
-          <ThemeToggle />
+          <span className={styles.environment}>Advanced programme preview</span>
         </div>
       </header>
 
-      <main>
+      <main id="main-content">
         <section className={styles.hero}>
           <div className={styles.heroLead}>
-            <p className={styles.eyebrow}>TRAN advanced programme · Stages 5–9</p>
-            <h1>Build the work.<br />Prove you can own it.</h1>
+            <p className={styles.eyebrow}>The Root Access Network · Advanced stages 5–9</p>
+            <h1>Build the work.<br /><span className={styles.heroAccent}>Prove you can own it.</span></h1>
             <p className={styles.heroIntro}>
               Move beyond guided exercises into five connected, production-shaped projects in your
               assigned cybersecurity track. You will build working systems, test them under adverse
@@ -243,13 +216,14 @@ export default function Page() {
 
         <section id="tracks" className={styles.trackSection}>
           <div className={styles.sectionIntro}>
-            <p className={styles.eyebrow}>Choose your assigned path</p>
+            <p className={styles.eyebrow}>Your assigned specialist path</p>
             <h2>Specialist tracks with a clear professional destination.</h2>
             <p>Every track develops technical depth, evidence discipline, communication, and professional judgment through five connected missions.</p>
           </div>
         <div className={styles.trackList}>
           {TRACKS.map((track) => {
             const visual = ADVANCED_TRACK_VISUALS[track.key];
+            const outcome = ADVANCED_TRACK_OUTCOMES[track.key];
             const Icon = track.icon;
             const trackStyle = { "--track-accent": visual.accent } as CSSProperties;
 
@@ -269,13 +243,13 @@ export default function Page() {
                   <div className={styles.trackLearning}>
                     <span>What you will learn</span>
                     <ul>
-                      {track.learning.map((item) => <li key={item}><CheckCircle2 aria-hidden="true" />{item}</li>)}
+                      {outcome.learning.map((item) => <li key={item}><CheckCircle2 aria-hidden="true" />{item}</li>)}
                     </ul>
                   </div>
                   <div className={styles.trackOutcome}>
                     <span>Professional outcome</span>
-                    <p>{track.destination}</p>
-                    <small>{track.toolkit}</small>
+                    <p>{outcome.destination}</p>
+                    <small>{outcome.toolkit}</small>
                   </div>
                 </header>
 
@@ -337,13 +311,13 @@ export default function Page() {
               <Sparkles aria-hidden="true" />
               <span><strong>The goal is independence—not isolation.</strong> Resources explain the environment, interfaces, evidence standard, and checks. The learner still owns the implementation and conclusions.</span>
             </div>
-            <a href="#tracks">Choose a track path <ArrowUpRight aria-hidden="true" /></a>
+            <a href="#tracks">Explore the track paths <ArrowUpRight aria-hidden="true" /></a>
           </div>
         </section>
       </main>
 
       <footer className={styles.footer}>
-        <span>TRAN Advanced Programme</span>
+        <span>UBI · The Root Access Network</span>
         <p>This design preview is development-only. Participant access remains controlled by stage status, current stage, and registered track.</p>
       </footer>
     </div>

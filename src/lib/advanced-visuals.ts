@@ -281,13 +281,13 @@ export const ADVANCED_TRACK_VISUALS: Record<
 > = {
   SOC_ANALYSIS: {
     image: "/images/track-soc.jpg",
-    accent: "#14b8a6",
+    accent: "#0f766e",
     eyebrow: "Detection and response engineering",
     summary: "Five systems. Increasing data volume, infrastructure responsibility, adversary pressure, and evidential burden.",
   },
   ETHICAL_HACKING: {
     image: "/images/track-ethical-hacking.jpg",
-    accent: "#f97316",
+    accent: "#c2410c",
     eyebrow: "Authorized offensive security",
     summary: "Five controlled engagements. Scope discipline, repeatable exploitation, clean-state proof, remediation, and live defense.",
   },

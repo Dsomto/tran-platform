@@ -30,6 +30,45 @@ export type AdvancedProject = {
   resources: AdvancedResource[];
 };
 
+export type AdvancedTrackOutcome = {
+  learning: string[];
+  toolkit: string;
+  destination: string;
+};
+
+export const ADVANCED_TRACK_OUTCOMES: Record<AdvancedTrack, AdvancedTrackOutcome> = {
+  SOC_ANALYSIS: {
+    learning: [
+      "Normalize and correlate hostile-quality security data",
+      "Build isolated sensors and network ranges as code",
+      "Test detections against attacks and benign lookalikes",
+      "Reconstruct a multi-host incident from primary evidence",
+    ],
+    toolkit: "Python · DuckDB · T-Pot · containerlab · Zeek/Suricata · Wazuh · Volatility 3",
+    destination: "A defensible detection portfolio that runs from raw telemetry to a reconstructed incident.",
+  },
+  ETHICAL_HACKING: {
+    learning: [
+      "Build discovery and evidence tooling that respects scope",
+      "Prove exploit chains safely and test remediation",
+      "Model attack paths across AWS IAM and Active Directory",
+      "Run a bounded assessment with cleanup and regression proof",
+    ],
+    toolkit: "Python · pytest · AWS IAM · Active Directory · BloodHound · reproducible lab automation",
+    destination: "A scope-safe assessment portfolio spanning automation, cloud, identity, exploitation, and retesting.",
+  },
+  GRC: {
+    learning: [
+      "Turn control requirements into testable policy as code",
+      "Verify vendor claims against structured evidence",
+      "Run deterministic audits and quantified treatment choices",
+      "Build jurisdiction-aware breach decision workflows",
+    ],
+    toolkit: "Python · OPA/Rego · control evidence · audit sampling · risk models · regulatory decision logic",
+    destination: "Governance work that is testable, evidence-led, and connected to real technical outcomes.",
+  },
+};
+
 export const ADVANCED_STAGE_META: Record<
   Extract<StageKey, "STAGE_5" | "STAGE_6" | "STAGE_7" | "STAGE_8" | "STAGE_9">,
   { number: 1 | 2 | 3 | 4 | 5; slug: StageSlug; name: string; subtitle: string }

@@ -4,20 +4,24 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
   ArrowRight,
+  BookOpenCheck,
   CheckCircle2,
   ChevronDown,
   Clock3,
   Download,
   FileText,
+  GraduationCap,
   Layers3,
   LockKeyhole,
   ShieldCheck,
+  Wrench,
 } from "lucide-react";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import {
   ADVANCED_PROJECTS,
   ADVANCED_STAGE_META,
+  ADVANCED_TRACK_OUTCOMES,
   advancedContinuity,
   advancedTrackLabel,
   type AdvancedTrack,
@@ -46,6 +50,7 @@ export default async function AdvancedTrackPage() {
 
   const track = intern.track as AdvancedTrack;
   const trackVisual = ADVANCED_TRACK_VISUALS[track];
+  const trackOutcome = ADVANCED_TRACK_OUTCOMES[track];
   const [windows, reports, artifactGrants] = await Promise.all([
     prisma.stageWindow.findMany({
       where: { stage: { in: ADVANCED_STAGES } },
@@ -82,6 +87,40 @@ export default async function AdvancedTrackPage() {
             </div>
           </div>
         </header>
+
+        <section className={styles.learningOverview} aria-labelledby="track-learning-title">
+          <div className={styles.learningHeading}>
+            <div className={styles.eyebrow}>Your learning destination</div>
+            <h2 id="track-learning-title">What this track will help you build</h2>
+          </div>
+          <div className={styles.learningGrid}>
+            <article>
+              <GraduationCap aria-hidden="true" />
+              <div>
+                <h3>Capabilities</h3>
+                <ul>{trackOutcome.learning.map((item) => <li key={item}>{item}</li>)}</ul>
+              </div>
+            </article>
+            <article>
+              <Wrench aria-hidden="true" />
+              <div>
+                <h3>Working toolkit</h3>
+                <p>{trackOutcome.toolkit}</p>
+              </div>
+            </article>
+            <article>
+              <ShieldCheck aria-hidden="true" />
+              <div>
+                <h3>Portfolio outcome</h3>
+                <p>{trackOutcome.destination}</p>
+              </div>
+            </article>
+          </div>
+          <div className={styles.resourceNote}>
+            <BookOpenCheck aria-hidden="true" />
+            <p><strong>Support appears inside each open project.</strong> You receive the controlling mission brief, assigned case material, starter schemas, public fixtures, evidence templates, and defense-readiness guidance for that stage.</p>
+          </div>
+        </section>
 
         <div className={styles.heading}>
           <div>
@@ -127,8 +166,15 @@ export default async function AdvancedTrackPage() {
                 className={`${styles.project} ${isCurrent ? styles.projectCurrent : ""}`}
                 style={projectStyle}
               >
-                <details className={styles.projectDetails} open={isCurrent ? true : undefined}>
-                  <summary className={styles.projectSummary}>
+                <details
+                  className={`${styles.projectDetails} ${!isOpen && !isPassed ? styles.projectLocked : ""}`}
+                  open={isCurrent && (isOpen || isPassed) ? true : undefined}
+                >
+                  <summary
+                    className={styles.projectSummary}
+                    aria-disabled={!isOpen && !isPassed}
+                    tabIndex={isOpen || isPassed ? undefined : -1}
+                  >
                     <span className={styles.stageNumber}>
                       <span>Stage</span>
                       <strong>{project.number + 4}</strong>
@@ -196,7 +242,7 @@ export default async function AdvancedTrackPage() {
                         <>
                           <Link href={stageUrl(project.slug)}>Enter project <ArrowRight aria-hidden="true" /></Link>
                           <Link className={styles.secondary} href={`/dashboard/reports/${project.stage}`}><FileText aria-hidden="true" /> Submission</Link>
-                          {artifact && (!artifact.expiresAt || artifact.expiresAt.getTime() > Date.now()) && (
+                          {artifact && (
                             <Link className={styles.secondary} href={`/api/advanced-stage/artifact?stage=${stage}`}>
                               <Download aria-hidden="true" /> Evidence pack · {Math.ceil(artifact.sizeBytes / 1_048_576)} MB · {artifact.sha256.slice(0, 10)}…
                             </Link>
