@@ -13,7 +13,6 @@ import {
 import { STAGE_STORIES, CHAPTER_TITLES, TOTAL_CHAPTERS } from "@/lib/stage-story";
 import { STAGE_BRIEFS } from "@/lib/stage-briefs";
 import { STAGE_ENUM_TO_SLUG } from "@/lib/stage-login";
-import type { StageSlug } from "@/lib/stage-routes";
 
 export const dynamic = "force-dynamic";
 
@@ -1276,7 +1275,7 @@ export default async function FAQPage() {
               {(["STAGE_0", "STAGE_1", "STAGE_2", "STAGE_3", "STAGE_4"] as const).map(
                 (key) => {
                   const rank = Number(key.split("_")[1]);
-                  const slug = STAGE_ENUM_TO_SLUG[key] as StageSlug;
+                  const slug = STAGE_ENUM_TO_SLUG[key] as keyof typeof STAGE_STORIES;
                   const story = STAGE_STORIES[slug];
                   const chapterTitle = CHAPTER_TITLES[rank] ?? STAGE_BRIEFS[key].label;
                   const isCurrent = rank === currentRank;
