@@ -120,7 +120,7 @@ export function TwoFactorPanel({ email, initiallyEnabled, lastUsedAt }: Props) {
 
   if (step === "setup" && setupData) {
     return (
-      <div className="bg-white border border-border rounded-xl p-6">
+      <div className="bg-surface border border-border rounded-xl p-6">
         <h2 className="font-semibold text-foreground mb-3">Set up two-factor authentication</h2>
         <ol className="text-sm text-foreground/80 leading-relaxed space-y-3 mb-5 list-decimal list-inside">
           <li>Install an authenticator app if you don't have one — <strong>Google Authenticator</strong>, <strong>Authy</strong>, or <strong>1Password</strong> all work.</li>
@@ -208,7 +208,7 @@ export function TwoFactorPanel({ email, initiallyEnabled, lastUsedAt }: Props) {
 
   if (step === "disable") {
     return (
-      <div className="bg-white border border-border rounded-xl p-6">
+      <div className="bg-surface border border-border rounded-xl p-6">
         <h2 className="font-semibold text-foreground mb-3">Turn off two-factor authentication</h2>
         <p className="text-sm text-muted-foreground mb-5">
           To disable 2FA we require both your password and a current code —
@@ -271,7 +271,7 @@ export function TwoFactorPanel({ email, initiallyEnabled, lastUsedAt }: Props) {
 
   // Idle state — show current status
   return (
-    <div className="bg-white border border-border rounded-xl p-6">
+    <div className="bg-surface border border-border rounded-xl p-6">
       <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
         <div>
           <h2 className="font-semibold text-foreground flex items-center gap-2">

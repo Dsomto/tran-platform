@@ -19,7 +19,7 @@ export function Marquee() {
   const repeated = [...items, ...items];
 
   return (
-    <div className="py-5 border-y border-border/40 bg-white/60 overflow-hidden" aria-hidden="true">
+    <div className="py-5 border-y border-border/60 bg-surface/80 overflow-hidden" aria-hidden="true">
       <div className="marquee-track">
         <div className="marquee-content">
           {repeated.map((item, i) => (

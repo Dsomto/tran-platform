@@ -251,6 +251,30 @@ const visuals: Record<AdvancedTrack, AdvancedProjectVisual[]> = {
   ],
 };
 
+// One controlled accent per specialist track. Project identity comes from the
+// instrument, workflow, evidence model, and imagery rather than a new bright
+// colour on every page.
+const TRACK_PALETTES: Record<
+  AdvancedTrack,
+  Pick<AdvancedProjectVisual, "accent" | "accentStrong" | "accentSoft">
+> = {
+  SOC_ANALYSIS: {
+    accent: "#0f766e",
+    accentStrong: "#115e59",
+    accentSoft: "#ccfbf1",
+  },
+  ETHICAL_HACKING: {
+    accent: "#c2410c",
+    accentStrong: "#9a3412",
+    accentSoft: "#ffedd5",
+  },
+  GRC: {
+    accent: "#1d4ed8",
+    accentStrong: "#1e40af",
+    accentSoft: "#dbeafe",
+  },
+};
+
 export const ADVANCED_TRACK_VISUALS: Record<
   AdvancedTrack,
   { image: string; accent: string; eyebrow: string; summary: string }
@@ -279,5 +303,8 @@ export function advancedProjectVisual(
   track: AdvancedTrack,
   projectNumber: number
 ): AdvancedProjectVisual {
-  return visuals[track][Math.max(0, Math.min(4, projectNumber - 1))];
+  return {
+    ...visuals[track][Math.max(0, Math.min(4, projectNumber - 1))],
+    ...TRACK_PALETTES[track],
+  };
 }

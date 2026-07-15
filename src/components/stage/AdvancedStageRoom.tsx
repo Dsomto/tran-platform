@@ -8,14 +8,21 @@ import {
   Download,
   FileCheck2,
   Gauge,
+  ListChecks,
   LockKeyhole,
+  PackageCheck,
+  Route,
   ShieldCheck,
   Swords,
   TerminalSquare,
   TestTube2,
   Wrench,
 } from "lucide-react";
-import type { AdvancedProject, AdvancedTrack } from "@/lib/advanced-stage";
+import {
+  advancedContinuity,
+  type AdvancedProject,
+  type AdvancedTrack,
+} from "@/lib/advanced-stage";
 import type { AdvancedVariant } from "@/lib/advanced-variant";
 import { advancedProjectVisual } from "@/lib/advanced-visuals";
 import { AdvancedProjectInstrument } from "./AdvancedProjectInstrument";
@@ -108,36 +115,69 @@ export function AdvancedStageRoom({
         <code>{variant.marker}</code>
       </section>
 
+      <section className="advanced-operating-brief" aria-labelledby="operating-brief-title">
+        <header>
+          <div className="advanced-eyebrow">Controlling assessment brief</div>
+          <h2 id="operating-brief-title">Receive. Build. Prove. Hand off.</h2>
+          <p>
+            This page is the assignment contract for this project. The private overlay and issued
+            archive supply your exact variant; the requirements below define what staff will accept.
+          </p>
+        </header>
+        <div className="advanced-brief-ledger">
+          <article>
+            <span><LockKeyhole aria-hidden="true" /> 01 · Receive</span>
+            <strong>One identity-bound case</strong>
+            <p>Private overlay, evidence marker, assigned archive, and {project.resources.length} controlled references.</p>
+          </article>
+          <article>
+            <span><PackageCheck aria-hidden="true" /> 02 · Build</span>
+            <strong>{deliverables.length} scored outputs</strong>
+            <p>The implementation and evidence package must rebuild from the submitted repository and manifest.</p>
+          </article>
+          <article>
+            <span><ListChecks aria-hidden="true" /> 03 · Prove</span>
+            <strong>{project.verificationTests.length} acceptance tests</strong>
+            <p>Published checks, private holdouts, clean-state reproduction, and {project.defense.toLowerCase()}.</p>
+          </article>
+          <article>
+            <span><Route aria-hidden="true" /> 04 · Hand off</span>
+            <strong>Portfolio continuity</strong>
+            <p>{advancedContinuity(track, project.number)}</p>
+          </article>
+        </div>
+      </section>
+
       <div className="advanced-columns">
         <section aria-labelledby="setup-title">
-          <div className="advanced-section-title"><TerminalSquare aria-hidden="true" /><h2 id="setup-title">Environment gate</h2></div>
+          <div className="advanced-section-title"><TerminalSquare aria-hidden="true" /><h2 id="setup-title">01 · Environment gate</h2></div>
           <ol>{project.setup.map((item) => <li key={item}>{item}</li>)}</ol>
         </section>
 
         <section aria-labelledby="mission-title">
-          <div className="advanced-section-title"><Swords aria-hidden="true" /><h2 id="mission-title">Mission</h2></div>
+          <div className="advanced-section-title"><Swords aria-hidden="true" /><h2 id="mission-title">02 · Mission execution</h2></div>
           <ol>{project.mission.map((item) => <li key={item}>{item}</li>)}</ol>
         </section>
       </div>
 
       <section className="advanced-technical" aria-labelledby="technical-title">
         <div>
-          <div className="advanced-section-title"><Wrench aria-hidden="true" /><h2 id="technical-title">Technical challenge</h2></div>
+          <div className="advanced-section-title"><Wrench aria-hidden="true" /><h2 id="technical-title">03 · Engineering constraints</h2></div>
           <ul>{project.technicalChallenges.map((item) => <li key={item}>{item}</li>)}</ul>
         </div>
         <div>
-          <div className="advanced-section-title"><TestTube2 aria-hidden="true" /><h2>Verification tests</h2></div>
+          <div className="advanced-section-title"><TestTube2 aria-hidden="true" /><h2>04 · Acceptance tests</h2></div>
           <ol>{project.verificationTests.map((item) => <li key={item}>{item}</li>)}</ol>
         </div>
       </section>
 
       <section className="advanced-band" aria-labelledby="proof-title">
         <div>
-          <div className="advanced-section-title"><ShieldCheck aria-hidden="true" /><h2 id="proof-title">Definite proof</h2></div>
+          <div className="advanced-section-title"><ShieldCheck aria-hidden="true" /><h2 id="proof-title">05 · Required proof</h2></div>
           <ul>{project.proof.map((item) => <li key={item}>{item}</li>)}</ul>
         </div>
         <div>
-          <div className="advanced-section-title"><AlertTriangle aria-hidden="true" /><h2>Hard gates</h2></div>
+          <div className="advanced-section-title"><AlertTriangle aria-hidden="true" /><h2>Automatic hold / fail gates</h2></div>
           <ul>{project.gates.map((item) => <li key={item}>{item}</li>)}</ul>
         </div>
       </section>

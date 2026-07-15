@@ -42,7 +42,7 @@ export function OnboardingForm({ fullName, nextHref }: Props) {
   return (
     <>
       {/* ── NDA ── */}
-      <section className="bg-white border border-border rounded-2xl p-6 sm:p-8 mb-5">
+      <section className="bg-surface border border-border rounded-2xl p-6 sm:p-8 mb-5">
         <div className="flex items-center gap-2 mb-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-blue">
           <ScrollText className="w-3.5 h-3.5" />
           Document 1 of 2
@@ -115,7 +115,7 @@ export function OnboardingForm({ fullName, nextHref }: Props) {
       </section>
 
       {/* ── Programme Terms ── */}
-      <section className="bg-white border border-border rounded-2xl p-6 sm:p-8 mb-5">
+      <section className="bg-surface border border-border rounded-2xl p-6 sm:p-8 mb-5">
         <div className="flex items-center gap-2 mb-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-blue">
           <ShieldCheck className="w-3.5 h-3.5" />
           Document 2 of 2
@@ -177,7 +177,7 @@ export function OnboardingForm({ fullName, nextHref }: Props) {
       </section>
 
       {/* ── Signature ── */}
-      <section className="bg-white border-2 border-blue/30 rounded-2xl p-6 sm:p-8">
+      <section className="bg-surface border-2 border-blue/30 rounded-2xl p-6 sm:p-8">
         <h2 className="text-base font-semibold text-foreground mb-1">
           Sign once, for both documents
         </h2>

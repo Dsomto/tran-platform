@@ -57,7 +57,7 @@ export function CTA() {
             {markers.map((m, i) => (
               <div
                 key={i}
-                className={`w-10 h-10 rounded-full ring-2 ring-white grid place-items-center text-base ${m.bg} ${m.text}`}
+                className={`w-10 h-10 rounded-full ring-2 ring-surface grid place-items-center text-base ${m.bg} ${m.text}`}
                 style={{ zIndex: markers.length - i }}
                 aria-label={`Cohort member — ${m.track} track`}
                 role="img"

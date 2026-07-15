@@ -180,6 +180,24 @@
 .advanced-marker p { margin: 4px 0 0; color: #667085; font-size: 13px; }
 .advanced-marker code { padding: 8px 10px; background: var(--advanced-accent-soft); border: 1px solid color-mix(in srgb, var(--advanced-accent), #fff 35%); color: var(--advanced-accent-strong); font-size: 12px; overflow-wrap: anywhere; }
 
+.advanced-operating-brief {
+  display: grid;
+  grid-template-columns: .72fr 1.8fr;
+  gap: 34px;
+  padding: 28px 30px;
+  border: 1px solid #d9dde5;
+  border-radius: 6px;
+  background: #fff;
+}
+.advanced-operating-brief > header h2 { margin: 7px 0 10px; font-size: 23px; letter-spacing: -.02em; }
+.advanced-operating-brief > header p { margin: 0; color: #667085; font-size: 13px; line-height: 1.6; }
+.advanced-brief-ledger { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid #d9dde5; border-left: 1px solid #d9dde5; }
+.advanced-brief-ledger article { min-width: 0; padding: 17px; border-right: 1px solid #d9dde5; border-bottom: 1px solid #d9dde5; }
+.advanced-brief-ledger span { display: flex; align-items: center; gap: 7px; color: var(--advanced-accent-strong); font: 750 9px/1 ui-monospace, monospace; letter-spacing: .09em; text-transform: uppercase; }
+.advanced-brief-ledger span svg { width: 13px; height: 13px; }
+.advanced-brief-ledger strong { display: block; margin-top: 12px; color: #17191f; font-size: 13px; }
+.advanced-brief-ledger p { margin: 6px 0 0; color: #667085; font-size: 11px; line-height: 1.5; }
+
 .advanced-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 44px; padding: 8px 0; }
 .advanced-section-title { display: flex; align-items: center; gap: 9px; margin-bottom: 14px; }
 .advanced-section-title svg { width: 18px; height: 18px; color: var(--advanced-accent-strong); }
@@ -261,12 +279,54 @@
   .advanced-instrument__metric { min-height: 160px; }
   .advanced-instrument__path { min-height: 170px; padding-left: 15px; padding-right: 15px; }
   .advanced-instrument__feed { display: flex; }
-  .advanced-columns, .advanced-band, .advanced-pressure, .advanced-technical { grid-template-columns: 1fr; gap: 25px; }
+  .advanced-operating-brief, .advanced-columns, .advanced-band, .advanced-pressure, .advanced-technical { grid-template-columns: 1fr; gap: 25px; }
+  .advanced-brief-ledger { grid-template-columns: 1fr; }
   .advanced-file-grid { grid-template-columns: 1fr; }
   .advanced-file-grid > div { border-right: 0; }
   .advanced-preview-shell { padding: 18px 12px; }
   .advanced-preview-heading { align-items: flex-start; flex-direction: column; }
 }
+
+/* Dark mode keeps the assessment sober and high-contrast. The instrument is
+   already dark; these rules convert the document surfaces around it. */
+.dark .bg-advanced-stage { background: #10161d; color: #f3f6f8; }
+.dark .bg-advanced-stage > header { background: rgba(24, 33, 41, .96) !important; border-color: #35424e !important; color: #f3f6f8; }
+.dark .bg-advanced-stage > footer { border-color: #35424e !important; color: #aab5c0 !important; }
+.dark .bg-advanced-stage .advanced-shell-link { border-color: #40505e; color: #dce3e9; }
+.dark .bg-advanced-stage .advanced-shell-link:hover { background: #23303a; }
+.dark .bg-advanced-stage .advanced-progress,
+.dark .bg-advanced-stage .advanced-marker,
+.dark .bg-advanced-stage .advanced-operating-brief,
+.dark .bg-advanced-stage .advanced-band,
+.dark .bg-advanced-stage .advanced-file-grid { background: #182129; border-color: #35424e; }
+.dark .bg-advanced-stage .advanced-progress > div,
+.dark .bg-advanced-stage .advanced-brief-ledger,
+.dark .bg-advanced-stage .advanced-brief-ledger article,
+.dark .bg-advanced-stage .advanced-band,
+.dark .bg-advanced-stage .advanced-file-grid > div,
+.dark .bg-advanced-stage .advanced-downloads,
+.dark .bg-advanced-stage .advanced-downloads a { border-color: #35424e; }
+.dark .bg-advanced-stage .advanced-progress > div.is-current,
+.dark .bg-advanced-stage .advanced-brief-ledger strong,
+.dark .bg-advanced-stage .advanced-file-grid code,
+.dark .bg-advanced-stage .advanced-downloads a { color: #f3f6f8; }
+.dark .bg-advanced-stage .advanced-eyebrow,
+.dark .bg-advanced-stage .advanced-marker p,
+.dark .bg-advanced-stage .advanced-operating-brief > header p,
+.dark .bg-advanced-stage .advanced-brief-ledger p,
+.dark .bg-advanced-stage .advanced-section-heading > span,
+.dark .bg-advanced-stage .advanced-downloads small { color: #aab5c0; }
+.dark .bg-advanced-stage .advanced-columns ol,
+.dark .bg-advanced-stage .advanced-band ul,
+.dark .bg-advanced-stage .advanced-pressure ul,
+.dark .bg-advanced-stage .advanced-technical ul,
+.dark .bg-advanced-stage .advanced-technical ol { color: #c6d0d9; }
+.dark .bg-advanced-stage .advanced-technical { background: #17242b; }
+.dark .bg-advanced-stage .advanced-marker code,
+.dark .bg-advanced-stage .advanced-download-icon { background: color-mix(in srgb, var(--advanced-accent-strong), #182129 68%); color: #f3f6f8; border-color: #40505e; }
+.dark .bg-advanced-stage .advanced-pressure { background: #292117; border-color: #5d4529; }
+.dark .bg-advanced-stage .advanced-pressure p,
+.dark .bg-advanced-stage .advanced-pressure ul { color: #e8c99e; }
 
 @media (prefers-reduced-motion: no-preference) {
   .advanced-instrument__status { animation: advanced-pulse 2.4s ease-in-out infinite; }

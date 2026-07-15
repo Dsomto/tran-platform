@@ -96,7 +96,7 @@ export function Testimonials() {
               <footer className="mt-6 pt-5 border-t border-border/40">
                 <cite className="not-italic flex items-center gap-3">
                   <div
-                    className={`w-10 h-10 rounded-full shrink-0 grid place-items-center text-sm font-bold tracking-wide ring-2 ring-white ${t.initialsBg} ${t.initialsText}`}
+                    className={`w-10 h-10 rounded-full shrink-0 grid place-items-center text-sm font-bold tracking-wide ring-2 ring-surface ${t.initialsBg} ${t.initialsText}`}
                     aria-hidden="true"
                   >
                     {toInitials(t.name)}

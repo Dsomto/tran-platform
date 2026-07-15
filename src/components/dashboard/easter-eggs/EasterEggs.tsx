@@ -55,7 +55,7 @@ export function EasterEggs() {
           onClick={() => setPalette(false)}
         >
           <div
-            className="w-80 rounded-xl border border-border bg-white p-2 shadow-2xl"
+            className="w-80 rounded-xl border border-border bg-surface p-2 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <p className="px-3 py-2 text-[11px] uppercase tracking-wide text-muted-foreground">

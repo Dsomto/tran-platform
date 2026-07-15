@@ -278,7 +278,7 @@ export function ReportEditor({
           </p>
           <ul className="space-y-1.5">
             {evidencePack.map((f) => (
-              <li key={f.url} className="flex items-start gap-3 rounded-lg border border-border bg-white px-3 py-2.5">
+              <li key={f.url} className="flex items-start gap-3 rounded-lg border border-border bg-surface px-3 py-2.5">
                 <Download className="h-4 w-4 text-blue mt-0.5 shrink-0" />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
@@ -307,7 +307,7 @@ export function ReportEditor({
         </section>
       )}
 
-      <section className="mb-6 rounded-xl border border-border bg-white p-5">
+      <section className="mb-6 rounded-xl border border-border bg-surface p-5">
         <p className="text-[11px] font-mono uppercase tracking-[0.18em] text-muted-foreground mb-2">
           Chapter {chapter} · Capstone
         </p>
@@ -353,7 +353,7 @@ export function ReportEditor({
           </h2>
           <a
             href="/dashboard/faq"
-            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-semibold border border-blue/40 bg-white text-blue hover:bg-blue/10"
+            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-semibold border border-blue/40 bg-surface text-blue hover:bg-blue/10"
           >
             Read the full Deliverables FAQ →
           </a>
@@ -412,13 +412,13 @@ export function ReportEditor({
       )}
 
       {locked && (
-        <div className="mb-5 p-4 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700">
+        <div className="mb-5 p-4 bg-surface-hover border border-border rounded-lg text-sm text-foreground/80">
           This report is locked. Its result has been released, its submission window has closed,
           or this Advanced project has used its permitted submission attempts.
         </div>
       )}
 
-      <div className="space-y-6 bg-white border border-border rounded-xl p-6">
+      <div className="space-y-6 bg-surface border border-border rounded-xl p-6">
         <section>
           <label className="block text-sm font-semibold text-foreground mb-2">
             Link to your report folder *
@@ -437,7 +437,7 @@ export function ReportEditor({
             }}
             disabled={locked}
             placeholder="https://drive.google.com/drive/folders/…"
-            className="w-full p-3 border border-border rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue/30 disabled:bg-muted/30"
+            className="w-full p-3 border border-border rounded-lg bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-blue/30 disabled:bg-muted/30"
           />
           {reportUrl && isValidUrl(reportUrl) && (
             <a
@@ -483,7 +483,7 @@ export function ReportEditor({
             }}
             disabled={locked}
             placeholder="Summarise your findings for a board-level reader…"
-            className={`w-full min-h-[220px] p-3 border rounded-lg bg-white text-sm leading-relaxed focus:outline-none focus:ring-2 disabled:bg-muted/30 ${
+            className={`w-full min-h-[220px] p-3 border rounded-lg bg-background text-foreground text-sm leading-relaxed focus:outline-none focus:ring-2 disabled:bg-muted/30 ${
               charsOverLimit
                 ? "border-rose-400 focus:ring-rose-200"
                 : "border-border focus:ring-blue/30"
@@ -514,7 +514,7 @@ export function ReportEditor({
             }}
             disabled={locked}
             placeholder="https://…"
-            className="w-full p-3 border border-border rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue/30 disabled:bg-muted/30"
+            className="w-full p-3 border border-border rounded-lg bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-blue/30 disabled:bg-muted/30"
           />
         </section>
 
@@ -560,7 +560,7 @@ export function ReportEditor({
           <button
             onClick={() => saveDraft(false)}
             disabled={saving || locked || !dirty}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border border-border bg-white hover:bg-muted/50 disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border border-border bg-surface hover:bg-surface-hover disabled:opacity-50"
           >
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
             Save draft

@@ -74,7 +74,7 @@ export default async function DashboardLayout({
   const impersonating = cookieStore.has("admin-shadow");
 
   return (
-    <div className="flex min-h-screen bg-background flex-col">
+    <div className="dashboard-shell flex min-h-screen bg-background flex-col">
       {impersonating && (
         <ImpersonationBanner
           internName={`${session.firstName} ${session.lastName}`}

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { LogoMark } from "@/components/logo";
+import { ThemeToggle } from "@/components/dashboard/theme-toggle";
 import { Menu, X, ArrowLeft, LogOut } from "lucide-react";
 
 const navLinks = [
@@ -94,7 +95,7 @@ export function Navbar() {
     <header
       role="banner"
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled ? "glass-strong" : "bg-transparent"
+        scrolled || isOpen ? "glass-strong" : "bg-transparent"
       }`}
     >
       <nav aria-label="Main navigation" className="max-w-6xl mx-auto px-5 sm:px-8">
@@ -105,7 +106,7 @@ export function Navbar() {
                 type="button"
                 onClick={handleBack}
                 aria-label="Go back"
-                className="flex items-center justify-center w-9 h-9 rounded-full border border-border/60 bg-white/60 backdrop-blur hover:bg-white text-muted hover:text-foreground transition-colors cursor-pointer"
+                className="flex items-center justify-center w-9 h-9 rounded-full border border-border/60 bg-surface/80 backdrop-blur hover:bg-surface text-muted hover:text-foreground transition-colors cursor-pointer"
               >
                 <ArrowLeft className="w-4 h-4" />
               </button>
@@ -133,6 +134,7 @@ export function Navbar() {
           </ul>
 
           <div className="hidden md:flex items-center gap-3">
+            <ThemeToggle />
             {auth.status === "authed" ? (
               <>
                 <Link
@@ -164,15 +166,18 @@ export function Navbar() {
             )}
           </div>
 
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            className="md:hidden p-2 -mr-2 text-muted hover:text-foreground"
-            aria-expanded={isOpen}
-            aria-controls="mobile-menu"
-            aria-label={isOpen ? "Close menu" : "Open menu"}
-          >
-            {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
+          <div className="flex items-center md:hidden">
+            <ThemeToggle />
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className="p-2 -mr-2 text-muted hover:text-foreground"
+              aria-expanded={isOpen}
+              aria-controls="mobile-menu"
+              aria-label={isOpen ? "Close menu" : "Open menu"}
+            >
+              {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+          </div>
         </div>
 
         {isOpen && (

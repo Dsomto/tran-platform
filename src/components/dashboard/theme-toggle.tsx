@@ -14,8 +14,11 @@ export function ThemeToggle() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
-    setDark(document.documentElement.classList.contains("dark"));
+    const frame = window.requestAnimationFrame(() => {
+      setMounted(true);
+      setDark(document.documentElement.classList.contains("dark"));
+    });
+    return () => window.cancelAnimationFrame(frame);
   }, []);
 
   function toggle() {
@@ -32,16 +35,17 @@ export function ThemeToggle() {
   return (
     <button
       onClick={toggle}
+      aria-pressed={dark}
       aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
       title={dark ? "Switch to light mode" : "Switch to dark mode"}
-      className="p-2 rounded-xl text-muted hover:text-foreground hover:bg-surface-hover transition-colors cursor-pointer"
+      className="grid h-9 w-9 place-items-center rounded-full border border-border bg-surface text-muted shadow-sm hover:border-foreground/20 hover:text-foreground hover:bg-surface-hover transition-colors cursor-pointer"
     >
       {/* Until mounted, render the moon as a neutral placeholder so the markup
           matches on the server and we don't flash the wrong icon. */}
       {mounted && dark ? (
-        <Sun className="w-5 h-5" />
+        <Sun className="w-4 h-4" />
       ) : (
-        <Moon className="w-5 h-5" />
+        <Moon className="w-4 h-4" />
       )}
     </button>
   );

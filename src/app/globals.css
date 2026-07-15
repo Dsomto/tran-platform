@@ -70,6 +70,115 @@
   --muted-foreground: #B7BFCC;
 }
 
+/* The public landing page uses a broader editorial palette than the dense
+   dashboard. Keep its dark mode readable and visibly layered instead of
+   inheriting the dashboard's near-black, low-separation surfaces. */
+.dark .landing-page {
+  --background: #11171D;
+  --foreground: #F8FAFC;
+  --surface: #1B252E;
+  --surface-hover: #26333E;
+  --border: #3B4854;
+  --border-light: #28343E;
+  --muted: #BBC5CF;
+  --muted-foreground: #D0D7DE;
+  --foreground-muted: #D0D7DE;
+  --blue: #60A5FA;
+  --blue-light: #1E3A5F;
+  --blue-dark: #3B82F6;
+  --primary: #60A5FA;
+  --primary-light: #1E3A5F;
+  --primary-dark: #3B82F6;
+  --secondary: #22D3EE;
+  --secondary-light: #164E63;
+  --accent: #FBBF24;
+  --accent-light: #5F4314;
+  --cyan: #22D3EE;
+  --cyan-light: #164E63;
+  --cyan-dark: #A5F3FC;
+  --amber: #FBBF24;
+  --amber-light: #5F4314;
+  --amber-dark: #FDE68A;
+  --emerald: #34D399;
+  --emerald-light: #124C3B;
+  --emerald-dark: #A7F3D0;
+  --violet: #A78BFA;
+  --violet-light: #3E2F68;
+  --rose: #FB7185;
+  --rose-light: #60283A;
+  min-height: 100vh;
+  background: var(--background);
+  color: var(--foreground);
+}
+
+.dark .landing-page .glass,
+.dark .landing-page .glass-strong,
+.dark .landing-page .glass-card,
+.dark .landing-page .glass-card-elevated {
+  background: rgba(27, 37, 46, .88);
+  border-color: rgba(187, 197, 207, .2);
+  box-shadow: inset 0 1px rgba(255, 255, 255, .05), 0 12px 36px rgba(0, 0, 0, .22);
+}
+
+.dark .landing-page .glass-card:hover,
+.dark .landing-page .glass-card-elevated:hover {
+  background: rgba(38, 51, 62, .96);
+  border-color: rgba(96, 165, 250, .38);
+}
+
+.dark .landing-page .bg-blue {
+  background-color: #2563EB;
+}
+
+.dark .landing-page .hover\:bg-blue-dark:hover {
+  background-color: #1D4ED8;
+}
+
+.dark .landing-page .bg-scan::before {
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(96, 165, 250, .035) 3px,
+    rgba(96, 165, 250, .035) 4px
+  );
+}
+
+.dark .landing-page .hex-grid { opacity: .7; }
+
+.dark .landing-page main > section:nth-of-type(even) {
+  background-color: #151E26;
+}
+
+.dark .landing-page img {
+  filter: brightness(.88) saturate(.82);
+}
+
+/* The participant dashboard needs stronger surface separation than the
+   generic admin shell. This is a dark slate workspace, not a black canvas. */
+.dark .dashboard-shell {
+  --background: #10161D;
+  --foreground: #F6F8FA;
+  --surface: #19232C;
+  --surface-hover: #24323E;
+  --border: #354451;
+  --border-light: #26333D;
+  --muted: #AAB5C0;
+  --muted-foreground: #C2CBD3;
+  --foreground-muted: #C2CBD3;
+}
+
+.dark .dashboard-shell input,
+.dark .dashboard-shell textarea,
+.dark .dashboard-shell select {
+  color: var(--foreground);
+  color-scheme: dark;
+}
+
+.dark .dashboard-shell .text-blue {
+  color: #7CB5FF;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

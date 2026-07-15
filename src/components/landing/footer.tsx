@@ -27,7 +27,7 @@ const links = {
 
 export function Footer() {
   return (
-    <footer role="contentinfo" className="border-t border-border/60 bg-white">
+    <footer role="contentinfo" className="border-t border-border/60 bg-surface">
       <div className="max-w-6xl mx-auto px-5 sm:px-8 py-14">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-10">
           <div className="col-span-2 md:col-span-1">
