@@ -20,18 +20,22 @@ async function main() {
   const grants = await prisma.advancedArtifactGrant.findMany({
     where: { stage: "STAGE_5", revokedAt: null },
     include: {
-      intern: { select: { track: true, user: { select: { email: true } } } },
+      intern: {
+        select: {
+          track: true,
+          currentStage: true,
+          isActive: true,
+          user: { select: { email: true } },
+        },
+      },
     },
   });
   const applications = await prisma.publicApplication.findMany({
     where: { email: { in: grants.map((grant) => grant.intern.user.email) } },
-    select: { email: true, internId: true },
+    select: { email: true, internId: true, stage: true, stageStatus: true },
   });
-  const codeByEmail = new Map(
-    applications.map((application) => [
-      application.email.toLowerCase(),
-      resolvedInternCode(application.internId),
-    ])
+  const applicationByEmail = new Map(
+    applications.map((application) => [application.email.toLowerCase(), application])
   );
   const artifactRoot = path.resolve(process.cwd(), "stage5-artifacts");
   const artifactFacts = new Map<string, { size: number; hash: string }>();
@@ -58,12 +62,23 @@ async function main() {
     }
 
     counts[grant.track] = (counts[grant.track] ?? 0) + 1;
-    if (!grant.intern.user.email.endsWith("@netforge.invalid")) {
+    const preview = grant.intern.user.email.endsWith("@netforge.invalid");
+    if (!preview) {
       realCounts[grant.track] = (realCounts[grant.track] ?? 0) + 1;
+      const application = applicationByEmail.get(grant.intern.user.email.toLowerCase());
+      if (
+        !grant.intern.isActive ||
+        grant.intern.currentStage !== "STAGE_5" ||
+        application?.stage !== 5 ||
+        application.stageStatus !== "advanced"
+      ) {
+        throw new Error(`admission state mismatch: ${grant.intern.user.email}`);
+      }
     }
     if (grant.track !== "SOC_ANALYSIS") continue;
 
-    const internCode = codeByEmail.get(grant.intern.user.email.toLowerCase()) ?? resolvedInternCode(undefined);
+    const application = applicationByEmail.get(grant.intern.user.email.toLowerCase());
+    const internCode = resolvedInternCode(application?.internId);
     const discrepancy = socStage5DiscrepancyFor(grant.internId, internCode, grant.marker);
     if (discrepancy.reviewCandidates.length !== 96 || discrepancy.changeRecords.length !== 96) {
       throw new Error(`SOC discrepancy cardinality mismatch: ${grant.id}`);
@@ -93,11 +108,18 @@ async function main() {
   if (Object.entries(expectedReal).some(([track, count]) => realCounts[track] !== count)) {
     throw new Error(`real cohort mismatch: ${JSON.stringify(realCounts)}`);
   }
+  const admissionHistory = await prisma.stageHistory.count({
+    where: { toStage: "STAGE_5", promotedBy: "advanced-admission-script" },
+  });
+  if (admissionHistory !== 168) {
+    throw new Error(`Stage 5 admission history mismatch: ${admissionHistory}`);
+  }
   console.log(JSON.stringify({
     grants: grants.length,
     artifacts: artifactFacts.size,
     counts,
     realCounts,
+    admissionHistory,
     uniqueSocAssignments: socAssignments.size,
     socValidFalsePositivesPerIntern: 80,
   }, null, 2));
