@@ -88,8 +88,8 @@ const GUIDANCE: Record<AdvancedTrack, Record<ProjectNumber, GuidanceSeed>> = {
       ],
       environment: {
         hardware: "Sensor minimum: 8 GB RAM and 128 GB disk. Full hive guidance: 16 GB RAM and 256 GB disk, on a fresh supported Linux VM.",
-        cost: "A programme-authorized public address or VM is required. Do not purchase or expose infrastructure until its ownership and cost responsibility are confirmed.",
-        fallback: "The sealed replay protects assessment quality when live traffic is quiet. It does not waive isolation or deployment proof; stop and escalate if a safe public sensor cannot be provisioned.",
+        cost: "The complete scored path uses the sealed replay at no infrastructure cost. A live sensor pressure task must run only on a candidate-owned address or VM.",
+        fallback: "The sealed replay is the scored source of truth. A live sensor adds deployment evidence but is never a dependency for completing the mission.",
       },
     },
     3: {
@@ -112,8 +112,8 @@ const GUIDANCE: Record<AdvancedTrack, Record<ProjectNumber, GuidanceSeed>> = {
       ],
       environment: {
         hardware: "A Linux host capable of Docker/containerlab plus storage for container images, logs, and packet captures. Run the supplied preflight before the window.",
-        cost: "No paid cloud environment is required; the supported path is a local or programme-issued Linux host.",
-        fallback: "There is no approved diagram-only or Packet Tracer substitute. If containerlab or virtualization preflight fails, preserve the output and request an approved host before building.",
+        cost: "No paid cloud environment is required; the supported path is a candidate-owned Linux host.",
+        fallback: "There is no diagram-only or Packet Tracer substitute. A failed local preflight must be preserved and resolved before building.",
       },
     },
     4: {
@@ -138,7 +138,7 @@ const GUIDANCE: Record<AdvancedTrack, Record<ProjectNumber, GuidanceSeed>> = {
       environment: {
         hardware: "16 GB RAM minimum and 24 GB recommended for Wazuh, a Windows 11 evaluation VM, Sysmon, and the isolated test host.",
         cost: "The supported tools and evaluation VM are free. Do not run tests on employer, personal-production, or paid infrastructure.",
-        fallback: "If the clean lab cannot sustain the pinned stack, stop before executing tests and request a programme-approved environment; silently dropping telemetry or procedures is not a fallback.",
+        fallback: "If the candidate-owned clean lab cannot sustain the pinned stack, stop before executing tests and preserve the preflight evidence; silently dropping telemetry or procedures is not allowed.",
       },
     },
     5: {
@@ -213,9 +213,9 @@ const GUIDANCE: Record<AdvancedTrack, Record<ProjectNumber, GuidanceSeed>> = {
         { label: "Finding and remediation quality", weight: 10 },
       ],
       environment: {
-        hardware: "A Kali attacker and the assigned offline target VM on a host-only network, with a clean target snapshot before every reliability run.",
+        hardware: "A Kali attacker and the vulnerable/patched VMs built from the shared source on a host-only network, with a clean target snapshot before every reliability run.",
         cost: "No cloud target, internet scanning, or paid exploit framework is required.",
-        fallback: "Revert to the verified clean snapshot after a failed run. Only staff may reissue or change the assigned VM variant; a public walkthrough box is never an approved substitute.",
+        fallback: "Revert to the verified clean snapshot after a failed run. Rebuild only from the unchanged shared source; a public walkthrough box is never an approved substitute.",
       },
     },
     3: {
@@ -265,7 +265,7 @@ const GUIDANCE: Record<AdvancedTrack, Record<ProjectNumber, GuidanceSeed>> = {
       environment: {
         hardware: "GOAD-Light baseline: 32 GB RAM, 4+ CPU cores with virtualization, and 110 GB free SSD recommended.",
         cost: "No paid directory or cloud service is required. Do not expand to full GOAD unless it is separately issued as a pressure task.",
-        fallback: "Use the programme-hosted fallback range when the documented preflight fails. Record the failure first; do not silently remove hosts, memory, or scored paths to fit weaker hardware.",
+        fallback: "There is no programme-hosted range. Record a failed local preflight and stop; do not silently remove hosts or scored paths to fit weaker hardware.",
       },
     },
     5: {

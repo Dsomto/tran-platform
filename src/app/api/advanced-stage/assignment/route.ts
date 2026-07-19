@@ -39,6 +39,14 @@ function overlayFor(stage: string, track: string, pool: number): string[] {
     "STAGE_7:SOC_ANALYSIS": [
       `Use the address-plan second octet ${[51, 61, 71, 81, 91, 101][pool - 1]}.`,
       "The management VLAN may initiate administration; no other zone may initiate management sessions.",
+      [
+        "D1 condition: make the finance-zone return path asymmetric through the core and prove the stateful failure before repairing it.",
+        "D2 condition: remove DMZ-to-server traffic from the sensor mirror and prove the visibility gap before repairing it.",
+        "D3 condition: broaden the management source by one CIDR boundary, catch the unauthorized path in tests, then repair it.",
+        "D4 condition: break only UDP DNS return-state handling, preserve TCP DNS, and diagnose the policy defect from packets and counters.",
+        "D5 condition: move source NAT ahead of telemetry attribution, prove the identity loss, then restore correct ordering.",
+        "D6 condition: inject a more-specific engineering route toward the wrong gateway, prove the path selection, then repair it.",
+      ][pool - 1],
     ],
     "STAGE_8:SOC_ANALYSIS": [
       `For the recorded defense, prepare matrix row ${pool}. The panel may assign any row live.`,

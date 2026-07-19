@@ -13,5 +13,5 @@
 - [ ] Snapshot or rebuild procedure tested.
 - [ ] Teardown command and post-teardown checks recorded.
 
-Fallback decision: `[local / programme-hosted]`  
-Reason and approval: `[insert]`
+Local preflight verdict: `[ready / blocked]`
+Failure evidence or approved pressure-task reduction: `[insert]`

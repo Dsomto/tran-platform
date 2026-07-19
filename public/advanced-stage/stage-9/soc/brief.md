@@ -3,8 +3,8 @@
 ## Case authority and evidence handling
 
 This is a fictional incident built from synthetic data. Analyze only the sealed
-package assigned to you. Record every source hash before opening it, mount source
-images read-only where possible, preserve time zones, and keep recovered content
+package assigned to you. Record every source hash before opening it, preserve
+source files read-only where possible, preserve time zones, and keep recovered content
 inside the submission's sealed `recovered/` directory.
 
 ## Window and scoring
@@ -24,8 +24,10 @@ live defense 10.
 - What exact synthetic records were recovered from the exfiltration stream?
 - What evidence would most strongly challenge your primary hypothesis?
 
-Use Volatility 3, Zeek/Wireshark, oletools, and defensible host-log methods as
-the evidence supports. Tool choice earns no points by itself.
+Use Zeek/Wireshark, oletools, and defensible host-log methods as the evidence
+supports. The optional candidate-owned Windows capture source can extend the
+case with Volatility 3 work, but memory analysis is not required for the scored
+shared case. Tool choice earns no points by itself.
 
 ## Engineering deliverable
 
@@ -50,7 +52,7 @@ changed conclusion is worse than correcting it.
 
 ## Mission interface and final proof
 
-- **You receive:** a signed sealed case containing host, memory, email, identity, PCAP/proxy, manifest, archive, and candidate-marker evidence.
+- **You receive:** a signed sealed case containing host logs, email, a real PCAP, manifest, reconstructable archive, and candidate-marker evidence.
 - **You build:** parser-driven acquisition verification, clock correction, super-timeline, archive reconstruction, detections, containment, and recovery using the prior SOC stack.
-- **You prove:** each central conclusion has raw locators, alternatives, parser provenance, and exact reconstructed hashes/counts; generated logs never substitute for the real memory acquisition.
+- **You prove:** each central conclusion has raw locators, alternatives, parser provenance, and exact reconstructed hashes/counts; an optional memory capture may add evidence but cannot replace the sealed sources.
 - **You close:** the continuity record identifies every reused component, migration, discovered incompatibility, and final portfolio limitation.

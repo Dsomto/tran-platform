@@ -1,0 +1,60 @@
+name: netforge-a3
+topology:
+  nodes:
+    core:
+      kind: linux
+      image: quay.io/frrouting/frr:10.2.1
+      binds:
+        - configs/core/frr.conf:/etc/frr/frr.conf:ro
+    gateway:
+      kind: linux
+      image: alpine:3.20
+      binds:
+        - configs/gateway/bootstrap.sh:/bootstrap.sh:ro
+        - configs/gateway/nftables.conf:/etc/nftables.conf:ro
+      exec:
+        - sh /bootstrap.sh
+    sensor:
+      kind: linux
+      image: jasonish/suricata:7.0.8
+      binds:
+        - telemetry/suricata.yaml:/etc/suricata/suricata.yaml:ro
+        - evidence:/var/log/suricata
+    users:
+      kind: linux
+      image: alpine:3.20
+      exec: ["ip address add 10.71.10.10/24 dev eth1", "ip route add default via 10.71.10.1"]
+    finance:
+      kind: linux
+      image: alpine:3.20
+      exec: ["ip address add 10.71.20.10/24 dev eth1", "ip route add default via 10.71.20.1"]
+    engineering:
+      kind: linux
+      image: alpine:3.20
+      exec: ["ip address add 10.71.30.10/24 dev eth1", "ip route add default via 10.71.30.1"]
+    servers:
+      kind: linux
+      image: alpine:3.20
+      exec: ["ip address add 10.71.40.10/24 dev eth1", "ip route add default via 10.71.40.1"]
+    management:
+      kind: linux
+      image: alpine:3.20
+      exec: ["ip address add 10.71.50.10/24 dev eth1", "ip route add default via 10.71.50.1"]
+    guest:
+      kind: linux
+      image: alpine:3.20
+      exec: ["ip address add 10.71.60.10/24 dev eth1", "ip route add default via 10.71.60.1"]
+    dmz:
+      kind: linux
+      image: alpine:3.20
+      exec: ["ip address add 10.71.70.10/24 dev eth1", "ip route add default via 10.71.70.1"]
+  links:
+    - endpoints: ["core:eth1", "gateway:eth1"]
+    - endpoints: ["gateway:eth2", "users:eth1"]
+    - endpoints: ["gateway:eth3", "finance:eth1"]
+    - endpoints: ["gateway:eth4", "engineering:eth1"]
+    - endpoints: ["gateway:eth5", "servers:eth1"]
+    - endpoints: ["gateway:eth6", "management:eth1"]
+    - endpoints: ["gateway:eth7", "guest:eth1"]
+    - endpoints: ["gateway:eth8", "dmz:eth1"]
+    - endpoints: ["gateway:eth9", "sensor:eth1"]

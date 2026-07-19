@@ -5,7 +5,7 @@ import { logger } from "@/lib/logger";
 // GET /api/admin/stage-windows
 // Read-only listing of stage windows. Admin / super-admin only (its only
 // consumer is the admin stage panel). Status changes go through
-// /api/admin/stage-windows/status (super admin).
+// /api/admin/stage-windows/status (admin or super admin).
 export async function GET() {
   try {
     const session = await getSession();

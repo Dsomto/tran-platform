@@ -1,0 +1,26 @@
+services:
+  frontdoor:
+    build: .
+    env_file: [runtime.env]
+    environment: { ROLE: frontdoor, MODE: vulnerable }
+    ports: ["127.0.0.1:19090:8080"]
+    networks: [edge, internal]
+    read_only: true
+    tmpfs: [/tmp]
+  records:
+    build: .
+    env_file: [runtime.env]
+    environment: { ROLE: records, MODE: vulnerable }
+    networks: [internal]
+    read_only: true
+    tmpfs: [/tmp]
+  admin:
+    build: .
+    env_file: [runtime.env]
+    environment: { ROLE: admin, MODE: vulnerable }
+    networks: [internal]
+    read_only: true
+    tmpfs: [/tmp]
+networks:
+  edge: {}
+  internal: { internal: true }

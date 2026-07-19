@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   CheckCircle2,
+  CalendarClock,
   XCircle,
   Loader2,
   Lock,
@@ -17,6 +18,7 @@ import {
 } from "lucide-react";
 
 type Status = "OPEN" | "PAUSED" | "CLOSED";
+type DisplayStatus = Status | "SCHEDULED";
 
 interface AccessRow {
   internId: string;
@@ -44,6 +46,9 @@ interface Props {
   stage: string;
   stageName: string;
   initialStatus: Status;
+  initialScheduled: boolean;
+  initialActiveFrom: string | null;
+  initialSubmitUntil: string | null;
   accessRows: AccessRow[];
   submissions: ReportRow[];
 }
@@ -52,11 +57,15 @@ export function StageAdminPanel({
   stage,
   stageName,
   initialStatus,
+  initialScheduled,
+  initialActiveFrom,
+  initialSubmitUntil,
   accessRows,
   submissions,
 }: Props) {
   const router = useRouter();
   const [status, setStatus] = useState<Status>(initialStatus);
+  const [scheduled, setScheduled] = useState(initialScheduled);
   const stageNum = stage.replace("STAGE_", "");
 
   const counts = useMemo(() => {
@@ -80,7 +89,7 @@ export function StageAdminPanel({
           <h1 className="text-2xl font-bold text-foreground">
             Stage {stageNum} · {stageName}
           </h1>
-          <StatusPill status={status} />
+          <StatusPill status={scheduled ? "SCHEDULED" : status} />
           {published && (
             <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded bg-blue/10 text-blue border border-blue/30">
               <CheckCircle2 className="w-3 h-3" /> Results published
@@ -88,9 +97,8 @@ export function StageAdminPanel({
           )}
         </div>
         <p className="text-sm text-muted-foreground">
-          Open the stage when you&apos;re ready, pause it if you need to halt
-          access temporarily, or close it. No deadlines — interns can submit
-          while the stage is open.
+          Set the release window, open the stage when it is ready, pause access
+          temporarily, or close it. Every transition and timing change is audited.
         </p>
       </header>
 
@@ -111,8 +119,12 @@ export function StageAdminPanel({
         stage={stage}
         stageNum={stageNum}
         status={status}
-        onStatusChange={(s) => {
+        scheduled={scheduled}
+        initialActiveFrom={initialActiveFrom}
+        initialSubmitUntil={initialSubmitUntil}
+        onStatusChange={(s, nextScheduled) => {
           setStatus(s);
+          setScheduled(nextScheduled);
           router.refresh();
         }}
       />
@@ -252,23 +264,35 @@ function StatusControls({
   stage,
   stageNum,
   status,
+  scheduled,
+  initialActiveFrom,
+  initialSubmitUntil,
   onStatusChange,
 }: {
   stage: string;
   stageNum: string;
   status: Status;
-  onStatusChange: (s: Status) => void;
+  scheduled: boolean;
+  initialActiveFrom: string | null;
+  initialSubmitUntil: string | null;
+  onStatusChange: (s: Status, scheduled: boolean) => void;
 }) {
-  const [busy, setBusy] = useState<Status | null>(null);
+  const [busy, setBusy] = useState<Status | "SCHEDULE" | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [announceOpen, setAnnounceOpen] = useState(false);
+  const [activeFrom, setActiveFrom] = useState(toLocalDateTime(initialActiveFrom));
+  const [submitUntil, setSubmitUntil] = useState(toLocalDateTime(initialSubmitUntil));
   const [title, setTitle] = useState(`Stage ${stageNum} is open`);
   const [message, setMessage] = useState(
     `Stage ${stageNum} is now open. Log into your dashboard to begin.`
   );
 
-  async function setStatus(next: Status, withAnnounce: boolean = false) {
-    setBusy(next);
+  async function setStageState(
+    next: Status,
+    withAnnounce: boolean = false,
+    scheduleOnly: boolean = false
+  ) {
+    setBusy(scheduleOnly ? "SCHEDULE" : next);
     setErr(null);
     try {
       const res = await fetch("/api/admin/stage-windows/status", {
@@ -277,6 +301,8 @@ function StatusControls({
         body: JSON.stringify({
           stage,
           status: next,
+          activeFrom: toIsoDateTime(activeFrom),
+          submitUntil: toIsoDateTime(submitUntil),
           ...(withAnnounce ? { announce: { title, message } } : {}),
         }),
       });
@@ -285,7 +311,10 @@ function StatusControls({
         setErr(j.error || "Failed to change status");
         return;
       }
-      onStatusChange(next);
+      const nextScheduled = next === "OPEN" && Boolean(
+        j.window?.activeFrom && new Date(j.window.activeFrom).getTime() > Date.now()
+      );
+      onStatusChange(next, nextScheduled);
       setAnnounceOpen(false);
     } catch {
       setErr("Network error");
@@ -298,7 +327,39 @@ function StatusControls({
     <section className="bg-white border border-border rounded-xl p-5 mb-6">
       <div className="flex items-center gap-2 mb-3">
         <h2 className="text-sm font-semibold text-foreground">Stage status</h2>
-        <StatusPill status={status} />
+        <StatusPill status={scheduled ? "SCHEDULED" : status} />
+      </div>
+
+      <div className="mb-5 grid grid-cols-1 md:grid-cols-[1fr_1fr_auto] gap-3 items-end">
+        <label className="block">
+          <span className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-foreground">
+            <CalendarClock className="h-3.5 w-3.5 text-blue" /> Start time
+          </span>
+          <input
+            type="datetime-local"
+            value={activeFrom}
+            onChange={(event) => setActiveFrom(event.target.value)}
+            className="w-full h-10 px-3 rounded-lg border border-border bg-white text-sm"
+          />
+        </label>
+        <label className="block">
+          <span className="mb-1.5 block text-xs font-medium text-foreground">Submission deadline</span>
+          <input
+            type="datetime-local"
+            value={submitUntil}
+            onChange={(event) => setSubmitUntil(event.target.value)}
+            className="w-full h-10 px-3 rounded-lg border border-border bg-white text-sm"
+          />
+        </label>
+        <button
+          type="button"
+          onClick={() => setStageState(status, false, true)}
+          disabled={busy !== null}
+          className="h-10 inline-flex items-center justify-center gap-1.5 px-4 rounded-lg border border-blue/40 text-blue text-sm font-semibold hover:bg-blue/5 disabled:opacity-50"
+        >
+          {busy === "SCHEDULE" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CalendarClock className="h-3.5 w-3.5" />}
+          Save timing
+        </button>
       </div>
 
       {err && (
@@ -311,9 +372,9 @@ function StatusControls({
         {/* Open */}
         {status === "OPEN" ? (
           <ActionButton
-            label="Open"
-            description="Interns can enter and submit."
-            icon={LockOpen}
+            label={scheduled ? "Scheduled" : "Open"}
+            description={scheduled ? "Access unlocks automatically at the saved start time." : "Interns can enter and submit."}
+            icon={scheduled ? CalendarClock : LockOpen}
             tone="ok"
             disabled
             current
@@ -338,7 +399,7 @@ function StatusControls({
             />
             <div className="flex items-center gap-2 flex-wrap">
               <button
-                onClick={() => setStatus("OPEN", true)}
+                onClick={() => setStageState("OPEN", true)}
                 disabled={busy !== null}
                 className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-semibold rounded-lg bg-emerald-600 text-white hover:opacity-90 disabled:opacity-50"
               >
@@ -346,7 +407,7 @@ function StatusControls({
                 Open &amp; announce
               </button>
               <button
-                onClick={() => setStatus("OPEN", false)}
+                onClick={() => setStageState("OPEN", false)}
                 disabled={busy !== null}
                 className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg border border-emerald-300 text-emerald-900 hover:bg-emerald-100"
               >
@@ -382,7 +443,7 @@ function StatusControls({
               tone="warn"
               current={status === "PAUSED"}
               disabled={status === "PAUSED" || busy !== null}
-              onClick={() => setStatus("PAUSED")}
+              onClick={() => setStageState("PAUSED")}
               loading={busy === "PAUSED"}
             />
 
@@ -396,7 +457,7 @@ function StatusControls({
               disabled={status === "CLOSED" || busy !== null}
               onClick={() => {
                 if (!confirm(`Close Stage ${stageNum}? Interns will lose entry until you open it again.`)) return;
-                setStatus("CLOSED");
+                setStageState("CLOSED");
               }}
               loading={busy === "CLOSED"}
             />
@@ -405,6 +466,20 @@ function StatusControls({
       </div>
     </section>
   );
+}
+
+function toLocalDateTime(iso: string | null): string {
+  if (!iso) return "";
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "";
+  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
+  return local.toISOString().slice(0, 16);
+}
+
+function toIsoDateTime(local: string): string | null {
+  if (!local) return null;
+  const date = new Date(local);
+  return Number.isNaN(date.getTime()) ? null : date.toISOString();
 }
 
 function ActionButton({
@@ -459,7 +534,14 @@ function ActionButton({
   );
 }
 
-function StatusPill({ status }: { status: Status }) {
+function StatusPill({ status }: { status: DisplayStatus }) {
+  if (status === "SCHEDULED") {
+    return (
+      <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded bg-cyan-50 text-cyan-800 border border-cyan-200">
+        <CalendarClock className="w-3 h-3" /> Scheduled
+      </span>
+    );
+  }
   if (status === "OPEN") {
     return (
       <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200">

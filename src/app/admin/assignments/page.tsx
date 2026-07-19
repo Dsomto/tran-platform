@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { requireSuperAdmin } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { Topbar } from "@/components/dashboard/topbar";
-import { ChevronRight, Users, FileText, CheckCircle2, Lock, LockOpen, Pause } from "lucide-react";
+import { stageWindowHasStarted } from "@/lib/stage-window";
+import { CalendarClock, ChevronRight, Users, FileText, CheckCircle2, Lock, LockOpen, Pause } from "lucide-react";
 
 const STAGES = [
   "STAGE_0", "STAGE_1", "STAGE_2", "STAGE_3", "STAGE_4",
@@ -25,7 +26,7 @@ const STAGE_NAMES: Record<(typeof STAGES)[number], string> = {
 export const dynamic = "force-dynamic";
 
 export default async function AdminAssignmentsPage() {
-  const session = await requireSuperAdmin();
+  const session = await requireAdmin();
 
   const [windows, accessCounts, reportCounts] = await Promise.all([
     prisma.stageWindow.findMany({
@@ -66,6 +67,7 @@ export default async function AdminAssignmentsPage() {
           {STAGES.map((stage) => {
             const w = winByStage.get(stage as never);
             const status = (w?.status ?? "CLOSED") as "OPEN" | "PAUSED" | "CLOSED";
+            const scheduled = status === "OPEN" && !stageWindowHasStarted(w);
             const tally = reportByStage.get(stage) ?? {};
             const submitted = (tally.SUBMITTED ?? 0) + (tally.UNDER_REVIEW ?? 0);
             const graded = tally.GRADED ?? 0;
@@ -86,13 +88,20 @@ export default async function AdminAssignmentsPage() {
                         <h2 className="text-lg font-semibold text-foreground">
                           Stage {stage.replace("STAGE_", "")} · {STAGE_NAMES[stage]}
                         </h2>
-                        <StatusPill status={status} />
+                        <StatusPill status={scheduled ? "SCHEDULED" : status} />
                         {published && (
                           <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded bg-blue/10 text-blue border border-blue/30">
                             <CheckCircle2 className="w-3 h-3" /> Results published
                           </span>
                         )}
                       </div>
+
+                      {(w?.activeFrom || w?.submitUntil) && (
+                        <div className="mt-2 flex items-center gap-3 flex-wrap text-xs text-muted-foreground">
+                          {w.activeFrom && <span>Starts {w.activeFrom.toLocaleString()}</span>}
+                          {w.submitUntil && <span>Deadline {w.submitUntil.toLocaleString()}</span>}
+                        </div>
+                      )}
 
                       <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
                         <Metric icon={Users} label="Entered" value={accessByStage.get(stage) ?? 0} />
@@ -124,7 +133,14 @@ export default async function AdminAssignmentsPage() {
   );
 }
 
-function StatusPill({ status }: { status: "OPEN" | "PAUSED" | "CLOSED" }) {
+function StatusPill({ status }: { status: "OPEN" | "PAUSED" | "CLOSED" | "SCHEDULED" }) {
+  if (status === "SCHEDULED") {
+    return (
+      <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded bg-cyan-50 text-cyan-800 border border-cyan-200">
+        <CalendarClock className="w-3 h-3" /> Scheduled
+      </span>
+    );
+  }
   if (status === "OPEN") {
     return (
       <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200">

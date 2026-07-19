@@ -2,7 +2,7 @@
 
 ## Warm-up gate
 
-Before the assessment window, complete the programme's single-domain warm-up:
+Before the assessment window, complete a candidate-owned single-domain warm-up:
 provision the supplied vulnerable-AD lab, perform one Kerberoast exercise and
 one ACL-abuse exercise, then destroy it. Warm-up flags do not score.
 
@@ -15,8 +15,8 @@ the obsolete assumption that running `./goad.sh` with no provider is a complete
 installation instruction.
 
 Recommended baseline: 32 GB RAM, 4+ CPU cores with virtualization, and 110 GB
-free SSD. If the preflight fails, use the programme-hosted fallback range rather
-than silently switching topology. Full GOAD may be assigned as a pressure task
+free SSD. If the preflight fails, preserve the output and stop; there is no
+programme-hosted range. Full GOAD may be assigned as a pressure task
 to candidates whose hardware and schedule support it.
 
 ## Window and scoring
@@ -39,7 +39,7 @@ destroy objects, export the directory database, or cross the lab boundary.
 
 ## Mission interface and handoff
 
-- **You receive:** a signed forest overlay, isolated GOAD-Light checkpoint, supplied foothold, two private path flags, and public edge/cleanup interfaces.
+- **You receive:** a forest overlay, candidate-run GOAD-Light source, supplied foothold contract, private path markers, and public edge/cleanup interfaces.
 - **You build:** dynamic graph discovery, two independent path automations, cleanup, detections, and remediations using the prior evidence ledger.
 - **You prove:** both paths begin at the supplied foothold, resolve identifiers at runtime, and fail at their intended edges after remediation.
 - **You hand forward:** reusable AD discovery, edge evidence, credential-handling, cleanup, and remediation records for the final estate.

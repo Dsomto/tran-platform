@@ -22,6 +22,7 @@ export async function openAdvancedArtifact(key: string): Promise<AdvancedArtifac
 
   const roots = [
     path.resolve(process.cwd(), "stage5-artifacts"),
+    path.resolve(process.cwd(), "advanced-stage-artifacts"),
     ...(process.env.ADVANCED_ARTIFACT_ROOT ? [path.resolve(process.env.ADVANCED_ARTIFACT_ROOT)] : []),
   ];
   for (const root of roots) {

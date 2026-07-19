@@ -1,0 +1,15 @@
+[Unit]
+Description=NetForge isolated support target
+After=network.target
+
+[Service]
+User=support
+Group=support
+EnvironmentFile=/etc/netforge-support.env
+ExecStart=/usr/bin/python3 /opt/netforge-support/app.py
+Restart=on-failure
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

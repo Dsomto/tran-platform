@@ -21,15 +21,18 @@ published assertions. Test every intended allow, deny, stateful return path,
 management path, sensor path, and required alert. The passive sensor may observe
 all scored paths but must not initiate traffic into protected zones.
 
-Staff apply a hidden addressing variant and five hidden policy tests without
-allowing changes outside the variant file. They then inject three supplied
-faults. Each fault must make a specific test fail; the candidate must repair it
-and return the suite to green. A broad allow rule, a manual node fix, or a
-topology that cannot rebuild is a critical technical defect.
+The assessor applies five holdout policy tests without allowing changes outside
+the variant file. The candidate must also inject, diagnose, and repair these
+three exact baseline faults in separate commits: remove established-return
+handling on the finance path; broaden management ingress beyond its declared
+source; and remove DMZ-to-server traffic from the sensor mirror. The private
+D-set adds one fourth fault condition. Each fault must make a specific test
+fail, produce packet/counter evidence, and return to green after repair. A broad
+allow rule, manual node fix, or topology that cannot rebuild is a critical defect.
 
 ## Mission interface and handoff
 
-- **You receive:** a signed addressing/policy variant, buildable reference interface, thirty public paths, hidden staff paths, and three staff fault overlays.
+- **You receive:** a private addressing/D-set overlay, buildable reference source, thirty public paths, five holdout policy assertions, and three explicit baseline fault contracts.
 - **You build:** the seven-zone range, policy, mirrored telemetry, services, and evidence collection as code; telemetry must enter the Stage 5/6 schema through adapters.
 - **You prove:** allowed, denied, return, management, spoofing, and sensor paths using packet and firewall/flow locators rather than screenshots.
 - **You hand forward:** verified behaviors, fault evidence, benign boundary cases, PCAPs, and candidate detections for Stage 8.

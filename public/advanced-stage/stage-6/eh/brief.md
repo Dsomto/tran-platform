@@ -2,7 +2,7 @@
 
 ## Scope and safety
 
-Only the VM image and address in `target-assignment.md` are authorized. Use a
+Only the vulnerable and patched VMs built from the supplied source are authorized. Use a
 host-only network and a clean snapshot. No internet targets, denial of service,
 destructive persistence, or data damage. Stop after reading the assigned
 `root.txt` marker and proving effective UID 0.
@@ -39,7 +39,7 @@ A hard-coded local value or one-time state fails the exploit-code criterion.
 
 ## Mission interface and handoff
 
-- **You receive:** a signed target assignment, authorized snapshot, configuration port, service contract, and candidate-specific flags injected by staff.
+- **You receive:** buildable vulnerable/patched VM source, a target-assignment template, service contract, and private room marker.
 - **You build:** a discovered-at-runtime exploit chain with preconditions, bounded proof, cleanup, patch, and reusable remediation records.
 - **You prove:** both flags originate from the assigned target and five clean executions use Stage 5 discovery output rather than embedded target values.
 - **You hand forward:** the path graph, precondition model, cleanup ledger, and remediation assertions for Stage 7.

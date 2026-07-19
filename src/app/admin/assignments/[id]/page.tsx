@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import { requireSuperAdmin } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { stageWindowHasStarted } from "@/lib/stage-window";
 import { StageAdminPanel } from "./stage-admin-panel";
 
 export const dynamic = "force-dynamic";
@@ -35,7 +36,7 @@ export default async function StageDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  await requireSuperAdmin();
+  await requireAdmin();
   const { id } = await params;
 
   const normalized = id.toUpperCase().replace(/-/g, "_");
@@ -122,6 +123,9 @@ export default async function StageDetailPage({
           stage={stage}
           stageName={STAGE_NAMES[stage]}
           initialStatus={status}
+          initialScheduled={status === "OPEN" && !stageWindowHasStarted(stageWindow)}
+          initialActiveFrom={stageWindow?.activeFrom?.toISOString() ?? null}
+          initialSubmitUntil={stageWindow?.submitUntil?.toISOString() ?? null}
           accessRows={accessRows}
           submissions={submissions}
         />

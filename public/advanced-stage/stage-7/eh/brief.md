@@ -11,8 +11,9 @@ if an unexpected resource or principal appears.
 
 ## Supported setup
 
-Linux or macOS, Python 3.11+, Terraform 1.5+, AWS CLI, and `jq`. Staff provide a
-custom V1-V6 Terraform range derived from an IAM escalation pattern. Resource
+Linux or macOS, Python 3.11+, Terraform 1.5+, AWS CLI, and `jq`. The shared pack provides a
+custom Terraform range derived from an IAM escalation pattern. The private room
+marker supplies candidate-specific inputs. Resource
 names, region, principals, decoys, and one effective-permission edge vary. Do
 not download a public walkthrough or substitute the stock CloudGoat scenario.
 
@@ -39,12 +40,12 @@ sealed empty baseline. A correct flag without tested remediation and cleanup is
 capped below pass.
 
 Destroy the scenario within four hours of the first successful create and before
-23:59 UTC on the same day. If teardown fails, stop testing, notify staff, and
+23:59 UTC on the same day. If teardown fails, stop testing, preserve the failure evidence, and
 remove resources manually using the inventory captured before creation.
 
 ## Mission interface and handoff
 
-- **You receive:** a signed region/range assignment, candidate principal, private secret injection, budget, teardown limit, and public IAM interfaces.
+- **You receive:** buildable Terraform source, private room marker, budget and teardown limits, and public IAM interfaces for a dedicated lab account you control.
 - **You build:** Terraform, runtime path discovery, CloudTrail evidence extraction, remediation, and residual inventory using the earlier path/evidence model.
 - **You prove:** the secret is recovered only through the assigned IAM path and every created resource remains under the range prefix and teardown ledger.
 - **You hand forward:** the identity-path graph, event provenance, cleanup model, and remediation evidence for Stage 8.

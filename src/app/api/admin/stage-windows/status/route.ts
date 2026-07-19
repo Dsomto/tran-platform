@@ -3,7 +3,7 @@ import { prisma } from "@/lib/db";
 import { logger } from "@/lib/logger";
 import { scheduleCohortBroadcast } from "@/lib/email";
 import { publicAppUrl } from "@/lib/public-url";
-import { requireApiSuperAdmin } from "@/lib/api-auth";
+import { requireApiAdmin } from "@/lib/api-auth";
 import { auditMetaFromRequest, recordAudit } from "@/lib/audit";
 
 const STAGE_KEYS = [
@@ -32,18 +32,18 @@ function escapeHtml(s: string): string {
 }
 
 // POST /api/admin/stage-windows/status
-// Body: { stage, status, announce?: { title, message } }
+// Body: { stage, status, activeFrom?, submitUntil?, announce?: { title, message } }
 //
 // Sets the stage's status. If status === OPEN AND announce is provided,
 // also creates a pinned announcement and broadcasts to every active intern.
 // Other transitions are silent.
 export async function POST(request: NextRequest) {
   try {
-    const auth = await requireApiSuperAdmin();
+    const auth = await requireApiAdmin();
     if (auth.response) return auth.response;
     const session = auth.session;
     const body = await request.json().catch(() => ({}));
-    const { stage, status, announce } = body ?? {};
+    const { stage, status, activeFrom, submitUntil, announce } = body ?? {};
 
     if (!isStageKey(stage)) {
       return Response.json({ error: "Invalid stage" }, { status: 400 });
@@ -52,10 +52,38 @@ export async function POST(request: NextRequest) {
       return Response.json({ error: "Invalid status" }, { status: 400 });
     }
 
+    const parseDate = (value: unknown, label: string): Date | null => {
+      if (value === null || value === undefined || value === "") return null;
+      const parsed = new Date(String(value));
+      if (Number.isNaN(parsed.getTime())) throw new Error(`${label} must be a valid date`);
+      return parsed;
+    };
+    let parsedActiveFrom: Date | null;
+    let parsedSubmitUntil: Date | null;
+    try {
+      parsedActiveFrom = parseDate(activeFrom, "Start time");
+      parsedSubmitUntil = parseDate(submitUntil, "Submission deadline");
+    } catch (error) {
+      return Response.json(
+        { error: error instanceof Error ? error.message : "Invalid schedule" },
+        { status: 400 }
+      );
+    }
+    if (
+      parsedActiveFrom &&
+      parsedSubmitUntil &&
+      parsedSubmitUntil.getTime() <= parsedActiveFrom.getTime()
+    ) {
+      return Response.json({ error: "Submission deadline must be after the start time" }, { status: 400 });
+    }
+
     const now = new Date();
+    if (announce && parsedActiveFrom && parsedActiveFrom.getTime() > now.getTime()) {
+      return Response.json({ error: "A future stage can be scheduled silently, then announced when it goes live" }, { status: 400 });
+    }
     const previous = await prisma.stageWindow.findUnique({
       where: { stage },
-      select: { status: true },
+      select: { status: true, activeFrom: true, submitUntil: true },
     });
 
     const window = await prisma.stageWindow.upsert({
@@ -64,6 +92,8 @@ export async function POST(request: NextRequest) {
         stage,
         status,
         passingScore: 70,
+        activeFrom: parsedActiveFrom,
+        submitUntil: parsedSubmitUntil,
         // Legacy mirror so anything still reading isLocked sees the right thing.
         isLocked: status !== "OPEN",
         ...(status === "OPEN"
@@ -73,6 +103,8 @@ export async function POST(request: NextRequest) {
       update: {
         status,
         isLocked: status !== "OPEN",
+        activeFrom: parsedActiveFrom,
+        submitUntil: parsedSubmitUntil,
         ...(status === "OPEN"
           ? { openedAt: now, openedById: session.id }
           : {}),
@@ -139,6 +171,10 @@ export async function POST(request: NextRequest) {
         toStatus: status,
         announcementSent: status === "OPEN" && Boolean(announce),
         recipientCount: notifying,
+        fromActiveFrom: previous?.activeFrom?.toISOString() ?? null,
+        toActiveFrom: parsedActiveFrom?.toISOString() ?? null,
+        fromSubmitUntil: previous?.submitUntil?.toISOString() ?? null,
+        toSubmitUntil: parsedSubmitUntil?.toISOString() ?? null,
       },
       ...auditMetaFromRequest(request),
     });
