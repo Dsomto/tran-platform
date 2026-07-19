@@ -2,10 +2,12 @@
 
 ## Authorization
 
-Only the assigned programme-hosted target reachable through the isolated VPN is
-authorized. The asset marked `OUT` in `scope.csv` is a scope-discipline test. Do
-not probe it. Staff never distribute the target image, compose file, runtime
-environment, container access, or host access.
+Only the assigned programme-hosted runtime reachable through the isolated VPN is
+authorized. Every intern receives the same target image and parser fixtures,
+but runs in an isolated namespace with a private flag and scope assignment. The
+asset marked `OUT` in `scope.csv` is a scope-discipline test. Do not probe it.
+Staff never distribute the target image, compose file, runtime environment,
+container access, or host access.
 
 ## Window and scoring
 
@@ -49,7 +51,7 @@ into a monolithic script is not a tested module.
 
 ## Mission interface and handoff
 
-- **You receive:** a signed scope assignment, authorized host/ports, parser fixtures, rules of engagement, and one candidate-bound target.
+- **You receive:** the shared target revision and fixtures plus a signed private runtime assignment containing only your authorized host, ports, and marker.
 - **You build:** resumable scope-safe discovery with typed observations, runtime identifiers, rate limits, evidence capture, and cleanup.
 - **You prove:** the foothold comes from the target rather than the room marker and every request remains inside the supplied scope ledger.
 - **You hand forward:** discovery adapters, the runtime identifier model, evidence ledger, and cleanup interface for Stage 6.

@@ -63,9 +63,9 @@ const GUIDANCE: Record<AdvancedTrack, Record<ProjectNumber, GuidanceSeed>> = {
         { label: "Communication and reproducibility", weight: 10 },
       ],
       environment: {
-        hardware: "8 vCPU and 16 GB RAM staff baseline; keep at least 12 GB disk free for the assigned archive, database, and exports.",
+        hardware: "4 vCPU and 8 GB RAM baseline; keep at least 2 GB disk free. The compressed shared base artifact is capped at 100 MB.",
         cost: "No cloud service or paid tool is required. DuckDB, Python, and the public fixtures run locally.",
-        fallback: "Use the public shard to validate the interface while developing. The full assigned pack and staff runtime target still control the final assessment; report an undersized machine before the window.",
+        fallback: "Use the public shard to validate adapters while developing. The shared base pack and your private discrepancy set control the final assessment.",
       },
     },
     2: {

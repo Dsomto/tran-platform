@@ -289,7 +289,7 @@ export default async function AdvancedTrackPage() {
           <ShieldCheck aria-hidden="true" />
           <div>
             <h2>Track boundary enforced</h2>
-            <p>This workspace is generated from your assigned track. Stage URLs do not accept a track override, and private assignment facts remain tied to your intern identity.</p>
+            <p>This workspace is generated from your assigned track. Stage URLs do not accept a track override; base artifacts are shared within a track while discrepancy facts and evidence markers remain tied to your identity.</p>
           </div>
         </section>
       </div>

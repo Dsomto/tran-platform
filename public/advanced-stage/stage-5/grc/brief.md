@@ -7,8 +7,10 @@ evidence judgment 20, three-control decision 20, enforceable drafting 15.
 
 ## Board instruction
 
-CloudScale Dynamics has assigned exactly three technical control outcomes in
-`control-state.json`. Map and implement those three only. Other material risks
+CloudScale Dynamics supplies one shared evidence corpus and assigns exactly
+three technical control outcomes in `control-state.json`. Your private board
+overlay changes capacity, deadline, and applicability facts without changing
+the shared corpus. Map and implement those three outcomes only. Other material risks
 must be deferred, accepted, transferred, or reduced by an existing control with
 an owner and review trigger. Adding or replacing an assigned outcome fails the
 board constraint.
@@ -49,7 +51,7 @@ document-only submission cannot pass this project.
 
 ## Mission interface and handoff
 
-- **You receive:** signed state/fixture inputs, a planted mapping, evidence records, a board constraint, and a private marker overlay.
+- **You receive:** shared signed state/fixture inputs, a planted mapping, evidence records, and a private board/marker overlay.
 - **You build:** a typed control, exception, evidence-quality, decision, and reporting model with deterministic machine output.
 - **You prove:** all three selected outcomes trace from source evidence through policy decision to written control and explicit deferral.
 - **You hand forward:** the schemas, evidence grades, control identifiers, exception logic, and decision ledger for Stage 6.

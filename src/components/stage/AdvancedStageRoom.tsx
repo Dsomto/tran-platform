@@ -217,8 +217,8 @@ export function AdvancedStageRoom({
         <div className="advanced-brief-ledger">
           <article>
             <span><LockKeyhole aria-hidden="true" /> 01 · Receive</span>
-            <strong>One identity-bound case</strong>
-            <p>Private overlay, evidence marker, assigned archive, and {project.resources.length} controlled references.</p>
+            <strong>One shared base, one private overlay</strong>
+            <p>Track base artifact, private discrepancy facts, evidence marker, and {project.resources.length} controlled references.</p>
           </article>
           <article>
             <span><PackageCheck aria-hidden="true" /> 02 · Build</span>
@@ -346,7 +346,14 @@ export function AdvancedStageRoom({
           {!preview && (
             <a href={`/api/advanced-stage/assignment?stage=${project.stage}`} target="_blank" rel="noreferrer noopener">
               <span className="advanced-download-icon"><LockKeyhole aria-hidden="true" /></span>
-              <span><span className="advanced-resource-badge">Required</span><strong>Your assignment overlay</strong><small>Private marker, variant pool, and facts that supersede the base pack.</small></span>
+              <span><span className="advanced-resource-badge">Required</span><strong>Your assignment overlay</strong><small>Private marker and controlling facts layered over the shared track base.</small></span>
+              <ArrowRight aria-hidden="true" />
+            </a>
+          )}
+          {!preview && project.stage === "STAGE_5" && track === "SOC_ANALYSIS" && (
+            <a href="/api/advanced-stage/discrepancy?stage=STAGE_5" target="_blank" rel="noreferrer noopener">
+              <span className="advanced-download-icon"><ListChecks aria-hidden="true" /></span>
+              <span><span className="advanced-resource-badge">Required</span><strong>Your SOC discrepancy set</strong><small>96 assigned review candidates, including 80 evidence-backed false positives unique to your account.</small></span>
               <ArrowRight aria-hidden="true" />
             </a>
           )}

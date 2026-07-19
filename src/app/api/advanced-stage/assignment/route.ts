@@ -8,7 +8,8 @@ import { resolvedInternCode } from "@/lib/intern-code";
 
 function overlayFor(stage: string, track: string, pool: number): string[] {
   const common = [
-    `Use variant pool V${pool}.`,
+    "Use the shared Stage base artifact issued to your track.",
+    `Your private assignment set is D${pool}; this label does not change the shared artifact bytes.`,
     "The assigned marker must appear in setup evidence, the evidence index, and the integrity attestation.",
     "Where this overlay differs from the public base pack, this overlay controls.",
   ];
@@ -113,7 +114,8 @@ export async function GET(request: NextRequest) {
     "",
     `Intern: ${internCode}`,
     `Track: ${intern.track}`,
-    `Variant: ${variant.variant}`,
+    "Base artifact: shared track release",
+    `Private assignment set: D${pool}`,
     `Evidence marker: ${variant.marker}`,
     "",
     "## Assigned evidence archive",
@@ -131,6 +133,15 @@ export async function GET(request: NextRequest) {
     "## Controlling assignment facts",
     "",
     ...overlayFor(stage, intern.track, pool).map((line) => `- ${line}`),
+    ...(stage === "STAGE_5" && intern.track === "SOC_ANALYSIS"
+      ? [
+          "",
+          "## Required discrepancy file",
+          "",
+          "Download `/api/advanced-stage/discrepancy?stage=STAGE_5` while signed in.",
+          "It assigns 96 review candidates. Exactly 80 have a valid evidence-backed benign explanation; the other 16 must be escalated.",
+        ]
+      : []),
     "",
     "Do not share this overlay during the assessment window.",
     "",
