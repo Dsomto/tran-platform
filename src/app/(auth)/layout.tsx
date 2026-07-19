@@ -8,18 +8,18 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen flex relative overflow-hidden hero-bg">
+    <div className="auth-shell min-h-screen flex relative overflow-hidden hero-bg">
       {/* Hex pattern */}
       <div className="hex-pattern" aria-hidden="true" />
 
       {/* Back to home */}
       <Link
         href="/"
-        className="absolute top-5 left-5 z-10 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border/60 bg-white/70 backdrop-blur text-xs font-medium text-muted hover:text-foreground hover:bg-white transition-colors"
+        className="auth-home-link absolute top-5 left-5 z-10 inline-flex h-10 items-center gap-2 rounded-full border px-4 text-sm font-semibold backdrop-blur-xl transition-all focus-visible:outline-none"
         aria-label="Back to home"
       >
-        <ArrowLeft className="w-3.5 h-3.5" />
-        Home
+        <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+        Back to home
       </Link>
 
       <div className="relative flex-1 flex flex-col items-center justify-center px-4 py-12">
