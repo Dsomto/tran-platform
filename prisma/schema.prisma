@@ -208,8 +208,11 @@ model Intern {
   points          Int          @default(0)
   isActive        Boolean      @default(true)
   // Set when the intern is eliminated (isActive -> false). Drives the
-  // purge-eliminated cron, which hard-deletes the account ~2 days later.
+  // elimination archive cron after the read-only grace period.
   eliminatedAt    DateTime?
+  // Set after the grace period once sessions have been revoked. The account
+  // relations remain available for historical reports and programme audits.
+  archivedAt      DateTime?
   finalist        Boolean      @default(false)
   stageDoorCode   String?                     // per-intern password for stage-door logins (plain, hashed on User)
   slackJoined     Boolean      @default(false) // self-attested: has the intern joined the Slack workspace
@@ -587,7 +590,7 @@ model StageReport {
   divergent          Boolean       @default(false)
   // Graders who explicitly skipped this report for conflict-of-interest. They
   // will not see it in their queue and cannot claim it. Stored as ObjectIds.
-  skippedByGraderIds String[]      @db.ObjectId @default([])
+  skippedByGraderIds String[]      @default([]) @db.ObjectId
 
   submittedAt      DateTime?
   createdAt        DateTime      @default(now())

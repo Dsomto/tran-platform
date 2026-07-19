@@ -3,14 +3,13 @@ import { prisma } from "@/lib/db";
 import { logger } from "@/lib/logger";
 import { ELIMINATION_GRACE_MS } from "@/lib/elimination-grace";
 
-// Daily purge of eliminated interns.
+// Daily archival of eliminated interns.
 //
 // Elimination sets Intern.isActive = false + eliminatedAt = now (and
 // PublicApplication.stageStatus = "eliminated"). The intern keeps read-only
 // dashboard access for the grace window (ELIMINATION_GRACE_MS); after it, this
-// cron HARD-DELETES the User account — which cascades to the Intern and all
-// their work (submissions, reports, points, stage history, testimonials). It is
-// irreversible; every purged account is logged first for audit.
+// cron revokes the account sessions and marks the intern archived. Historical
+// work remains available for results, audits, and grading review.
 //
 // Step 1 (reconcile) heals historical inconsistency: some applicants were
 // eliminated (PublicApplication.stageStatus = "eliminated") but their backing
@@ -18,8 +17,8 @@ import { ELIMINATION_GRACE_MS } from "@/lib/elimination-grace";
 // still show in staff lists. We match by lower-cased email and flip them,
 // stamping eliminatedAt = now so the 2-day clock starts from this heal.
 //
-// The PublicApplication row is intentionally kept (a minimal audit trail that
-// they applied and were eliminated); deleting the User already blocks login.
+// The PublicApplication row remains the durable intake ledger. Login is blocked
+// by the eliminated status, and tokenVersion invalidates existing sessions.
 const GRACE_MS = ELIMINATION_GRACE_MS;
 
 async function handlePurge(request: NextRequest): Promise<Response> {
@@ -60,29 +59,51 @@ async function handlePurge(request: NextRequest): Promise<Response> {
       }
     }
 
-    // ── Step 2: purge ──────────────────────────────────────────────────
+    // ── Step 2: archive and revoke sessions ────────────────────────────
     const cutoff = new Date(Date.now() - GRACE_MS);
-    const duePurge = await prisma.intern.findMany({
-      where: { isActive: false, eliminatedAt: { lte: cutoff } },
+    const dueArchive = await prisma.intern.findMany({
+      where: {
+        isActive: false,
+        eliminatedAt: { lte: cutoff },
+        OR: [{ archivedAt: null }, { archivedAt: { isSet: false } }],
+      },
       select: { id: true, userId: true, user: { select: { email: true } } },
       take: 500,
     });
 
-    let purged = 0;
-    for (const intern of duePurge) {
+    let archived = 0;
+    for (const intern of dueArchive) {
       try {
-        // Deleting the User cascades to the Intern and all their work.
-        await prisma.user.delete({ where: { id: intern.userId } });
-        logger.info("purge_eliminated", { internId: intern.id, email: intern.user?.email });
-        purged++;
+        const archivedAt = new Date();
+        await prisma.$transaction([
+          prisma.user.update({
+            where: { id: intern.userId },
+            data: { tokenVersion: { increment: 1 } },
+          }),
+          prisma.intern.update({
+            where: { id: intern.id },
+            data: { archivedAt, stageDoorCode: null },
+          }),
+        ]);
+        logger.info("archive_eliminated", {
+          internId: intern.id,
+          email: intern.user?.email,
+          archivedAt: archivedAt.toISOString(),
+        });
+        archived++;
       } catch (err) {
-        logger.error("purge_eliminated_row_failed", err, { internId: intern.id });
+        logger.error("archive_eliminated_row_failed", err, { internId: intern.id });
       }
     }
 
-    return Response.json({ reconciled, purged, dueFound: duePurge.length });
+    return Response.json({
+      reconciled,
+      archived,
+      dueFound: dueArchive.length,
+      purged: 0,
+    });
   } catch (error) {
-    logger.error("purge_eliminated_failed", error);
+    logger.error("archive_eliminated_failed", error);
     return Response.json({ error: "Internal server error" }, { status: 500 });
   }
 }

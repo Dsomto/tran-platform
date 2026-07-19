@@ -1,7 +1,8 @@
 import { Navbar } from "@/components/landing/navbar";
 import { Footer } from "@/components/landing/footer";
 import { prisma } from "@/lib/db";
-import { Trophy, CheckCircle2 } from "lucide-react";
+import { getCohort1OfficialPassCount } from "@/lib/cohort-results";
+import { Trophy, CheckCircle2, ArchiveRestore } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -12,9 +13,17 @@ const STAGE_LABEL: Record<string, string> = {
   STAGE_2: "Stage 2 — Web Application Security",
   STAGE_3: "Stage 3 — Incident Response",
   STAGE_4: "Stage 4 — Governance & Risk",
+  STAGE_5: "Advanced 1 — Signal",
+  STAGE_6: "Advanced 2 — Exposure",
+  STAGE_7: "Advanced 3 — Architecture",
+  STAGE_8: "Advanced 4 — Adversity",
+  STAGE_9: "Advanced 5 — Final Case",
 };
 
-const STAGE_ORDER = ["STAGE_0", "STAGE_1", "STAGE_2", "STAGE_3", "STAGE_4"];
+const STAGE_ORDER = [
+  "STAGE_0", "STAGE_1", "STAGE_2", "STAGE_3", "STAGE_4",
+  "STAGE_5", "STAGE_6", "STAGE_7", "STAGE_8", "STAGE_9",
+];
 
 export default async function ResultsPage() {
   // Every report that has been finalised as PASSED. We deliberately do not
@@ -44,7 +53,9 @@ export default async function ResultsPage() {
     list.push(r);
     byStage.set(r.stage, list);
   }
-  const stagesWithPasses = STAGE_ORDER.filter((s) => byStage.has(s));
+  const stagesWithPasses = STAGE_ORDER.filter(
+    (stage) => byStage.has(stage) || getCohort1OfficialPassCount(stage) !== undefined
+  );
 
   return (
     <>
@@ -60,24 +71,27 @@ export default async function ResultsPage() {
             </h1>
             <p className="text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               Each stage of the Ubuntu Bridge Initiative Cybersecurity Internship is
-              graded against a published rubric. The names below are interns who
-              cleared the cutoff for that stage. Scores are out of 100; the passing
-              mark is 70.
+              graded against a published rubric. The totals show every intern who
+              officially cleared each cutoff. The ranked names show the individual
+              result records currently retained by the platform. Scores are out of
+              100; the passing mark is 70.
             </p>
           </header>
 
           {stagesWithPasses.length === 0 ? (
-            <div className="p-12 bg-white border border-border rounded-xl text-center text-muted-foreground">
+            <div className="p-12 bg-surface border border-border rounded-xl text-center text-muted-foreground">
               No stage results have been published yet.
             </div>
           ) : (
             <div className="space-y-10">
               {stagesWithPasses.map((stage) => {
-                const list = byStage.get(stage)!;
+                const list = byStage.get(stage) ?? [];
+                const officialCount = getCohort1OfficialPassCount(stage) ?? list.length;
+                const missingRecordCount = Math.max(0, officialCount - list.length);
                 return (
                   <section
                     key={stage}
-                    className="bg-white border border-border rounded-2xl overflow-hidden"
+                    className="bg-surface border border-border rounded-2xl overflow-hidden"
                   >
                     <div className="px-6 py-4 border-b border-border bg-blue/5 flex items-center justify-between flex-wrap gap-2">
                       <div className="flex items-center gap-2">
@@ -87,9 +101,21 @@ export default async function ResultsPage() {
                         </h2>
                       </div>
                       <span className="text-sm text-muted-foreground">
-                        {list.length} intern{list.length === 1 ? "" : "s"} passed
+                        {officialCount} official pass{officialCount === 1 ? "" : "es"}
                       </span>
                     </div>
+                    {missingRecordCount > 0 && (
+                      <div className="px-6 py-3 border-b border-amber-500/25 bg-amber-500/10 flex items-start gap-3 text-sm text-foreground">
+                        <ArchiveRestore className="h-4 w-4 mt-0.5 shrink-0 text-amber-600" />
+                        <p>
+                          {list.length} of {officialCount} individual result records
+                          are currently listed. The previous account-retention process
+                          deleted {missingRecordCount} attached stage report
+                          {missingRecordCount === 1 ? "" : "s"}; those names and scores
+                          will remain hidden until they are restored from the grading archive.
+                        </p>
+                      </div>
+                    )}
                     <ol className="divide-y divide-border">
                       {list.map((r, i) => {
                         const name =
@@ -118,6 +144,11 @@ export default async function ResultsPage() {
                           </li>
                         );
                       })}
+                      {list.length === 0 && (
+                        <li className="px-6 py-8 text-center text-sm text-muted-foreground">
+                          Individual result records are being restored from the grading archive.
+                        </li>
+                      )}
                     </ol>
                   </section>
                 );

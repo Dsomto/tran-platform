@@ -1,7 +1,7 @@
 import { getLandingStats } from "@/lib/landing-stats";
 
 export async function StatsDashboard() {
-  const { applicants, interns, passedStage1, tracks } = await getLandingStats();
+  const { applicants, selectedInterns, activeInterns, tracks } = await getLandingStats();
 
   const cards = [
     {
@@ -13,17 +13,17 @@ export async function StatsDashboard() {
     },
     {
       emoji: "🎓",
-      value: interns.toLocaleString(),
-      label: "Interns",
+      value: selectedInterns.toLocaleString(),
+      label: "Selected interns",
       caption: "selected into Cohort 1",
-      featured: false,
+      featured: true,
     },
     {
       emoji: "🚀",
-      value: passedStage1.toLocaleString(),
-      label: "Passed Stage 1",
-      caption: "advanced to Stage 2",
-      featured: true,
+      value: activeInterns.toLocaleString(),
+      label: "Active now",
+      caption: "continuing in the programme",
+      featured: false,
     },
     {
       emoji: "🎯",
@@ -55,8 +55,8 @@ export async function StatsDashboard() {
             Cohort 1 — by the numbers
           </h2>
           <p className="mt-4 text-base text-muted leading-relaxed">
-            Thousands applied. A few hundred made the cut. These are the people
-            who showed up and did the work.
+            Thousands applied. A few hundred made the cut. The active count
+            reflects the cohort continuing in the programme today.
           </p>
         </div>
 

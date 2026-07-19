@@ -1,25 +1,12 @@
 import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/db";
-import { Stage } from "@/generated/prisma";
 
 export type LandingStats = {
   applicants: number;
-  interns: number;
-  passedStage1: number;
+  selectedInterns: number;
+  activeInterns: number;
   tracks: number;
 };
-
-// Interns who cleared Stage 1 sit at Stage 2 or beyond.
-const PASSED_STAGE_1: Stage[] = [
-  Stage.STAGE_2,
-  Stage.STAGE_3,
-  Stage.STAGE_4,
-  Stage.STAGE_5,
-  Stage.STAGE_6,
-  Stage.STAGE_7,
-  Stage.STAGE_8,
-  Stage.STAGE_9,
-];
 
 const TRACKS = 3;
 
@@ -31,14 +18,23 @@ const safe = (p: Promise<number>): Promise<number> => p.catch(() => 0);
 // hit the database on every request.
 export const getLandingStats = unstable_cache(
   async (): Promise<LandingStats> => {
-    const [applicants, interns, passedStage1] = await Promise.all([
-      safe(prisma.publicApplication.count()),
-      safe(prisma.intern.count()),
-      safe(prisma.intern.count({ where: { currentStage: { in: PASSED_STAGE_1 } } })),
+    const [applicants, selectedInterns, activeInterns] = await Promise.all([
+      safe(prisma.publicApplication.count({
+        where: { status: { in: ["pending", "approved", "rejected"] } },
+      })),
+      // PublicApplication is the durable cohort ledger. Intern rows can be
+      // archived or removed after elimination and must not define intake size.
+      safe(prisma.publicApplication.count({ where: { status: "approved" } })),
+      safe(prisma.intern.count({
+        where: {
+          isActive: true,
+          user: { email: { not: { endsWith: "@netforge.invalid" } } },
+        },
+      })),
     ]);
 
-    return { applicants, interns, passedStage1, tracks: TRACKS };
+    return { applicants, selectedInterns, activeInterns, tracks: TRACKS };
   },
-  ["landing-stats"],
+  ["landing-stats-v3"],
   { revalidate: 1800 }
 );

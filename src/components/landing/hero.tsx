@@ -4,8 +4,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, ChevronDown } from "lucide-react";
 import { useEffect, useState } from "react";
-import AOS from "aos";
-import "aos/dist/aos.css";
 import type { LandingStats } from "@/lib/landing-stats";
 
 const allHeroImages = [
@@ -65,7 +63,7 @@ function shuffleAndPick(arr: typeof allHeroImages, count: number) {
 export function Hero({ stats }: { stats: LandingStats }) {
   const heroStats: [string, string, string][] = [
     [stats.applicants.toLocaleString(), "Applicants", "🌍"],
-    [stats.passedStage1.toLocaleString(), "Passed Stage 1", "🚀"],
+    [stats.selectedInterns.toLocaleString(), "Selected interns", "🎓"],
     [stats.tracks.toLocaleString(), "Tracks", "🎯"],
   ];
 
@@ -74,18 +72,14 @@ export function Hero({ stats }: { stats: LandingStats }) {
   const [layoutVariant, setLayoutVariant] = useState(0);
 
   useEffect(() => {
-    setHeroImages(shuffleAndPick(allHeroImages, 3));
-    setLayoutVariant(Math.floor(Math.random() * 3));
+    const frame = window.requestAnimationFrame(() => {
+      setHeroImages(shuffleAndPick(allHeroImages, 3));
+      setLayoutVariant(Math.floor(Math.random() * 3));
+    });
+    return () => window.cancelAnimationFrame(frame);
   }, []);
 
   useEffect(() => {
-    AOS.init({
-      duration: 800,
-      easing: "ease-out-cubic",
-      once: true,
-      offset: 60,
-    });
-
     const onScroll = () => {
       const total = document.documentElement.scrollHeight - window.innerHeight;
       setScrollProgress(total > 0 ? (window.scrollY / total) * 100 : 0);
