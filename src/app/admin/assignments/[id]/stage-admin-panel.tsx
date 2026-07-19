@@ -280,8 +280,8 @@ function StatusControls({
   const [busy, setBusy] = useState<Status | "SCHEDULE" | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [announceOpen, setAnnounceOpen] = useState(false);
-  const [activeFrom, setActiveFrom] = useState(toLocalDateTime(initialActiveFrom));
-  const [submitUntil, setSubmitUntil] = useState(toLocalDateTime(initialSubmitUntil));
+  const [activeFrom, setActiveFrom] = useState(toWatDateTime(initialActiveFrom));
+  const [submitUntil, setSubmitUntil] = useState(toWatDateTime(initialSubmitUntil));
   const [title, setTitle] = useState(`Stage ${stageNum} is open`);
   const [message, setMessage] = useState(
     `Stage ${stageNum} is now open. Log into your dashboard to begin.`
@@ -301,8 +301,8 @@ function StatusControls({
         body: JSON.stringify({
           stage,
           status: next,
-          activeFrom: toIsoDateTime(activeFrom),
-          submitUntil: toIsoDateTime(submitUntil),
+          activeFrom: watDateTimeToIso(activeFrom),
+          submitUntil: watDateTimeToIso(submitUntil),
           ...(withAnnounce ? { announce: { title, message } } : {}),
         }),
       });
@@ -333,7 +333,7 @@ function StatusControls({
       <div className="mb-5 grid grid-cols-1 md:grid-cols-[1fr_1fr_auto] gap-3 items-end">
         <label className="block">
           <span className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-foreground">
-            <CalendarClock className="h-3.5 w-3.5 text-blue" /> Start time
+            <CalendarClock className="h-3.5 w-3.5 text-blue" /> Start time (WAT)
           </span>
           <input
             type="datetime-local"
@@ -343,7 +343,7 @@ function StatusControls({
           />
         </label>
         <label className="block">
-          <span className="mb-1.5 block text-xs font-medium text-foreground">Submission deadline</span>
+          <span className="mb-1.5 block text-xs font-medium text-foreground">Submission deadline (WAT)</span>
           <input
             type="datetime-local"
             value={submitUntil}
@@ -468,17 +468,16 @@ function StatusControls({
   );
 }
 
-function toLocalDateTime(iso: string | null): string {
+function toWatDateTime(iso: string | null): string {
   if (!iso) return "";
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return "";
-  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
-  return local.toISOString().slice(0, 16);
+  return new Date(date.getTime() + 60 * 60_000).toISOString().slice(0, 16);
 }
 
-function toIsoDateTime(local: string): string | null {
-  if (!local) return null;
-  const date = new Date(local);
+function watDateTimeToIso(wat: string): string | null {
+  if (!wat) return null;
+  const date = new Date(`${wat}:00+01:00`);
   return Number.isNaN(date.getTime()) ? null : date.toISOString();
 }
 

@@ -14,6 +14,7 @@ import {
   FileText,
 } from "lucide-react";
 import { EggHoverNote } from "@/components/dashboard/easter-eggs/widgets";
+import { stageWindowAcceptsSubmissions } from "@/lib/stage-window";
 
 const STAGES = [
   "STAGE_0",
@@ -81,6 +82,18 @@ export default async function AssignmentsPage() {
   const reportByStage = new Map(reports.map((r) => [r.stage, r.status]));
 
   const internRank = stageRank(intern.currentStage);
+  const now = new Date();
+
+  const formatWat = (value: Date) =>
+    `${new Intl.DateTimeFormat("en-GB", {
+      weekday: "short",
+      day: "2-digit",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+      timeZone: "Africa/Lagos",
+    }).format(value)} WAT`;
 
   return (
     <>
@@ -96,7 +109,7 @@ export default async function AssignmentsPage() {
         <div className="max-w-3xl space-y-3">
           {STAGES.map((stage) => {
             const w = windowByStage.get(stage as never);
-            const isLocked = (w?.status ?? "CLOSED") !== "OPEN";
+            const isLocked = !stageWindowAcceptsSubmissions(w, now.getTime());
             const rank = stageRank(stage);
             const isAhead = rank > internRank;
             const isPast = rank < internRank;
@@ -108,7 +121,13 @@ export default async function AssignmentsPage() {
             // at-or-behind their current stage. Locked OR ahead = greyed out.
             const accessible = !isLocked && !isAhead;
 
-            const deadline = null;
+            const deadline = w?.submitUntil ? formatWat(w.submitUntil) : null;
+            const availabilityNote =
+              w?.status === "OPEN" && w.activeFrom && now < w.activeFrom
+                ? `Opens ${formatWat(w.activeFrom)}.`
+                : w?.status === "OPEN" && w.submitUntil && now > w.submitUntil
+                  ? `Closed ${formatWat(w.submitUntil)}.`
+                  : null;
 
             return (
               <StageCard
@@ -124,6 +143,7 @@ export default async function AssignmentsPage() {
                 isPast={isPast}
                 reportStatus={reportStatus}
                 deadline={deadline}
+                availabilityNote={availabilityNote}
               />
             );
           })}
@@ -144,6 +164,7 @@ function StageCard({
   isPast,
   reportStatus,
   deadline,
+  availabilityNote,
 }: {
   stage: string;
   stageNum: string;
@@ -156,6 +177,7 @@ function StageCard({
   isPast: boolean;
   reportStatus: string | undefined;
   deadline: string | null;
+  availabilityNote: string | null;
 }) {
   const statusLabel = (() => {
     if (reportStatus === "PASSED") return { label: "Passed", tone: "emerald" as const };
@@ -233,7 +255,9 @@ function StageCard({
             )}
             {isLocked && !isPast && (
               <EggHoverNote note="Awaiting clearance.">
-                <span className="text-muted">Waiting for admin to open this stage.</span>
+                <span className="text-muted">
+                  {availabilityNote ?? "Waiting for admin to open this stage."}
+                </span>
               </EggHoverNote>
             )}
             {!isLocked && !accessible && !isPast && (

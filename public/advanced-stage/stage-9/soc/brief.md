@@ -9,7 +9,7 @@ inside the submission's sealed `recovered/` directory.
 
 ## Window and scoring
 
-Fourteen days. No revision. Live defense. 100 points: evidence integrity 10,
+Monday 09:00 WAT to Friday 18:10 WAT. No revision. Live defense. 100 points: evidence integrity 10,
 multi-source reconstruction 30, recovered data and impact boundary 20,
 hypothesis quality 10, response plan/detections 15, executive communication 5,
 live defense 10.

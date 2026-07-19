@@ -9,7 +9,7 @@ or authorized to access. Do not reproduce protected control text.
 
 ## Window and scoring
 
-Ten days. Final revision opportunity. 100 points: audit planning/sampling 15,
+Monday 09:00 WAT to Friday 18:10 WAT. Final revision opportunity. 100 points: audit planning/sampling 15,
 evidence quality 20, control testing/verdicts 30, prior-finding verification 15,
 nonconformity quality 10, management communication 10.
 

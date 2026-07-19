@@ -2,7 +2,7 @@
 
 ## Window and scoring
 
-Ten days. No revision. Recorded defense. 100 points: lab reliability 15,
+Monday 09:00 WAT to Friday 18:10 WAT. No revision. Recorded defense. 100 points: lab reliability 15,
 telemetry validation 15, detection logic 25, adversary/benign testing 25,
 coverage and blind spots 10, defense 10.
 

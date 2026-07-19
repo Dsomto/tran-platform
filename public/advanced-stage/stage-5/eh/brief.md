@@ -12,7 +12,7 @@ runtime, package install, or internet connection is required.
 
 ## Window and scoring
 
-Eight days. One revision. 100 points: scope and safety 20, engine design and
+Monday 09:00 WAT to Friday 18:10 WAT. One revision. 100 points: scope and safety 20, engine design and
 tests 25, discovery completeness 20, foothold proof 20, evidence/reporting 15.
 A scope breach or activity against a third party is an automatic fail.
 

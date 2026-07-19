@@ -10,7 +10,7 @@ credentials after the engagement.
 
 ## Window and scoring
 
-Fourteen days. No revision. Live defense. 100 points: scope/professional conduct
+Monday 09:00 WAT to Friday 18:10 WAT. No revision. Live defense. 100 points: scope/professional conduct
 15, methodology and coverage 15, validated findings 20, chained impact 20,
 remediation/retest 15, report quality 5, live defense 10.
 

@@ -19,7 +19,7 @@ not download a public walkthrough or substitute the stock CloudGoat scenario.
 
 ## Window and scoring
 
-Ten days. Final revision opportunity. 100 points: account/cost safety 20,
+Monday 09:00 WAT to Friday 18:10 WAT. Final revision opportunity. 100 points: account/cost safety 20,
 enumeration 20, attack-path reasoning 25, CloudTrail evidence 15, remediation
 10, teardown and residual checks 10.
 

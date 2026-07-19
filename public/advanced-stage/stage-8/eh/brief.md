@@ -21,7 +21,7 @@ to candidates whose hardware and schedule support it.
 
 ## Window and scoring
 
-Twelve days. No revision. Recorded defense. 100 points: provisioning/health 15,
+Monday 09:00 WAT to Friday 18:10 WAT. No revision. Recorded defense. 100 points: provisioning/health 15,
 scope and credential handling 15, enumeration 20, validated attack path 25,
 report/remediation 15, defense 10.
 

@@ -28,9 +28,10 @@ import {
   type AdvancedTrack,
 } from "@/lib/advanced-stage";
 import { advancedProjectVisual, ADVANCED_TRACK_VISUALS } from "@/lib/advanced-visuals";
+import { StageDeadlineCountdown } from "@/components/stage/StageDeadlineCountdown";
 import { stageRank, type StageKey } from "@/lib/stage-login";
 import { stageUrl } from "@/lib/stage-routes";
-import { stageWindowHasStarted } from "@/lib/stage-window";
+import { stageWindowAcceptsSubmissions } from "@/lib/stage-window";
 import styles from "./advanced-track.module.css";
 
 type AdvancedStage = Extract<StageKey, "STAGE_5" | "STAGE_6" | "STAGE_7" | "STAGE_8" | "STAGE_9">;
@@ -60,7 +61,7 @@ export default async function AdvancedTrackPage() {
   const [windows, reports, artifactGrants] = await Promise.all([
     prisma.stageWindow.findMany({
       where: { stage: { in: ADVANCED_STAGES } },
-      select: { stage: true, status: true, activeFrom: true },
+      select: { stage: true, status: true, activeFrom: true, submitUntil: true },
     }),
     prisma.stageReport.findMany({
       where: { internId: intern.id, stage: { in: ADVANCED_STAGES } },
@@ -86,6 +87,7 @@ export default async function AdvancedTrackPage() {
     grant.track === track && isArtifactGrantCurrent(grant.expiresAt)
   );
   const artifactByStage = new Map(validArtifactGrants.map((grant) => [grant.stage, grant]));
+  const currentWindow = windowByStage.get(intern.currentStage as AdvancedStage);
   const pageStyle = { "--track-accent": trackVisual.accent } as CSSProperties;
 
   return (
@@ -104,6 +106,14 @@ export default async function AdvancedTrackPage() {
             </div>
           </div>
         </header>
+
+        {currentWindow?.submitUntil && (
+          <StageDeadlineCountdown
+            className={styles.deadlineCountdown}
+            activeFrom={currentWindow.activeFrom?.toISOString() ?? null}
+            submitUntil={currentWindow.submitUntil.toISOString()}
+          />
+        )}
 
         <section className={styles.learningOverview} aria-labelledby="track-learning-title">
           <div className={styles.learningHeading}>
@@ -158,7 +168,7 @@ export default async function AdvancedTrackPage() {
             const deliverables = requiredAdvancedDeliverables(project);
             const reached = stageRank(stage) <= stageRank(intern.currentStage);
             const isCurrent = stage === intern.currentStage;
-            const isOpen = reached && stageWindowHasStarted(stageWindow);
+            const isOpen = reached && stageWindowAcceptsSubmissions(stageWindow);
             const isPassed = report?.status === "PASSED";
             const statusText = isPassed
               ? "Completed"

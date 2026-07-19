@@ -1,6 +1,7 @@
 import type { StageKey, StageSlug } from "./stage-login";
 
 export type AdvancedTrack = "SOC_ANALYSIS" | "ETHICAL_HACKING" | "GRC";
+export const ADVANCED_STAGE_WINDOW_LABEL = "Mon 09:00 WAT - Fri 18:10 WAT";
 
 export type AdvancedResource = {
   label: string;
@@ -171,7 +172,7 @@ export const ADVANCED_PROJECTS: Record<AdvancedTrack, AdvancedProject[]> = {
     {
       stage: "STAGE_5", slug: "stage-5", number: 1,
       title: "Build a Production Hunt Engine",
-      duration: "8 days", difficulty: 4, revision: "One revision", defense: "Artifact check",
+      duration: ADVANCED_STAGE_WINDOW_LABEL, difficulty: 4, revision: "One revision", defense: "Artifact check",
       objective: "Engineer a tested hunt pipeline for a compact hostile-quality evidence pack: schema drift, duplicates, invalid timestamps, clock offsets, identity aliases, 96 assigned review cases, and three linked attack campaigns.",
       setup: ["Python 3.11+", "DuckDB with pytest", "8 GB RAM and 2 GB free disk", "Shared track archive capped at 100 MB plus your signed private discrepancy set"],
       mission: ["Implement streaming ingestion, typed normalization, quarantine, deduplication, clock correction, and source reconciliation without editing raw files.", "Resolve identity and host aliases, then correlate auth, web, DNS, firewall, and endpoint events into campaign graphs.", "Write reusable hunts and a command-line runner; no campaign-specific constants, IP lists, usernames, or timestamps in code.", "Benchmark a clean build, incremental ingest, and all hunts; publish query plans and peak memory."],
@@ -186,7 +187,7 @@ export const ADVANCED_PROJECTS: Record<AdvancedTrack, AdvancedProject[]> = {
     {
       stage: "STAGE_6", slug: "stage-6", number: 2,
       title: "Engineer a Deception Sensor and Analysis Pipeline",
-      duration: "9 days", difficulty: 4, revision: "One revision", defense: "Artifact check",
+      duration: ADVANCED_STAGE_WINDOW_LABEL, difficulty: 4, revision: "One revision", defense: "Artifact check",
       objective: "Build a production-style sessionization, clustering, payload-handling, and detection pipeline against a sealed T-Pot replay; optionally prove it against a candidate-owned live sensor.",
       setup: ["Shared sealed T-Pot replay", "Python 3.11+ analysis environment", "Candidate-owned Linux VM and public address only for the live pressure task", "Supplied T-Pot boundary source"],
       mission: ["Build and verify the candidate-run sensor boundary source with ingress, egress, metadata, private-range, and management controls; live public exposure is optional.", "Build a Python pipeline that normalizes sessions, clusters infrastructure/credentials, hashes payloads, and emits STIX 2.1 plus Sigma or Suricata content.", "Replay the sealed protocol/session evidence through the pipeline and prove stable output independently of live collection volume.", "Quarantine every binary by hash and metadata only; never execute captured payloads."],
@@ -201,7 +202,7 @@ export const ADVANCED_PROJECTS: Record<AdvancedTrack, AdvancedProject[]> = {
     {
       stage: "STAGE_7", slug: "stage-7", number: 3,
       title: "Build a Network Detection Range as Code",
-      duration: "10 days", difficulty: 5, revision: "One revision", defense: "Artifact check",
+      duration: ADVANCED_STAGE_WINDOW_LABEL, difficulty: 5, revision: "One revision", defense: "Artifact check",
       objective: "Build a seven-zone routed enterprise range in containerlab, enforce policy with Linux/nftables, generate attacks and business traffic, and verify segmentation and detection through code.",
       setup: ["Linux host with Docker and containerlab", "FRRouting containers", "nftables gateway", "Zeek or Suricata sensor", "pytest/testinfra acceptance harness"],
       mission: ["Define user, finance, engineering, server, management, guest, and DMZ zones entirely as code with deterministic addressing and routing.", "Implement stateful least privilege, administrative paths, NAT, DNS/NTP, centralized logs, and a mirrored sensor path.", "Write positive, negative, return-path, spoofing, management, and logging tests for the published matrix.", "Inject the three published fault conditions plus the private D-set condition, identify each from packets/logs, and restore the passing baseline through version-controlled changes."],
@@ -216,7 +217,7 @@ export const ADVANCED_PROJECTS: Record<AdvancedTrack, AdvancedProject[]> = {
     {
       stage: "STAGE_8", slug: "stage-8", number: 4,
       title: "Detection Engineering Under Adversary Pressure",
-      duration: "10 days", difficulty: 5, revision: "No revision", defense: "Recorded defense",
+      duration: ADVANCED_STAGE_WINDOW_LABEL, difficulty: 5, revision: "No revision", defense: "Recorded defense",
       objective: "Build detection-as-code for twelve controlled ATT&CK procedures, then pass a regression suite of attacks, mutations, benign lookalikes, telemetry failures, and clean-state deployment.",
       setup: ["Wazuh 4.14.6 single-node Docker deployment", "Windows 11 evaluation VM with Sysmon", "Atomic Red Team on an isolated host-only lab", "16 GB RAM minimum; 24 GB recommended"],
       mission: ["Pin and deploy Wazuh, Sysmon, agents, decoders, rules, and test data from code.", "Execute twelve assigned procedures across five ATT&CK tactics plus twenty-four benign controls and preserve source/normalized/alert triples.", "Build an automated replay/regression harness and detection tests; tune field logic, thresholds, parent/child relationships, and time windows.", "Measure behavior when one telemetry field is removed, one binary is renamed, and one command is encoded differently."],
@@ -231,7 +232,7 @@ export const ADVANCED_PROJECTS: Record<AdvancedTrack, AdvancedProject[]> = {
     {
       stage: "STAGE_9", slug: "stage-9", number: 5,
       title: "Full Incident Response",
-      duration: "14 days", difficulty: 5, revision: "No revision", defense: "Live defense",
+      duration: ADVANCED_STAGE_WINDOW_LABEL, difficulty: 5, revision: "No revision", defense: "Live defense",
       objective: "Solve a sealed multi-source DFIR case from host logs, email, and packet evidence; recover the exfiltrated dataset and ship reproducible timeline and detection code.",
       setup: ["Wireshark and Zeek", "oletools", "Shared sealed incident package", "Candidate-owned optional memory-capture source", "20 GB free disk and 8 GB RAM recommended"],
       mission: ["Verify acquisitions and build a parser-driven super-timeline with explicit source clocks and provenance.", "Recover the phishing object, execution chain, persistence, credentials, privilege path, lateral movement, staging commands, C2, and exfiltration flow across at least three hosts.", "Extract and reconstruct the synthetic stolen archive from network or host artifacts; calculate exact record and byte counts.", "Write and test Sigma/YARA/Zeek content against supplied positive and negative fixtures, then produce containment and recovery automation."],
@@ -248,7 +249,7 @@ export const ADVANCED_PROJECTS: Record<AdvancedTrack, AdvancedProject[]> = {
     {
       stage: "STAGE_5", slug: "stage-5", number: 1,
       title: "Build a Recon Engine and Earn the Foothold",
-      duration: "8 days", difficulty: 4, revision: "One revision", defense: "Artifact check",
+      duration: ADVANCED_STAGE_WINDOW_LABEL, difficulty: 4, revision: "One revision", defense: "Artifact check",
       objective: "Engineer a resumable, scope-safe recon platform, pass unreleased fixtures, discover a local runtime profile's hidden service chain, and obtain its fresh foothold flag.",
       setup: ["Any machine with Python 3.11 or newer", "Supplied standard-library loopback lab", "Candidate-authored discovery adapters", "No Docker, VPN, cloud account, package install, or internet access required"],
       mission: ["Implement discovery, DNS/wildcard handling, probing, TLS/SNI, virtual-host enumeration, service scanning, fingerprinting, normalization, and report generation as tested modules.", "Enforce CIDR/hostname/port scope before every network call; the out-of-scope decoy must generate zero packets.", "Support bounded concurrency, rate limiting, timeouts, retries, resumable state, tool failure, and deterministic deduplication.", "Use the engine's output to obtain the private `user.txt` flag, then stop at the stated proof."],
@@ -263,7 +264,7 @@ export const ADVANCED_PROJECTS: Record<AdvancedTrack, AdvancedProject[]> = {
     {
       stage: "STAGE_6", slug: "stage-6", number: 2,
       title: "Root the Box: Exploit Chain as Code",
-      duration: "9 days", difficulty: 4, revision: "One revision", defense: "Artifact check",
+      duration: ADVANCED_STAGE_WINDOW_LABEL, difficulty: 4, revision: "One revision", defense: "Artifact check",
       objective: "Write a reliable, non-Metasploit foothold-to-root exploit chain for the offline VM built from supplied source, patch both root causes, and prove exploit and negative retest from clean snapshots.",
       setup: ["Supplied vulnerable/patched Vagrant source", "Kali attacker on host-only network", "Snapshot target before testing", "No walkthrough for the assessment target during the window"],
       mission: ["Enumerate the target and derive the initial-access and privilege-escalation preconditions from raw evidence.", "Implement the chain in Python or Go with explicit protocol handling, preflight checks, timeouts, safe failure, and idempotent cleanup.", "Run the complete chain five times from a clean snapshot and record reliability and timing.", "Apply minimum root-cause patches, rerun the exploit as a negative test, and prove intended service behavior still passes."],
@@ -278,7 +279,7 @@ export const ADVANCED_PROJECTS: Record<AdvancedTrack, AdvancedProject[]> = {
     {
       stage: "STAGE_7", slug: "stage-7", number: 3,
       title: "Compromise a Custom AWS IAM Range",
-      duration: "10 days", difficulty: 5, revision: "One revision", defense: "Artifact check",
+      duration: ADVANCED_STAGE_WINDOW_LABEL, difficulty: 5, revision: "One revision", defense: "Artifact check",
       objective: "Compromise the supplied CloudGoat-derived range in a dedicated AWS lab account containing trust-policy, policy-version, permission-boundary, and workload-role edges; then implement and test least-privilege remediation.",
       setup: ["Dedicated AWS lab account with MFA on the root user", "USD 5 budget, USD 3/USD 4 alerts, and a USD 4 Budget Action or equivalent deny policy", "CloudGoat 2.x and Terraform", "Four-hour and same-UTC-day teardown SLA"],
       mission: ["Enumerate the starting principal, attached/inline policies, policy versions, trust relationships, boundaries, and effective permissions without using the scenario name as a walkthrough search term.", "Traverse at least four scored permission edges, retrieve only the assigned secret, and preserve CloudTrail for every decisive API call.", "Patch the supplied Terraform/IAM definitions, redeploy, and run positive business tests plus negative attack-path tests.", "Destroy within the cost SLA and independently query every service class in the release manifest for residuals."],
@@ -293,7 +294,7 @@ export const ADVANCED_PROJECTS: Record<AdvancedTrack, AdvancedProject[]> = {
     {
       stage: "STAGE_8", slug: "stage-8", number: 4,
       title: "Own the Forest",
-      duration: "12 days", difficulty: 5, revision: "No revision", defense: "Recorded defense",
+      duration: ADVANCED_STAGE_WINDOW_LABEL, difficulty: 5, revision: "No revision", defense: "Recorded defense",
       objective: "Provision a variant Active Directory forest, validate two independent paths to domain control, automate one path reliably, and prove the corresponding Windows detection and remediation tests.",
       setup: ["GOAD-Light is the supported baseline; full GOAD is an approved pressure task", "Provider-specific official GOAD install", "32 GB RAM and 110 GB free disk recommended for GOAD-Light", "Impacket, NetExec, BloodHound CE, Hashcat"],
       mission: ["Provision and health-check the assigned forest from the supported provider files and preserve range hashes.", "Enumerate without SharpHound defaults alone; validate at least eight graph edges by direct LDAP/SMB/Kerberos evidence and identify the planted stale edge.", "Prove two independent domain-control paths, execute one through candidate-authored automation, and stop without persistence.", "Enable and export the required Windows events, write two detections for decisive edges, remediate both paths, and rerun negative attack tests."],
@@ -308,7 +309,7 @@ export const ADVANCED_PROJECTS: Record<AdvancedTrack, AdvancedProject[]> = {
     {
       stage: "STAGE_9", slug: "stage-9", number: 5,
       title: "Full VAPT and Retest",
-      duration: "14 days", difficulty: 5, revision: "No revision", defense: "Live defense",
+      duration: ADVANCED_STAGE_WINDOW_LABEL, difficulty: 5, revision: "No revision", defense: "Live defense",
       objective: "Compromise a custom web/API/infrastructure estate through a three-host chain, implement reliable verification code, and prove the patched release removes root causes without regressions.",
       setup: ["Supplied candidate-run estate source: web, API, and records services", "Dedicated local Docker network", "Signed rules of engagement and test window", "Clean vulnerable and patched releases"],
       mission: ["Map and test the assigned estate under the machine-readable rules of engagement, recording every request and target transition.", "Chain at least three distinct control failures across the web, API, and infrastructure hosts to retrieve exactly one synthetic crown-jewel record.", "Write deterministic verification tests for every accepted finding and a full-chain runner with rate, safety, and cleanup controls.", "Run the same tests against the patched release, identify regressions, and distinguish payload blocking from root-cause removal."],
@@ -325,7 +326,7 @@ export const ADVANCED_PROJECTS: Record<AdvancedTrack, AdvancedProject[]> = {
     {
       stage: "STAGE_5", slug: "stage-5", number: 1,
       title: "Policy as Code Under Constraint",
-      duration: "8 days", difficulty: 4, revision: "One revision", defense: "Artifact check",
+      duration: ADVANCED_STAGE_WINDOW_LABEL, difficulty: 4, revision: "One revision", defense: "Artifact check",
       objective: "Map and implement the variant's three assigned control outcomes in OPA/Rego, then prove policy, exception, and audit behavior against published and hidden infrastructure states.",
       setup: ["Assigned CloudScale Dynamics evidence pack", "OPA current stable release", "Python 3.11 and pytest", "NIST CSF 2.0 and authorized ISO/IEC 27001:2022 control index"],
       mission: ["Correct the planted framework mapping for the three variant-assigned control outcomes; do not substitute a different control.", "Write an enforceable policy addendum with owner, trigger, exception, expiry, evidence source, and test method for each assigned control.", "Implement an OPA/Rego policy bundle that evaluates the supplied identity, endpoint, storage, and logging state JSON and emits deterministic violations with control IDs.", "Build positive, negative, malformed-input, exception-expiry, and audit-log tests; generate the compliance report from engine output."],
@@ -340,7 +341,7 @@ export const ADVANCED_PROJECTS: Record<AdvancedTrack, AdvancedProject[]> = {
     {
       stage: "STAGE_6", slug: "stage-6", number: 2,
       title: "Verify the Vendor, Then Decide",
-      duration: "9 days", difficulty: 4, revision: "One revision", defense: "Artifact check",
+      duration: ADVANCED_STAGE_WINDOW_LABEL, difficulty: 4, revision: "One revision", defense: "Artifact check",
       objective: "Build an evidence-verification pipeline for a vendor's machine-readable exports, reconcile its output against SOC 2/SIG/DPA claims, and issue enforceable go/no-go conditions.",
       setup: ["Assigned PeopleFlow due-diligence pack", "Python 3.11 with JSON Schema and pytest", "Synthetic SSO, TLS, audit-log, deletion, backup, and subprocessor exports", "No contact with the fictional vendor"],
       mission: ["Define schemas and write validators for the supplied technical exports, including timestamps, scope, retention, privileged access, and integrity hashes.", "Implement checks that test questionnaire claims against technical evidence and output pass/fail/insufficient with exact locators.", "Construct a subprocessor/data-flow graph and calculate which datasets, roles, regions, and contractual requirements touch each node.", "Issue the commercial decision, contract redlines, conditions precedent, monitoring tests, and an executable quarterly verification command."],
@@ -355,7 +356,7 @@ export const ADVANCED_PROJECTS: Record<AdvancedTrack, AdvancedProject[]> = {
     {
       stage: "STAGE_7", slug: "stage-7", number: 3,
       title: "Automate an ISO 27001 Evidence Audit",
-      duration: "10 days", difficulty: 5, revision: "One revision", defense: "Artifact check",
+      duration: ADVANCED_STAGE_WINDOW_LABEL, difficulty: 5, revision: "One revision", defense: "Artifact check",
       objective: "Build a deterministic evidence collector/verifier, execute eighteen audit tests across twelve Annex A controls, select reproducible samples, and issue verdicts generated from traceable test results.",
       setup: ["Assigned Northstar Health evidence pack", "ISO/IEC 27001:2022 and ISO/IEC 27002:2022 references", "Audit sampling sheet", "No inference from screenshots without date, scope, and ownership"],
       mission: ["Write a collector that validates file hashes, timestamps, owners, scope, sample populations, and evidence age across CSV/JSON/ticket exports.", "Select access, training, vulnerability, backup, and change samples deterministically from the room marker so staff can reproduce them.", "Execute eighteen documented tests, emit machine-readable evidence grades/verdicts, and generate the audit test sheet from results.", "Retest prior findings against objective closure evidence and produce the final report/nonconformity register from the frozen result set."],
@@ -370,7 +371,7 @@ export const ADVANCED_PROJECTS: Record<AdvancedTrack, AdvancedProject[]> = {
     {
       stage: "STAGE_8", slug: "stage-8", number: 4,
       title: "Hardening as Code and Quantified Risk",
-      duration: "12 days", difficulty: 5, revision: "No revision", defense: "Recorded defense",
+      duration: ADVANCED_STAGE_WINDOW_LABEL, difficulty: 5, revision: "No revision", defense: "Recorded defense",
       objective: "Build an idempotent Ansible hardening role with rollback and service tests, prove its OpenSCAP/Lynis delta, and generate a tested quantitative treatment model.",
       setup: ["Fresh Debian 12 or Rocky Linux 9 VM", "Lynis current release", "OpenSCAP and SCAP Security Guide profile appropriate to the selected OS", "Provided known-good vulnerability scan export"],
       mission: ["Baseline the assigned host with pinned profiles and a machine-readable service acceptance suite.", "Implement at least eight scored remediations in an Ansible role with handlers, prechecks, rollback, and no manual configuration.", "Prove idempotence, rollback, and before/after scanner delta while keeping all service tests green.", "Write a risk-model program that consumes the supplied scan/assets, runs the published range/sensitivity calculations, and selects exactly three treatments under the variant budget."],
@@ -385,7 +386,7 @@ export const ADVANCED_PROJECTS: Record<AdvancedTrack, AdvancedProject[]> = {
     {
       stage: "STAGE_9", slug: "stage-9", number: 5,
       title: "Build a Breach Governance Engine",
-      duration: "14 days", difficulty: 5, revision: "No revision", defense: "Live defense",
+      duration: ADVANCED_STAGE_WINDOW_LABEL, difficulty: 5, revision: "No revision", defense: "Live defense",
       objective: "Build and test a jurisdiction-aware breach engine that deduplicates affected people, evaluates fixed statutory triggers, computes every deadline, and generates regulator/subject work items from the assigned evidence.",
       setup: ["Assigned breach evidence pack and data inventory", "GDPR Articles 33 and 34", "Nigeria Data Protection Act 2023 section 40 and current NDPC guidance", "California Civil Code section 1798.82 as amended by SB 446 effective 1 January 2026"],
       mission: ["Parse and validate the evidence timeline/inventory, establish the controlling awareness event, and deduplicate people through overlap groups.", "Implement jurisdiction rules for GDPR Articles 33/34, Nigeria section 40, and California section 1798.82/SB 446 including the separate section 1798.82(f) AG clock.", "Emit exact trigger results, WAT/UTC deadlines, affected-person/record counts, owners, and machine-readable work items.", "Generate draft notices and board tables from engine output, then run the full suite against the V1-V6 and hidden fixtures."],

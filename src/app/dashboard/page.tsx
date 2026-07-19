@@ -6,7 +6,7 @@ import { Topbar } from "@/components/dashboard/topbar";
 import { Card } from "@/components/ui/card";
 import { SlackCard } from "@/components/dashboard/slack-card";
 import { stageUrl, type StageSlug } from "@/lib/stage-routes";
-import { stageWindowHasStarted } from "@/lib/stage-window";
+import { stageWindowAcceptsSubmissions } from "@/lib/stage-window";
 import { formatDate, stageToNumber, trackLabel } from "@/lib/utils";
 import {
   Clock,
@@ -172,7 +172,7 @@ export default async function DashboardPage() {
     }),
   ]);
 
-  const isStageOpen = stageWindowHasStarted(stageWindow);
+  const isStageOpen = stageWindowAcceptsSubmissions(stageWindow);
   const roomHref = stageUrl(STAGE_ENUM_TO_SLUG[stageEnum]);
   const reportHref = `/dashboard/reports/${stageEnum}`;
 

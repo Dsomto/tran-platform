@@ -6,20 +6,20 @@
     {
       "track": "SOC_ANALYSIS",
       "key": "soc_analysis/stage-5/shared-stage5-b1.tar.gz",
-      "size_bytes": 11778090,
-      "sha256": "b75e2d3cb1bd1aaede1ac01b074c39c8ef56e31ab45944d74ae5ba4c9882e9da"
+      "size_bytes": 11780400,
+      "sha256": "535e2c483a01f20dad10a893eea6ba3cf89e4bd349beea126739df2df16ca43c"
     },
     {
       "track": "ETHICAL_HACKING",
       "key": "ethical_hacking/stage-5/shared-stage5-b1.tar.gz",
-      "size_bytes": 6119,
-      "sha256": "73d8b588d083e019fedb8e711ce3221c149c079a495b3b76538258a19f0f867a"
+      "size_bytes": 7694,
+      "sha256": "984b531bec2214f217975dbbe9bab1afc14a3eac021df5e24f61d99622b6259e"
     },
     {
       "track": "GRC",
       "key": "grc/stage-5/shared-stage5-b1.tar.gz",
-      "size_bytes": 1186,
-      "sha256": "1bdcef29bb713d342b3748bfce5c5f7d709a59b48504dba2cfa6f33505b008f7"
+      "size_bytes": 2819,
+      "sha256": "35401db7422c5a289692ad33b8d0a69d2abcd668379709caa6bfbf38e9948ccb"
     }
   ]
 }

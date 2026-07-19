@@ -7,9 +7,20 @@ import { advancedVariantFor } from "../src/lib/advanced-variant";
 import { resolvedInternCode } from "../src/lib/intern-code";
 import { Stage, Track } from "../src/generated/prisma";
 
-type SharedArtifact = {
-  track: "soc_analysis" | "ethical_hacking" | "grc";
+type TrackKey = "soc_analysis" | "ethical_hacking" | "grc";
+
+type ManifestArtifact = {
+  track: string;
   stage: "STAGE_5";
+  revision?: string;
+  key?: string;
+  artifact_key?: string;
+  size_bytes: number;
+  sha256: string;
+};
+
+type SharedArtifact = {
+  track: TrackKey;
   revision: string;
   artifact_key: string;
   size_bytes: number;
@@ -17,9 +28,10 @@ type SharedArtifact = {
 };
 
 type SharedManifest = {
-  release_model: "shared-base-private-overlay";
-  max_archive_bytes: number;
-  artifacts: SharedArtifact[];
+  release_model: string;
+  max_archive_bytes?: number;
+  maximum_artifact_bytes?: number;
+  artifacts: ManifestArtifact[];
 };
 
 const TRACK_BY_KEY = {
@@ -33,6 +45,14 @@ const KEY_BY_TRACK = {
   [Track.ETHICAL_HACKING]: "ethical_hacking",
   [Track.GRC]: "grc",
 } as const;
+
+function normalizeTrack(value: string): TrackKey {
+  const normalized = value.toLowerCase();
+  if (normalized === "soc_analysis" || normalized === "ethical_hacking" || normalized === "grc") {
+    return normalized;
+  }
+  throw new Error(`unsupported track in manifest: ${value}`);
+}
 
 function canonicalUnsigned(value: Record<string, unknown>): string {
   return JSON.stringify(Object.fromEntries(Object.keys(value).sort().map((key) => [key, value[key]])));
@@ -58,22 +78,33 @@ async function main() {
     throw new Error("ADVANCED_ARTIFACT_SECRET must be at least 32 characters");
   }
   const manifest = JSON.parse(readFileSync(manifestPath, "utf8")) as SharedManifest;
-  if (manifest.release_model !== "shared-base-private-overlay") {
+  if (!["shared-base-private-overlay", "application-bundled-shared-base-private-overlay"].includes(manifest.release_model)) {
     throw new Error("manifest is not a shared-base release");
   }
+  const normalizedArtifacts: SharedArtifact[] = manifest.artifacts.map((artifact) => ({
+    track: normalizeTrack(artifact.track),
+    revision: artifact.revision ?? "B1",
+    artifact_key: artifact.artifact_key ?? artifact.key ?? "",
+    size_bytes: artifact.size_bytes,
+    sha256: artifact.sha256,
+  }));
+  if (normalizedArtifacts.some((artifact) => !artifact.artifact_key)) {
+    throw new Error("manifest artifact is missing its object key");
+  }
   const byTrack = new Map(
-    manifest.artifacts.map((artifact) => [TRACK_BY_KEY[artifact.track], artifact])
+    normalizedArtifacts.map((artifact) => [TRACK_BY_KEY[artifact.track], artifact])
   );
   if (byTrack.size !== 3) throw new Error("manifest must contain exactly three track artifacts");
-  for (const artifact of manifest.artifacts) {
-    if (artifact.size_bytes > 100 * 1024 * 1024 || artifact.size_bytes > manifest.max_archive_bytes) {
+  const manifestLimit = manifest.maximum_artifact_bytes ?? manifest.max_archive_bytes ?? 100 * 1024 * 1024;
+  for (const artifact of normalizedArtifacts) {
+    if (artifact.size_bytes > 100 * 1024 * 1024 || artifact.size_bytes > manifestLimit) {
       throw new Error(`${artifact.track} artifact exceeds the 100 MiB release cap`);
     }
   }
 
   const root = process.env.ADVANCED_ARTIFACT_ROOT;
   if (root) {
-    for (const artifact of manifest.artifacts) {
+    for (const artifact of normalizedArtifacts) {
       const file = path.resolve(root, artifact.artifact_key);
       const resolvedRoot = path.resolve(root);
       if (!file.startsWith(`${resolvedRoot}${path.sep}`)) throw new Error("unsafe artifact key");

@@ -2,7 +2,7 @@
 
 ## Window and scoring
 
-Nine days. One revision. 100 points: contradiction detection 25, exception and
+Monday 09:00 WAT to Friday 18:10 WAT. One revision. 100 points: contradiction detection 25, exception and
 evidence judgment 20, risk analysis 20, decision/conditions 20, redlines and
 communication 15.
 

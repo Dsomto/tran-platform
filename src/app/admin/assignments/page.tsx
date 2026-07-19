@@ -25,6 +25,17 @@ const STAGE_NAMES: Record<(typeof STAGES)[number], string> = {
 
 export const dynamic = "force-dynamic";
 
+const WAT_FORMATTER = new Intl.DateTimeFormat("en-NG", {
+  timeZone: "Africa/Lagos",
+  weekday: "short",
+  day: "2-digit",
+  month: "short",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false,
+});
+
 export default async function AdminAssignmentsPage() {
   const session = await requireAdmin();
 
@@ -98,8 +109,8 @@ export default async function AdminAssignmentsPage() {
 
                       {(w?.activeFrom || w?.submitUntil) && (
                         <div className="mt-2 flex items-center gap-3 flex-wrap text-xs text-muted-foreground">
-                          {w.activeFrom && <span>Starts {w.activeFrom.toLocaleString()}</span>}
-                          {w.submitUntil && <span>Deadline {w.submitUntil.toLocaleString()}</span>}
+                          {w.activeFrom && <span>Starts {WAT_FORMATTER.format(w.activeFrom)} WAT</span>}
+                          {w.submitUntil && <span>Deadline {WAT_FORMATTER.format(w.submitUntil)} WAT</span>}
                         </div>
                       )}
 

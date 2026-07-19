@@ -9,7 +9,7 @@ customer contract notice, and internal escalation.
 
 ## Window and scoring
 
-Fourteen days. No revision. Live defense. 100 points: fact/role analysis 15,
+Monday 09:00 WAT to Friday 18:10 WAT. No revision. Live defense. 100 points: fact/role analysis 15,
 trigger decisions 20, exact deadline computation 20, population calculation 15,
 notifications 10, board/roadmap judgment 10, live defense 10.
 

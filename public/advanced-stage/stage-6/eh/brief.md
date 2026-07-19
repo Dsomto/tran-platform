@@ -9,7 +9,7 @@ destructive persistence, or data damage. Stop after reading the assigned
 
 ## Window and scoring
 
-Nine days. One revision. 100 points: scope/safety 15, enumeration and path
+Monday 09:00 WAT to Friday 18:10 WAT. One revision. 100 points: scope/safety 15, enumeration and path
 selection 20, foothold 15, privilege escalation 20, exploit-chain quality 20,
 finding/remediation quality 10.
 

@@ -22,6 +22,33 @@ function isStatus(v: unknown): v is StageStatus {
   return typeof v === "string" && (VALID_STATUSES as readonly string[]).includes(v);
 }
 
+function advancedCadenceError(
+  stage: StageKey,
+  activeFrom: Date | null,
+  submitUntil: Date | null
+): string | null {
+  const stageNumber = Number(stage.replace("STAGE_", ""));
+  if (stageNumber < 5) return null;
+  if (!activeFrom || !submitUntil) {
+    return "Advanced stages require both a Monday start and Friday deadline";
+  }
+  const validStart =
+    activeFrom.getUTCDay() === 1 &&
+    activeFrom.getUTCHours() === 8 &&
+    activeFrom.getUTCMinutes() === 0 &&
+    activeFrom.getUTCSeconds() === 0;
+  const validDeadline =
+    submitUntil.getUTCDay() === 5 &&
+    submitUntil.getUTCHours() === 17 &&
+    submitUntil.getUTCMinutes() === 10 &&
+    submitUntil.getUTCSeconds() === 0;
+  const sameWeeklyWindow = submitUntil.getTime() - activeFrom.getTime() === 378_600_000;
+  if (!validStart || !validDeadline || !sameWeeklyWindow) {
+    return "Advanced-stage cadence is fixed: Monday 09:00 WAT to Friday 18:10 WAT";
+  }
+  return null;
+}
+
 function escapeHtml(s: string): string {
   return s
     .replace(/&/g, "&amp;")
@@ -75,6 +102,10 @@ export async function POST(request: NextRequest) {
       parsedSubmitUntil.getTime() <= parsedActiveFrom.getTime()
     ) {
       return Response.json({ error: "Submission deadline must be after the start time" }, { status: 400 });
+    }
+    const cadenceError = advancedCadenceError(stage, parsedActiveFrom, parsedSubmitUntil);
+    if (cadenceError) {
+      return Response.json({ error: cadenceError }, { status: 400 });
     }
 
     const now = new Date();

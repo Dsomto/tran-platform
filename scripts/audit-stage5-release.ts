@@ -56,6 +56,7 @@ async function main() {
       grant.track !== grant.intern.track ||
       grant.sizeBytes !== facts.size ||
       grant.sha256 !== facts.hash ||
+      grant.expiresAt?.toISOString() !== "2026-07-24T17:10:00.000Z" ||
       facts.size > 100 * 1024 * 1024
     ) {
       throw new Error(`grant or artifact mismatch: ${grant.id}`);

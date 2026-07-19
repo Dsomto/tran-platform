@@ -2,7 +2,7 @@
 
 ## Window and scoring
 
-Eight days. One revision. 100 points: pipeline and data quality 20, campaign
+Monday 09:00 WAT to Friday 18:10 WAT. One revision. 100 points: pipeline and data quality 20, campaign
 accuracy 30, evidence and correlation 25, false-positive restraint 15,
 communication and reproducibility 10.
 

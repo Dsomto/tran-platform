@@ -5,7 +5,7 @@ import { advancedVariantFor } from "@/lib/advanced-variant";
 import { getAdvancedProject, isAdvancedStage } from "@/lib/advanced-stage";
 import { stageRank } from "@/lib/stage-login";
 import { resolvedInternCode } from "@/lib/intern-code";
-import { stageWindowHasStarted } from "@/lib/stage-window";
+import { stageWindowAcceptsSubmissions } from "@/lib/stage-window";
 
 function overlayFor(stage: string, track: string, pool: number): string[] {
   const common = [
@@ -81,7 +81,7 @@ export async function GET(request: NextRequest) {
   }
 
   const window = await prisma.stageWindow.findUnique({ where: { stage } });
-  if (!stageWindowHasStarted(window)) {
+  if (!stageWindowAcceptsSubmissions(window)) {
     return Response.json({ error: "Stage is not open" }, { status: 403 });
   }
 

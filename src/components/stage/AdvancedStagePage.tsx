@@ -17,7 +17,7 @@ export async function AdvancedStagePage({ stage, slug }: { stage: StageKey; slug
     redirect("/dashboard");
   }
 
-  const [intern, artifactGrant] = await Promise.all([
+  const [intern, artifactGrant, stageWindow] = await Promise.all([
     prisma.intern.findUnique({
       where: { id: result.access.internId },
       select: { track: true },
@@ -25,6 +25,10 @@ export async function AdvancedStagePage({ stage, slug }: { stage: StageKey; slug
     prisma.advancedArtifactGrant.findUnique({
       where: { internId_stage: { internId: result.access.internId, stage } },
       select: { track: true, variant: true, marker: true, revokedAt: true },
+    }),
+    prisma.stageWindow.findUnique({
+      where: { stage },
+      select: { activeFrom: true, submitUntil: true },
     }),
   ]);
   if (!intern) redirect("/dashboard");
@@ -58,6 +62,8 @@ export async function AdvancedStagePage({ stage, slug }: { stage: StageKey; slug
         firstName={result.access.firstName}
         internCode={result.access.internCode}
         variant={variant}
+        activeFrom={stageWindow?.activeFrom?.toISOString() ?? null}
+        submitUntil={stageWindow?.submitUntil?.toISOString() ?? null}
       />
     </StageShell>
   );

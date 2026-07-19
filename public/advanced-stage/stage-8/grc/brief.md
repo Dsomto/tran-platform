@@ -2,7 +2,7 @@
 
 ## Window and scoring
 
-Twelve days. No revision. Recorded defense. 100 points: baseline integrity 15,
+Monday 09:00 WAT to Friday 18:10 WAT. No revision. Recorded defense. 100 points: baseline integrity 15,
 remediation and service safety 25, measurable delta 15, risk analysis 25,
 investment/deferral judgment 10, defense 10.
 

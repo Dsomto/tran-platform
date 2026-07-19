@@ -52,7 +52,13 @@ async function main() {
   }
 
   const stages = [Stage.STAGE_6, Stage.STAGE_7, Stage.STAGE_8, Stage.STAGE_9] as const;
-  const [grants, windows] = await Promise.all([
+  const expectedWindows = {
+    [Stage.STAGE_6]: ["2026-07-27T08:00:00.000Z", "2026-07-31T17:10:00.000Z"],
+    [Stage.STAGE_7]: ["2026-08-03T08:00:00.000Z", "2026-08-07T17:10:00.000Z"],
+    [Stage.STAGE_8]: ["2026-08-10T08:00:00.000Z", "2026-08-14T17:10:00.000Z"],
+    [Stage.STAGE_9]: ["2026-08-17T08:00:00.000Z", "2026-08-21T17:10:00.000Z"],
+  } as const;
+  const [grants, windows, stage5Window] = await Promise.all([
     prisma.advancedArtifactGrant.findMany({
       where: { stage: { in: [...stages] } },
       include: {
@@ -67,6 +73,7 @@ async function main() {
       },
     }),
     prisma.stageWindow.findMany({ where: { stage: { in: [...stages] } } }),
+    prisma.stageWindow.findUniqueOrThrow({ where: { stage: Stage.STAGE_5 } }),
   ]);
 
   const expected = { SOC_ANALYSIS: 93, ETHICAL_HACKING: 57, GRC: 21 };
@@ -100,9 +107,23 @@ async function main() {
       }
     }
     const window = windows.find((item) => item.stage === stage);
-    if (!window || window.status !== "CLOSED" || !window.isLocked) {
+    const expectedWindow = expectedWindows[stage];
+    if (
+      !window ||
+      window.status !== "CLOSED" ||
+      !window.isLocked ||
+      window.activeFrom?.toISOString() !== expectedWindow[0] ||
+      window.submitUntil?.toISOString() !== expectedWindow[1]
+    ) {
       throw new Error(`${stage} must remain closed until an admin opens it`);
     }
+  }
+  if (
+    stage5Window.status !== "OPEN" ||
+    stage5Window.activeFrom?.toISOString() !== "2026-07-20T08:00:00.000Z" ||
+    stage5Window.submitUntil?.toISOString() !== "2026-07-24T17:10:00.000Z"
+  ) {
+    throw new Error("Stage 5 weekly window mismatch");
   }
   if (realInterns.size !== 168 || previewInterns.size !== 3 || grants.length !== 684) {
     throw new Error("future cohort grant total mismatch");
@@ -115,6 +136,11 @@ async function main() {
     grants: grants.length,
     realInterns: realInterns.size,
     previewInterns: previewInterns.size,
+    stage5Window: {
+      status: stage5Window.status,
+      activeFrom: stage5Window.activeFrom?.toISOString(),
+      submitUntil: stage5Window.submitUntil?.toISOString(),
+    },
     windows: Object.fromEntries(windows.map((window) => [window.stage, window.status])),
     counts,
   }, null, 2));

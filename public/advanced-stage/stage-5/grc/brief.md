@@ -2,7 +2,7 @@
 
 ## Window and scoring
 
-Eight days. One revision. 100 points: gap accuracy 25, control mapping 20,
+Monday 09:00 WAT to Friday 18:10 WAT. One revision. 100 points: gap accuracy 25, control mapping 20,
 evidence judgment 20, three-control decision 20, enforceable drafting 15.
 
 ## Board instruction

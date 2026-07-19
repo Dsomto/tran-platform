@@ -75,6 +75,12 @@ This is the shared B1 base archive for your track. Your signed-in stage room
 provides the private assignment set and evidence marker; those values do not
 change these archive bytes.
 
+## Assessment window
+
+Every advanced stage runs from Monday 09:00 WAT to Friday 18:10 WAT. The
+authenticated stage room shows the exact dates and live deadline countdown.
+Access and submission close at the Friday deadline.
+
 ## Start
 
 1. Verify this archive against the SHA-256 shown in the stage room.
@@ -95,6 +101,13 @@ folder URL. A missing optional tool must be handled through the documented
 fallback or adapter behavior, not by scanning a public target.
 """
     (root / "START-HERE.md").write_text(text, encoding="utf-8")
+    (root / "SCHEDULE.md").write_text(
+        "# Advanced-stage assessment window\n\n"
+        "Every advanced stage runs from Monday 09:00 WAT to Friday 18:10 WAT. "
+        "The authenticated stage room shows the exact dates and live deadline "
+        "countdown. Access and submission close at the Friday deadline.\n",
+        encoding="utf-8",
+    )
 
 
 def add_soc_evidence(root: Path, evidence_root: Path, stage: int) -> None:

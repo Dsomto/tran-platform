@@ -34,6 +34,7 @@ import { advancedLearnerGuidance } from "@/lib/advanced-guidance";
 import type { AdvancedVariant } from "@/lib/advanced-variant";
 import { advancedProjectVisual } from "@/lib/advanced-visuals";
 import { AdvancedProjectInstrument } from "./AdvancedProjectInstrument";
+import { StageDeadlineCountdown } from "./StageDeadlineCountdown";
 
 type Props = {
   project: AdvancedProject;
@@ -42,6 +43,8 @@ type Props = {
   firstName: string;
   internCode: string;
   variant: AdvancedVariant;
+  activeFrom?: string | null;
+  submitUntil?: string | null;
   preview?: boolean;
 };
 
@@ -82,6 +85,8 @@ export function AdvancedStageRoom({
   firstName,
   internCode,
   variant,
+  activeFrom = null,
+  submitUntil = null,
   preview = false,
 }: Props) {
   const visual = advancedProjectVisual(track, project.number);
@@ -133,6 +138,14 @@ export function AdvancedStageRoom({
           </dl>
         </div>
       </header>
+
+      {!preview && submitUntil && (
+        <StageDeadlineCountdown
+          activeFrom={activeFrom}
+          submitUntil={submitUntil}
+          tone="dark"
+        />
+      )}
 
       <section className="advanced-start-here" aria-labelledby="start-here-title">
         <header>

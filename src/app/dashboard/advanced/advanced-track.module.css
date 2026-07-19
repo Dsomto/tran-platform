@@ -31,6 +31,7 @@
 .heroMeta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 26px; }
 .heroMeta span { display: inline-flex; align-items: center; gap: 7px; min-height: 34px; padding: 0 11px; border: 1px solid #e5e5e5; border-radius: 999px; background: rgba(255,255,255,.82); color: #404040; font-size: 11px; font-weight: 750; }
 .heroMeta svg { width: 14px; height: 14px; color: var(--track-accent); }
+.deadlineCountdown { margin-top: 18px; border-left: 4px solid var(--track-accent); }
 
 .learningOverview { margin-top: 22px; padding: 26px; border: 1px solid #e5e5e5; border-radius: 18px; background: #fff; }
 .learningHeading h2 { margin: 6px 0 0; font-size: 24px; letter-spacing: -.02em; }

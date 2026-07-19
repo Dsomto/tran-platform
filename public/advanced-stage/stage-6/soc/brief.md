@@ -17,7 +17,7 @@ hive commonly needs 16 GB and 256 GB.
 
 ## Window and scoring
 
-Nine days including seven continuous collection days. One revision. 100
+Monday 09:00 WAT to Friday 18:10 WAT. One revision. 100
 points: isolation 25, deployment/reliability 15, evidence handling 15, analysis
 30, communication 15. Event volume and country counts earn no points by
 themselves.

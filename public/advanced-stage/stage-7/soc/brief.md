@@ -2,7 +2,7 @@
 
 ## Window and scoring
 
-Ten days. Final revision opportunity. 100 points: requirements and architecture
+Monday 09:00 WAT to Friday 18:10 WAT. Final revision opportunity. 100 points: requirements and architecture
 20, correct implementation 25, positive/negative testing 25, observability 15,
 evidence and defense of tradeoffs 15.
 
