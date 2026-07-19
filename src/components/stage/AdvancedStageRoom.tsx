@@ -5,6 +5,7 @@ import {
   ArrowRight,
   BookOpenCheck,
   CheckCircle2,
+  CircleHelp,
   Clock3,
   Coins,
   Download,
@@ -33,6 +34,7 @@ import {
 import { advancedLearnerGuidance } from "@/lib/advanced-guidance";
 import type { AdvancedVariant } from "@/lib/advanced-variant";
 import { advancedProjectVisual } from "@/lib/advanced-visuals";
+import { AdvancedProjectFaq } from "./AdvancedProjectFaq";
 import { AdvancedProjectInstrument } from "./AdvancedProjectInstrument";
 import { StageDeadlineCountdown } from "./StageDeadlineCountdown";
 
@@ -154,6 +156,7 @@ export function AdvancedStageRoom({
             <div className="advanced-eyebrow">Before you touch the case</div>
             <h2 id="start-here-title">Start here</h2>
             <p>Complete these five actions in order. If one cannot be completed safely, stop and use the escalation guidance below.</p>
+            <a className="advanced-faq-jump" href="#project-faq"><CircleHelp aria-hidden="true" /> Read this project&apos;s FAQ</a>
           </div>
         </header>
         <ol>
@@ -332,6 +335,8 @@ export function AdvancedStageRoom({
           </article>
         </div>
       </section>
+
+      <AdvancedProjectFaq project={project} track={track} trackLabel={trackLabel} />
 
       <section aria-labelledby="deliverables-title">
         <div className="advanced-section-heading">
