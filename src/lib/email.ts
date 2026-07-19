@@ -65,6 +65,15 @@ export async function sendRawHtmlEmail(
   await sendOne("send", { from: FROM, to, subject, html });
 }
 
+export async function sendRawHtmlEmailWithAttachments(
+  to: string,
+  subject: string,
+  html: string,
+  attachments: NonNullable<nodemailer.SendMailOptions["attachments"]>
+): Promise<void> {
+  await sendOne("send", { from: FROM, to, subject, html, attachments });
+}
+
 export async function sendApplicationConfirmation(
   to: string,
   fullName: string

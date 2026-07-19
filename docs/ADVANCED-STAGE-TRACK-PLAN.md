@@ -9,9 +9,9 @@ Status: Planning document only. No implementation, no lab build, no artifact JSO
 
 ## 0. Read This First
 
-This is the **Advanced Stage**, and it is a **final elimination**. **168 interns** enter it. Exactly **9 leave it — the top 3 in each track** (3 SOC, 3 GRC, 3 Ethical Hacking). Everyone here already survived the foundation programme — they can parse a log, map a control, and write a report that reads well. That is exactly the problem: at this level a competent bluffer and a competent analyst produce documents that *look* identical, and a cut this sharp has no room for that ambiguity. Advanced Stage exists to pull those two apart and rank the top three analysts in each track with confidence.
+This is the **Advanced Stage**, and it is a **final elimination**. **169 interns** enter it. Exactly **9 leave it — the top 3 in each track** (3 SOC, 3 GRC, 3 Ethical Hacking). Everyone here already survived the foundation programme — they can parse a log, map a control, and write a report that reads well. That is exactly the problem: at this level a competent bluffer and a competent analyst produce documents that *look* identical, and a cut this sharp has no room for that ambiguity. Advanced Stage exists to pull those two apart and rank the top three analysts in each track with confidence.
 
-Because the population is small (168, not thousands), difficulty can be pushed to the ceiling and **every intern can be defended orally** — there is no scale excuse for a soft evaluation. The design below assumes brutal difficulty *and* full-coverage defense.
+Because the population is small (169, not thousands), difficulty can be pushed to the ceiling and **every intern can be defended orally** — there is no scale excuse for a soft evaluation. The design below assumes brutal difficulty *and* full-coverage defense.
 
 ### These are projects, not tests
 
@@ -161,7 +161,7 @@ From Project 3 onward, each pack contains one **plausible but wrong** conclusion
 ### 3.6 Defense round
 
 - **Projects 4 and 5:** every intern answers **three written reviewer questions** within 24 hours, auto-generated from their variant (one on their evidence, one on an alternative explanation, one on a remediation/decision tradeoff).
-- **Project 5:** a **15-minute live oral defense for every intern**. At 168 people this is entirely feasible (roughly two grader-days), and in an elimination this sharp the oral is the most important single signal, so no one is exempted. You cannot explain evidence you never examined, defend a decision you did not reason through, or account for a canary that isn't yours.
+- **Project 5:** a **15-minute live oral defense for every intern**. At 169 people this is entirely feasible (roughly two grader-days), and in an elimination this sharp the oral is the most important single signal, so no one is exempted. You cannot explain evidence you never examined, defend a decision you did not reason through, or account for a canary that isn't yours.
 - **Finalist round:** the top ~6 per track after Project 5 sit a **longer panel defense** (~30 minutes, two reviewers) that decides the final **3 per track**. This is where the cut is actually made.
 
 ### 3.8 Publishability as a graded dimension
@@ -589,7 +589,7 @@ Ranking normalizes **within track first** (so a hard EH variant isn't punished a
 
 ## 9. Grader Operating Model
 
-Advanced Stage fails if 168 beautiful, inconsistent documents hit graders with no standard — and in a 168 → ~3 elimination, an inconsistent grade is not a minor error, it eliminates the wrong person. The whole anti-copy system (§3) is deterministic precisely so grading stays consistent and defensible.
+Advanced Stage fails if 169 beautiful, inconsistent documents hit graders with no standard — and in a 169 → ~3 elimination, an inconsistent grade is not a minor error, it eliminates the wrong person. The whole anti-copy system (§3) is deterministic precisely so grading stays consistent and defensible.
 
 **Per project, prepared before launch:**
 - One rubric.
@@ -601,11 +601,11 @@ Advanced Stage fails if 168 beautiful, inconsistent documents hit graders with n
 1. **Auto-check** submission completeness (all deliverables present, evidence appendix present, "one mistake" section present, word counts met). Incomplete = auto-return, no human time spent.
 2. **Canary scan** across the cohort's submissions — flag any report carrying another intern's canary.
 3. **Human grader** scores against the rubric using that intern's variant key.
-4. **Second reviewer audits** everything scored **< 70 or ≥ 85** (the elimination line and the finalist-contention band), plus every canary flag. At 168 interns this is a light load and worth doing thoroughly — a mis-scored 91 could cost someone a finalist slot.
+4. **Second reviewer audits** everything scored **< 70 or ≥ 85** (the elimination line and the finalist-contention band), plus every canary flag. At 169 interns this is a light load and worth doing thoroughly — a mis-scored 91 could cost someone a finalist slot.
 5. **Defense:** written on Projects 4–5; **live oral on Project 5 for every intern**; a longer panel for the top ~6 in each track.
 6. **Rank within each track**, weighted toward the later projects (§2); the top 3 per track advance.
 
-**Grader load at 168 interns:** the auto-check + canary scan removes incompletes and copies before humans read; the variant key means a grader isn't re-deriving the right answer each time. Budget ~20–30 min per complete submission at Projects 1–3, ~45–60 min at Projects 4–5 including written defense, plus ~15 min of oral per intern on Project 5 (~2 grader-days total for the whole cohort's orals). This is comfortably within reach for a small cohort — there is no scale excuse for skipping defense.
+**Grader load at 169 interns:** the auto-check + canary scan removes incompletes and copies before humans read; the variant key means a grader isn't re-deriving the right answer each time. Budget ~20–30 min per complete submission at Projects 1–3, ~45–60 min at Projects 4–5 including written defense, plus ~15 min of oral per intern on Project 5 (~2 grader-days total for the whole cohort's orals). This is comfortably within reach for a small cohort — there is no scale excuse for skipping defense.
 
 ---
 

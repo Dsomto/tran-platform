@@ -186,6 +186,7 @@ async function main() {
         manifestSignature: signature,
         sizeBytes: artifact.size_bytes,
         expiresAt,
+        revokedAt: null,
       },
       update: {
         track: intern.track,

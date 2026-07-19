@@ -6,7 +6,7 @@
 
 ## 0. Context (unchanged)
 
-- Cybersecurity internship, Advanced Stage = final elimination. ~168 interns enter; we keep the **top 3 in each of 3 tracks** (SOC, GRC, Ethical Hacking) = 9 finalists.
+- Cybersecurity internship, Advanced Stage = final elimination. ~169 interns enter; we keep the **top 3 in each of 3 tracks** (SOC, GRC, Ethical Hacking) = 9 finalists.
 - Goal: genuinely separate the good from the merely-competent. Definite proof + no-revision late projects + defense = the anti-bluff sieve.
 - Everything is open-source, self-hosted on the intern's own machine; only the report + proof is submitted to us.
 

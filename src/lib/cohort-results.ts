@@ -7,7 +7,7 @@ export const COHORT_1_OFFICIAL_PASS_COUNTS: Readonly<Record<string, number>> = {
   STAGE_1: 226,
   STAGE_2: 190,
   STAGE_3: 176,
-  STAGE_4: 168,
+  STAGE_4: 169,
 };
 
 export function getCohort1OfficialPassCount(stage: string): number | undefined {

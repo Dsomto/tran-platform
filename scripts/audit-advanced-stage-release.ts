@@ -76,7 +76,7 @@ async function main() {
     prisma.stageWindow.findUniqueOrThrow({ where: { stage: Stage.STAGE_5 } }),
   ]);
 
-  const expected = { SOC_ANALYSIS: 93, ETHICAL_HACKING: 57, GRC: 21 };
+  const expected = { SOC_ANALYSIS: 94, ETHICAL_HACKING: 57, GRC: 21 };
   const counts: Record<string, number> = {};
   const realInterns = new Set<string>();
   const previewInterns = new Set<string>();
@@ -125,7 +125,7 @@ async function main() {
   ) {
     throw new Error("Stage 5 weekly window mismatch");
   }
-  if (realInterns.size !== 168 || previewInterns.size !== 3 || grants.length !== 684) {
+  if (realInterns.size !== 169 || previewInterns.size !== 3 || grants.length !== 688) {
     throw new Error("future cohort grant total mismatch");
   }
 
