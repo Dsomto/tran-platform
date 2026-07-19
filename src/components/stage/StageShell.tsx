@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ReactNode } from "react";
+import { ThemeToggle } from "@/components/dashboard/theme-toggle";
 
 export type StageTheme = {
   slug:
@@ -61,6 +62,7 @@ export default function StageShell({
                 {internCode}
               </span>
             )}
+            {isAdvancedStage && <ThemeToggle />}
             {rightNav}
           </div>
         </div>

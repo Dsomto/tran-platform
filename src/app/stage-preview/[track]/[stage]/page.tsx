@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight, ExternalLink } from "lucide-react";
 import { AdvancedStageRoom } from "@/components/stage/AdvancedStageRoom";
+import { ThemeToggle } from "@/components/dashboard/theme-toggle";
 import {
   ADVANCED_PROJECTS,
   advancedTrackLabel,
@@ -57,6 +58,7 @@ export default async function StagePreviewDetail({
         </div>
 
         <div className={styles.detailActions}>
+          <ThemeToggle />
           <Link href={stageUrl(project.slug)} className={styles.securedLink}>
             Open secured stage <ExternalLink aria-hidden="true" />
           </Link>

@@ -29,6 +29,7 @@ import {
 } from "@/lib/advanced-stage";
 import { advancedProjectVisual, ADVANCED_TRACK_VISUALS } from "@/lib/advanced-visuals";
 import { StageDeadlineCountdown } from "@/components/stage/StageDeadlineCountdown";
+import { ThemeToggle } from "@/components/dashboard/theme-toggle";
 import { stageRank, type StageKey } from "@/lib/stage-login";
 import { stageUrl } from "@/lib/stage-routes";
 import { stageWindowAcceptsSubmissions } from "@/lib/stage-window";
@@ -93,6 +94,9 @@ export default async function AdvancedTrackPage() {
   return (
     <div className={styles.page} style={pageStyle}>
       <div className={styles.inner}>
+        <div className={styles.themeControl}>
+          <ThemeToggle />
+        </div>
         <header className={styles.hero}>
           <Image className={styles.heroImage} src={trackVisual.image} alt="" fill priority sizes="(max-width: 1100px) 100vw, 1060px" />
           <div className={styles.heroContent}>

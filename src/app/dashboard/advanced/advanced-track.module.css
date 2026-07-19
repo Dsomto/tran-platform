@@ -7,6 +7,7 @@
 }
 
 .inner { max-width: 1152px; margin: 0 auto; padding: 32px 24px 64px; }
+.themeControl { display: flex; justify-content: flex-end; margin-bottom: 12px; }
 
 .hero {
   position: relative;
@@ -111,6 +112,106 @@
 .integrity > svg { width: 21px; height: 21px; color: var(--track-accent); }
 .integrity h2 { margin: 0; font-size: 14px; }
 .integrity p { margin: 4px 0 0; color: #667085; font-size: 12px; line-height: 1.5; }
+
+/* The advanced dashboard uses its own editorial layout, so it cannot rely on
+   the dashboard token swap alone. Keep every surface and track accent legible
+   when the root `.dark` preference is active. */
+:global(.dark) .page {
+  color-scheme: dark;
+  background: #10161D;
+  color: #F6F8FA;
+}
+
+:global(.dark) .hero {
+  border-color: #3B4C59;
+  background: #19232C;
+  color: #F6F8FA;
+  box-shadow: 0 18px 55px rgba(0, 0, 0, .3);
+}
+:global(.dark) .hero::after {
+  background: linear-gradient(90deg, #151E26 0%, rgba(21,30,38,.97) 52%, rgba(21,30,38,.8) 78%, rgba(21,30,38,.58) 100%);
+}
+:global(.dark) .heroImage { opacity: .46; }
+:global(.dark) .eyebrow { color: color-mix(in srgb, var(--track-accent), white 42%); }
+:global(.dark) .hero p { color: #C2CBD3; }
+:global(.dark) .heroMeta span {
+  border-color: #465966;
+  background: rgba(25, 35, 44, .92);
+  color: #E1E7EC;
+}
+:global(.dark) .heroMeta svg { color: color-mix(in srgb, var(--track-accent), white 42%); }
+
+:global(.dark) .learningOverview,
+:global(.dark) .project,
+:global(.dark) .briefGrid section,
+:global(.dark) .briefDeliverables,
+:global(.dark) .integrity {
+  border-color: #3B4C59;
+  background: #19232C;
+}
+:global(.dark) .learningGrid article {
+  border-color: #354451;
+  background: #202C36;
+}
+:global(.dark) .learningGrid article > svg,
+:global(.dark) .integrity > svg {
+  color: color-mix(in srgb, var(--track-accent), white 42%);
+}
+:global(.dark) .learningGrid h3,
+:global(.dark) .projectTitle,
+:global(.dark) .briefLead h4,
+:global(.dark) .integrity h2 { color: #F6F8FA; }
+:global(.dark) .learningGrid p,
+:global(.dark) .learningGrid ul,
+:global(.dark) .heading p,
+:global(.dark) .projectMeta,
+:global(.dark) .briefLead > p,
+:global(.dark) .briefDeliverables p,
+:global(.dark) .integrity p { color: #C2CBD3; }
+:global(.dark) .resourceNote { background: #172B43; color: #D7E8FF; }
+
+:global(.dark) .projectCurrent {
+  border-color: color-mix(in srgb, var(--project-accent), #3B4C59 42%);
+}
+:global(.dark) .projectDetails[open] .projectSummary,
+:global(.dark) .stageNumber,
+:global(.dark) .projectToggle,
+:global(.dark) .projectBrief {
+  border-color: #354451;
+}
+:global(.dark) .stageNumber,
+:global(.dark) .projectToggle { background: #202C36; }
+:global(.dark) .projectBrief { background: #172029; }
+:global(.dark) .stageNumber span { color: #AAB5C0; }
+:global(.dark) .stageNumber strong,
+:global(.dark) .projectToggle,
+:global(.dark) .projectBrief h5 { color: #E8EDF1; }
+:global(.dark) .projectTop > span,
+:global(.dark) .projectToggle svg { color: var(--project-accent); }
+:global(.dark) .status {
+  border-color: #465966;
+  background: #202C36;
+  color: #C2CBD3 !important;
+}
+:global(.dark) .statusOpen {
+  border-color: color-mix(in srgb, var(--project-accent), #3B4C59 30%);
+  background: color-mix(in srgb, var(--project-accent), transparent 84%);
+  color: color-mix(in srgb, var(--project-accent), white 22%) !important;
+}
+:global(.dark) .briefGrid ol,
+:global(.dark) .briefGrid ul { color: #D1D8DE; }
+:global(.dark) .deliverableList code {
+  border-color: #465966;
+  background: #202C36;
+  color: #E8EDF1;
+}
+:global(.dark) .projectAction a.secondary,
+:global(.dark) .locked {
+  border-color: #526674;
+  background: #202C36;
+  color: #E1E7EC;
+}
+:global(.dark) .projectAction a.secondary:hover { background: #293844; }
 
 @media (max-width: 760px) {
   .inner { padding: 16px 13px 40px; }

@@ -339,6 +339,179 @@
 .advanced-preview-track a strong { overflow: hidden; color: #344054; font-size: 11px; line-height: 1.35; text-overflow: ellipsis; white-space: nowrap; }
 .advanced-preview-stage { padding-top: 8px; }
 
+/* Advanced stages originally forced a light document palette. These overrides
+   follow the persisted root theme while preserving each project's identity
+   color as an accent rather than using it for low-contrast body text. */
+.dark .bg-advanced-stage {
+  color-scheme: dark;
+  background: #10161D;
+  color: #F6F8FA;
+}
+
+.dark .bg-advanced-stage > header {
+  background: rgba(25, 35, 44, .96) !important;
+  border-color: #3B4C59 !important;
+  color: #F6F8FA;
+}
+.dark .bg-advanced-stage > header .text-white\/50,
+.dark .bg-advanced-stage > header .text-white\/70 { color: #C2CBD3 !important; }
+.dark .bg-advanced-stage > header .bg-white\/5 {
+  background: #202C36 !important;
+  color: #E8EDF1 !important;
+  border-color: #465966;
+}
+.dark .bg-advanced-stage > footer {
+  border-color: #354451 !important;
+  color: #AAB5C0 !important;
+}
+.dark .advanced-shell-link {
+  border-color: #526674;
+  background: #202C36;
+  color: #F1F5F8;
+}
+.dark .advanced-shell-link:hover { background: #293844; border-color: #6E8492; }
+
+.dark .advanced-progress,
+.dark .advanced-summary,
+.dark .advanced-readiness,
+.dark .advanced-marker,
+.dark .advanced-operating-brief,
+.dark .advanced-assessment,
+.dark .advanced-band,
+.dark .advanced-decision-rules,
+.dark .advanced-file-grid,
+.dark .advanced-preview-track {
+  border-color: #3B4C59;
+  background: #19232C;
+}
+.dark .advanced-progress > div,
+.dark .advanced-summary article,
+.dark .advanced-readiness dl > div,
+.dark .advanced-operations,
+.dark .advanced-assessment > header,
+.dark .advanced-assessment__grid > aside,
+.dark .advanced-decision-rules > header,
+.dark .advanced-decision-rules article,
+.dark .advanced-file-grid > div,
+.dark .advanced-downloads,
+.dark .advanced-downloads a,
+.dark .advanced-download-preview,
+.dark .advanced-preview-track h2,
+.dark .advanced-preview-track a {
+  border-color: #354451;
+}
+.dark .advanced-progress > div { color: #AAB5C0; }
+.dark .advanced-progress > div.is-current { color: #F6F8FA; box-shadow: inset 0 -3px var(--advanced-accent); }
+.dark .advanced-progress > div.is-done { color: #86E0B5; }
+
+.dark .advanced-hero {
+  border-color: #3B4C59;
+  color: #F6F8FA;
+  background-color: #151E26;
+  background-image:
+    linear-gradient(90deg, #151E26 0%, rgba(21,30,38,.97) 52%, rgba(21,30,38,.8) 76%, rgba(21,30,38,.58) 100%),
+    var(--advanced-hero-image);
+}
+.dark .advanced-hero .advanced-eyebrow,
+.dark .advanced-seal,
+.dark .advanced-summary span,
+.dark .advanced-operations article > svg,
+.dark .advanced-brief-ledger span,
+.dark .advanced-section-title svg,
+.dark .advanced-resource-badge,
+.dark .advanced-download-icon { color: var(--advanced-accent); }
+.dark .advanced-eyebrow,
+.dark .advanced-welcome,
+.dark .advanced-facts dt,
+.dark .advanced-readiness > header p,
+.dark .advanced-readiness dd,
+.dark .advanced-operations p,
+.dark .advanced-marker p,
+.dark .advanced-operating-brief > header p,
+.dark .advanced-brief-ledger p,
+.dark .advanced-decision-rules p,
+.dark .advanced-decision-rules ul,
+.dark .advanced-decision-rules ol,
+.dark .advanced-section-heading > span,
+.dark .advanced-downloads small,
+.dark .advanced-download-preview__status,
+.dark .advanced-preview-heading p { color: #AAB5C0; }
+.dark .advanced-objective,
+.dark .advanced-start-here header p,
+.dark .advanced-start-here li p,
+.dark .advanced-summary p,
+.dark .advanced-readiness ul,
+.dark .advanced-columns ol,
+.dark .advanced-band ul,
+.dark .advanced-technical ul,
+.dark .advanced-technical ol,
+.dark .advanced-assessment aside ol,
+.dark .advanced-rubric li > div:first-child { color: #D1D8DE; }
+.dark .advanced-facts { border-color: #465966; }
+.dark .advanced-facts dd,
+.dark .advanced-readiness dt,
+.dark .advanced-operations h3,
+.dark .advanced-brief-ledger strong,
+.dark .advanced-assessment h3,
+.dark .advanced-rubric li strong,
+.dark .advanced-decision-rules h3,
+.dark .advanced-file-grid code,
+.dark .advanced-downloads a,
+.dark .advanced-download-preview,
+.dark .advanced-preview-track a,
+.dark .advanced-preview-track a strong { color: #F1F5F8; }
+
+.dark .advanced-start-here {
+  border-color: color-mix(in srgb, var(--advanced-accent), #3B4C59 64%);
+  border-top-color: var(--advanced-accent);
+  background: color-mix(in srgb, var(--advanced-accent), #19232C 90%);
+}
+.dark .advanced-start-here ol {
+  background: color-mix(in srgb, var(--advanced-accent), #3B4C59 62%);
+}
+.dark .advanced-start-here li { background: #202C36; }
+.dark .advanced-start-here li > span { color: var(--advanced-accent); }
+.dark .advanced-start-here__icon { background: color-mix(in srgb, var(--advanced-accent), #10161D 58%); }
+
+.dark .advanced-operations article {
+  border-color: #465966;
+  background: #202C36;
+}
+.dark .advanced-marker { border-left-color: var(--advanced-accent); }
+.dark .advanced-marker code,
+.dark .advanced-pass-mark,
+.dark .advanced-resource-badge,
+.dark .advanced-download-icon {
+  border-color: color-mix(in srgb, var(--advanced-accent), #3B4C59 48%);
+  background: color-mix(in srgb, var(--advanced-accent), transparent 84%);
+  color: color-mix(in srgb, var(--advanced-accent), white 16%);
+}
+.dark .advanced-brief-ledger { border-color: #3B4C59; }
+.dark .advanced-brief-ledger article { border-color: #3B4C59; }
+.dark .advanced-assessment__grid > aside { background: #202C36; }
+.dark .advanced-rubric__bar { background: #344451; }
+.dark .advanced-rubric__bar span { background: var(--advanced-accent); }
+
+.dark .advanced-technical {
+  border-color: color-mix(in srgb, var(--advanced-accent), #3B4C59 72%);
+  border-left-color: var(--advanced-accent);
+  background: color-mix(in srgb, var(--advanced-accent), #19232C 92%);
+}
+.dark .advanced-pressure {
+  border-color: #8A5722;
+  background: #332310;
+}
+.dark .advanced-pressure p,
+.dark .advanced-pressure ul { color: #FDE7C2; }
+.dark .advanced-file-grid svg { color: #86E0B5; }
+.dark .advanced-downloads a:hover,
+.dark .advanced-preview-track a:hover { background: #202C36; }
+.dark .advanced-download-preview__status { border-color: #526674; }
+.dark .advanced-preview-track a.is-active {
+  background: color-mix(in srgb, var(--preview-accent), transparent 86%);
+}
+.dark .advanced-preview-track a span { border-color: #526674; color: #C2CBD3; }
+
 @media (max-width: 920px) {
   .advanced-instrument__body { grid-template-columns: .7fr 1.3fr; }
   .advanced-instrument__feed { grid-column: 1 / -1; border-top: 1px solid #2c3641; border-right: 0; }

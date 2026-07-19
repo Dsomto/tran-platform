@@ -15,6 +15,20 @@
   color: var(--preview-ink);
 }
 
+:global(.dark) .page,
+:global(.dark) .detailPage {
+  --preview-bg: #10161D;
+  --preview-surface: #19232C;
+  --preview-surface-raised: #202C36;
+  --preview-ink: #F6F8FA;
+  --preview-muted: #C2CBD3;
+  --preview-line: #3B4C59;
+  --preview-brand: #60A5FA;
+  --preview-brand-dark: #3B82F6;
+  --preview-brand-soft: #1E3A5F;
+  color-scheme: dark;
+}
+
 .skipLink {
   position: fixed;
   top: 12px;
