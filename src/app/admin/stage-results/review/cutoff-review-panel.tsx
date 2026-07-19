@@ -28,10 +28,20 @@ interface PendingRow {
   reportUrl: string | null;
   qaVerified: boolean;
   qaVerifiedAt: string | null;
+  track: string;
+  advancedGateFailed: boolean;
+  advancedGateReason: string | null;
+  advancedRank: number | null;
+  advancedCohortSize: number | null;
+  advancedPercentile: number | null;
+  advancedCumulativePercentile: number | null;
+  advancedSelectionRule: string | null;
 }
 
 interface Pending {
   cutoff: number | null;
+  selectionMode: "CUTOFF" | "PERCENTILE";
+  policyLabel: string | null;
   promotion: PendingRow[];
   elimination: PendingRow[];
 }
@@ -69,6 +79,7 @@ export function CutoffReviewPanel({ stage }: { stage: string }) {
 
   const stageLabel =
     STAGES.find((s) => s.key === stage)?.label ?? stage;
+  const isAdvanced = Number(stage.replace("STAGE_", "")) >= 5;
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -156,7 +167,11 @@ export function CutoffReviewPanel({ stage }: { stage: string }) {
     setError(null);
     try {
       const to = row.bucket === "promotion" ? "eliminate" : "promote";
-      const data = await post({ action: "swap", stage, reportId: row.reportId, to });
+      const reason = isAdvanced
+        ? prompt(`Give the defense or blinded-review reason for moving ${row.fullName} to ${to}.`)
+        : null;
+      if (isAdvanced && reason === null) return;
+      const data = await post({ action: "swap", stage, reportId: row.reportId, to, reason });
       if (data) {
         showToast(`${row.fullName}: moved to ${to === "promote" ? "pass" : "fail"}`);
         await load();
@@ -186,7 +201,7 @@ export function CutoffReviewPanel({ stage }: { stage: string }) {
       if (data) {
         const flipped = data.flipped === true;
         showToast(
-          `${row.fullName}: saved (final ${data.finalScore})${flipped ? ` — moved to ${data.status === "PENDING_PROMOTION" ? "pass" : "fail"}` : ""}`
+          `${row.fullName}: saved (final ${data.finalScore})${data.percentileRerunRequired ? " — percentile rerun required" : flipped ? ` — moved to ${data.status === "PENDING_PROMOTION" ? "pass" : "fail"}` : ""}`
         );
         // Clear drafts for this row and refresh
         setDraftScore((d) => {
@@ -275,9 +290,9 @@ export function CutoffReviewPanel({ stage }: { stage: string }) {
           </select>
         </div>
         <p className="text-muted-foreground text-sm mt-1 max-w-3xl">
-          Edit any intern&apos;s score and feedback in place. Saving a score recomputes the final score
-          against the current cutoff and moves them between pass and fail automatically.
-          Use Swap to override the bucket without changing the score.
+          {isAdvanced
+            ? "Review the within-track percentile buckets, verify every row, and use Swap only for an exact boundary tie or documented correction. Any score edit invalidates the saved rank; return to Stage Results and rerun percentile ranking."
+            : "Edit any intern's score and feedback in place. Saving recomputes the final score against the cutoff and may move the row. Use Swap to override the bucket without changing the score."}
         </p>
       </header>
 
@@ -303,7 +318,9 @@ export function CutoffReviewPanel({ stage }: { stage: string }) {
         <div className="p-8 bg-white border border-border rounded-xl text-center">
           <p className="text-foreground font-medium mb-2">No pending review for this stage.</p>
           <p className="text-sm text-muted-foreground">
-            Apply a cutoff on Stage Results to populate the pass / fail buckets.
+            {isAdvanced
+              ? "Apply the published percentile ranking on Stage Results to populate the advance and elimination buckets."
+              : "Apply a cutoff on Stage Results to populate the pass and fail buckets."}
           </p>
         </div>
       )}
@@ -312,8 +329,8 @@ export function CutoffReviewPanel({ stage }: { stage: string }) {
         <>
           <section className="mb-5 grid grid-cols-3 gap-3">
             <Stat
-              label="Cutoff"
-              value={pending.cutoff != null ? pending.cutoff : "—"}
+              label={isAdvanced ? "Selection" : "Cutoff"}
+              value={isAdvanced ? "Percentile" : pending.cutoff ?? "—"}
               tone="blue"
             />
             <Stat
@@ -436,10 +453,9 @@ export function CutoffReviewPanel({ stage }: { stage: string }) {
           </section>
 
           <p className="text-xs text-muted-foreground mt-4">
-            Final score = 0.8 × report + 0.2 × terminal %. Changing the report score recomputes
-            the final score and moves the row across the cutoff automatically. Saving feedback also
-            updates what the intern sees in the published result email when you finalize on the
-            Stage Results page.
+            {isAdvanced
+              ? "Final score = 0.8 × report + 0.2 × terminal %. A score change clears the saved rank and requires a fresh percentile calculation on Stage Results. Saved feedback is included when results are finalized."
+              : "Final score = 0.8 × report + 0.2 × terminal %. Changing the report score recomputes the final score and may move the row across the cutoff. Saved feedback is included when results are finalized."}
           </p>
         </>
       )}
@@ -497,6 +513,18 @@ function RowFragment({
         <td className="px-4 py-2.5">
           <div className="text-sm text-foreground">{row.fullName}</div>
           <div className="text-[11px] font-mono text-muted-foreground">{row.email}</div>
+          {row.advancedGateFailed ? (
+            <div className="mt-1 text-[11px] font-medium text-rose-700">
+              Automatic gate: {row.advancedGateReason ?? "recorded"}
+            </div>
+          ) : row.advancedRank !== null ? (
+            <div className="mt-1 text-[11px] text-muted-foreground">
+              {row.track} · rank {row.advancedRank}/{row.advancedCohortSize ?? "?"} · stage percentile {row.advancedPercentile?.toFixed(2) ?? "?"}
+              {row.advancedCumulativePercentile !== null
+                ? ` · cumulative ${row.advancedCumulativePercentile.toFixed(2)}`
+                : ""}
+            </div>
+          ) : null}
           {row.reportUrl ? (
             <a
               href={row.reportUrl}

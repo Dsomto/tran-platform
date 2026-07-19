@@ -260,6 +260,7 @@
 .advanced-assessment__grid > * { min-width: 0; padding: 25px 28px; }
 .advanced-assessment__grid > aside { border-left: 1px solid #d9dde5; background: #f8fafc; }
 .advanced-assessment h3 { margin: 0 0 16px; color: #344054; font-size: 15px; }
+.advanced-assessment aside p { margin: 0 0 22px; color: #475467; font-size: 12px; line-height: 1.65; }
 .advanced-rubric ul { margin: 0; padding: 0; list-style: none; }
 .advanced-rubric li { margin-top: 12px; }
 .advanced-rubric li:first-child { margin-top: 0; }
@@ -479,6 +480,7 @@
 .dark .advanced-technical ul,
 .dark .advanced-technical ol,
 .dark .advanced-assessment aside ol,
+.dark .advanced-assessment aside p,
 .dark .advanced-rubric li > div:first-child { color: #D1D8DE; }
 .dark .advanced-facts { border-color: #465966; }
 .dark .advanced-facts dd,

@@ -24,7 +24,6 @@ async function main() {
           stage,
           status: StageStatus.CLOSED,
           isLocked: true,
-          passingScore: 70,
         },
         update: {
           status: StageStatus.CLOSED,

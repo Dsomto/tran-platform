@@ -32,6 +32,10 @@ import {
   type AdvancedTrack,
 } from "@/lib/advanced-stage";
 import { advancedLearnerGuidance } from "@/lib/advanced-guidance";
+import {
+  advancedSelectionPolicy,
+  type AdvancedRankingStage,
+} from "@/lib/advanced-ranking";
 import type { AdvancedVariant } from "@/lib/advanced-variant";
 import { advancedProjectVisual } from "@/lib/advanced-visuals";
 import { AdvancedProjectFaq } from "./AdvancedProjectFaq";
@@ -95,6 +99,11 @@ export function AdvancedStageRoom({
   const deliverables = requiredAdvancedDeliverables(project);
   const guidance = advancedLearnerGuidance(track, project);
   const resources = orderedResources(project.resources);
+  const rankingStage = `STAGE_${project.number + 4}` as AdvancedRankingStage;
+  const selectionPolicy = advancedSelectionPolicy(rankingStage);
+  const selectionBadge = selectionPolicy.fixedAdvancePerTrack !== null
+    ? `Top ${selectionPolicy.fixedAdvancePerTrack}`
+    : `Top ${Math.round((1 - selectionPolicy.eliminationRate!) * 100)}%`;
   const roomStyle = {
     "--advanced-accent": visual.accent,
     "--advanced-accent-strong": visual.accentStrong,
@@ -257,10 +266,10 @@ export function AdvancedStageRoom({
       <section className="advanced-assessment" aria-labelledby="assessment-title">
         <header>
           <div>
-            <div className="advanced-eyebrow">Scoring and pass decision</div>
+            <div className="advanced-eyebrow">Scoring and percentile decision</div>
             <h2 id="assessment-title">Know exactly how the project is judged</h2>
           </div>
-          <div className="advanced-pass-mark"><strong>70%</strong><span>minimum pass mark</span></div>
+          <div className="advanced-pass-mark"><strong>{selectionBadge}</strong><span>within your track</span></div>
         </header>
         <div className="advanced-assessment__grid">
           <div className="advanced-rubric">
@@ -275,7 +284,17 @@ export function AdvancedStageRoom({
             </ul>
           </div>
           <aside>
-            <h3>Pass requirements</h3>
+            <h3>Selection rule</h3>
+            <p>
+              {selectionPolicy.label}. Explicit automatic fail gates are applied before ranking.
+              Your 100-point result is converted to a percentile only against interns in your own
+              track; there is no fixed 70% advanced-stage pass mark.
+              {selectionPolicy.basis === "CUMULATIVE_WEIGHTED_PERCENTILE"
+                ? " The cumulative calculation weights Stages 5-9 at 1, 1, 1.5, 2, and 2.5 respectively."
+                : " This stage uses the current project percentile."}
+              {" "}Exact boundary ties are resolved by audited defense or blinded review.
+            </p>
+            <h3>Eligibility and proof requirements</h3>
             <ol>{guidance.passRequirements.map((item) => <li key={item}>{item}</li>)}</ol>
           </aside>
         </div>

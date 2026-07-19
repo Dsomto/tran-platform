@@ -77,32 +77,26 @@ Five projects per track. **41 calendar days.** Difficulty ramps every project; t
 
 | Window | Project | Days | Difficulty posture | Revision | Gate |
 |---|---|---:|---|---|---|
-| Days 1–5 | Project 1 | 5 | Controlled, evidence-heavy, one clear objective | 1 allowed | Pass to continue |
-| Days 6–12 | Project 2 | 7 | More artifacts, less guidance, real tooling | 1 allowed | Pass to continue |
-| Days 13–21 | Project 3 | 9 | Ambiguous, noisy, multi-source, planted false lead | 1 allowed | Pass to continue |
-| Days 22–31 | Project 4 | 10 | Professional-grade, **no revision**, written defense | None | Pass to continue |
-| Days 32–41 | Project 5 | 10 | Capstone, **no revision**, written + oral defense | None | Final ranking |
+| Stage 5 | Project 1 | Mon 09:00–Fri 18:10 WAT | Controlled, evidence-heavy, one clear objective | 1 allowed | Top 80% within track after gates |
+| Stage 6 | Project 2 | Mon 09:00–Fri 18:10 WAT | More artifacts, less guidance, real tooling | 1 allowed | Top 75% within track after gates |
+| Stage 7 | Project 3 | Mon 09:00–Fri 18:10 WAT | Ambiguous, noisy, multi-source, planted false lead | 1 allowed | Top 67% within track after gates |
+| Stage 8 | Project 4 | Mon 09:00–Fri 18:10 WAT | Professional-grade, **no revision**, written defense | None | Top 6 per track by cumulative percentile |
+| Stage 9 | Project 5 | Mon 09:00–Fri 18:10 WAT | Capstone, **no revision**, written + oral defense | None | Top 3 per track by cumulative percentile |
 
 Weekly rhythm per project:
-- **Day 1:** brief opens, variant evidence pack released to each intern.
+- **Monday 09:00 WAT:** brief opens and the assigned evidence pack is released.
 - **Midpoint:** one 60-minute async clarification window. Scope questions only. **No teaching, no hints toward the answer.** Questions and answers are posted publicly so no intern gets a private edge.
-- **Final day:** submission closes 23:59 WAT. Late = zero unless pre-approved.
+- **Friday 18:10 WAT:** submission closes. Late = no submission unless a documented programme exception was approved before the deadline.
 - **Next day:** grading opens.
 - Projects 1–3 allow exactly one revision. Projects 4–5 are one-shot on purpose — Advanced Stage tests readiness, and readiness means getting it right the first time.
 
 ### Bands, and the winnow to the top 3 per track
 
-This is an elimination, so the gate does two jobs: a hard **pass threshold of 70%** at every project (fail = out), and a **cumulative ranking** that drives the final cut to the **top 3 in each track (9 total)**.
+Advanced stages have no fixed point pass threshold. The 100-point rubric produces the technical result; explicit automatic fail gates are applied first; every remaining intern is then ranked only against people in the same track.
 
-| Band | Score | Meaning |
-|---|---:|---|
-| Finalist-caliber | 92–100 | Elite. Would pass a real probation with no supervision. The 3-per-track finalists come from here |
-| Hire-ready | 85–91 | Strong, but not top-of-track |
-| Advancing | 78–84 | Good work; continues but not in contention |
-| Borderline | 70–77 | Survives the gate, flagged for audit; effectively out of finalist contention |
-| Eliminated | < 70 | Does not advance |
+For a track with more than one eligible intern, percentile is `100 × (cohort size − competition rank) ÷ (cohort size − 1)`. Equal scores receive the same competition rank. Stage 5 eliminates the bottom 20%, Stage 6 the bottom 25% of the remaining cohort, and Stage 7 the bottom 33% of the remaining cohort. The advance count is deterministic: `eligible − floor(eligible × elimination rate)`.
 
-**The final cut (top 3 per track).** Ranking is cumulative across all five projects, **weighted toward the later, harder, no-revision projects** (P1:1× · P2:1× · P3:1.5× · P4:2× · P5:2.5×) so the cut reflects performance under real pressure, not a strong start. Ranking is done **within each track** — a SOC intern is only ever compared to other SOC interns — and the top 3 of each track advance. Ties break on **defense performance**, the least fakeable signal in the programme. Two interns can both "pass" every project and still be separated decisively by the weighted score and their oral defense; that separation is the whole point.
+**The final cuts.** Stage 8 retains the top 6 per track and Stage 9 retains the top 3 per track by cumulative weighted percentile. Completed advanced-stage percentiles are weighted toward the later projects (P1:1× · P2:1× · P3:1.5× · P4:2× · P5:2.5×). An exact boundary tie is resolved by an audited defense or blinded review; the system enforces the exact per-track count before finalization.
 
 ---
 
@@ -601,9 +595,9 @@ Advanced Stage fails if 169 beautiful, inconsistent documents hit graders with n
 1. **Auto-check** submission completeness (all deliverables present, evidence appendix present, "one mistake" section present, word counts met). Incomplete = auto-return, no human time spent.
 2. **Canary scan** across the cohort's submissions — flag any report carrying another intern's canary.
 3. **Human grader** scores against the rubric using that intern's variant key.
-4. **Second reviewer audits** everything scored **< 70 or ≥ 85** (the elimination line and the finalist-contention band), plus every canary flag. At 169 interns this is a light load and worth doing thoroughly — a mis-scored 91 could cost someone a finalist slot.
+4. **Second reviewer audits** every row at or near the calculated within-track selection boundary, every automatic gate, every exact tie, and every canary flag. A raw score is never treated as a universal elimination line.
 5. **Defense:** written on Projects 4–5; **live oral on Project 5 for every intern**; a longer panel for the top ~6 in each track.
-6. **Rank within each track**, weighted toward the later projects (§2); the top 3 per track advance.
+6. **Apply the published stage policy within each track** (§2), then QA every pending decision before finalization.
 
 **Grader load at 169 interns:** the auto-check + canary scan removes incompletes and copies before humans read; the variant key means a grader isn't re-deriving the right answer each time. Budget ~20–30 min per complete submission at Projects 1–3, ~45–60 min at Projects 4–5 including written defense, plus ~15 min of oral per intern on Project 5 (~2 grader-days total for the whole cohort's orals). This is comfortably within reach for a small cohort — there is no scale excuse for skipping defense.
 

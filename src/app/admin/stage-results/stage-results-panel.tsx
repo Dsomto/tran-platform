@@ -10,6 +10,8 @@ import {
   ArrowLeftRight,
   Download,
   Scale,
+  ShieldX,
+  Percent,
 } from "lucide-react";
 
 interface Summary {
@@ -31,12 +33,34 @@ interface PendingRow {
   reportScore: number;
   terminalScore: number | null;
   finalScore: number;
+  track: string;
+  advancedGateFailed: boolean;
+  advancedGateReason: string | null;
+  advancedRank: number | null;
+  advancedCohortSize: number | null;
+  advancedPercentile: number | null;
+  advancedCumulativePercentile: number | null;
+  advancedSelectionRule: string | null;
 }
 
 interface Pending {
   cutoff: number | null;
+  selectionMode: "CUTOFF" | "PERCENTILE";
+  policyLabel: string | null;
   promotion: PendingRow[];
   elimination: PendingRow[];
+}
+
+interface AdvancedCandidate {
+  reportId: string;
+  fullName: string;
+  email: string;
+  track: string;
+  status: string;
+  score: number | null;
+  finalScore: number | null;
+  advancedGateFailed: boolean;
+  advancedGateReason: string | null;
 }
 
 const STAGES = [
@@ -56,6 +80,7 @@ export function StageResultsPanel() {
   const [stage, setStage] = useState("STAGE_0");
   const [summary, setSummary] = useState<Summary | null>(null);
   const [pending, setPending] = useState<Pending | null>(null);
+  const [advancedCandidates, setAdvancedCandidates] = useState<AdvancedCandidate[]>([]);
   const [loading, setLoading] = useState(false);
   const [cutoff, setCutoff] = useState("60");
   const [preview, setPreview] = useState<{ willPass: number; willFail: number } | null>(null);
@@ -63,6 +88,7 @@ export function StageResultsPanel() {
   const [result, setResult] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [moveInternsBack, setMoveInternsBack] = useState(false);
+  const isAdvanced = Number(stage.replace("STAGE_", "")) >= 5;
 
   async function loadSummary(s: string) {
     setLoading(true);
@@ -79,6 +105,7 @@ export function StageResultsPanel() {
       } else {
         setSummary(data.summary);
         setPending(data.pending ?? null);
+        setAdvancedCandidates(data.advancedCandidates ?? []);
         if (data.pending?.cutoff != null) setCutoff(String(data.pending.cutoff));
       }
     } catch {
@@ -177,11 +204,68 @@ export function StageResultsPanel() {
     }
   }
 
+  async function applyPercentile() {
+    setError(null);
+    setResult(null);
+    const warning = pending
+      ? "This recalculates every advanced rank and replaces prior manual bucket swaps. Continue?"
+      : "Apply the published within-track percentile policy and create the pending review buckets?";
+    if (!confirm(warning)) return;
+    setBusy("apply");
+    try {
+      const data = await post({ action: "apply-percentile", stage });
+      if (data) {
+        const tracks = Array.isArray(data.tracks)
+          ? (data.tracks as Array<{ track: string; advanceTarget: number }>).map((row) => `${row.track}: ${row.advanceTarget}`).join(" · ")
+          : "";
+        setResult(
+          `${data.policy}. ${data.pendingPromotion} pending promotion, ${data.pendingElimination} pending elimination. ${tracks}${data.boundaryReviewRequired ? " Boundary tie detected: resolve it with an audited swap." : ""}`
+        );
+        await loadSummary(stage);
+        if (typeof window !== "undefined") {
+          window.open(`/admin/stage-results/review?stage=${stage}`, "_blank", "noopener,noreferrer");
+        }
+      }
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function setAdvancedGate(candidate: AdvancedCandidate) {
+    const failed = !candidate.advancedGateFailed;
+    const reason = failed
+      ? prompt(
+          `Record the exact automatic fail gate for ${candidate.fullName}. This removes the candidate before percentile ranking.`
+        )
+      : prompt(`Why is the automatic fail gate being cleared for ${candidate.fullName}?`);
+    if (reason === null) return;
+    setError(null);
+    setBusy("swap");
+    try {
+      const data = await post({
+        action: "set-advanced-gate",
+        reportId: candidate.reportId,
+        failed,
+        reason,
+      });
+      if (data) {
+        setResult(`${candidate.fullName}: automatic fail gate ${failed ? "recorded" : "cleared"}. Rerun percentile ranking before finalization.`);
+        await loadSummary(stage);
+      }
+    } finally {
+      setBusy(null);
+    }
+  }
+
   async function swap(row: PendingRow, to: "promote" | "eliminate") {
     setError(null);
     setBusy("swap");
     try {
-      const data = await post({ action: "swap", stage, reportId: row.reportId, to });
+      const reason = isAdvanced
+        ? prompt(`Give the blinded-review or defense reason for moving ${row.fullName} to ${to}.`)
+        : null;
+      if (isAdvanced && reason === null) return;
+      const data = await post({ action: "swap", stage, reportId: row.reportId, to, reason });
       if (data) await loadSummary(stage);
     } finally {
       setBusy(null);
@@ -194,6 +278,9 @@ export function StageResultsPanel() {
       `Finalize Stage ${stage.replace("STAGE_", "")}?\n\n` +
       `${pending.promotion.length} will be PROMOTED (advanced + congratulations email + certificate).\n` +
       `${pending.elimination.length} will be ELIMINATED (removed from the programme + result email).\n\n` +
+      (isAdvanced
+        ? "The API will enforce exact per-track percentile targets, automatic fail gates, and QA verification.\n\n"
+        : "") +
       "This is the commit step. Re-running only processes anyone still pending.";
     if (!confirm(msg)) return;
     setError(null);
@@ -243,7 +330,7 @@ export function StageResultsPanel() {
       (moveInternsBack
         ? "Promoted interns WILL be moved back to this stage."
         : "Promoted interns will stay where they are.") +
-      "\n\nYou can then apply a cutoff again.";
+      `\n\nYou can then apply ${isAdvanced ? "percentile ranking" : "a cutoff"} again.`;
     if (!confirm(msg)) return;
     setError(null);
     setResult(null);
@@ -267,12 +354,12 @@ export function StageResultsPanel() {
       const s = v == null ? "" : String(v);
       return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
     };
-    const header = ["Decision", "Name", "Email", "Report", "Terminal", "Final"];
+    const header = ["Decision", "Track", "Name", "Email", "Report", "Terminal", "Final", "Rank", "Track cohort", "Stage percentile", "Cumulative percentile", "Automatic gate", "Selection rule"];
     const lines = [header.join(",")];
     const push = (rows: PendingRow[], decision: string) => {
       for (const r of rows) {
         lines.push(
-          [esc(decision), esc(r.fullName), esc(r.email), esc(r.reportScore), esc(r.terminalScore), esc(r.finalScore)].join(",")
+          [esc(decision), esc(r.track), esc(r.fullName), esc(r.email), esc(r.reportScore), esc(r.terminalScore), esc(r.finalScore), esc(r.advancedRank), esc(r.advancedCohortSize), esc(r.advancedPercentile), esc(r.advancedCumulativePercentile), esc(r.advancedGateFailed ? r.advancedGateReason ?? "YES" : "NO"), esc(r.advancedSelectionRule)].join(",")
         );
       }
     };
@@ -297,9 +384,9 @@ export function StageResultsPanel() {
           <h1 className="text-2xl font-bold text-foreground">Stage Results</h1>
         </div>
         <p className="text-muted-foreground text-sm max-w-2xl">
-          Grade reports, then set a cutoff to sort everyone into pending pass / pending fail on
-          their final score (80% report + 20% terminal). Review, swap individuals if needed, then
-          finalize to release results.
+          Foundation stages use a score cutoff. Advanced stages use the published within-track
+          percentile policy, automatic fail gates, audited boundary review, and exact per-track
+          promotion counts before results can be finalized.
         </p>
       </header>
 
@@ -372,8 +459,75 @@ export function StageResultsPanel() {
             </div>
           </section>
 
-          {/* Cutoff form: shown when nothing is pending yet and there are graded reports. */}
-          {!pending && !finalized && (
+          {isAdvanced && !finalized && (
+            <section className="mb-6 border border-blue/30 bg-blue/5 p-5">
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div className="max-w-2xl">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Percent className="h-4 w-4 text-blue" />
+                    <h2 className="text-sm font-semibold text-foreground uppercase tracking-wide">
+                      Within-track percentile selection
+                    </h2>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Stage 5 removes the bottom 20% per track, Stage 6 the bottom 25%, and Stage 7
+                    the bottom 33%. Stage 8 advances six per track and Stage 9 selects three per
+                    track using cumulative weighted percentiles. Exact boundary ties require an
+                    audited defense or blinded-review swap.
+                  </p>
+                </div>
+                <button
+                  onClick={applyPercentile}
+                  disabled={busy != null || (summary.graded === 0 && !pending)}
+                  className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium bg-blue text-white hover:opacity-90 disabled:opacity-50"
+                >
+                  {busy === "apply" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Percent className="h-4 w-4" />}
+                  {pending ? "Recalculate percentile ranking" : "Apply percentile ranking"}
+                </button>
+              </div>
+
+              {advancedCandidates.length > 0 && (
+                <div className="mt-5 border-t border-blue/20 pt-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <ShieldX className="h-4 w-4 text-rose-700" />
+                    <h3 className="text-xs font-semibold uppercase tracking-wide text-foreground">
+                      Automatic fail gates
+                    </h3>
+                  </div>
+                  <p className="text-xs text-muted-foreground mb-3">
+                    Record only a project brief&apos;s explicit fail gate. Gate-failed candidates are
+                    removed before the percentile target is calculated. Every change is audited.
+                  </p>
+                  <div className="max-h-72 overflow-y-auto border border-border bg-white">
+                    {advancedCandidates.map((candidate) => (
+                      <div key={candidate.reportId} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-border px-3 py-2 last:border-b-0">
+                        <div className="min-w-0">
+                          <div className="truncate text-xs font-semibold text-foreground">
+                            {candidate.fullName} <span className="font-normal text-muted-foreground">· {candidate.track}</span>
+                          </div>
+                          <div className="truncate text-xs text-muted-foreground">
+                            {candidate.advancedGateFailed
+                              ? candidate.advancedGateReason
+                              : `${candidate.email} · score ${candidate.finalScore ?? candidate.score ?? "-"}`}
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => setAdvancedGate(candidate)}
+                          disabled={busy != null}
+                          className={`px-3 py-1.5 text-xs font-semibold border disabled:opacity-50 ${candidate.advancedGateFailed ? "border-emerald-300 text-emerald-800 hover:bg-emerald-50" : "border-rose-300 text-rose-800 hover:bg-rose-50"}`}
+                        >
+                          {candidate.advancedGateFailed ? "Clear gate" : "Mark gate failure"}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </section>
+          )}
+
+          {/* Cutoff form: foundation stages only. */}
+          {!isAdvanced && !pending && !finalized && (
             <section className="bg-white border border-border rounded-xl p-5">
               <h2 className="text-sm font-semibold text-foreground mb-3 uppercase tracking-wide">
                 Set the cutoff
@@ -431,31 +585,36 @@ export function StageResultsPanel() {
                 <div className="flex flex-wrap items-end gap-3 justify-between">
                   <div>
                     <h2 className="text-sm font-semibold text-foreground mb-1 uppercase tracking-wide">
-                      Pending review · cutoff {pending.cutoff ?? "—"}
+                      Pending review · {pending.selectionMode === "PERCENTILE" ? pending.policyLabel : `cutoff ${pending.cutoff ?? "—"}`}
                     </h2>
                     <p className="text-sm text-muted-foreground">
-                      Sorted on final score. Swap individuals if needed, or re-apply a different
-                      cutoff. Finalize when ready.
+                      {pending.selectionMode === "PERCENTILE"
+                        ? "Sorted within track. Use audited swaps only for a boundary tie or confirmed review correction, then QA every row before finalizing."
+                        : "Sorted on final score. Swap individuals if needed, or re-apply a different cutoff. Finalize when ready."}
                     </p>
                   </div>
-                  <div className="flex items-end gap-2">
-                    <input
-                      type="number"
-                      min={0}
-                      max={100}
-                      value={cutoff}
-                      onChange={(e) => setCutoff(e.target.value)}
-                      className="w-24 p-2 border border-border rounded-lg text-sm"
-                      title="Cutoff"
-                    />
-                    <button
-                      onClick={applyCutoff}
-                      disabled={busy != null}
-                      className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg border border-border hover:bg-muted/50 disabled:opacity-50"
-                    >
-                      {busy === "apply" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Scale className="h-4 w-4" />}
-                      Add new graded
-                    </button>
+                  <div className="flex flex-wrap items-end gap-2">
+                    {pending.selectionMode === "CUTOFF" && (
+                      <>
+                        <input
+                          type="number"
+                          min={0}
+                          max={100}
+                          value={cutoff}
+                          onChange={(e) => setCutoff(e.target.value)}
+                          className="w-24 p-2 border border-border rounded-lg text-sm"
+                          title="Cutoff"
+                        />
+                        <button
+                          onClick={applyCutoff}
+                          disabled={busy != null}
+                          className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg border border-border hover:bg-muted/50 disabled:opacity-50"
+                        >
+                          {busy === "apply" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Scale className="h-4 w-4" />}
+                          Add new graded
+                        </button>
+                      </>
+                    )}
                     <button
                       onClick={exportCsv}
                       className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg border border-border hover:bg-muted/50"
@@ -532,7 +691,7 @@ export function StageResultsPanel() {
               </h2>
               <p className="text-sm text-muted-foreground mb-4">
                 This stage has finalized results. Resetting reverts every PASSED / FAILED report back
-                to GRADED so you can apply a cutoff again, and deletes result emails for this stage
+                to GRADED so you can apply the selection rule again, and deletes result emails for this stage
                 that haven&apos;t sent yet. Already-sent emails are not affected.
               </p>
               <label className="flex items-start gap-2 mb-4 text-sm text-foreground">
@@ -630,6 +789,14 @@ function PendingColumn({
                 <p className="text-[11px] text-muted-foreground mt-0.5">
                   report {r.reportScore} · terminal {r.terminalScore ?? "—"}
                 </p>
+                {r.advancedGateFailed ? (
+                  <p className="text-[11px] text-rose-700 mt-0.5">Gate: {r.advancedGateReason}</p>
+                ) : r.advancedRank !== null ? (
+                  <p className="text-[11px] text-blue mt-0.5">
+                    {r.track} · rank {r.advancedRank}/{r.advancedCohortSize ?? "—"} · percentile {r.advancedPercentile ?? "—"}
+                    {r.advancedCumulativePercentile !== null ? ` · cumulative ${r.advancedCumulativePercentile}` : ""}
+                  </p>
+                ) : null}
               </div>
               <span
                 className="text-sm font-semibold tabular-nums text-foreground"

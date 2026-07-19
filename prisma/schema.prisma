@@ -579,6 +579,17 @@ model StageReport {
   qaVerifiedAt       DateTime?
   qaVerifiedById     String?       @db.ObjectId
 
+  // Advanced Stage selection evidence. Automatic fail gates are recorded
+  // before within-track percentile ranking; rank fields freeze the reviewed
+  // result so the published decision can be reconstructed later.
+  advancedGateFailed          Boolean?      @default(false)
+  advancedGateReason          String?
+  advancedRank                Int?
+  advancedCohortSize          Int?
+  advancedPercentile          Float?
+  advancedCumulativePercentile Float?
+  advancedSelectionRule       String?
+
   // Set when handleFinalize commits status -> PASSED or FAILED. Used as the
   // single source of truth for the "effective date" the email and the letter
   // PDF both display so they cannot drift.

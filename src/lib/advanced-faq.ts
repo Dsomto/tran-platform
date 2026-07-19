@@ -3,6 +3,10 @@ import {
   type AdvancedProject,
   type AdvancedTrack,
 } from "./advanced-stage";
+import {
+  advancedSelectionPolicy,
+  type AdvancedRankingStage,
+} from "./advanced-ranking";
 
 export type AdvancedFaqCategory =
   "Setup & access" | "Build & prove" | "Package & submit";
@@ -501,11 +505,20 @@ const FAQ_SEEDS: Record<AdvancedTrack, Record<ProjectNumber, FaqSeed>> = {
 function sharedQuestions(project: AdvancedProject): AdvancedFaqItem[] {
   const deliverables = requiredAdvancedDeliverables(project);
   const firstFiles = deliverables.slice(0, 4).join(", ");
+  const stage = `STAGE_${project.number + 4}` as AdvancedRankingStage;
+  const policy = advancedSelectionPolicy(stage);
+  const decisionDetail = policy.basis === "CUMULATIVE_WEIGHTED_PERCENTILE"
+    ? "The cumulative percentile uses completed advanced-stage percentiles with weights of 1, 1, 1.5, 2, and 2.5 for Stages 5 through 9."
+    : "This decision uses the percentile from the current project only.";
 
   return [
     setup(
       "When is this project open, and may I submit after the deadline?",
       "The project opens Monday at 09:00 WAT and closes Friday at 18:10 WAT. The countdown in this room is the controlling deadline. Submit early enough to test the Drive link; a file that exists only on your computer at 18:10 WAT is not submitted.",
+    ),
+    build(
+      "How does my score become an advancement or elimination decision?",
+      `${policy.label}. Staff first apply every explicit automatic fail gate in this project's brief. Remaining candidates are ranked only against interns in the same track, never against another track. The highest result receives the highest percentile; for more than one eligible candidate the published percentile is 100 × (cohort size − competition rank) ÷ (cohort size − 1). ${decisionDetail} There is no fixed 70% advanced-stage pass mark. Exact ties at the selection boundary are resolved through an audited defense or blinded review, not an arbitrary hidden cutoff.`,
     ),
     submit(
       "How should I organize the final Drive folder?",

@@ -6,6 +6,16 @@ import { buildAddToProfileUrl } from "@/lib/linkedin";
 import { ELIMINATION_GRACE_MS } from "@/lib/elimination-grace";
 import { recordAudit, auditMetaFromRequest } from "@/lib/audit";
 import { stageTerminalScores, combinedFinalScore } from "@/lib/stage-score";
+import {
+  ADVANCED_RANKING_STAGES,
+  advancedAdvanceTarget,
+  advancedSelectionPolicy,
+  isAdvancedRankingStage,
+  rankAdvancedStage,
+  type AdvancedRankingCandidate,
+  type AdvancedRankingTrack,
+  type AdvancedScoreRecord,
+} from "@/lib/advanced-ranking";
 import { Prisma } from "@/generated/prisma";
 import { requireApiSuperAdmin } from "@/lib/api-auth";
 import type { SessionUser } from "@/lib/auth";
@@ -39,6 +49,26 @@ type PendingRow = {
   reportUrl: string | null;
   qaVerified: boolean;
   qaVerifiedAt: string | null;
+  track: string;
+  advancedGateFailed: boolean;
+  advancedGateReason: string | null;
+  advancedRank: number | null;
+  advancedCohortSize: number | null;
+  advancedPercentile: number | null;
+  advancedCumulativePercentile: number | null;
+  advancedSelectionRule: string | null;
+};
+
+type AdvancedCandidateRow = {
+  reportId: string;
+  fullName: string;
+  email: string;
+  track: string;
+  status: string;
+  score: number | null;
+  finalScore: number | null;
+  advancedGateFailed: boolean;
+  advancedGateReason: string | null;
 };
 
 // GET: summarise the state of a stage's reports — status counts + score distribution.
@@ -101,14 +131,30 @@ export async function GET(request: NextRequest) {
         attachmentUrl: true,
         qaVerified: true,
         qaVerifiedAt: true,
+        advancedGateFailed: true,
+        advancedGateReason: true,
+        advancedRank: true,
+        advancedCohortSize: true,
+        advancedPercentile: true,
+        advancedCumulativePercentile: true,
+        advancedSelectionRule: true,
         intern: {
-          select: { id: true, user: { select: { firstName: true, lastName: true, email: true } } },
+          select: {
+            id: true,
+            track: true,
+            user: { select: { firstName: true, lastName: true, email: true } },
+          },
         },
       },
       orderBy: { finalScore: "desc" },
     });
-    let pending: { cutoff: number | null; promotion: PendingRow[]; elimination: PendingRow[] } | null =
-      null;
+    let pending: {
+      cutoff: number | null;
+      selectionMode: "CUTOFF" | "PERCENTILE";
+      policyLabel: string | null;
+      promotion: PendingRow[];
+      elimination: PendingRow[];
+    } | null = null;
     if (pendingReports.length > 0) {
       const win = await prisma.stageWindow.findUnique({
         where: { stage },
@@ -129,12 +175,59 @@ export async function GET(request: NextRequest) {
         reportUrl: r.reportUrl ?? r.attachmentUrl ?? null,
         qaVerified: r.qaVerified === true,
         qaVerifiedAt: r.qaVerifiedAt ? r.qaVerifiedAt.toISOString() : null,
+        track: r.intern.track,
+        advancedGateFailed: r.advancedGateFailed === true,
+        advancedGateReason: r.advancedGateReason,
+        advancedRank: r.advancedRank,
+        advancedCohortSize: r.advancedCohortSize,
+        advancedPercentile: r.advancedPercentile,
+        advancedCumulativePercentile: r.advancedCumulativePercentile,
+        advancedSelectionRule: r.advancedSelectionRule,
       });
+      const percentileMode = isAdvancedRankingStage(stage);
       pending = {
-        cutoff: win?.passingScore ?? null,
+        cutoff: percentileMode ? null : win?.passingScore ?? null,
+        selectionMode: percentileMode ? "PERCENTILE" : "CUTOFF",
+        policyLabel: percentileMode ? advancedSelectionPolicy(stage).label : null,
         promotion: pendingReports.filter((r) => r.status === "PENDING_PROMOTION").map(toRow),
         elimination: pendingReports.filter((r) => r.status === "PENDING_ELIMINATION").map(toRow),
       };
+    }
+
+    let advancedCandidates: AdvancedCandidateRow[] | null = null;
+    if (isAdvancedRankingStage(stage)) {
+      const rows = await prisma.stageReport.findMany({
+        where: {
+          stage,
+          status: { in: ["GRADED", "PENDING_PROMOTION", "PENDING_ELIMINATION"] },
+        },
+        select: {
+          id: true,
+          status: true,
+          score: true,
+          finalScore: true,
+          advancedGateFailed: true,
+          advancedGateReason: true,
+          intern: {
+            select: {
+              track: true,
+              user: { select: { firstName: true, lastName: true, email: true } },
+            },
+          },
+        },
+        orderBy: [{ intern: { track: "asc" } }, { score: "desc" }],
+      });
+      advancedCandidates = rows.map((row) => ({
+        reportId: row.id,
+        fullName: `${row.intern.user.firstName} ${row.intern.user.lastName}`.trim(),
+        email: row.intern.user.email,
+        track: row.intern.track,
+        status: row.status,
+        score: row.score,
+        finalScore: row.finalScore,
+        advancedGateFailed: row.advancedGateFailed === true,
+        advancedGateReason: row.advancedGateReason,
+      }));
     }
 
     // Optional named-buckets mode: when `?threshold=N` is provided we also
@@ -171,10 +264,10 @@ export async function GET(request: NextRequest) {
         if ((r.score ?? 0) >= t) willPass.push(row);
         else willFail.push(row);
       }
-      return Response.json({ stage, summary, pending, buckets: { threshold: t, willPass, willFail } });
+      return Response.json({ stage, summary, pending, advancedCandidates, buckets: { threshold: t, willPass, willFail } });
     }
 
-    return Response.json({ stage, summary, pending });
+    return Response.json({ stage, summary, pending, advancedCandidates });
   } catch (error) {
     logger.error("stage_results_summary_failed", error);
     return Response.json({ error: "Internal server error" }, { status: 500 });
@@ -201,6 +294,12 @@ export async function POST(request: NextRequest) {
     if (body?.action === "apply-cutoff") {
       return await handleApplyCutoff(request, admin, body);
     }
+    if (body?.action === "apply-percentile") {
+      return await handleApplyPercentile(request, admin, body);
+    }
+    if (body?.action === "set-advanced-gate") {
+      return await handleSetAdvancedGate(request, admin, body);
+    }
     if (body?.action === "swap") {
       return await handleSwap(request, admin, body);
     }
@@ -220,7 +319,7 @@ export async function POST(request: NextRequest) {
     return Response.json(
       {
         error:
-          "Unknown action. Use action='apply-cutoff' | 'swap' | 'update-score' | 'toggle-qa-verified' | 'finalize' | 'finalize-non-submitters' | 'reset'. The legacy direct-publish path was removed; publishing goes through the cutoff/pending/finalize flow on /admin/stage-results.",
+          "Unknown action. Use action='apply-cutoff' | 'apply-percentile' | 'set-advanced-gate' | 'swap' | 'update-score' | 'toggle-qa-verified' | 'finalize' | 'finalize-non-submitters' | 'reset'. Publishing goes through pending review and finalize on /admin/stage-results.",
       },
       { status: 400 }
     );
@@ -343,6 +442,12 @@ async function handleApplyCutoff(
   if (!isStageKey(stage)) {
     return Response.json({ error: "Invalid stage" }, { status: 400 });
   }
+  if (isAdvancedRankingStage(stage)) {
+    return Response.json(
+      { error: "Advanced stages use within-track percentile ranking, not a numeric cutoff." },
+      { status: 409 }
+    );
+  }
   const threshold = Number(body.passingScore);
   if (!Number.isFinite(threshold) || threshold < 0 || threshold > 100) {
     return Response.json({ error: "passingScore must be 0-100" }, { status: 400 });
@@ -424,6 +529,270 @@ async function handleApplyCutoff(
   });
 }
 
+async function handleSetAdvancedGate(
+  request: NextRequest,
+  admin: SessionUser,
+  body: { reportId?: unknown; failed?: unknown; reason?: unknown }
+): Promise<Response> {
+  if (typeof body.reportId !== "string" || typeof body.failed !== "boolean") {
+    return Response.json({ error: "reportId and boolean failed are required" }, { status: 400 });
+  }
+  const reason = typeof body.reason === "string" ? body.reason.trim().slice(0, 500) : "";
+  if (reason.length < 12) {
+    return Response.json(
+      { error: "Changing an automatic fail gate requires a specific reason of at least 12 characters." },
+      { status: 400 }
+    );
+  }
+
+  const report = await prisma.stageReport.findUnique({
+    where: { id: body.reportId },
+    select: {
+      id: true,
+      internId: true,
+      stage: true,
+      status: true,
+      advancedGateFailed: true,
+      advancedGateReason: true,
+    },
+  });
+  if (!report || !isAdvancedRankingStage(report.stage)) {
+    return Response.json({ error: "Advanced-stage report not found" }, { status: 404 });
+  }
+  if (!["GRADED", "PENDING_PROMOTION", "PENDING_ELIMINATION"].includes(report.status)) {
+    return Response.json(
+      { error: "Automatic fail gates can only be recorded after grading and before finalization." },
+      { status: 409 }
+    );
+  }
+
+  const status = body.failed && report.status === "PENDING_PROMOTION"
+    ? "PENDING_ELIMINATION"
+    : report.status;
+  await prisma.stageReport.update({
+    where: { id: report.id },
+    data: {
+      advancedGateFailed: body.failed,
+      advancedGateReason: body.failed ? reason : null,
+      status,
+      advancedRank: null,
+      advancedCohortSize: null,
+      advancedPercentile: null,
+      advancedCumulativePercentile: null,
+      advancedSelectionRule: body.failed
+        ? "Automatic fail gate recorded before ranking"
+        : "Automatic fail gate cleared; percentile rerun required",
+    },
+  });
+
+  await recordAudit({
+    actor: admin,
+    action: body.failed ? "stage-results.advanced-gate-fail" : "stage-results.advanced-gate-clear",
+    targetType: "STAGE_RESULTS",
+    targetId: report.stage,
+    details: {
+      reportId: report.id,
+      internId: report.internId,
+      previousFailed: report.advancedGateFailed === true,
+      previousReason: report.advancedGateReason,
+      failed: body.failed,
+      reason,
+      rerankRequired: true,
+    },
+    ...auditMetaFromRequest(request),
+  });
+
+  return Response.json({ updated: true, reportId: report.id, failed: body.failed, reason });
+}
+
+async function handleApplyPercentile(
+  request: NextRequest,
+  admin: SessionUser,
+  body: { stage?: unknown }
+): Promise<Response> {
+  const stage = body.stage;
+  if (!isStageKey(stage) || !isAdvancedRankingStage(stage)) {
+    return Response.json({ error: "A valid advanced stage is required" }, { status: 400 });
+  }
+
+  const unresolved = await prisma.stageReport.count({
+    where: {
+      stage,
+      OR: [
+        { divergent: true },
+        { status: { in: ["SUBMITTED", "UNDER_REVIEW"] } },
+      ],
+    },
+  });
+  if (unresolved > 0) {
+    return Response.json(
+      { error: `${unresolved} report${unresolved === 1 ? " is" : "s are"} still under review or awaiting a grader tiebreak.` },
+      { status: 409 }
+    );
+  }
+
+  const reports = await prisma.stageReport.findMany({
+    where: {
+      stage,
+      status: { in: ["GRADED", "PENDING_PROMOTION", "PENDING_ELIMINATION"] },
+    },
+    select: {
+      id: true,
+      internId: true,
+      score: true,
+      advancedGateFailed: true,
+      intern: { select: { track: true } },
+    },
+  });
+  if (reports.length === 0) {
+    return Response.json({ error: "No graded reports to rank for this stage" }, { status: 409 });
+  }
+  const missingScores = reports.filter((report) => report.score === null);
+  if (missingScores.length > 0) {
+    return Response.json(
+      {
+        error: `${missingScores.length} graded report${missingScores.length === 1 ? " has" : "s have"} no technical score. Complete grading before percentile ranking.`,
+        reportIds: missingScores.map((report) => report.id),
+      },
+      { status: 409 }
+    );
+  }
+
+  const { maxPoints, earnedByIntern } = await stageTerminalScores(stage);
+  const currentScores = new Map<string, { reportScore: number; terminalScore: number | null; finalScore: number }>();
+  for (const report of reports) {
+    const reportScore = report.score ?? 0;
+    const terminalScore = maxPoints > 0
+      ? Math.round(((earnedByIntern.get(report.internId) ?? 0) / maxPoints) * 100)
+      : null;
+    currentScores.set(report.internId, {
+      reportScore,
+      terminalScore,
+      finalScore: combinedFinalScore(reportScore, terminalScore),
+    });
+  }
+
+  const includedStages = ADVANCED_RANKING_STAGES.slice(
+    0,
+    ADVANCED_RANKING_STAGES.indexOf(stage) + 1
+  );
+  const history = await prisma.stageReport.findMany({
+    where: {
+      stage: { in: [...includedStages] },
+      status: {
+        in: ["GRADED", "PENDING_PROMOTION", "PENDING_ELIMINATION", "PASSED", "FAILED"],
+      },
+    },
+    select: {
+      internId: true,
+      stage: true,
+      score: true,
+      finalScore: true,
+      advancedGateFailed: true,
+      intern: { select: { track: true } },
+    },
+  });
+
+  const candidates: AdvancedRankingCandidate[] = reports.map((report) => {
+    const current = currentScores.get(report.internId)!;
+    return {
+      reportId: report.id,
+      internId: report.internId,
+      track: report.intern.track as AdvancedRankingTrack,
+      currentFinalScore: current.finalScore,
+      currentReportScore: current.reportScore,
+      gateFailed: report.advancedGateFailed === true,
+    };
+  });
+  const scoreRecords: AdvancedScoreRecord[] = history.flatMap((report) => {
+    if (!isAdvancedRankingStage(report.stage)) return [];
+    const current = report.stage === stage ? currentScores.get(report.internId) : null;
+    const score = current?.finalScore ?? report.finalScore ?? report.score;
+    if (score === null) return [];
+    return [{
+      internId: report.internId,
+      track: report.intern.track as AdvancedRankingTrack,
+      stage: report.stage,
+      score,
+      gateFailed: report.advancedGateFailed === true,
+    }];
+  });
+
+  const ranking = rankAdvancedStage(stage, candidates, scoreRecords);
+  const incomplete = ranking.flatMap((track) => track.rows.filter((row) => row.incomplete));
+  if (incomplete.length > 0) {
+    return Response.json(
+      {
+        error: `${incomplete.length} candidate${incomplete.length === 1 ? " is" : "s are"} missing one or more required historical scores. Repair the records before ranking.`,
+        reportIds: incomplete.map((row) => row.reportId),
+      },
+      { status: 409 }
+    );
+  }
+
+  const rankedRows = ranking.flatMap((track) => track.rows);
+  for (const row of rankedRows) {
+    const current = currentScores.get(row.internId)!;
+    await prisma.stageReport.update({
+      where: { id: row.reportId },
+      data: {
+        status: row.selected ? "PENDING_PROMOTION" : "PENDING_ELIMINATION",
+        terminalScore: current.terminalScore,
+        finalScore: current.finalScore,
+        advancedRank: row.rank,
+        advancedCohortSize: row.cohortSize,
+        advancedPercentile: row.percentile,
+        advancedCumulativePercentile: row.cumulativePercentile,
+        advancedSelectionRule: row.selectionReason,
+      },
+    });
+  }
+
+  await prisma.stageWindow.upsert({
+    where: { stage },
+    create: { stage, cutoffAppliedAt: new Date(), cutoffById: admin.id },
+    update: { cutoffAppliedAt: new Date(), cutoffById: admin.id },
+  });
+
+  const policy = advancedSelectionPolicy(stage);
+  await recordAudit({
+    actor: admin,
+    action: "stage-results.apply-percentile",
+    targetType: "STAGE_RESULTS",
+    targetId: stage,
+    details: {
+      stage,
+      policy,
+      tracks: ranking.map((track) => ({
+        track: track.track,
+        eligible: track.eligible,
+        gateFailed: track.gateFailed,
+        advanceTarget: track.advanceTarget,
+        boundaryTie: track.boundaryTie,
+        boundaryReportIds: track.boundaryReportIds,
+      })),
+    },
+    ...auditMetaFromRequest(request),
+  });
+
+  return Response.json({
+    applied: true,
+    selectionMode: "PERCENTILE",
+    policy: policy.label,
+    pendingPromotion: rankedRows.filter((row) => row.selected).length,
+    pendingElimination: rankedRows.filter((row) => !row.selected).length,
+    boundaryReviewRequired: ranking.some((track) => track.boundaryTie),
+    tracks: ranking.map((track) => ({
+      track: track.track,
+      eligible: track.eligible,
+      gateFailed: track.gateFailed,
+      advanceTarget: track.advanceTarget,
+      boundaryTie: track.boundaryTie,
+      boundaryReportIds: track.boundaryReportIds,
+    })),
+  });
+}
+
 // Swap one intern between the two pending buckets. Logged to StageDecisionLog.
 async function handleSwap(
   request: NextRequest,
@@ -454,7 +823,11 @@ async function handleSwap(
   }
   if (report.status !== "PENDING_PROMOTION" && report.status !== "PENDING_ELIMINATION") {
     return Response.json(
-      { error: "This report is not in a pending state. Apply a cutoff first." },
+      {
+        error: isAdvancedRankingStage(report.stage)
+          ? "This report is not pending. Apply percentile ranking first."
+          : "This report is not pending. Apply a cutoff first.",
+      },
       { status: 409 }
     );
   }
@@ -463,6 +836,12 @@ async function handleSwap(
   }
 
   const reason = typeof body.reason === "string" ? body.reason.slice(0, 500) : null;
+  if (isAdvancedRankingStage(report.stage) && (!reason || reason.trim().length < 12)) {
+    return Response.json(
+      { error: "Advanced-stage boundary changes require an audited reason of at least 12 characters." },
+      { status: 400 }
+    );
+  }
   await prisma.$transaction([
     prisma.stageReport.update({ where: { id: report.id }, data: { status: target } }),
     prisma.stageDecisionLog.create({
@@ -532,20 +911,28 @@ async function handleUpdateScore(
     report.status !== "PENDING_ELIMINATION"
   ) {
     return Response.json(
-      { error: "This report is not in a pending state. Apply a cutoff first." },
+      {
+        error: isAdvancedRankingStage(report.stage)
+          ? "This report is not pending. Apply percentile ranking first."
+          : "This report is not pending. Apply a cutoff first.",
+      },
       { status: 409 }
     );
   }
 
   const round = Math.round(newScore);
-  const win = await prisma.stageWindow.findUnique({
-    where: { stage: report.stage },
-    select: { passingScore: true },
-  });
-  const cutoff = win?.passingScore ?? 0;
   const finalScore = combinedFinalScore(round, report.terminalScore);
-  const newStatus =
-    finalScore >= cutoff ? "PENDING_PROMOTION" : "PENDING_ELIMINATION";
+  const advanced = isAdvancedRankingStage(report.stage);
+  const win = advanced
+    ? null
+    : await prisma.stageWindow.findUnique({
+        where: { stage: report.stage },
+        select: { passingScore: true },
+      });
+  const cutoff = win?.passingScore ?? 0;
+  const newStatus = advanced
+    ? report.status
+    : finalScore >= cutoff ? "PENDING_PROMOTION" : "PENDING_ELIMINATION";
 
   const flipped = newStatus !== report.status;
   const ops: Prisma.PrismaPromise<unknown>[] = [
@@ -555,6 +942,14 @@ async function handleUpdateScore(
         score: round,
         finalScore,
         status: newStatus,
+        ...(advanced
+          ? {
+              advancedRank: null,
+              advancedPercentile: null,
+              advancedCumulativePercentile: null,
+              advancedSelectionRule: "Score changed after ranking; percentile rerun required",
+            }
+          : {}),
         ...(newFeedback !== undefined ? { feedback: newFeedback } : {}),
       },
     }),
@@ -591,6 +986,7 @@ async function handleUpdateScore(
       newStatus,
       feedbackChanged: newFeedback !== undefined && newFeedback !== report.feedback,
       reason,
+      percentileRerunRequired: advanced,
     },
     ...auditMetaFromRequest(request),
   });
@@ -602,6 +998,7 @@ async function handleUpdateScore(
     finalScore,
     status: newStatus,
     flipped,
+    percentileRerunRequired: advanced,
   });
 }
 
@@ -794,9 +1191,60 @@ async function handleFinalize(
   });
   if (pending.length === 0) {
     return Response.json(
-      { error: "Nothing pending to finalize. Apply a cutoff first." },
+      {
+        error: isAdvancedRankingStage(stage)
+          ? "Nothing pending to finalize. Apply percentile ranking first."
+          : "Nothing pending to finalize. Apply a cutoff first.",
+      },
       { status: 409 }
     );
+  }
+
+  const advancedPolicy = isAdvancedRankingStage(stage)
+    ? advancedSelectionPolicy(stage)
+    : null;
+  if (advancedPolicy) {
+    const unverified = pending.filter((report) => report.qaVerified !== true);
+    if (unverified.length > 0) {
+      return Response.json(
+        { error: `${unverified.length} advanced result${unverified.length === 1 ? " still needs" : "s still need"} QA verification before finalization.` },
+        { status: 409 }
+      );
+    }
+    const invalidPromotions = pending.filter(
+      (report) => report.status === "PENDING_PROMOTION" && report.advancedGateFailed
+    );
+    if (invalidPromotions.length > 0) {
+      return Response.json(
+        { error: "A candidate with an automatic fail gate cannot be promoted." },
+        { status: 409 }
+      );
+    }
+    const staleRanking = pending.filter(
+      (report) => !report.advancedGateFailed && report.advancedRank === null
+    );
+    if (staleRanking.length > 0) {
+      return Response.json(
+        { error: `${staleRanking.length} result${staleRanking.length === 1 ? " requires" : "s require"} a fresh percentile ranking before finalization.` },
+        { status: 409 }
+      );
+    }
+
+    const tracks = ["SOC_ANALYSIS", "ETHICAL_HACKING", "GRC"] as const;
+    for (const track of tracks) {
+      const rows = pending.filter((report) => report.intern.track === track);
+      const eligible = rows.filter((report) => !report.advancedGateFailed && report.advancedRank !== null);
+      const expected = advancedAdvanceTarget(advancedPolicy.stage, eligible.length);
+      const actual = rows.filter((report) => report.status === "PENDING_PROMOTION").length;
+      if (actual !== expected) {
+        return Response.json(
+          {
+            error: `${track} must have exactly ${expected} pending promotion${expected === 1 ? "" : "s"}; found ${actual}. Resolve boundary ties with audited swaps before finalizing.`,
+          },
+          { status: 409 }
+        );
+      }
+    }
   }
 
   const window = await prisma.stageWindow.findUnique({ where: { stage } });
@@ -866,6 +1314,15 @@ async function handleFinalize(
               inDepthUrl,
               cardUrl,
               badgeUrl,
+              advancedSelection: advancedPolicy
+                ? {
+                    label: advancedPolicy.label,
+                    rank: r.advancedRank,
+                    cohortSize: r.advancedCohortSize,
+                    percentile: r.advancedPercentile,
+                    cumulativePercentile: r.advancedCumulativePercentile,
+                  }
+                : null,
             }),
             context: {
               reportId: r.id,
@@ -874,6 +1331,11 @@ async function handleFinalize(
               reportScore: r.score,
               terminalScore: r.terminalScore,
               passingScore: threshold,
+              advancedSelectionRule: r.advancedSelectionRule,
+              advancedRank: r.advancedRank,
+              advancedCohortSize: r.advancedCohortSize,
+              advancedPercentile: r.advancedPercentile,
+              advancedCumulativePercentile: r.advancedCumulativePercentile,
               certUrl: certUrlValue,
               passLetterUrl: passLetterUrlValue,
               proofBadgeUrl: proofBadgeUrlValue,
@@ -907,7 +1369,9 @@ async function handleFinalize(
               fromStage: stage,
               toStage: stage,
               promotedBy: "stage-finalize",
-              reason: `Completed Advanced final case (final ${score}, cutoff ${threshold})`,
+              reason: advancedPolicy
+                ? `Selected by ${advancedPolicy.label}; rank ${r.advancedRank}/${r.advancedCohortSize}`
+                : `Completed Advanced final case (final ${score}, cutoff ${threshold})`,
             },
           })
         );
@@ -920,7 +1384,9 @@ async function handleFinalize(
               fromStage: stage,
               toStage: nextStage,
               promotedBy: "stage-finalize",
-              reason: `Promoted with final ${score} (cutoff ${threshold})`,
+              reason: advancedPolicy
+                ? `Promoted by ${advancedPolicy.label}; rank ${r.advancedRank}/${r.advancedCohortSize}`
+                : `Promoted with final ${score} (cutoff ${threshold})`,
             },
           })
         );
@@ -975,6 +1441,17 @@ async function handleFinalize(
               slackUrl,
               issuedAt,
               effectiveDate,
+              advancedSelection: advancedPolicy
+                ? {
+                    label: r.advancedGateFailed
+                      ? r.advancedGateReason ?? "Automatic fail gate"
+                      : advancedPolicy.label,
+                    rank: r.advancedRank,
+                    cohortSize: r.advancedCohortSize,
+                    percentile: r.advancedPercentile,
+                    cumulativePercentile: r.advancedCumulativePercentile,
+                  }
+                : null,
             }),
             context: {
               reportId: r.id,
@@ -983,6 +1460,13 @@ async function handleFinalize(
               reportScore: r.score,
               terminalScore: r.terminalScore,
               passingScore: threshold,
+              advancedSelectionRule: r.advancedSelectionRule,
+              advancedGateFailed: r.advancedGateFailed,
+              advancedGateReason: r.advancedGateReason,
+              advancedRank: r.advancedRank,
+              advancedCohortSize: r.advancedCohortSize,
+              advancedPercentile: r.advancedPercentile,
+              advancedCumulativePercentile: r.advancedCumulativePercentile,
               letterPdfUrl,
             },
           },
@@ -997,11 +1481,24 @@ async function handleFinalize(
     action: "stage-results.finalize",
     targetType: "STAGE_RESULTS",
     targetId: stage,
-    details: { stage, threshold, promoted, eliminated },
+    details: {
+      stage,
+      selectionMode: advancedPolicy ? "PERCENTILE" : "CUTOFF",
+      selectionPolicy: advancedPolicy,
+      threshold: advancedPolicy ? null : threshold,
+      promoted,
+      eliminated,
+    },
     ...auditMetaFromRequest(request),
   });
 
-  return Response.json({ finalized: true, promoted, eliminated, threshold });
+  return Response.json({
+    finalized: true,
+    promoted,
+    eliminated,
+    selectionMode: advancedPolicy ? "PERCENTILE" : "CUTOFF",
+    threshold: advancedPolicy ? null : threshold,
+  });
 }
 
 function bucketHistogram(scores: number[]): { bucket: string; count: number }[] {
@@ -1079,6 +1576,15 @@ function ctaButton(href: string, label: string, bg: string): string {
     </a>`;
 }
 
+function emailEscape(value: string): string {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
 // Result email. Feedback is NOT embedded — interns get a link to view it on
 // their dashboard. Pass version mentions the Stage N+1 Monday opening, points
 // at the cert + Slack. Fail version offers the discontinuation letter and is
@@ -1104,6 +1610,13 @@ function renderResultEmail(opts: {
   inDepthUrl?: string | null;
   cardUrl?: string | null;
   badgeUrl?: string | null;
+  advancedSelection?: {
+    label: string;
+    rank: number | null;
+    cohortSize: number | null;
+    percentile: number | null;
+    cumulativePercentile: number | null;
+  } | null;
 }): string {
   const {
     firstName,
@@ -1126,6 +1639,7 @@ function renderResultEmail(opts: {
     inDepthUrl,
     cardUrl,
     badgeUrl,
+    advancedSelection,
   } = opts;
   const nextStageNum = Number(stageNumber) + 1;
   const mondayLabel = nextMondayLabel(issuedAt);
@@ -1198,6 +1712,7 @@ function renderResultEmail(opts: {
   }
 
   if (passed && isAdvancedFinal) {
+    const selectionLabel = emailEscape(advancedSelection?.label ?? "Top-three cumulative ranking");
     const body = `
       <div style="font-size:11px;letter-spacing:0.24em;text-transform:uppercase;color:#B91C1C;font-weight:700;">
         Ubuntu Bridge Initiative &nbsp;&middot;&nbsp; Advanced Stage
@@ -1206,17 +1721,17 @@ function renderResultEmail(opts: {
         Your final case is closed, ${firstName}.
       </h1>
       <p style="font-size:15px;line-height:1.65;color:#334155;margin:0 0 22px;">
-        You completed all five specialist projects and cleared the final case.
-        The programme team is now completing the cross-project track ranking and
-        defense QA before the top-three announcement.
+        You completed all five specialist projects and finished inside the top three
+        of your track after the final audited percentile review.
       </p>
       <div style="display:flex;gap:14px;align-items:baseline;margin:0 0 24px;padding:16px 18px;background:#FEF2F2;border:1px solid #FECACA;border-radius:10px;">
-        <div style="font-size:34px;font-weight:800;color:#B91C1C;line-height:1;">${score}</div>
-        <div style="font-size:13px;color:#7F1D1D;line-height:1.4;"><strong>final-case score</strong><br/>passing mark was ${passingScore}</div>
+        <div style="font-size:34px;font-weight:800;color:#B91C1C;line-height:1;">#${advancedSelection?.rank ?? "-"}</div>
+        <div style="font-size:13px;color:#7F1D1D;line-height:1.4;"><strong>track rank</strong><br/>from ${advancedSelection?.cohortSize ?? "the"} ranked finalists</div>
       </div>
       <p style="font-size:13px;line-height:1.6;color:#64748B;margin:0 0 18px;">
-        This score is one part of the published ranking; the weighted five-project
-        result and defense adjustments remain under QA. No further stage opens.
+        Final-case score: <strong>${score}/100</strong>. Cumulative weighted percentile:
+        <strong>${advancedSelection?.cumulativePercentile ?? "-"}</strong>. Rule: ${selectionLabel}.
+        No further stage opens.
       </p>
       <div style="margin:0 0 10px;">
         ${certUrl ? ctaButton(certUrl, "Download final-case certificate", "#B91C1C") : ""}
@@ -1228,6 +1743,37 @@ function renderResultEmail(opts: {
       </p>
     `;
     return emailShell({ accent: "#B91C1C", body });
+  }
+
+  if (passed && advancedSelection) {
+    const selectionLabel = emailEscape(advancedSelection.label);
+    const body = `
+      <div style="font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:#047857;font-weight:700;">
+        Ubuntu Bridge Initiative &nbsp;&middot;&nbsp; Advanced Stage
+      </div>
+      <h1 style="font-size:26px;font-weight:700;line-height:1.25;margin:18px 0 6px;color:#0F172A;">
+        You advanced, ${firstName}. Stage ${nextStageNum} opens ${mondayLabel}.
+      </h1>
+      <p style="font-size:15px;line-height:1.65;color:#334155;margin:0 0 22px;">
+        Your Stage ${stageNumber} work was scored, converted to a percentile inside your track,
+        and reviewed before release. You finished inside this stage's advance boundary.
+      </p>
+      <div style="display:flex;gap:14px;align-items:baseline;margin:0 0 22px;padding:16px 18px;background:#ECFDF5;border:1px solid #A7F3D0;border-radius:10px;">
+        <div style="font-size:34px;font-weight:700;color:#047857;line-height:1;">#${advancedSelection.rank ?? "-"}</div>
+        <div style="font-size:13px;color:#065F46;line-height:1.5;"><strong>track rank of ${advancedSelection.cohortSize ?? "-"}</strong><br/>stage percentile ${advancedSelection.percentile ?? "-"}; raw score ${score}/100</div>
+      </div>
+      <p style="font-size:13px;line-height:1.65;color:#64748B;margin:0 0 18px;">
+        Selection rule: ${selectionLabel}.
+      </p>
+      <div style="margin:0 0 10px;">
+        ${certUrl ? ctaButton(certUrl, "Download your certificate", "#047857") : ""}
+        ${letterPdfUrl ? `&nbsp;${ctaButton(letterPdfUrl, "Download your letter", "#0A1F44")}` : ""}
+      </div>
+      <p style="font-size:13px;line-height:1.6;color:#64748B;margin:22px 0 0;">
+        Your full review notes are on your dashboard,
+        <a href="${feedbackUrl}" style="color:#047857;text-decoration:none;font-weight:600;">open them here</a>.
+      </p>`;
+    return emailShell({ accent: "#10B981", body });
   }
 
   if (passed) {
@@ -1303,7 +1849,38 @@ function renderResultEmail(opts: {
     return emailShell({ accent: "#10B981", body });
   }
 
-  // FAIL — honest, no soft-pedalling, but warm.
+  if (!passed && advancedSelection) {
+    const effectiveLabel = effectiveDate
+      ? effectiveDate.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })
+      : "";
+    const selectionLabel = emailEscape(advancedSelection.label);
+    const rankLine = advancedSelection.rank !== null
+      ? `Your reviewed track rank was <strong>${advancedSelection.rank} of ${advancedSelection.cohortSize ?? "-"}</strong>, with a stage percentile of <strong>${advancedSelection.percentile ?? "-"}</strong>.`
+      : "An automatic fail gate was confirmed before percentile ranking, so no percentile rank was assigned.";
+    const body = `
+      <div style="font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:#B91C1C;font-weight:700;">
+        Ubuntu Bridge Initiative &nbsp;&middot;&nbsp; Advanced Stage
+      </div>
+      <h1 style="font-size:24px;font-weight:700;line-height:1.3;margin:18px 0 6px;color:#0F172A;">Hi ${firstName},</h1>
+      <p style="font-size:15px;line-height:1.65;color:#334155;margin:0 0 18px;">
+        We finished the Stage ${stageNumber} scoring and within-track ranking. You did not finish
+        inside this stage's advance boundary.
+      </p>
+      <div style="margin:0 0 20px;padding:16px 18px;background:#FEF2F2;border:1px solid #FECACA;border-radius:10px;color:#7F1D1D;font-size:14px;line-height:1.65;">
+        ${rankLine}<br/>Raw stage score: <strong>${score}/100</strong>.<br/>Decision rule: ${selectionLabel}.
+      </div>
+      <p style="font-size:14px;line-height:1.7;color:#475569;margin:0 0 22px;">
+        Your review notes remain on the dashboard. Your credentials wind down
+        ${effectiveLabel ? `on ${effectiveLabel}` : "in two days"}, so download anything you need before then.
+      </p>
+      <div style="margin:0 0 18px;">
+        ${letterPdfUrl ? ctaButton(letterPdfUrl, "Download the letter (PDF)", "#0F172A") : ""}
+        &nbsp;${ctaButton(feedbackUrl, "Open review notes", "#B91C1C")}
+      </div>`;
+    return emailShell({ accent: "#B91C1C", body });
+  }
+
+  // Foundation-stage fail result.
   const effectiveLabel = effectiveDate
     ? effectiveDate.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })
     : "";

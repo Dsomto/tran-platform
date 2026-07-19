@@ -3,7 +3,7 @@
 **Repository:** `/Users/dsomto891/hng/netforge`  
 **Branch:** `main`  
 **Remote:** `origin/main`  
-**Current pushed HEAD:** `0d65959f0b0126d4ba9c6b872fee052ba419d990`  
+**Baseline before percentile implementation:** `84f8b27`
 **Prepared:** 19 July 2026, WAT  
 **Purpose:** This is the complete handoff of the advanced-stage work Codex implemented and verified. Claude should use this file as an index, then inspect the referenced source files and commits before changing anything.
 
@@ -20,7 +20,8 @@ The advanced programme is no longer only a design document. It now has:
 - Submission pages for view-only Drive links and exact package instructions.
 - Preview interns and preview pages for all 15 projects.
 - Light/dark accessibility across the advanced dashboard and rooms.
-- 15 distinct project FAQs, 10 answers each, rendered inside the secured room.
+- 15 distinct project FAQs, 11 answers each, rendered inside the secured room.
+- A single within-track percentile engine used by ranking, finalization, result emails, and the read-only Stage 9 audit.
 - Release and cohort audit scripts.
 - A corrected real cohort of 169 interns and 172 Stage 5 grants including 3 preview accounts.
 
@@ -28,7 +29,7 @@ Do not confuse three different things:
 
 1. **Intern-facing controlling material:** `src/lib/advanced-stage.ts`, `src/lib/advanced-guidance.ts`, `src/lib/advanced-faq.ts`, and `public/advanced-stage/**`.
 2. **Generated/shared candidate artifacts:** `stage5-artifacts/**` and `advanced-stage-artifacts/**`.
-3. **Historical planning and review documents:** `docs/ADVANCED-STAGE-TRACK-PLAN.md` and `docs/advanced-stage-briefs/**`. Some historical planning language still mentions old durations and a 70% gate. It is not automatically the controlling live rule.
+3. **Historical planning and review documents:** `docs/ADVANCED-STAGE-TRACK-PLAN.md` and `docs/advanced-stage-briefs/**`. The main track plan now matches the live cadence and percentile policy; archived review packets may still describe earlier designs and are not controlling material.
 
 ## 2. Current Verified Release State
 
@@ -494,25 +495,29 @@ These commits are on `main` and pushed to `origin/main`:
 
 ## 17. Validation Already Performed
 
-Latest FAQ/theme release validation:
+Latest percentile/FAQ validation:
 
 ```bash
-npx eslint src/lib/advanced-faq.ts src/lib/advanced-visuals.ts \
-  src/components/stage/AdvancedProjectFaq.tsx \
-  src/components/stage/AdvancedStageRoom.tsx
+npx prisma generate
+npx tsx --test src/lib/advanced-ranking.test.ts
+npx eslint src/lib/advanced-ranking.ts src/lib/advanced-ranking.test.ts \
+  src/lib/advanced-faq.ts src/components/stage/AdvancedStageRoom.tsx \
+  src/app/admin/stage-results/stage-results-panel.tsx \
+  src/app/admin/stage-results/review/cutoff-review-panel.tsx \
+  src/app/api/admin/stage-results/route.ts \
+  scripts/advanced-track-ranking.ts scripts/close-advanced-stages.ts
 npx tsc --noEmit
 npm run build
 ```
 
 Results:
 
+- Prisma Client generation passed with the nullable legacy-safe advanced gate field.
+- All 6 percentile-engine tests passed, including gate-before-ranking, exact cohort targets, Stage 8 top 6, and Stage 9 top 3/boundary tie behavior.
 - ESLint passed.
-- TypeScript passed.
-- Next.js production build passed.
-- All 132 static pages generated.
-- All 15 stage-preview detail routes returned HTTP 200.
-- Every detail route rendered exactly 3 FAQ groups and 10 questions.
-- Both release audits passed as recorded in Section 2.
+- Full TypeScript passed after the concurrent dashboard work completed.
+- Fresh Next.js production build passed, including TypeScript and all 132 generated static pages.
+- A generated FAQ audit returned `{rooms:15, questions:165, scoringPolicyAnswers:15}`.
 
 Known build warning:
 
@@ -522,18 +527,30 @@ No automated browser screenshot was captured in the latest FAQ pass because no s
 
 ## 18. Important Open Issues and Honest Limitations
 
-### 18.1 Percentile elimination is not fully implemented
+### 18.1 Percentile elimination is implemented; validate it before the first grading run
 
-This is the most important unresolved product decision.
+The approved model is now explicit and shared:
 
-- The user said elimination should be percentile-based rather than a fixed point threshold.
-- Historical plan documents still describe a 70% hard pass plus weighted top-three-per-track ranking.
-- `AdvancedStageRoom.tsx` still visibly says `70% minimum pass mark`.
-- `StageWindow.passingScore` and admin cutoff flows are still numeric cutoffs.
-- The FAQ deliberately does not repeat the 70% rule.
-- There is a ranking script, `scripts/advanced-track-ranking.ts`, but the final percentile policy, stage-by-stage elimination percentages, tie rules, absence/incomplete handling, and published intern wording have not been finalized and wired end to end.
+- Stage 5 eliminates the bottom 20% of eligible candidates within each track.
+- Stage 6 eliminates the bottom 25% of the remaining eligible candidates within each track.
+- Stage 7 eliminates the bottom 33% of the remaining eligible candidates within each track.
+- Stage 8 retains the top 6 per track by cumulative weighted percentile.
+- Stage 9 retains the top 3 per track by cumulative weighted percentile.
+- Advanced-stage weights are 1, 1, 1.5, 2, and 2.5 for Stages 5-9.
+- Automatic fail gates are recorded and applied before percentile ranking.
+- Exact boundary ties are surfaced for audited defense or blinded-review resolution.
+- Every pending advanced result requires QA verification, and finalization rejects stale ranks, gate-failed promotions, and incorrect per-track counts.
 
-Claude must not claim the percentile model is done. It needs a product decision and implementation pass.
+Implementation sources:
+
+- `src/lib/advanced-ranking.ts`: policy, percentile formula, weights, ranking, target calculation, and tie detection.
+- `src/app/api/admin/stage-results/route.ts`: gate recording, percentile application, evidence persistence, finalization enforcement, and percentile result email data.
+- `prisma/schema.prisma`: persisted gate, rank, cohort, percentile, cumulative percentile, and selection-rule evidence.
+- `src/app/admin/stage-results/**`: admin policy controls, gate UI, percentile review, audited swaps, QA, and CSV evidence.
+- `src/components/stage/AdvancedStageRoom.tsx` and `src/lib/advanced-faq.ts`: intern-facing exact policy. Every one of the 15 FAQs now includes the scoring decision answer.
+- `scripts/advanced-track-ranking.ts`: read-only Stage 9 review using the same shared engine.
+
+The legacy `StageWindow.passingScore` integer remains in the schema for foundation-stage compatibility. Advanced actions reject numeric cutoff application and ignore this value when selecting or finalizing.
 
 ### 18.2 “Ready” is structurally audited, not a claim that every external lab was manually exercised
 
@@ -579,14 +596,13 @@ At the time of handoff, the five FAQ release files are committed and clean. The 
 
 Claude should now assess, in this order:
 
-1. Confirm the final elimination model: percentile per stage, cumulative percentile, or top-three-only final ranking.
-2. Remove or replace the visible 70% language once the policy is decided.
-3. Verify the admin result workflow implements that policy without bypassing audited review.
-4. Manually test one real/preview intern per track through login, advanced dashboard, Stage 5 room, artifact, assignment, discrepancy where applicable, and report submission.
-5. Manually inspect light/dark and mobile layouts for `/dashboard/advanced` and representative SOC/EH/GRC rooms.
-6. Exercise the Stage 6-9 lab scaffolds on supported environments where practical, especially GOAD, AWS, Wazuh/Windows, and Vagrant.
-7. Reconcile historical DOCX/plan wording with the live Mon-Fri cadence before those files are distributed again.
-8. Confirm the production deployment generated from `0d65959` is live.
+1. Validate the admin flow on seeded non-production reports: grade, set/clear gate, rank, edit score, rerank, QA, audited boundary swap, and finalize.
+2. Confirm each track's expected advance target against the live eligible count before committing a stage result.
+3. Manually test one real/preview intern per track through login, advanced dashboard, Stage 5 room, artifact, assignment, discrepancy where applicable, report submission, and the new selection text.
+4. Manually inspect light/dark and mobile layouts for `/dashboard/advanced` and representative SOC/EH/GRC rooms.
+5. Exercise the Stage 6-9 lab scaffolds on supported environments where practical, especially GOAD, AWS, Wazuh/Windows, and Vagrant.
+6. Reconcile archived review packets/DOCX wording with the live Mon-Fri cadence and percentile model before republishing them.
+7. Confirm the production deployment from the latest `main` commit is live.
 
 ## 21. Commands Claude Can Safely Start With
 
@@ -616,5 +632,4 @@ Do not run grant/admission/reinstatement scripts with `COMMIT=1` merely to valid
 
 The advanced-stage website, track isolation, 15 technical project contracts, artifacts, private overlays, admin stage controls, fixed schedule, countdown, submissions, themes, previews, FAQs, release audits, and corrected 169-person cohort are implemented and pushed.
 
-The largest unresolved issue is not technical project difficulty. It is the final elimination policy: the code and historical documents still carry a fixed 70% cutoff while the user has moved toward percentile-based elimination. Claude should treat that as an explicit open decision, not quietly assume it has been solved.
-
+The percentile policy is no longer an open product decision. It is implemented across the shared engine, admin review/finalization, result evidence, intern room, FAQs, staff plan, and read-only final ranking. Claude should now pressure-test the implementation on non-production data, verify the exact live per-track counts before each result run, and avoid using the legacy foundation-stage cutoff field for Stages 5-9.

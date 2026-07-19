@@ -1,36 +1,54 @@
 import { config } from "dotenv";
+
 config();
 config({ path: ".env.local" });
 
-import { PrismaClient, Stage, Track } from "../src/generated/prisma";
+import { PrismaClient, Stage } from "../src/generated/prisma";
+import {
+  ADVANCED_RANKING_STAGES,
+  rankAdvancedStage,
+  type AdvancedRankingCandidate,
+  type AdvancedRankingTrack,
+  type AdvancedScoreRecord,
+} from "../src/lib/advanced-ranking";
 
 /**
- * Read-only weighted ranking for the final integrity review. It never promotes.
+ * Read-only Stage 9 integrity review. It uses the same percentile engine as
+ * the admin finalization flow and never changes reports or intern status.
+ *
  *   npx tsx scripts/advanced-track-ranking.ts > advanced-ranking.csv
  *   REQUIRE_QA=0 npx tsx scripts/advanced-track-ranking.ts
  */
 const prisma = new PrismaClient();
 const REQUIRE_QA = process.env.REQUIRE_QA !== "0";
-const STAGES = [Stage.STAGE_5, Stage.STAGE_6, Stage.STAGE_7, Stage.STAGE_8, Stage.STAGE_9] as const;
-const WEIGHTS = [0.1, 0.15, 0.2, 0.25, 0.3] as const;
-const TRACKS = [Track.SOC_ANALYSIS, Track.ETHICAL_HACKING, Track.GRC] as const;
-const REVIEWABLE = new Set(["GRADED", "PENDING_PROMOTION", "PASSED"]);
+const FINAL_STAGE = Stage.STAGE_9;
+const TRACKS: AdvancedRankingTrack[] = ["SOC_ANALYSIS", "ETHICAL_HACKING", "GRC"];
+const REVIEWABLE = new Set([
+  "GRADED",
+  "PENDING_PROMOTION",
+  "PENDING_ELIMINATION",
+  "PASSED",
+  "FAILED",
+]);
 
 function csv(value: unknown): string {
-  const text = String(value ?? "");
-  return /[",\n]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
+  const valueText = String(value ?? "");
+  return /[",\n]/.test(valueText) ? `"${valueText.replaceAll('"', '""')}"` : valueText;
 }
 
 async function main() {
   const reports = await prisma.stageReport.findMany({
-    where: { stage: { in: [...STAGES] } },
+    where: { stage: { in: ADVANCED_RANKING_STAGES as unknown as Stage[] } },
     select: {
+      id: true,
+      internId: true,
       stage: true,
       status: true,
       score: true,
       finalScore: true,
       divergent: true,
       qaVerified: true,
+      advancedGateFailed: true,
       intern: {
         select: {
           id: true,
@@ -42,77 +60,117 @@ async function main() {
     },
   });
 
-  const byIntern = new Map<string, typeof reports>();
-  for (const report of reports) {
-    const rows = byIntern.get(report.intern.id) ?? [];
-    rows.push(report);
-    byIntern.set(report.intern.id, rows);
-  }
+  const currentReports = reports.filter((report) => report.stage === FINAL_STAGE);
+  const heldCurrent = currentReports.filter((report) =>
+    !report.intern.isActive ||
+    !REVIEWABLE.has(report.status) ||
+    report.divergent ||
+    (REQUIRE_QA && report.qaVerified !== true) ||
+    (report.finalScore ?? report.score) === null
+  );
+  const current = currentReports.filter((report) => !heldCurrent.includes(report));
 
-  const rankedByTrack = new Map<Track, Array<{
-    name: string;
-    email: string;
-    scores: number[];
-    weighted: number;
-  }>>();
-  let held = 0;
-
-  for (const rows of byIntern.values()) {
-    const first = rows[0];
-    if (!first || !first.intern.isActive) continue;
-    const ordered = STAGES.map((stage) => rows.find((row) => row.stage === stage));
-    const eligible = ordered.every((row) =>
-      row &&
-      (row.finalScore ?? row.score) !== null &&
-      REVIEWABLE.has(row.status) &&
-      !row.divergent &&
-      (!REQUIRE_QA || row.qaVerified === true)
-    );
-    if (!eligible) {
-      held += 1;
-      continue;
+  const candidates: AdvancedRankingCandidate[] = current.map((report) => ({
+    reportId: report.id,
+    internId: report.internId,
+    track: report.intern.track as AdvancedRankingTrack,
+    currentFinalScore: (report.finalScore ?? report.score)!,
+    currentReportScore: report.score!,
+    gateFailed: report.advancedGateFailed === true,
+  }));
+  const scoreRecords: AdvancedScoreRecord[] = reports.flatMap((report) => {
+    const score = report.finalScore ?? report.score;
+    if (
+      score === null ||
+      !REVIEWABLE.has(report.status) ||
+      report.divergent ||
+      (REQUIRE_QA && report.qaVerified !== true)
+    ) {
+      return [];
     }
+    return [{
+      internId: report.internId,
+      track: report.intern.track as AdvancedRankingTrack,
+      stage: report.stage as AdvancedScoreRecord["stage"],
+      score,
+      gateFailed: report.advancedGateFailed === true,
+    }];
+  });
 
-    const scores = ordered.map((row) => (row!.finalScore ?? row!.score)!);
-    const weighted = scores.reduce((sum, score, index) => sum + score * WEIGHTS[index], 0);
-    const list = rankedByTrack.get(first.intern.track) ?? [];
-    list.push({
-      name: `${first.intern.user.firstName} ${first.intern.user.lastName}`.trim(),
-      email: first.intern.user.email,
-      scores,
-      weighted: Math.round(weighted * 100) / 100,
-    });
-    rankedByTrack.set(first.intern.track, list);
+  const identity = new Map(current.map((report) => [report.internId, {
+    name: `${report.intern.user.firstName} ${report.intern.user.lastName}`.trim(),
+    email: report.intern.user.email,
+  }]));
+  const scoresByIntern = new Map<string, Map<string, number>>();
+  for (const record of scoreRecords) {
+    const scores = scoresByIntern.get(record.internId) ?? new Map<string, number>();
+    scores.set(record.stage, record.score);
+    scoresByIntern.set(record.internId, scores);
   }
 
-  console.error(`Read-only ranking. QA required: ${REQUIRE_QA}. Held as incomplete/unverified: ${held}.`);
-  console.log("track,rank,review_status,name,email,advanced_1,advanced_2,advanced_3,advanced_4,advanced_5,weighted_score");
+  const ranking = rankAdvancedStage("STAGE_9", candidates, scoreRecords);
+  const incomplete = ranking.reduce(
+    (count, track) => count + track.rows.filter((row) => row.incomplete).length,
+    0
+  );
+  console.error(
+    `Read-only Stage 9 percentile ranking. QA required: ${REQUIRE_QA}. ` +
+    `Held current reports: ${heldCurrent.length}. Missing history: ${incomplete}.`
+  );
+  console.log([
+    "track",
+    "rank",
+    "track_cohort",
+    "review_status",
+    "name",
+    "email",
+    "stage_5",
+    "stage_6",
+    "stage_7",
+    "stage_8",
+    "stage_9",
+    "stage_9_percentile",
+    "cumulative_weighted_percentile",
+  ].join(","));
+
+  for (const trackResult of ranking) {
+    const boundaryIds = new Set(trackResult.boundaryReportIds);
+    for (const row of trackResult.rows) {
+      const person = identity.get(row.internId)!;
+      const scores = scoresByIntern.get(row.internId) ?? new Map<string, number>();
+      const reviewStatus = row.gateFailed
+        ? "AUTOMATIC_GATE_FAILURE"
+        : row.incomplete
+          ? "HELD_INCOMPLETE"
+          : boundaryIds.has(row.reportId)
+            ? "BOUNDARY_REVIEW"
+            : row.selected
+              ? "PROVISIONAL_TOP_3"
+              : "RESERVE";
+      console.log([
+        trackResult.track,
+        row.rank,
+        row.cohortSize,
+        reviewStatus,
+        person.name,
+        person.email,
+        ...ADVANCED_RANKING_STAGES.map((stage) => scores.get(stage)),
+        row.percentile?.toFixed(2),
+        row.cumulativePercentile?.toFixed(2),
+      ].map(csv).join(","));
+    }
+  }
 
   for (const track of TRACKS) {
-    const list = (rankedByTrack.get(track) ?? []).sort((a, b) => b.weighted - a.weighted || a.email.localeCompare(b.email));
-    const boundary = list[2]?.weighted;
-    const boundaryTie = boundary !== undefined && list[3]?.weighted === boundary;
-    let priorScore: number | undefined;
-    let rank = 0;
-    list.forEach((entry, index) => {
-      if (entry.weighted !== priorScore) rank = index + 1;
-      priorScore = entry.weighted;
-      const reviewStatus = boundaryTie && entry.weighted === boundary
-        ? "BOUNDARY_REVIEW"
-        : index < 3 ? "PROVISIONAL_TOP_3" : "RESERVE";
-      console.log([
-        track,
-        rank,
-        reviewStatus,
-        entry.name,
-        entry.email,
-        ...entry.scores,
-        entry.weighted.toFixed(2),
-      ].map(csv).join(","));
-    });
+    if (!ranking.some((result) => result.track === track)) {
+      console.error(`${track}: no ranking result generated.`);
+    }
   }
 }
 
 main()
-  .catch((error) => { console.error(error instanceof Error ? error.message : error); process.exit(1); })
+  .catch((error) => {
+    console.error(error instanceof Error ? error.message : error);
+    process.exit(1);
+  })
   .finally(() => prisma.$disconnect());
