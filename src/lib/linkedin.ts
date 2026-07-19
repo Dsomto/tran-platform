@@ -19,6 +19,10 @@ const STAGE_CERT_NAME: Record<string, string> = {
   STAGE_3: "Cybersecurity Internship: Incident Response (Stage 3)",
   STAGE_4: "Certified Cyber Core Associate",
   STAGE_5: "Cybersecurity Internship: Track Specialisation (Stage 5)",
+  STAGE_6: "Cybersecurity Internship: Advanced Exposure (Stage 6)",
+  STAGE_7: "Cybersecurity Internship: Security Architecture (Stage 7)",
+  STAGE_8: "Cybersecurity Internship: Adversarial Assessment (Stage 8)",
+  STAGE_9: "Cybersecurity Internship: Advanced Track Finalist",
 };
 
 export function stageCertName(stageKey: string): string {

@@ -18,6 +18,10 @@ import {
   FolderDown,
 } from "lucide-react";
 import { emitEggToast } from "@/components/dashboard/easter-eggs/hooks";
+import {
+  isAdvancedSubmissionStage,
+  submissionFolderUrlError,
+} from "@/lib/submission-links";
 
 interface InitialReport {
   id: string;
@@ -89,14 +93,20 @@ export function ReportEditor({
   const [execSummary, setExecSummary] = useState(initialReport?.executiveSummary ?? "");
   const [reportUrl, setReportUrl] = useState(initialReport?.reportUrl ?? "");
   const [attachmentUrl, setAttachmentUrl] = useState(initialReport?.attachmentUrl ?? "");
-  const [reportId, setReportId] = useState(initialReport?.id ?? null);
   const [saving, setSaving] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [dirty, setDirty] = useState(false);
+  const [contentsConfirmed, setContentsConfirmed] = useState(false);
+  const [sharingConfirmed, setSharingConfirmed] = useState(false);
+  const [integrityConfirmed, setIntegrityConfirmed] = useState(false);
   const dirtyRef = useRef(dirty);
   dirtyRef.current = dirty;
+
+  const isAdvanced = isAdvancedSubmissionStage(stage);
+  const advancedChecklistComplete =
+    contentsConfirmed && sharingConfirmed && integrityConfirmed;
 
   const execWordCount = execSummary.trim().split(/\s+/).filter(Boolean).length;
   const execCharCount = execSummary.length;
@@ -116,9 +126,9 @@ export function ReportEditor({
     }
   }, [execSummary]);
 
-  async function saveDraft(silent = false): Promise<boolean> {
-    if (locked) return false;
-    if (!execSummary.trim() && !reportUrl.trim()) return false;
+  async function saveDraft(silent = false): Promise<string | null> {
+    if (locked) return null;
+    if (!execSummary.trim() && !reportUrl.trim()) return null;
     setSaving(true);
     setError(null);
     try {
@@ -141,15 +151,15 @@ export function ReportEditor({
               : data.error || "Failed to save"
           );
         }
-        return false;
+        return null;
       }
-      setReportId(data.report.id);
+      const savedReportId = data.report.id as string;
       setLastSavedAt(new Date());
       setDirty(false);
-      return true;
+      return savedReportId;
     } catch {
       if (!silent) setError("Network error. Try again.");
-      return false;
+      return null;
     } finally {
       setSaving(false);
     }
@@ -165,8 +175,15 @@ export function ReportEditor({
       setError(`Your executive summary is over the ${EXEC_MAX_CHARS}-character limit. Trim it before submitting.`);
       return;
     }
-    if (!isValidUrl(reportUrl)) {
-      setError("Paste a valid link to your report folder (Google Drive, Dropbox, etc.).");
+    const linkError = submissionFolderUrlError(reportUrl, {
+      googleDriveOnly: isAdvanced,
+    });
+    if (linkError) {
+      setError(linkError);
+      return;
+    }
+    if (isAdvanced && !advancedChecklistComplete) {
+      setError("Complete all three submission checks before submitting this Advanced project.");
       return;
     }
     const noRevision = stage === "STAGE_8" || stage === "STAGE_9";
@@ -178,14 +195,14 @@ export function ReportEditor({
     if (!ok) return;
     setSubmitting(true);
     setError(null);
-    const savedOk = await saveDraft(true);
-    if (!savedOk) {
+    const savedReportId = await saveDraft(true);
+    if (!savedReportId) {
       setSubmitting(false);
       setError("Could not save before submitting. Try again.");
       return;
     }
     try {
-      const res = await fetch(`/api/reports/${reportId}/submit`, { method: "POST" });
+      const res = await fetch(`/api/reports/${savedReportId}/submit`, { method: "POST" });
       const data = await res.json();
       if (!res.ok) {
         setError(
@@ -210,8 +227,8 @@ export function ReportEditor({
     // the user is not lulled by a stale "Saved" timestamp.
     const t = setInterval(async () => {
       if (dirtyRef.current && !locked) {
-        const ok = await saveDraft(true);
-        if (!ok) {
+        const savedReportId = await saveDraft(true);
+        if (!savedReportId) {
           setError("Auto-save failed. Click Save draft to retry — your text is still here.");
         }
       }
@@ -358,29 +375,24 @@ export function ReportEditor({
             Read the full Deliverables FAQ →
           </a>
         </div>
-        <ol className="list-decimal list-inside text-sm text-foreground/80 space-y-1.5 leading-relaxed">
-          <li>
-            Write each deliverable as a <strong>Google Doc</strong> (or
-            Word .docx). PDF still accepted but Docs is recommended — the
-            graders read on web, mobile, and tablet, and Docs renders the
-            same on all three.
-          </li>
-          <li>
-            Put every deliverable the stage asks for into a single Google
-            Drive folder.
-          </li>
-          <li>
-            Right-click the folder → <strong>Share</strong> → set access to{" "}
-            <strong>anyone with the link can view</strong>, then copy the folder link.
-          </li>
-          <li>
-            Paste the folder link below, write a short executive summary, and submit.
-          </li>
-          <li>
-            Do not delete, rename, or move files in that folder after submitting — the
-            grader may revisit it.
-          </li>
-        </ol>
+        {isAdvanced ? (
+          <ol className="list-decimal list-inside text-sm text-foreground/80 space-y-1.5 leading-relaxed">
+            <li>Create one Google Drive folder named <strong>UBI-ID-{stage}</strong>. Replace UBI-ID with your own intern ID.</li>
+            <li>Place every exact filename and directory shown in <strong>Required contents of your folder</strong> at the folder root. Do not rename required artifacts or put the package inside another archive.</li>
+            <li>Keep raw evidence in its native format. Put derived outputs separately, and include the repository URL and exact clean-build commands in <strong>README.md</strong>.</li>
+            <li>Complete <strong>manifest.sha256</strong>, <strong>assessment-manifest.json</strong>, <strong>evidence-index.csv</strong>, the signed integrity attestation, and the continuity record before sharing.</li>
+            <li>Set the folder to <strong>Anyone with the link · Viewer</strong>. Open the copied URL in a private/incognito window and verify that files open without a sign-in request.</li>
+            <li>Paste that one folder URL below. Do not delete, rename, replace, or move any submitted file until results and any defense are complete.</li>
+          </ol>
+        ) : (
+          <ol className="list-decimal list-inside text-sm text-foreground/80 space-y-1.5 leading-relaxed">
+            <li>Write each deliverable as a <strong>Google Doc</strong> (or Word .docx). PDF is also accepted.</li>
+            <li>Put every deliverable the stage asks for into a single Google Drive folder.</li>
+            <li>Set access to <strong>anyone with the link can view</strong>, then copy the folder link.</li>
+            <li>Paste the folder link below, write a short executive summary, and submit.</li>
+            <li>Do not delete, rename, or move files in that folder after submitting.</li>
+          </ol>
+        )}
         <details className="mt-4">
           <summary className="text-sm font-medium text-blue cursor-pointer">
             Suggested sections for this stage
@@ -421,12 +433,12 @@ export function ReportEditor({
       <div className="space-y-6 bg-surface border border-border rounded-xl p-6">
         <section>
           <label className="block text-sm font-semibold text-foreground mb-2">
-            Link to your report folder *
+            {isAdvanced ? "Google Drive case-package folder *" : "Link to your report folder *"}
           </label>
           <p className="text-xs text-muted-foreground mb-2">
             Paste the share link to a <strong>folder</strong> containing everything the
-            stage asks for. Set it to <strong>anyone with the link can view</strong> —
-            otherwise the grader will not be able to open it.
+            stage asks for. Set it to <strong>Anyone with the link · Viewer</strong>.
+            {isAdvanced && " Google Docs and individual file links are rejected."}
           </p>
           <input
             type="url"
@@ -439,7 +451,7 @@ export function ReportEditor({
             placeholder="https://drive.google.com/drive/folders/…"
             className="w-full p-3 border border-border rounded-lg bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-blue/30 disabled:bg-muted/30"
           />
-          {reportUrl && isValidUrl(reportUrl) && (
+          {reportUrl && !submissionFolderUrlError(reportUrl, { googleDriveOnly: isAdvanced }) && (
             <a
               href={reportUrl}
               target="_blank"
@@ -449,7 +461,49 @@ export function ReportEditor({
               <ExternalLink className="h-3 w-3" /> Open folder in new tab to verify sharing
             </a>
           )}
+          {reportUrl && submissionFolderUrlError(reportUrl, { googleDriveOnly: isAdvanced }) && (
+            <p className="mt-2 text-xs text-rose-700">
+              {submissionFolderUrlError(reportUrl, { googleDriveOnly: isAdvanced })}
+            </p>
+          )}
         </section>
+
+        {isAdvanced && !locked && (
+          <fieldset className="rounded-lg border border-border bg-background p-4">
+            <legend className="px-1 text-sm font-semibold text-foreground">
+              Required submission checks
+            </legend>
+            <div className="mt-1 space-y-3 text-sm text-foreground/85">
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={contentsConfirmed}
+                  onChange={(event) => setContentsConfirmed(event.target.checked)}
+                  className="mt-1 h-4 w-4 accent-blue"
+                />
+                <span>The Drive root contains every required file and directory shown above, including the completed manifest, evidence index, attestation, README, assessment manifest, and continuity record.</span>
+              </label>
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={sharingConfirmed}
+                  onChange={(event) => setSharingConfirmed(event.target.checked)}
+                  className="mt-1 h-4 w-4 accent-blue"
+                />
+                <span>I opened this exact folder URL in a private/incognito window and confirmed that a grader can view and download the files without requesting access.</span>
+              </label>
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={integrityConfirmed}
+                  onChange={(event) => setIntegrityConfirmed(event.target.checked)}
+                  className="mt-1 h-4 w-4 accent-blue"
+                />
+                <span>The package is my frozen submission, uses my assigned variant and evidence marker, declares assistance, and will not be changed after submission.</span>
+              </label>
+            </div>
+          </fieldset>
+        )}
 
         <section>
           <label className="block text-sm font-semibold text-foreground mb-2">
@@ -496,7 +550,7 @@ export function ReportEditor({
           )}
         </section>
 
-        <section>
+        {!isAdvanced && <section>
           <label className="block text-sm font-semibold text-foreground mb-2">
             Additional attachment{" "}
             <span className="text-muted-foreground font-normal">(optional)</span>
@@ -516,7 +570,7 @@ export function ReportEditor({
             placeholder="https://…"
             className="w-full p-3 border border-border rounded-lg bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-blue/30 disabled:bg-muted/30"
           />
-        </section>
+        </section>}
 
         {error === "__SESSION_EXPIRED__" ? (
           <div className="flex flex-wrap items-center gap-3 p-3 bg-amber-50 border border-amber-300 rounded-lg text-sm text-amber-900">
@@ -567,7 +621,7 @@ export function ReportEditor({
           </button>
           <button
             onClick={submitReport}
-            disabled={submitting || locked}
+            disabled={submitting || locked || (isAdvanced && !advancedChecklistComplete)}
             className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-blue text-white hover:opacity-90 disabled:opacity-50"
           >
             {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
@@ -580,13 +634,4 @@ export function ReportEditor({
       </div>
     </div>
   );
-}
-
-function isValidUrl(v: string): boolean {
-  try {
-    const u = new URL(v);
-    return /^https?:$/.test(u.protocol);
-  } catch {
-    return false;
-  }
 }

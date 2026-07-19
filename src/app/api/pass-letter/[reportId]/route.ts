@@ -14,6 +14,10 @@ const STAGE_LABEL: Record<string, string> = {
   STAGE_3: "Stage 3 — Incident Response",
   STAGE_4: "Stage 4 — Governance & Risk",
   STAGE_5: "Stage 5 — Track Specialisation",
+  STAGE_6: "Stage 6 — Advanced Exposure",
+  STAGE_7: "Stage 7 — Security Architecture",
+  STAGE_8: "Stage 8 — Adversarial Assessment",
+  STAGE_9: "Stage 9 — Advanced Final Case",
 };
 
 // Pass / achievement letter download. Mirrors the certificate route — HMAC

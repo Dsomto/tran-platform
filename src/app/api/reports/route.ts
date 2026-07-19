@@ -5,6 +5,10 @@ import { logger } from "@/lib/logger";
 import { rateLimit, rateLimitResponse, getClientKey, RATE_LIMITS } from "@/lib/rate-limit";
 import { stageRank } from "@/lib/stage-login";
 import { redactUnreleasedReportResult } from "@/lib/report-visibility";
+import {
+  isAdvancedSubmissionStage,
+  submissionFolderUrlError,
+} from "@/lib/submission-links";
 
 const STAGE_KEYS = [
   "STAGE_0",
@@ -103,20 +107,18 @@ export async function POST(request: NextRequest) {
     if (executiveSummary.length > 5000) {
       return Response.json({ error: "Executive summary too long (max 5,000 chars)" }, { status: 400 });
     }
-    for (const [name, val] of [
-      ["reportUrl", reportUrl],
-      ["attachmentUrl", attachmentUrl],
-    ] as const) {
-      if (val && typeof val === "string" && val.trim()) {
-        try {
-          const u = new URL(val);
-          if (!/^https?:$/.test(u.protocol)) throw new Error();
-        } catch {
-          return Response.json(
-            { error: `${name} must be a valid http(s) URL` },
-            { status: 400 }
-          );
-        }
+    if (reportUrl && typeof reportUrl === "string" && reportUrl.trim()) {
+      const linkError = submissionFolderUrlError(reportUrl, {
+        googleDriveOnly: isAdvancedSubmissionStage(stage),
+      });
+      if (linkError) {
+        return Response.json({ error: linkError }, { status: 400 });
+      }
+    }
+    if (attachmentUrl && typeof attachmentUrl === "string" && attachmentUrl.trim()) {
+      const linkError = submissionFolderUrlError(attachmentUrl);
+      if (linkError) {
+        return Response.json({ error: `Additional attachment: ${linkError}` }, { status: 400 });
       }
     }
 

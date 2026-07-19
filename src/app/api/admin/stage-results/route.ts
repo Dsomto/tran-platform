@@ -820,6 +820,7 @@ async function handleFinalize(
       // Stage 4 is the Cyber Core graduation: verifiable credential + one-click
       // "Add to LinkedIn", and a graduation-specific email (no "next stage").
       const isStage4 = stage === "STAGE_4";
+      const isAdvancedFinal = stage === "STAGE_9";
       const verifyPageUrl = verifyUrl({ origin, reportId: r.id, internId: r.intern.id });
       const addToLinkedInUrl = isStage4
         ? buildAddToProfileUrl({ stageKey: stage, issuedAt, certId: certificateIdFor(r.id), certUrl: verifyPageUrl })
@@ -842,6 +843,8 @@ async function handleFinalize(
             kind: "STAGE_PASSED",
             subject: isStage4
               ? `Congratulations, ${r.intern.user.firstName}. You are now a Cyber Core Associate.`
+              : isAdvancedFinal
+                ? `Advanced Stage complete, ${r.intern.user.firstName}. Your final case is closed.`
               : `You're in. Stage ${Number(stageNum) + 1} opens Monday.`,
             body: renderResultEmail({
               firstName: r.intern.user.firstName,
@@ -856,6 +859,7 @@ async function handleFinalize(
               slackUrl,
               issuedAt,
               isGraduation: isStage4,
+              isAdvancedFinal,
               verifyPageUrl,
               addToLinkedInUrl,
               promotionUrl,
@@ -878,9 +882,9 @@ async function handleFinalize(
         }),
       ];
       // Advance only if still on this stage (don't regress someone already
-      // ahead). STAGE_4 promotion is the foundation graduation — no STAGE_5
-      // Room exists, so don't move currentStage; flip `Intern.finalist`
-      // instead so the dashboard / downstream selection can recognise them.
+      // ahead). STAGE_4 remains the foundation graduation and credential
+      // boundary. Advanced selection into STAGE_5 is performed after track
+      // allocation, so it does not happen automatically here.
       if (stage === "STAGE_4") {
         ops.push(
           prisma.intern.update({ where: { id: r.intern.id }, data: { finalist: true } }),
@@ -891,6 +895,19 @@ async function handleFinalize(
               toStage: stage,
               promotedBy: "stage-finalize",
               reason: `Graduated foundation (final ${score}, cutoff ${threshold})`,
+            },
+          })
+        );
+      } else if (isAdvancedFinal) {
+        ops.push(
+          prisma.intern.update({ where: { id: r.intern.id }, data: { finalist: true } }),
+          prisma.stageHistory.create({
+            data: {
+              internId: r.intern.id,
+              fromStage: stage,
+              toStage: stage,
+              promotedBy: "stage-finalize",
+              reason: `Completed Advanced final case (final ${score}, cutoff ${threshold})`,
             },
           })
         );
@@ -1080,6 +1097,7 @@ function renderResultEmail(opts: {
   issuedAt?: Date;
   effectiveDate?: Date;
   isGraduation?: boolean;
+  isAdvancedFinal?: boolean;
   verifyPageUrl?: string | null;
   addToLinkedInUrl?: string | null;
   promotionUrl?: string | null;
@@ -1101,6 +1119,7 @@ function renderResultEmail(opts: {
     issuedAt = new Date(),
     effectiveDate,
     isGraduation = false,
+    isAdvancedFinal = false,
     verifyPageUrl,
     addToLinkedInUrl,
     promotionUrl,
@@ -1176,6 +1195,39 @@ function renderResultEmail(opts: {
       </p>
     `;
     return emailShell({ accent: "#C9A227", body });
+  }
+
+  if (passed && isAdvancedFinal) {
+    const body = `
+      <div style="font-size:11px;letter-spacing:0.24em;text-transform:uppercase;color:#B91C1C;font-weight:700;">
+        Ubuntu Bridge Initiative &nbsp;&middot;&nbsp; Advanced Stage
+      </div>
+      <h1 style="font-size:27px;font-weight:800;line-height:1.2;margin:12px 0 8px;color:#111827;">
+        Your final case is closed, ${firstName}.
+      </h1>
+      <p style="font-size:15px;line-height:1.65;color:#334155;margin:0 0 22px;">
+        You completed all five specialist projects and cleared the final case.
+        The programme team is now completing the cross-project track ranking and
+        defense QA before the top-three announcement.
+      </p>
+      <div style="display:flex;gap:14px;align-items:baseline;margin:0 0 24px;padding:16px 18px;background:#FEF2F2;border:1px solid #FECACA;border-radius:10px;">
+        <div style="font-size:34px;font-weight:800;color:#B91C1C;line-height:1;">${score}</div>
+        <div style="font-size:13px;color:#7F1D1D;line-height:1.4;"><strong>final-case score</strong><br/>passing mark was ${passingScore}</div>
+      </div>
+      <p style="font-size:13px;line-height:1.6;color:#64748B;margin:0 0 18px;">
+        This score is one part of the published ranking; the weighted five-project
+        result and defense adjustments remain under QA. No further stage opens.
+      </p>
+      <div style="margin:0 0 10px;">
+        ${certUrl ? ctaButton(certUrl, "Download final-case certificate", "#B91C1C") : ""}
+        ${letterPdfUrl ? `&nbsp;${ctaButton(letterPdfUrl, "Download achievement letter", "#111827")}` : ""}
+      </div>
+      <p style="font-size:13px;line-height:1.6;color:#64748B;margin:22px 0 0;">
+        Your review notes are available on your dashboard,
+        <a href="${feedbackUrl}" style="color:#B91C1C;text-decoration:none;font-weight:600;">open them here</a>.
+      </p>
+    `;
+    return emailShell({ accent: "#B91C1C", body });
   }
 
   if (passed) {

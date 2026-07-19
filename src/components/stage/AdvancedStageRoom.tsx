@@ -3,15 +3,20 @@ import type { CSSProperties } from "react";
 import {
   AlertTriangle,
   ArrowRight,
+  BookOpenCheck,
   CheckCircle2,
   Clock3,
+  Coins,
   Download,
   FileCheck2,
   Gauge,
+  LifeBuoy,
+  ListStart,
   ListChecks,
   LockKeyhole,
   PackageCheck,
   Route,
+  Server,
   ShieldCheck,
   Swords,
   TerminalSquare,
@@ -20,9 +25,12 @@ import {
 } from "lucide-react";
 import {
   advancedContinuity,
+  requiredAdvancedDeliverables,
   type AdvancedProject,
+  type AdvancedResource,
   type AdvancedTrack,
 } from "@/lib/advanced-stage";
+import { advancedLearnerGuidance } from "@/lib/advanced-guidance";
 import type { AdvancedVariant } from "@/lib/advanced-variant";
 import { advancedProjectVisual } from "@/lib/advanced-visuals";
 import { AdvancedProjectInstrument } from "./AdvancedProjectInstrument";
@@ -46,6 +54,27 @@ function protectedResourceHref(stage: string, resourcePath: string) {
   return `/api/advanced-stage/resource?${query.toString()}`;
 }
 
+type ResourceBadge = "Read first" | "Required" | "Template" | "Reference";
+
+function resourceBadge(resource: AdvancedResource): ResourceBadge {
+  if (resource.label === "Project brief") return "Read first";
+  if (resource.kind === "template") return "Template";
+  if (resource.kind === "reference") return "Reference";
+  return "Required";
+}
+
+function orderedResources(resources: AdvancedResource[]) {
+  const rank: Record<ResourceBadge, number> = {
+    "Read first": 0,
+    Required: 1,
+    Template: 2,
+    Reference: 3,
+  };
+  return [...resources].sort((left, right) => (
+    rank[resourceBadge(left)] - rank[resourceBadge(right)]
+  ));
+}
+
 export function AdvancedStageRoom({
   project,
   track,
@@ -56,9 +85,9 @@ export function AdvancedStageRoom({
   preview = false,
 }: Props) {
   const visual = advancedProjectVisual(track, project.number);
-  const deliverables = project.deliverables.includes("assessment-manifest.json")
-    ? project.deliverables
-    : [...project.deliverables, "assessment-manifest.json"];
+  const deliverables = requiredAdvancedDeliverables(project);
+  const guidance = advancedLearnerGuidance(track, project);
+  const resources = orderedResources(project.resources);
   const roomStyle = {
     "--advanced-accent": visual.accent,
     "--advanced-accent-strong": visual.accentStrong,
@@ -105,6 +134,67 @@ export function AdvancedStageRoom({
         </div>
       </header>
 
+      <section className="advanced-start-here" aria-labelledby="start-here-title">
+        <header>
+          <div className="advanced-start-here__icon"><ListStart aria-hidden="true" /></div>
+          <div>
+            <div className="advanced-eyebrow">Before you touch the case</div>
+            <h2 id="start-here-title">Start here</h2>
+            <p>Complete these five actions in order. If one cannot be completed safely, stop and use the escalation guidance below.</p>
+          </div>
+        </header>
+        <ol>
+          {guidance.startHere.map((item, index) => (
+            <li key={item}>
+              <span>{String(index + 1).padStart(2, "0")}</span>
+              <p>{item}</p>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <section className="advanced-summary" aria-label="Project summary">
+        <article>
+          <span>What you build</span>
+          <p>{guidance.summary.build}</p>
+        </article>
+        <article>
+          <span>What you prove</span>
+          <p>{guidance.summary.prove}</p>
+        </article>
+        <article>
+          <span>What you submit</span>
+          <p>{guidance.summary.submit}</p>
+        </article>
+      </section>
+
+      <section className="advanced-readiness" aria-labelledby="readiness-title">
+        <header>
+          <div className="advanced-eyebrow">Readiness check</div>
+          <h2 id="readiness-title">Know the foundations and operating limits</h2>
+          <p>Prerequisites are not scored outputs. They are the minimum knowledge and environment needed to attempt the mission safely.</p>
+        </header>
+        <div className="advanced-readiness__grid">
+          <article>
+            <div className="advanced-section-title"><BookOpenCheck aria-hidden="true" /><h3>Prerequisites</h3></div>
+            <ul>{guidance.prerequisites.map((item) => <li key={item}>{item}</li>)}</ul>
+          </article>
+          <article>
+            <div className="advanced-section-title"><ListChecks aria-hidden="true" /><h3>Short glossary</h3></div>
+            <dl>
+              {guidance.glossary.map((entry) => (
+                <div key={entry.term}><dt>{entry.term}</dt><dd>{entry.meaning}</dd></div>
+              ))}
+            </dl>
+          </article>
+        </div>
+        <div className="advanced-operations">
+          <article><Server aria-hidden="true" /><div><h3>Hardware and environment</h3><p>{guidance.environment.hardware}</p></div></article>
+          <article><Coins aria-hidden="true" /><div><h3>Cost boundary</h3><p>{guidance.environment.cost}</p></div></article>
+          <article><LifeBuoy aria-hidden="true" /><div><h3>Approved fallback</h3><p>{guidance.environment.fallback}</p></div></article>
+        </div>
+      </section>
+
       <AdvancedProjectInstrument visual={visual} />
 
       <section className="advanced-marker" aria-labelledby="marker-title">
@@ -148,6 +238,33 @@ export function AdvancedStageRoom({
         </div>
       </section>
 
+      <section className="advanced-assessment" aria-labelledby="assessment-title">
+        <header>
+          <div>
+            <div className="advanced-eyebrow">Scoring and pass decision</div>
+            <h2 id="assessment-title">Know exactly how the project is judged</h2>
+          </div>
+          <div className="advanced-pass-mark"><strong>70%</strong><span>minimum pass mark</span></div>
+        </header>
+        <div className="advanced-assessment__grid">
+          <div className="advanced-rubric">
+            <h3>Rubric · 100 points</h3>
+            <ul>
+              {guidance.rubric.map((criterion) => (
+                <li key={criterion.label}>
+                  <div><span>{criterion.label}</span><strong>{criterion.weight}%</strong></div>
+                  <div className="advanced-rubric__bar" aria-hidden="true"><span style={{ width: `${criterion.weight}%` }} /></div>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <aside>
+            <h3>Pass requirements</h3>
+            <ol>{guidance.passRequirements.map((item) => <li key={item}>{item}</li>)}</ol>
+          </aside>
+        </div>
+      </section>
+
       <div className="advanced-columns">
         <section aria-labelledby="setup-title">
           <div className="advanced-section-title"><TerminalSquare aria-hidden="true" /><h2 id="setup-title">01 · Environment gate</h2></div>
@@ -182,6 +299,27 @@ export function AdvancedStageRoom({
         </div>
       </section>
 
+      <section className="advanced-decision-rules" aria-labelledby="decision-rules-title">
+        <header>
+          <div className="advanced-eyebrow">Decision rules and help</div>
+          <h2 id="decision-rules-title">Revision, failure, and escalation</h2>
+        </header>
+        <div>
+          <article>
+            <h3><FileCheck2 aria-hidden="true" /> Revision rule</h3>
+            <p>{guidance.revisionRule}</p>
+          </article>
+          <article>
+            <h3><AlertTriangle aria-hidden="true" /> What stops a pass</h3>
+            <ul>{guidance.automaticFailureRules.map((item) => <li key={item}>{item}</li>)}</ul>
+          </article>
+          <article>
+            <h3><LifeBuoy aria-hidden="true" /> Support and escalation</h3>
+            <ol>{guidance.supportRules.map((item) => <li key={item}>{item}</li>)}</ol>
+          </article>
+        </div>
+      </section>
+
       <section aria-labelledby="deliverables-title">
         <div className="advanced-section-heading">
           <div>
@@ -208,15 +346,15 @@ export function AdvancedStageRoom({
           {!preview && (
             <a href={`/api/advanced-stage/assignment?stage=${project.stage}`} target="_blank" rel="noreferrer noopener">
               <span className="advanced-download-icon"><LockKeyhole aria-hidden="true" /></span>
-              <span><strong>Your assignment overlay</strong><small>Private marker, variant pool, and facts that supersede the base pack.</small></span>
+              <span><span className="advanced-resource-badge">Required</span><strong>Your assignment overlay</strong><small>Private marker, variant pool, and facts that supersede the base pack.</small></span>
               <ArrowRight aria-hidden="true" />
             </a>
           )}
-          {project.resources.map((resource) => {
+          {resources.map((resource) => {
             const resourceSummary = (
               <>
                 <span className="advanced-download-icon"><Download aria-hidden="true" /></span>
-                <span><strong>{resource.label}</strong><small>{resource.description}</small></span>
+                <span><span className="advanced-resource-badge">{resourceBadge(resource)}</span><strong>{resource.label}</strong><small>{resource.description}</small></span>
               </>
             );
 
@@ -253,7 +391,7 @@ export function AdvancedStageRoom({
         <div>
           <span className="advanced-eyebrow">One folder, one manifest, one decision</span>
           <h2>Submit the case package</h2>
-          <p>Upload the deliverables to one view-only folder. The executive summary belongs in netforge; raw evidence stays in the linked package.</p>
+          <p>Upload the deliverables to one view-only folder. The executive summary belongs in the UBI submission form; raw evidence stays in the linked package.</p>
         </div>
         {preview ? (
           <span className="advanced-submit__preview">Submission disabled in preview</span>

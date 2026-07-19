@@ -33,8 +33,8 @@ export default async function StagePreviewDetail({
 
   const route = await params;
   const track = TRACK_BY_SLUG[route.track];
-  const stageNumber = Number.parseInt(route.stage, 10);
-  if (!track || stageNumber < 5 || stageNumber > 9) notFound();
+  if (!track || !/^[5-9]$/.test(route.stage)) notFound();
+  const stageNumber = Number(route.stage);
 
   const project = ADVANCED_PROJECTS[track][stageNumber - 5];
   if (!project) notFound();

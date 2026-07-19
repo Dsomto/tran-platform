@@ -32,6 +32,8 @@ export default function StageShell({
   internCode?: string;
   rightNav?: ReactNode;
 }) {
+  const isAdvancedStage = /^stage-[5-9]$/.test(theme.slug);
+
   return (
     <div className={`min-h-screen text-white ${theme.backgroundClass}`}>
       <header className="border-b border-white/10 backdrop-blur-md bg-black/30 sticky top-0 z-40">
@@ -44,6 +46,11 @@ export default function StageShell({
               {theme.logoGlyph}
             </div>
             <div className="leading-tight">
+              {isAdvancedStage && (
+                <div className="text-[10px] uppercase tracking-[0.14em] text-white/55 font-semibold">
+                  UBI · The Root Access Network
+                </div>
+              )}
               <div className="font-semibold">{theme.name}</div>
               <div className="text-[11px] text-white/50 font-mono">{theme.codename}</div>
             </div>
@@ -60,7 +67,7 @@ export default function StageShell({
       </header>
       <main className="max-w-6xl mx-auto px-5 py-8">{children}</main>
       <footer className="border-t border-white/10 mt-16 py-6 text-center text-xs text-white/40">
-        TRAN · Operation Root Access · {theme.codename}
+        UBI · The Root Access Network · {theme.codename}
       </footer>
     </div>
   );

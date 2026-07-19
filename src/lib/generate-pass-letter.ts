@@ -30,6 +30,16 @@ const STAGE_WORK: Record<string, string> = {
     "you built incident playbooks a tired analyst can follow, reconstructed the timeline out of messy logs, contained the incident without taking the business offline, and wrote the post-mortem that changes how we work",
   STAGE_4:
     "you wrote policy people will actually read, briefed risk to a board in their language, mapped our controls to ISO 27001 honestly, and measured the improvement that followed",
+  STAGE_5:
+    "you established a defensible evidence baseline in your chosen track and proved that every material claim could be traced back to work you performed",
+  STAGE_6:
+    "you worked through a live exposure problem, separated genuine risk from attractive noise, and produced decisions another practitioner could reproduce",
+  STAGE_7:
+    "you designed and tested a security architecture under real constraints, documented the trade-offs, and showed where your own design could fail",
+  STAGE_8:
+    "you completed an adversarial assessment without a revision safety net, defended your judgment under changed facts, and preserved a clean evidence chain",
+  STAGE_9:
+    "you led an ambiguous final case from raw evidence to executive decision, defended the work live, and demonstrated advanced capability in your chosen track",
 };
 
 // In-world promotion letter from Sankofa Digital — the case company the intern

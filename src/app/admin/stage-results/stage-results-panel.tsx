@@ -45,6 +45,11 @@ const STAGES = [
   { key: "STAGE_2", label: "Stage 2 — Web Application Security" },
   { key: "STAGE_3", label: "Stage 3 — Incident Response" },
   { key: "STAGE_4", label: "Stage 4 — Governance & Risk" },
+  { key: "STAGE_5", label: "Advanced 1 — Signal" },
+  { key: "STAGE_6", label: "Advanced 2 — Exposure" },
+  { key: "STAGE_7", label: "Advanced 3 — Architecture" },
+  { key: "STAGE_8", label: "Advanced 4 — Adversity" },
+  { key: "STAGE_9", label: "Advanced 5 — The Final Case" },
 ];
 
 export function StageResultsPanel() {

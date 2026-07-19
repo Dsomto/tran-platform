@@ -42,6 +42,36 @@ const STAGE_COMPETENCIES: Record<string, string[]> = {
     "ISO 27001 mapping, honestly",
     "Measuring real improvement",
   ],
+  STAGE_5: [
+    "Evidence integrity",
+    "Reproducible analysis",
+    "Track fundamentals",
+    "Technical defense",
+  ],
+  STAGE_6: [
+    "Exposure validation",
+    "Risk prioritisation",
+    "Operational reporting",
+    "Remediation judgment",
+  ],
+  STAGE_7: [
+    "Security architecture",
+    "Control testing",
+    "Trade-off analysis",
+    "Failure-mode reasoning",
+  ],
+  STAGE_8: [
+    "Adversarial assessment",
+    "Evidence preservation",
+    "Decision defense",
+    "Changed-fact response",
+  ],
+  STAGE_9: [
+    "Advanced case leadership",
+    "Executive communication",
+    "Live technical defense",
+    "Track mastery",
+  ],
 };
 
 // Navy structure, website-blue accents, a real gold seal. Blues aligned to the

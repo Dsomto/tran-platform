@@ -7,11 +7,13 @@ import { STAGE_BRIEFS } from "@/lib/stage-briefs";
 import { EVIDENCE_PACK } from "@/lib/evidence-pack";
 import { STAGE_STORIES } from "@/lib/stage-story";
 import { isReportResultReleased, publicReportStatus } from "@/lib/report-visibility";
+import { stageRank } from "@/lib/stage-login";
 import { ReportEditor } from "./report-editor";
 import {
   advancedTrackLabel,
   getAdvancedProject,
   isAdvancedStage,
+  requiredAdvancedDeliverables,
   type AdvancedTrack,
 } from "@/lib/advanced-stage";
 
@@ -41,6 +43,9 @@ export default async function ReportEditorPage({
     where: { userId: session.id },
   });
   if (!intern) redirect("/dashboard");
+  if (!intern.isActive || stageRank(stage) > stageRank(intern.currentStage)) {
+    redirect("/dashboard");
+  }
 
   const [existing, window] = await Promise.all([
     prisma.stageReport.findUnique({
@@ -74,7 +79,7 @@ export default async function ReportEditorPage({
           </h1>
           <p className="text-sm text-muted-foreground mb-5">
             The programme team has not opened {brief?.label ?? `Advanced Project ${advancedProject?.number}`} for this cohort.
-            You will get an email and a pinned announcement as soon as it opens.
+            Return here when the programme team opens this project. Any announcement will appear on your dashboard.
           </p>
           <Link
             href="/dashboard/assignments"
@@ -107,7 +112,7 @@ export default async function ReportEditorPage({
       ]
     : brief!.sections;
   const folderContents = advancedProject
-    ? advancedProject.deliverables.map((deliverable, index) => ({
+    ? requiredAdvancedDeliverables(advancedProject).map((deliverable, index) => ({
         id: `advanced-${advancedProject.number}-${index + 1}`,
         title: deliverable,
         deliverable,

@@ -104,7 +104,8 @@ export async function GET(request: NextRequest) {
     !artifact.revokedAt &&
     artifact.track === intern.track &&
     artifact.variant === variant.variant &&
-    artifact.marker === variant.marker
+    artifact.marker === variant.marker &&
+    (!artifact.expiresAt || artifact.expiresAt.getTime() > Date.now())
       ? artifact
       : null;
   const lines = [

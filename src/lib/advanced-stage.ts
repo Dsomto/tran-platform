@@ -36,6 +36,32 @@ export type AdvancedTrackOutcome = {
   destination: string;
 };
 
+/** Files required by the submission contract for every advanced project. */
+export const ADVANCED_COMMON_DELIVERABLES = [
+  "evidence-index.csv",
+  "manifest.sha256",
+  "integrity-attestation.md",
+  "README.md",
+  "assessment-manifest.json",
+  "continuity-record.md",
+] as const;
+
+/**
+ * Return the one controlling deliverable list used across the project room,
+ * track workspace, and report editor. Project-specific ordering is preserved,
+ * and common files already listed by a project are not duplicated.
+ */
+export function requiredAdvancedDeliverables(
+  project: Pick<AdvancedProject, "deliverables">
+): string[] {
+  return [
+    ...project.deliverables,
+    ...ADVANCED_COMMON_DELIVERABLES.filter(
+      (file) => !project.deliverables.includes(file)
+    ),
+  ];
+}
+
 export const ADVANCED_TRACK_OUTCOMES: Record<AdvancedTrack, AdvancedTrackOutcome> = {
   SOC_ANALYSIS: {
     learning: [
@@ -94,6 +120,12 @@ const common = (stage: number): AdvancedResource[] => [
     kind: "template",
   },
   {
+    label: "Evidence index example",
+    href: "/advanced-stage/common/evidence-index-example.csv",
+    description: "A fictional, non-answer row showing the expected locator and reasoning standard.",
+    kind: "reference",
+  },
+  {
     label: "Technical assessment contract",
     href: "/advanced-stage/common/technical-assessment-contract.md",
     description: "Objective build, hidden-test, reliability, and reproduction rules for every project.",
@@ -104,6 +136,12 @@ const common = (stage: number): AdvancedResource[] => [
     href: "/advanced-stage/common/assessment-manifest-template.json",
     description: "Machine-readable clean-build commands, versions, test counts, runtimes, and output hashes.",
     kind: "template",
+  },
+  {
+    label: "Assessment manifest example",
+    href: "/advanced-stage/common/assessment-manifest-example.json",
+    description: "A fictional, non-answer manifest showing structure without project values or solutions.",
+    kind: "reference",
   },
   {
     label: "Defense readiness",

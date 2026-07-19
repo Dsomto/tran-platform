@@ -24,9 +24,12 @@ import {
   ADVANCED_TRACK_OUTCOMES,
   advancedContinuity,
   advancedTrackLabel,
+  requiredAdvancedDeliverables,
   type AdvancedTrack,
 } from "@/lib/advanced-stage";
 import { advancedProjectVisual, ADVANCED_TRACK_VISUALS } from "@/lib/advanced-visuals";
+import { advancedVariantFor } from "@/lib/advanced-variant";
+import { resolvedInternCode } from "@/lib/intern-code";
 import { stageRank, type StageKey } from "@/lib/stage-login";
 import { stageUrl } from "@/lib/stage-routes";
 import styles from "./advanced-track.module.css";
@@ -34,6 +37,10 @@ import styles from "./advanced-track.module.css";
 type AdvancedStage = Extract<StageKey, "STAGE_5" | "STAGE_6" | "STAGE_7" | "STAGE_8" | "STAGE_9">;
 
 const ADVANCED_STAGES: AdvancedStage[] = ["STAGE_5", "STAGE_6", "STAGE_7", "STAGE_8", "STAGE_9"];
+
+function isArtifactGrantCurrent(expiresAt: Date | null): boolean {
+  return !expiresAt || expiresAt.getTime() > Date.now();
+}
 
 export default async function AdvancedTrackPage() {
   const session = await getSession();
@@ -51,7 +58,7 @@ export default async function AdvancedTrackPage() {
   const track = intern.track as AdvancedTrack;
   const trackVisual = ADVANCED_TRACK_VISUALS[track];
   const trackOutcome = ADVANCED_TRACK_OUTCOMES[track];
-  const [windows, reports, artifactGrants] = await Promise.all([
+  const [windows, reports, artifactGrants, publicApp] = await Promise.all([
     prisma.stageWindow.findMany({
       where: { stage: { in: ADVANCED_STAGES } },
       select: { stage: true, status: true },
@@ -62,13 +69,35 @@ export default async function AdvancedTrackPage() {
     }),
     prisma.advancedArtifactGrant.findMany({
       where: { internId: intern.id, stage: { in: ADVANCED_STAGES }, revokedAt: null },
-      select: { stage: true, sha256: true, sizeBytes: true, expiresAt: true },
+      select: {
+        stage: true,
+        track: true,
+        variant: true,
+        marker: true,
+        sha256: true,
+        sizeBytes: true,
+        expiresAt: true,
+      },
+    }),
+    prisma.publicApplication.findFirst({
+      where: { email: session.email.toLowerCase() },
+      select: { internId: true },
     }),
   ]);
 
   const windowByStage = new Map(windows.map((window) => [window.stage, window]));
   const reportByStage = new Map(reports.map((report) => [report.stage, report]));
-  const artifactByStage = new Map(artifactGrants.map((grant) => [grant.stage, grant]));
+  const internCode = resolvedInternCode(publicApp?.internId);
+  const validArtifactGrants = artifactGrants.filter((grant) => {
+    const expected = advancedVariantFor(intern.id, internCode, grant.stage);
+    return (
+      grant.track === track &&
+      grant.variant === expected.variant &&
+      grant.marker === expected.marker &&
+      isArtifactGrantCurrent(grant.expiresAt)
+    );
+  });
+  const artifactByStage = new Map(validArtifactGrants.map((grant) => [grant.stage, grant]));
   const pageStyle = { "--track-accent": trackVisual.accent } as CSSProperties;
 
   return (
@@ -118,7 +147,7 @@ export default async function AdvancedTrackPage() {
           </div>
           <div className={styles.resourceNote}>
             <BookOpenCheck aria-hidden="true" />
-            <p><strong>Support appears inside each open project.</strong> You receive the controlling mission brief, assigned case material, starter schemas, public fixtures, evidence templates, and defense-readiness guidance for that stage.</p>
+            <p><strong>Each open project begins with a five-step start guide.</strong> It also shows prerequisites, a short glossary, hardware and cost limits, the approved fallback, the exact 100-point rubric, pass gates, examples, and support rules beside the controlling case materials.</p>
           </div>
         </section>
 
@@ -138,9 +167,7 @@ export default async function AdvancedTrackPage() {
             const stageWindow = windowByStage.get(stage);
             const report = reportByStage.get(stage);
             const artifact = artifactByStage.get(stage);
-            const requiredCommonArtifacts = ["assessment-manifest.json", "continuity-record.md"].filter(
-              (file) => !project.deliverables.includes(file)
-            );
+            const deliverables = requiredAdvancedDeliverables(project);
             const reached = stageRank(stage) <= stageRank(intern.currentStage);
             const isCurrent = stage === intern.currentStage;
             const isOpen = reached && stageWindow?.status === "OPEN";
@@ -229,11 +256,10 @@ export default async function AdvancedTrackPage() {
                     <section className={styles.briefDeliverables}>
                       <div>
                         <h5>Required case package</h5>
-                        <p>{project.deliverables.length + requiredCommonArtifacts.length} artifacts, submitted as one traceable package.</p>
+                        <p>{deliverables.length} artifacts, submitted as one traceable package.</p>
                       </div>
                       <div className={styles.deliverableList}>
-                        {project.deliverables.map((file) => <code key={file}>{file}</code>)}
-                        {requiredCommonArtifacts.map((file) => <code key={file}>{file}</code>)}
+                        {deliverables.map((file) => <code key={file}>{file}</code>)}
                       </div>
                     </section>
 

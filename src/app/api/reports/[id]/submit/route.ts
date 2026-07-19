@@ -4,6 +4,10 @@ import { getSession } from "@/lib/auth";
 import { logger } from "@/lib/logger";
 import { rateLimit, rateLimitResponse, getClientKey, RATE_LIMITS } from "@/lib/rate-limit";
 import { stageRank } from "@/lib/stage-login";
+import {
+  isAdvancedSubmissionStage,
+  submissionFolderUrlError,
+} from "@/lib/submission-links";
 
 class ConcurrentSubmissionError extends Error {}
 
@@ -66,6 +70,12 @@ export async function POST(
         { status: 400 }
       );
     }
+    const linkError = submissionFolderUrlError(report.reportUrl, {
+      googleDriveOnly: isAdvancedSubmissionStage(report.stage),
+    });
+    if (linkError) {
+      return Response.json({ error: linkError }, { status: 400 });
+    }
 
     const wasSubmitted = report.submittedAt !== null;
     const maxAdvancedSubmissions =
@@ -91,7 +101,14 @@ export async function POST(
           id: report.id,
           version: report.version,
           status: report.status,
-          submittedAt: report.submittedAt,
+          ...(report.submittedAt
+            ? { submittedAt: report.submittedAt }
+            : {
+                OR: [
+                  { submittedAt: null },
+                  { submittedAt: { isSet: false } },
+                ],
+              }),
         },
         data: {
           status: "SUBMITTED",

@@ -3,380 +3,63 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Advanced Stage — Hands-On Projects (v2, post-review)</title>
+<title>NetForge Advanced Stage - Technical Projects</title>
 <style>
-  :root{
-    --bg:#f6f7f9; --card:#ffffff; --ink:#15171c; --muted:#586074; --line:#e5e7eb;
-    --soc:#2563eb; --grc:#7c3aed; --eh:#dc2626;
-    --chip:#eef1f6; --chipink:#39414f;
-    --proofbg:#ecfdf5; --proofink:#065f46; --proofline:#a7f3d0;
-    --getbg:#f1f5f9; --termbg:#0f1420; --termink:#d7e0ef; --termkey:#7fd1ff; --termcmt:#7c88a1;
-    --learnbg:#fff7ed; --learnink:#9a3412; --learnline:#fed7aa;
-  }
-  @media (prefers-color-scheme:dark){
-    :root{ --bg:#0d0e12; --card:#15171d; --ink:#eceef3; --muted:#9aa2b1; --line:#252a33;
-      --chip:#1e222b; --chipink:#c8cedb; --proofbg:#0c2a20; --proofink:#6ee7b7; --proofline:#14503b; --getbg:#191d25;
-      --learnbg:#241a10; --learnink:#fdba74; --learnline:#5a3a1a;}
-  }
-  *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--ink);
-    font:16px/1.62 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;}
-  .wrap{max-width:940px;margin:0 auto;padding:40px 22px 90px;}
-  .kicker{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);font-weight:700;}
-  h1{font-size:34px;line-height:1.1;letter-spacing:-.9px;margin:12px 0 8px;font-weight:800;}
-  .sub{color:var(--muted);font-size:16px;max-width:76ch;}
-  .note{margin:16px 0;padding:15px 18px;border:1px solid var(--line);border-radius:12px;background:var(--card);font-size:14.5px;}
-  .note b{color:var(--ink)} .note.key{border-left:4px solid #10b981} .note.warn{border-left:4px solid #f59e0b} .note.verify{border-left:4px solid #6366f1}
-  h2.track{font-size:13px;letter-spacing:.16em;text-transform:uppercase;font-weight:800;margin:56px 0 2px;padding-top:24px;border-top:1px solid var(--line);}
-  .track-name{font-size:27px;font-weight:800;letter-spacing:-.5px;margin:2px 0 4px;}
-  .track-goal{color:var(--muted);font-size:15px;margin:0 0 4px;max-width:76ch;}
-  .ladder{font-size:12.5px;color:var(--muted);margin:8px 0 2px}
-  .ladder b{color:var(--ink)}
-  .soc .track-name,.soc h2.track{color:var(--soc)} .grc .track-name,.grc h2.track{color:var(--grc)} .eh .track-name,.eh h2.track{color:var(--eh)}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;margin:16px 0;}
-  .soc .card{border-top:3px solid var(--soc)} .grc .card{border-top:3px solid var(--grc)} .eh .card{border-top:3px solid var(--eh)}
-  .chead{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;}
-  .pnum{font-size:11.5px;font-weight:800;color:var(--muted);letter-spacing:.08em;}
-  .ptitle{font-size:20px;font-weight:800;letter-spacing:-.3px;margin:2px 0 0;flex:1 1 100%;}
-  .meta{display:flex;gap:16px;flex-wrap:wrap;margin:6px 0 14px;font-size:12.5px;color:var(--muted);align-items:center;}
-  .dots{letter-spacing:2px;font-size:11px} .dots b{color:var(--eh)} .dots span{opacity:.25}
-  .row{margin:12px 0}
-  .lbl{font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:800;color:var(--muted);margin-bottom:5px;}
-  .get{background:var(--getbg);border-radius:10px;padding:11px 13px;font-size:14.5px;}
-  .setup{background:var(--termbg);color:var(--termink);border-radius:10px;padding:13px 15px;font:13px/1.7 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;overflow-x:auto;}
-  .setup .c{color:var(--termcmt)} .setup .k{color:var(--termkey)} .setup b{color:#fff}
-  .mission{font-size:15px} .mission ul{margin:6px 0 0;padding-left:20px} .mission li{margin:4px 0}
-  .proof{background:var(--proofbg);border:1px solid var(--proofline);color:var(--proofink);border-radius:10px;padding:11px 13px;font-size:14px;}
-  .proof b{color:var(--proofink)}
-  .learn{background:var(--learnbg);border:1px solid var(--learnline);color:var(--learnink);border-radius:10px;padding:10px 13px;font-size:13.5px;}
-  .learn b{color:var(--learnink)}
-  .chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:5px}
-  .chip{font-size:12.5px;font-weight:700;background:var(--chip);border:1px solid var(--line);color:var(--chipink);border-radius:999px;padding:4px 11px;}
-  .submit{font-size:14.5px} .submit b{color:var(--ink)}
-  code{background:var(--chip);padding:1px 6px;border-radius:5px;font-size:13px}
-  .fix{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.06em;background:#6366f1;color:#fff;border-radius:5px;padding:1px 7px;margin-left:6px;vertical-align:middle;}
-  footer{margin-top:56px;color:var(--muted);font-size:13px;text-align:center}
-  @media print{body{background:#fff}.card,.note{break-inside:avoid}.setup{background:#0f1420!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+  :root { color-scheme: light dark; --bg:#f5f6f8; --panel:#fff; --ink:#17191f; --muted:#5c6472; --line:#dfe3e8; --soc:#0057b8; --eh:#b42318; --grc:#287a3d; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.55 system-ui,sans-serif; }
+  main { width:min(1120px,calc(100% - 32px)); margin:0 auto; padding:42px 0 72px; }
+  h1 { margin:8px 0; font-size:clamp(30px,5vw,52px); letter-spacing:0; line-height:1.05; }
+  h2 { margin:42px 0 12px; font-size:22px; letter-spacing:0; }
+  p { max-width:82ch; } .muted { color:var(--muted); }
+  .contract { border:1px solid var(--line); border-left:5px solid var(--ink); background:var(--panel); padding:18px; margin:24px 0; }
+  .grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
+  article { min-width:0; border:1px solid var(--line); border-top:4px solid var(--track); background:var(--panel); padding:16px; border-radius:6px; }
+  article h3 { margin:4px 0 8px; font-size:17px; letter-spacing:0; }
+  article p { margin:7px 0; color:var(--muted); }
+  .meta { font:700 12px/1.4 ui-monospace,monospace; color:var(--track); }
+  .test { color:var(--ink); font-weight:650; }
+  .soc { --track:var(--soc); } .eh { --track:var(--eh); } .grc { --track:var(--grc); }
+  code { font-size:13px; }
+  @media (max-width:850px) { .grid { grid-template-columns:1fr; } }
+  @media (prefers-color-scheme:dark) { :root { --bg:#101216; --panel:#181b21; --ink:#f0f2f5; --muted:#aab1bc; --line:#303640; --soc:#58a6ff; --eh:#ff7b72; --grc:#63c174; } }
 </style>
 </head>
 <body>
-<div class="wrap">
+<main>
+  <div class="meta">NETFORGE / ADVANCED STAGE / TECHNICAL CONTRACT V3</div>
+  <h1>Fifteen builds. Fifteen objective test gates.</h1>
+  <p class="muted">Three projects per track survive only if the candidate can build the system, pass published tests, transfer it to a deterministic hidden fixture, and reproduce it from a clean state. Reports explain the work; reports never replace the work.</p>
+  <div class="contract"><strong>Universal gate.</strong> No runnable implementation caps at 49. A failing public suite caps at 59. A failing hidden transfer fixture caps at 69. Hard-coded variant answers cap at 49 and trigger integrity review. Out-of-scope or unsafe execution fails the project.</div>
 
-<div class="kicker">netforge · Ubuntu Bridge Initiative · Advanced Stage · v2 (post-review)</div>
-<h1>Hands-On Projects — with full setup</h1>
-<p class="sub">Fifteen real builds across three tracks. Each project tells the intern <b>exactly what to download and how</b>, hands them a hard objective with a definite proof, and scales relentlessly. Revised after an external technical review: GRC rebuilt around a real ISO 27001 audit, EH-1 hardened against copying, tooling reliability fixed, and a proper verification + video-defense layer added.</p>
+  <h2>SOC Analyst</h2>
+  <section class="grid soc">
+    <article><div class="meta">A1 / 8 DAYS / ONE REVISION</div><h3>Production Hunt Engine</h3><p>DuckDB pipeline for 5-8M rows, three schemas per source, malformed rows, aliases, duplicates, and inferred clock offsets.</p><p class="test">Gate: <=20-minute clean run, deterministic hashes, exact 250k hidden-shard oracle.</p></article>
+    <article><div class="meta">A2 / 9 DAYS / ONE REVISION</div><h3>Deception Sensor Pipeline</h3><p>Isolated T-Pot plus adapters, sessionization, clustering, payload ledger, STIX, and tested detection output.</p><p class="test">Gate: three-view isolation, exact sealed replay, clean redeploy and alert within 45 minutes.</p></article>
+    <article><div class="meta">A3 / 10 DAYS / ONE REVISION</div><h3>Network Detection Range as Code</h3><p>Containerlab, FRR, nftables, Zeek/Suricata, seven zones, services, telemetry, and no manual node state.</p><p class="test">Gate: <code>make clean &amp;&amp; make lab &amp;&amp; make test</code>, 30 public + 5 hidden paths and three injected faults.</p></article>
+    <article><div class="meta">A4 / 10 DAYS / NO REVISION</div><h3>Detection Engineering</h3><p>Twelve ATT&amp;CK procedures, 24 benign controls, six correlation rules, mutation testing, and explicit telemetry-failure diagnosis.</p><p class="test">Gate: 12/12 canonical, 24/24 benign, >=6/8 hidden mutations, 0/12 hidden benign alerts.</p></article>
+    <article><div class="meta">A5 / 14 DAYS / NO REVISION</div><h3>Full Incident Response</h3><p>Parser-built three-host timeline from email, disk, memory, EVTX, identity, PCAP, and proxy evidence; reconstruct the split archive.</p><p class="test">Gate: exact archive/hash/counts, exact timeline pivots, detection holdout, two raw-evidence reproductions.</p></article>
+  </section>
 
-<div class="note key"><b>Everything is download-and-run.</b> Each project has a <b>Set it up</b> block with real commands. All targets are free and open-source. Nothing runs on netforge — interns build on their own machine, VM, or free-tier cloud, and submit the report + proof.</div>
+  <h2>Ethical Hacking / VAPT</h2>
+  <section class="grid eh">
+    <article><div class="meta">A1 / 8 DAYS / ONE REVISION</div><h3>Recon Engine and Foothold</h3><p>Typed, resumable, rate-limited recon platform against a hosted private target. Staff never ship target runtime or secrets.</p><p class="test">Gate: 20 hidden parser/scope tests, >=90% service recall, zero decoy packets, stable fallback/resume hash.</p></article>
+    <article><div class="meta">A2 / 9 DAYS / ONE REVISION</div><h3>Exploit Chain as Code</h3><p>Two vulnerability classes, runtime discovery, planted rabbit hole, complete cleanup, patch, and service regression tests.</p><p class="test">Gate: 5/5 clean chains, hidden config variant, both patched preconditions blocked with service tests green.</p></article>
+    <article><div class="meta">A3 / 10 DAYS / ONE REVISION</div><h3>Custom AWS IAM Range</h3><p>Effective-permission analysis across identity/resource policy, trust, and boundaries; decoy edge; Terraform remediation.</p><p class="test">Gate: exact secret and CloudTrail order, workload tests green, attack paths blocked, empty residual baseline.</p></article>
+    <article><div class="meta">A4 / 12 DAYS / NO REVISION</div><h3>Own the Forest</h3><p>Two distinct GOAD-Light paths, one credential-plus-ACL/delegation chain, dynamic automation, remediation, and detections.</p><p class="test">Gate: two private flags, 3/3 clean automation, remediated edge failures, positive/benign detection tests.</p></article>
+    <article><div class="meta">A5 / 14 DAYS / NO REVISION</div><h3>Full VAPT and Retest</h3><p>Finding tests and a dynamic three-host crown-jewel chain across web, API roles, and infrastructure; patched release includes a regression.</p><p class="test">Gate: chain 3/3, one-record limit, exact vulnerable/patched verdicts, planted regression, cleanup and scope.</p></article>
+  </section>
 
-<div class="note verify"><b>Verification &amp; anti-bluff (applies to every project).</b> Screenshots alone don't count — interns submit <b>raw artifacts</b>: command history, raw tool exports, file hashes, git commit history with timestamps. Each intern gets a <b>unique variant</b> (different target config / data / seed) so answers can't be shared. <b>Projects 4 and 5 in every track require a video defense</b> — a screen-recorded walkthrough where they reproduce a key step live and answer unseen questions ("show me the log line", "why not this alternative?", "what would change your conclusion?"). This is what an LLM-written report cannot survive.</div>
+  <h2>GRC Analyst</h2>
+  <section class="grid grc">
+    <article><div class="meta">A1 / 8 DAYS / ONE REVISION</div><h3>Policy as Code</h3><p>Map and implement the variant's three assigned outcomes with shared-schema OPA/Rego enforcement, fail-closed exceptions, and generated reporting.</p><p class="test">Gate: 18 public + 12 hidden fixtures; malformed, missing, and expired states return exact violations.</p></article>
+    <article><div class="meta">A2 / 9 DAYS / ONE REVISION</div><h3>Vendor Evidence Verifier</h3><p>Typed schemas, integrity-chain checks, deletion-state validation, subprocessor graph, and executable commercial conditions.</p><p class="test">Gate: 20 public + 10 hidden fixtures, graph validation, replacement-export regeneration without source edits.</p></article>
+    <article><div class="meta">A3 / 10 DAYS / ONE REVISION</div><h3>Automated ISO Evidence Audit</h3><p>Hash-validating collector, deterministic sampler, verdict generator, prior-finding checks, and generated nonconformities.</p><p class="test">Gate: 24 public + 12 hidden fixtures, stable samples/hashes, exact holdout nonconformity snapshot.</p></article>
+    <article><div class="meta">A4 / 12 DAYS / NO REVISION</div><h3>Hardening as Code and Risk</h3><p>Idempotent Ansible roles, tested rollback, service safety, scanner delta, and a fixture-tested quantitative treatment model.</p><p class="test">Gate: zero-change second run, rollback/reapply green, >=8 security deltas, hidden budget/asset calculation exact.</p></article>
+    <article><div class="meta">A5 / 14 DAYS / NO REVISION</div><h3>Breach Governance Engine</h3><p>Jurisdiction rules, population deduplication, awareness and notice clocks, work items, and row-to-rule traceability.</p><p class="test">Gate: exact V1-V6 and hidden awareness/encryption/overlap/California snapshots with no source edits.</p></article>
+  </section>
 
-<div class="note warn"><b>Learn first, not walkthroughs.</b> The hardest projects list a <span style="color:var(--learnink)">Learn first</span> pointer to the technique (reading + a warm-up), never a walkthrough. Interns may learn the method — they must still do the work on their own variant. This keeps the bar high without cutting good raw talent that simply hadn't met the tool yet.</div>
-
-<div class="note warn"><b>Ethical Hacking safety:</b> every target is published specifically to be attacked (VulnHub, CloudGoat, GOAD…). Run on an <b>isolated host-only network</b>, self-owned targets only. Out-of-scope = automatic fail.</div>
-
-<!-- ============================= SOC ============================= -->
-<section class="soc">
-<h2 class="track">Track 1 — Blue Team</h2>
-<div class="track-name">SOC Analyst</div>
-<p class="track-goal">Build the defences and analyse at scale. Deploy honeypots, ingest millions of logs past traps built to fool automated tools, design and defend a real network, and prove your detections fire.</p>
-<p class="ladder"><b>Difficulty ladder:</b> large-scale log hunt (build a pipeline) → live honeypot → design+defend a network → detection lab that catches live attacks → reconstruct a full intrusion from RAM + packets.</p>
-
-<div class="card">
-  <div class="chead"><span class="pnum">PROJECT 1 · 7 DAYS · ●●●○○</span><h3 class="ptitle">Millions of Lines — Large-Scale Threat Hunt</h3></div>
-  <div class="meta"><span>Difficulty <span class="dots"><b>●●●</b><span>●●</span></span></span><span>Revision: 1</span></div>
-  <div class="row"><div class="lbl">Set it up</div><div class="setup">
-pip install duckdb <span class="c"># fast local query engine for the log pack</span><br>
-<span class="c"># OR a full SIEM:</span> git clone https://github.com/deviantony/docker-elk &amp;&amp; cd docker-elk &amp;&amp; docker compose up -d
-  </div></div>
-  <div class="row"><div class="lbl">What you're given <span class="fix">GROUND-TRUTH FIX</span></div><div class="get">A large multi-source log pack (auth/web/firewall/DNS/EDR). We ship it as a <b>sharp 5–8M-line pack with exact, documented ground truth</b> first (scaling toward 30M once validated). Buried: 2–3 real campaigns (slow brute force over weeks, exfiltration, insider) + <b>planted false positives</b> — a "scanner attack" that is the company's own approved scan; a "brute force" that is a broken backup job; a "beacon" that is an auto-updater.</div></div>
-  <div class="row mission"><div class="lbl">Your mission — build the pipeline, then hunt</div>
-    <ul>
-      <li>Ingest at scale and make it queryable (grep alone dies — the point)</li>
-      <li>Find and reconstruct every real campaign across sources and weeks</li>
-      <li>Separate them from the planted FPs and <b>prove each FP benign</b></li>
-    </ul></div>
-  <div class="row"><div class="proof"><b>Proof:</b> the campaign reconstructions + a TP/FP table checkable against the exact ground truth, each FP explained. Findings need multi-source, multi-week correlation — single-line matching returns the FPs (the trap).</div></div>
-  <div class="row submit"><div class="lbl">Submit</div><b>Threat-hunt report</b> + your queries + the FP/TP justification table.</div>
-</div>
-
-<div class="card">
-  <div class="chead"><span class="pnum">PROJECT 2 · 7 DAYS · ●●●○○</span><h3 class="ptitle">Build a Honeypot, Catch the Internet</h3></div>
-  <div class="meta"><span>Difficulty <span class="dots"><b>●●●</b><span>●●</span></span></span><span>Revision: 1</span></div>
-  <div class="row"><div class="lbl">Set it up (throwaway internet-facing VM)</div><div class="setup">
-git clone https://github.com/telekom-security/tpotce<br>
-cd tpotce &amp;&amp; sudo ./install.sh <span class="c"># STANDARD; reboot. dashboard :64297. run 7+ days</span>
-  </div></div>
-  <div class="row mission"><div class="lbl">Your mission</div>
-    <ul>
-      <li>Deploy + isolate T-Pot so it can never pivot anywhere</li>
-      <li>Collect 7+ days of real attacks; analyse top creds, geo-origin, the single most interesting session, malware hashes (never execute)</li>
-      <li>Enrich attacker IPs with free threat intel (AbuseIPDB / GreyNoise)</li>
-    </ul></div>
-  <div class="row"><div class="proof"><b>Proof:</b> your live dashboard + captured dataset (unique to you) + malware hashes.</div></div>
-  <div class="row"><div class="lbl">Grading <span class="fix">FAIRNESS FIX</span></div><div class="get">Ranked on <b>deployment rigour, isolation, and depth of analysis — not raw attacker volume</b> (which is partly luck of IP/region). A brilliant analysis of a quiet week beats a shallow one of a busy week.</div></div>
-  <div class="row submit"><div class="lbl">Submit</div><b>Honeypot build write-up</b> + threat report on what the internet threw at you.</div>
-</div>
-
-<div class="card">
-  <div class="chead"><span class="pnum">PROJECT 3 · 9 DAYS · ●●●●○</span><h3 class="ptitle">Design the Network, Then Watch It Get Attacked</h3></div>
-  <div class="meta"><span>Difficulty <span class="dots"><b>●●●●</b><span>●</span></span></span><span>Revision: 1</span></div>
-  <div class="row"><div class="lbl">Set it up</div><div class="setup">
-<span class="k">https://www.netacad.com/courses/packet-tracer</span> <span class="c"># free Cisco account, install, sign in</span>
-  </div></div>
-  <div class="row"><div class="lbl">Build this</div><div class="get">A segmented enterprise network: user VLAN, server VLAN, DMZ, firewall/router ACLs, syslog server.</div></div>
-  <div class="row mission"><div class="lbl">Your mission — build it, break it, prove it holds</div>
-    <ul>
-      <li>Configure the topology correctly (VLAN segmentation, ACLs, DMZ, logging)</li>
-      <li>Put an attacker in the user VLAN and <b>prove segmentation stops them</b> reaching servers — or fix the hole that doesn't</li>
-      <li>Make the network <b>log the attempt to syslog</b> and show the evidence</li>
-    </ul></div>
-  <div class="row"><div class="proof"><b>Proof:</b> the configured <code>.pkt</code> file + syslog evidence the attack was blocked and detected.</div></div>
-  <div class="row submit"><div class="lbl">Submit</div><b>The Packet Tracer file</b> + a network-security design &amp; test report.</div>
-</div>
-
-<div class="card">
-  <div class="chead"><span class="pnum">PROJECT 4 · 10 DAYS · ●●●●●</span><h3 class="ptitle">Build a Detection Lab — and Prove It Catches Attacks</h3></div>
-  <div class="meta"><span>Difficulty <span class="dots"><b>●●●●●</b></span></span><span>No revision · <b>video defense</b></span></div>
-  <div class="row"><div class="lbl">Set it up</div><div class="setup">
-git clone https://github.com/wazuh/wazuh-docker -b v4.9.0<br>
-cd wazuh-docker/single-node &amp;&amp; docker compose up -d <span class="c"># SIEM :443</span><br>
-<span class="c"># victim: Windows VM + Sysmon; attacks:</span><br>
-git clone https://github.com/redcanaryco/atomic-red-team
-  </div></div>
-  <div class="row mission"><div class="lbl">Your mission</div>
-    <ul>
-      <li>Build the SIEM + agent + Sysmon pipeline</li>
-      <li>Run <b>8 Atomic Red Team techniques</b> across the kill chain</li>
-      <li>Write custom detection rules; <b>prove each fires</b> on the attack and stays quiet on benign activity; document what each misses</li>
-    </ul></div>
-  <div class="row"><div class="proof"><b>Proof:</b> your SIEM alerting on your own simulated attacks (raw alerts + the rules) + a video walkthrough reproducing one detection live.</div></div>
-  <div class="row submit"><div class="lbl">Submit</div><b>GitHub repo</b> (compose + rules + Atomic tests) + detection-engineering report + video defense.</div>
-</div>
-
-<div class="card">
-  <div class="chead"><span class="pnum">PROJECT 5 · 10 DAYS · CAPSTONE · ●●●●●</span><h3 class="ptitle">Full Incident Response</h3></div>
-  <div class="meta"><span>Difficulty <span class="dots"><b>●●●●●</b></span></span><span>No revision · <b>video + live defense</b></span></div>
-  <div class="row"><div class="lbl">Set it up</div><div class="setup">
-pip install volatility3 oletools <span class="c"># + Zeek/Wireshark for the PCAP</span><br>
-git clone https://github.com/stuxnet999/MemLabs <span class="c"># memory-forensics practice</span><br>
-<span class="c"># we hand you the incident package: PCAP + memory dump + host logs</span>
-  </div></div>
-  <div class="row"><div class="lbl">What you're given</div><div class="get">A full multi-stage intrusion: phishing → macro → C2 beacon → privesc → lateral → exfil. Build your own forensic environment to work it.</div></div>
-  <div class="row mission"><div class="lbl">Your mission — reconstruct the chain with a definite artifact at each stage</div>
-    <ul>
-      <li>The phishing sender + the macro's SHA-256</li>
-      <li>The C2 infrastructure + the dumped credentials</li>
-      <li>The exfil destination + <b>the actual data that was stolen</b> (recover it)</li>
-    </ul></div>
-  <div class="row"><div class="proof"><b>Proof:</b> the recovered stolen data + a complete IOC set, then a video + live defense. <em>(Strongest single sieve in the programme — hard to fake, easy to defend or collapse on.)</em></div></div>
-  <div class="row submit"><div class="lbl">Submit</div><b>Full IR case file</b> + video defense.</div>
-</div>
-</section>
-
-<!-- ============================= EH ============================= -->
-<section class="eh">
-<h2 class="track">Track 2 — Red Team</h2>
-<div class="track-name">Ethical Hacking / VAPT</div>
-<p class="track-goal">OSCP-grade. Every project is a different domain and a different open-source range you deploy yourself — build a recon engine (on a custom target), root real machines by writing your own exploits, break a cloud, stand up and conquer a full AD forest, then run a professional engagement. No scoreboards, no hints.</p>
-<p class="ladder"><b>Difficulty ladder:</b> recon engine on a per-intern variant → root a hard VulnHub box (foothold) → chain-exploit to root (write the exploit) → break a cloud (CloudGoat) → build &amp; own a full AD forest (GOAD) → multi-host engagement + retest.</p>
-
-<div class="card">
-  <div class="chead"><span class="pnum">PROJECT 1 · 6 DAYS · BUILD A TOOL · ●●●○○</span><h3 class="ptitle">Build a Recon Engine + First Foothold <span class="fix">HARDENED vs COPYING</span></h3></div>
-  <div class="meta"><span>Difficulty <span class="dots"><b>●●●</b><span>●●</span></span></span><span>Revision: 1</span></div>
-  <div class="row"><div class="lbl">Set it up</div><div class="setup">
-go install github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest<br>
-go install github.com/projectdiscovery/httpx/cmd/httpx@latest<br>
-go install github.com/projectdiscovery/naabu/v2/cmd/naabu@latest<br>
-go install github.com/projectdiscovery/nuclei/v3/cmd/nuclei@latest<br>
-<span class="c"># target: a PER-INTERN custom variant we provide (a small VM image or a</span><br>
-<span class="c"># container with non-standard ports, an odd vhost/subdomain scheme, and a</span><br>
-<span class="c"># hidden service) — an off-the-shelf recon script will miss the foothold.</span>
-  </div></div>
-  <div class="row mission"><div class="lbl">Your mission — why a copied tool won't save you</div>
-    <ul>
-      <li><b>Build the tool</b> (Python/Bash): subdomain/vhost discovery → live-host probe → port/service scan → tech fingerprint → nuclei → one clean report</li>
-      <li>Your variant hides the foothold behind a non-standard port and an unusual vhost — the tool must actually surface it, not just run defaults</li>
-      <li>Land the initial foothold (get your variant's <code>user.txt</code>)</li>
-      <li><b>In the video defense you add one new module to your own tool, live, under questioning</b> — proof you wrote it, not cloned it</li>
-    </ul></div>
-  <div class="row"><div class="proof"><b>Proof:</b> the tool with git commit history + its report on your variant + the foothold flag + the live module-add on video.</div></div>
-  <div class="row submit"><div class="lbl">Submit</div><b>The recon tool (repo, with history)</b> + attack-surface report + foothold write-up + short video defense.</div>
-</div>
-
-<div class="card">
-  <div class="chead"><span class="pnum">PROJECT 2 · 8 DAYS · WRITE EXPLOITS · ●●●●○</span><h3 class="ptitle">Root the Box — Exploit Chain as Code</h3></div>
-  <div class="meta"><span>Difficulty <span class="dots"><b>●●●●</b><span>●</span></span></span><span>Revision: 1</span></div>
-  <div class="row"><div class="lbl">Set it up</div><div class="setup">
-<span class="c"># a HARD, OSCP-style VulnHub machine (rotated per intern) — boot host-only</span><br>
-<span class="k">vulnhub.com</span> <span class="c"># we assign one of 3–4 equivalent boxes per intern</span><br>
-sudo apt install gobuster nikto sqlmap <span class="c"># + Burp Community</span>
-  </div></div>
-  <div class="row learn"><b>Learn first (no walkthroughs):</b> Linux privilege-escalation fundamentals (GTFOBins, sudo/cron/SUID/kernel vectors). You may learn the technique; you must find and exploit the path on your own assigned box.</div>
-  <div class="row mission"><div class="lbl">Your mission — foothold to root, as reusable code</div>
-    <ul>
-      <li>Find the initial vuln, get a shell, then <b>escalate to root</b></li>
-      <li>Package the whole chain as a <b>re-runnable Python exploit script</b></li>
-      <li>One planted service is a rabbit hole — prove why it isn't the path</li>
-    </ul></div>
-  <div class="row"><div class="proof"><b>Proof:</b> the <code>root.txt</code> flag + the exploit script (runs foothold→root end-to-end).</div></div>
-  <div class="row submit"><div class="lbl">Submit</div><b>The exploit code (repo)</b> + a finding pack (reproduction, risk, remediation).</div>
-</div>
-
-<div class="card">
-  <div class="chead"><span class="pnum">PROJECT 3 · 9 DAYS · DEPLOY A CLOUD RANGE · ●●●●○</span><h3 class="ptitle">Break the Cloud</h3></div>
-  <div class="meta"><span>Difficulty <span class="dots"><b>●●●●</b><span>●</span></span></span><span>Revision: 1</span></div>
-  <div class="row"><div class="lbl">Set it up <span class="fix">TOOLING FIX</span></div><div class="setup">
-git clone https://github.com/RhinoSecurityLabs/cloudgoat<br>
-cd cloudgoat &amp;&amp; pip3 install -r core/python/requirements.txt<br>
-./cloudgoat.py config profile <span class="c"># AWS free-tier is the SUPPORTED path</span><br>
-./cloudgoat.py create iam_privesc_by_rollback <span class="c"># (LocalStack NOT guaranteed for this scenario — use real AWS)</span><br>
-pip install pacu
-  </div></div>
-  <div class="row mission"><div class="lbl">Your mission — new domain: cloud</div>
-    <ul>
-      <li>Deploy the vulnerable cloud range with Terraform (the build is part of it)</li>
-      <li>Exploit the misconfigured IAM path low-priv → admin</li>
-      <li>Reach the <b>crown-jewel secret</b>, then <code>destroy</code> the range (you built it, you clean it up)</li>
-    </ul></div>
-  <div class="row"><div class="proof"><b>Proof:</b> the crown-jewel secret + your documented IAM privesc path.</div></div>
-  <div class="row submit"><div class="lbl">Submit</div><b>Cloud pentest report</b>: the IAM attack path, the misconfigurations, remediation.</div>
-</div>
-
-<div class="card">
-  <div class="chead"><span class="pnum">PROJECT 4 · 12 DAYS · BUILD AN AD FOREST · ●●●●●</span><h3 class="ptitle">Own the Forest — Build &amp; Breach Active Directory</h3></div>
-  <div class="meta"><span>Difficulty <span class="dots"><b>●●●●●</b></span></span><span>No revision · <b>video defense</b></span></div>
-  <div class="row learn"><b>Learn first (no walkthroughs) <span class="fix">FAIRNESS FIX</span>:</b> before this project, complete a short single-DC AD warm-up (deploy <code>vulnerable-AD</code> and practice Kerberoast + one ACL abuse) and read AD attack fundamentals + the BloodHound basics. So the forest tests skill, not just who had prior AD exposure.</div>
-  <div class="row"><div class="lbl">Set it up (the build alone is real work)</div><div class="setup">
-git clone https://github.com/Orange-Cyberdefense/GOAD<br>
-cd GOAD &amp;&amp; ./goad.sh <span class="c"># multi-DC, multi-domain forest via Vagrant/Ansible</span><br>
-pipx install impacket &amp;&amp; pipx install netexec &amp;&amp; pip install bloodhound <span class="c"># + BloodHound GUI + Hashcat</span>
-  </div></div>
-  <div class="row mission"><div class="lbl">Your mission — foothold to Domain/Enterprise Admin</div>
-    <ul>
-      <li>Stand up the whole forest (multi-machine — a day just to understand it)</li>
-      <li>Enumerate with BloodHound, then chain Kerberoast → crack → ACL abuse → lateral → DCSync</li>
-      <li>Compromise both domains, capture the flags, stop at the agreed proof</li>
-    </ul></div>
-  <div class="row"><div class="proof"><b>Proof:</b> the domain flags + a BloodHound graph of your exact path + video defense reproducing one step.</div></div>
-  <div class="row submit"><div class="lbl">Submit</div><b>Internal pentest report</b> + attack-path diagram + credential-handling notes + remediation + video defense.</div>
-</div>
-
-<div class="card">
-  <div class="chead"><span class="pnum">PROJECT 5 · 12 DAYS · CAPSTONE · ●●●●●</span><h3 class="ptitle">Full VAPT + Retest — Multi-Host Engagement</h3></div>
-  <div class="meta"><span>Difficulty <span class="dots"><b>●●●●●</b></span></span><span>No revision · <b>video + live defense</b></span></div>
-  <div class="row"><div class="lbl">Set it up</div><div class="setup">
-<span class="c"># build a small estate: web box + API + one more range</span><br>
-git clone https://github.com/madhuakula/kubernetes-goat <span class="c"># container twist</span><br>
-<span class="c"># OR</span> https://github.com/rapid7/metasploitable3 <span class="c"># wire on one isolated network</span>
-  </div></div>
-  <div class="row mission"><div class="lbl">Your mission — behave like a consultant</div>
-    <ul>
-      <li>Write rules of engagement; test across the whole estate</li>
-      <li>Chain to a <b>crown-jewel</b>: root a box + exfil one specific record</li>
-      <li><b>Retest</b> a "patched" version we hand you and confirm what's fixed</li>
-      <li>Rewrite one finding for an executive audience</li>
-    </ul></div>
-  <div class="row"><div class="lbl">Reuse</div><div class="chips"><span class="chip">your recon engine (P1)</span><span class="chip">your exploit scripts (P2)</span><span class="chip">Metasploit / Burp / nmap</span></div></div>
-  <div class="row"><div class="proof"><b>Proof:</b> the crown-jewel record + retest deltas + video + live defense. Report bar = the repo's Bluechip / BluWatch VAPT reports.</div></div>
-  <div class="row submit"><div class="lbl">Submit</div><b>Full VAPT report</b> + video defense.</div>
-</div>
-</section>
-
-<!-- ============================= GRC ============================= -->
-<section class="grc">
-<h2 class="track">Track 3 — Governance</h2>
-<div class="track-name">GRC Analyst <span class="fix">REBUILT</span></div>
-<p class="track-goal">Rebuilt after review. Turn messy evidence into defensible decisions — and prove it with definite outputs: correct control IDs, the caught contradiction, the conformity verdict, the measurable hardening delta, the exact regulatory deadline. The centrepiece is a full <b>ISO 27001 audit from a real evidence pack</b>. Projects 1–2 are hardened with contradictory stakeholders and planted bad evidence; the confused "scan Keycloak" project is replaced.</p>
-<p class="ladder"><b>Difficulty ladder:</b> policy gap (catch a planted fake mapping) → vendor contradiction hunt → full ISO 27001:2022 audit from files → hands-on host hardening + risk register from a provided real scan → computational breach governance across 3 jurisdictions.</p>
-
-<div class="card">
-  <div class="chead"><span class="pnum">PROJECT 1 · 5 DAYS · ●●●○○</span><h3 class="ptitle">Policy Gap Analysis <span class="fix">HARDENED</span></h3></div>
-  <div class="meta"><span>Difficulty <span class="dots"><b>●●●</b><span>●●</span></span></span><span>Revision: 1</span></div>
-  <div class="row"><div class="lbl">What you're given</div><div class="get">The <b>CloudScale Dynamics</b> legacy 2018 AUP + 2026 org-context sheet, now with: <b>contradictory stakeholder emails</b> (Engineering "policy is paperwork" vs Legal "regulatory exposure"), <b>outdated screenshots</b> offered as proof a control exists, a colleague's draft containing <b>one incorrect control mapping you must catch and correct</b>, and a board constraint (you may mandate only 3 new controls this quarter).</div></div>
-  <div class="row"><div class="lbl">References</div><div class="setup"><span class="k">NIST CSF 2.0</span> · <span class="k">ISO/IEC 27001:2022 Annex A</span> · <span class="k">NIST SP 800-63B</span> · <span class="k">NDPA 2023</span></div></div>
-  <div class="row mission"><div class="lbl">Your mission — definite answers</div>
-    <ul>
-      <li>Map each gap to a <b>specific correct control ID</b> — and <b>catch the planted wrong mapping</b></li>
-      <li>Catch the landmines: 8-char/90-day passwords vs 800-63B; MFA present but not mandated; monitoring vs BYOD privacy; the outdated screenshot that doesn't prove what it claims</li>
-      <li>Under the board constraint, pick the <b>3 controls to mandate now</b> and justify the deferrals; flag the one clause that looks outdated but is fine</li>
-    </ul></div>
-  <div class="row"><div class="proof"><b>Proof:</b> correct control IDs + the caught fake mapping + the 3 prioritised controls (all checkable) + a 2-page addendum.</div></div>
-  <div class="row submit"><div class="lbl">Submit</div><b>Policy gap report + addendum.</b></div>
-</div>
-
-<div class="card">
-  <div class="chead"><span class="pnum">PROJECT 2 · 7 DAYS · ●●●○○</span><h3 class="ptitle">Vendor Risk Decision <span class="fix">HARDENED</span></h3></div>
-  <div class="meta"><span>Difficulty <span class="dots"><b>●●●</b><span>●●</span></span></span><span>Revision: 1</span></div>
-  <div class="row"><div class="lbl">What you're given</div><div class="get">The <b>PeopleFlow HR</b> mock SOC 2 (3 exceptions) + the vendor CISO's SIG questionnaire, now with: a <b>Procurement email demanding sign-off today</b>, a <b>Security email raising concerns</b>, and a <b>stale SOC 2 audit period</b> (expired vs the current date). The contradictions are baked in.</div></div>
-  <div class="row mission"><div class="lbl">Your mission — catch the definite landmines</div>
-    <ul>
-      <li>Residency contradiction: "data stays in US-East-1" vs a Tier-1 support sub-processor in the Philippines with <b>no SOC 2</b></li>
-      <li>The breach-clause hedge ("notify within 72h of <em>confirming</em>") vs the customer's own obligation; the stale audit period; the 3 audit exceptions rated for real impact</li>
-      <li>Navigate the Procurement-vs-Security conflict and <b>rule</b>: approve / conditional / reject — with conditions + contract redlines</li>
-    </ul></div>
-  <div class="row"><div class="proof"><b>Proof:</b> the specific contradictions named (checkable) + a decision with conditions.</div></div>
-  <div class="row submit"><div class="lbl">Submit</div><b>Vendor risk memo + register + decision.</b></div>
-</div>
-
-<div class="card">
-  <div class="chead"><span class="pnum">PROJECT 3 · 9 DAYS · ●●●●○</span><h3 class="ptitle">Run a Full ISO 27001:2022 Audit <span class="fix">NEW</span></h3></div>
-  <div class="meta"><span>Difficulty <span class="dots"><b>●●●●</b><span>●</span></span></span><span>Revision: 1</span></div>
-  <div class="row"><div class="lbl">What you're given (a real evidence pack — files)</div><div class="get">A full audit pack for a fictional company seeking certification: a <b>Statement of Applicability (SoA)</b>, the policy set, config exports and screenshots, change tickets, interview notes, and <b>last year's audit report with open nonconformities</b>. Some evidence is stale, some contradicts the SoA, and one control is claimed implemented but the evidence shows otherwise.</div></div>
-  <div class="row mission"><div class="lbl">Your mission — behave like the auditor</div>
-    <ul>
-      <li>Audit ~12 <b>ISO 27001:2022 Annex A controls</b> against the evidence</li>
-      <li>Assign a conformity verdict per control: conforms / minor NC / major NC / not-tested</li>
-      <li>Grade the <b>evidence quality</b> (strong / weak / stale / missing) — the trap is accepting outdated or contradictory evidence</li>
-      <li><b>Verify whether last year's findings were actually remediated</b> (some weren't)</li>
-      <li>Write an audit report + a nonconformity register + a management letter</li>
-    </ul></div>
-  <div class="row"><div class="proof"><b>Proof:</b> the conformity verdict per control (checkable against the key) + the stale/contradictory evidence caught + the unremediated prior findings identified.</div></div>
-  <div class="row submit"><div class="lbl">Submit</div><b>ISO 27001 audit report + nonconformity register + management letter.</b></div>
-</div>
-
-<div class="card">
-  <div class="chead"><span class="pnum">PROJECT 4 · 10 DAYS · HANDS-ON · ●●●●○</span><h3 class="ptitle">Host Hardening + Risk Register From a Real Scan <span class="fix">TOOLING FIXED</span></h3></div>
-  <div class="meta"><span>Difficulty <span class="dots"><b>●●●●</b><span>●</span></span></span><span>No revision · <b>video defense</b></span></div>
-  <div class="row"><div class="lbl">Set it up (correct scope now: OS hardening, not app-scan)</div><div class="setup">
-<span class="c"># a Linux host to harden (Ubuntu/Rocky VM)</span><br>
-sudo apt install openscap-scanner ssg-debian <span class="c"># OpenSCAP + SCAP Security Guide (CIS/STIG profile)</span><br>
-oscap xccdf eval --profile cis --results before.xml /usr/share/xml/scap/ssg/content/ssg-*.xml<br>
-git clone https://github.com/CISOfy/lynis &amp;&amp; sudo ./lynis/lynis audit system<br>
-<span class="c"># risk register: we PROVIDE a known-good pre-generated OpenVAS/Nessus scan export</span><br>
-<span class="c"># (so tooling flakiness never decides the ranking). Optional live OpenVAS = bonus.</span>
-  </div></div>
-  <div class="row mission"><div class="lbl">Your mission — measurable, and business-weighted</div>
-    <ul>
-      <li>Run OpenSCAP + Lynis on the host; record the <b>baseline hardening score</b>; map failed checks to ISO 27001 / CIS controls</li>
-      <li><b>Fix ≥ 5 findings, re-scan, prove the score improved</b></li>
-      <li>Build a <b>risk register from the provided vuln-scan findings</b> + your hardening gaps; compute risk (<code>ALE = SLE × ARO</code>)</li>
-      <li>The trap: a critical-CVSS vuln on a throwaway asset vs a medium on the crown jewels — rank by <b>business impact</b>, not CVSS. Fund top 3, defer the rest deliberately</li>
-    </ul></div>
-  <div class="row"><div class="proof"><b>Proof:</b> before + after hardening scan reports (the delta) + a risk register traced to real findings + video defense.</div></div>
-  <div class="row submit"><div class="lbl">Submit</div><b>Hardening audit report + risk register + budget/deferral recommendation</b> + video defense.</div>
-</div>
-
-<div class="card">
-  <div class="chead"><span class="pnum">PROJECT 5 · 10 DAYS · CAPSTONE · ●●●●●</span><h3 class="ptitle">Breach Governance</h3></div>
-  <div class="meta"><span>Difficulty <span class="dots"><b>●●●●●</b></span></span><span>No revision · <b>video + live defense</b></span></div>
-  <div class="row"><div class="lbl">What you're given</div><div class="get">A technical incident summary with definite facts: data types stolen, subject geographies (EU + California + Nigeria), and the timeline (breach start vs discovery). <em>Made computational.</em></div></div>
-  <div class="row"><div class="lbl">References</div><div class="setup"><span class="k">GDPR Arts. 33/34</span> · <span class="k">NDPA 2023 / NDPC guidance</span> · <span class="k">CCPA / CPRA</span></div></div>
-  <div class="row mission"><div class="lbl">Your mission — definite, checkable answers</div>
-    <ul>
-      <li>Compute the exact regulatory deadlines from the discovery timestamp (GDPR 72h, NDPA, CCPA) — real dates/times</li>
-      <li>Determine which frameworks trigger (yes/no per regime, given data + geography)</li>
-      <li>Compute the affected-population count from the data inventory</li>
-      <li>Draft regulator + customer notifications and a board memo; the board wants one number, the evidence gives a range — present the range</li>
-    </ul></div>
-  <div class="row"><div class="proof"><b>Proof:</b> the exact deadlines + triggered-framework list + affected count (all checkable) + video + live defense.</div></div>
-  <div class="row submit"><div class="lbl">Submit</div><b>Breach governance pack</b>: timeline, notifications, board memo, 30/60/90 roadmap + video defense.</div>
-</div>
-</section>
-
-<footer>
-  Advanced Stage v2 · revised after external technical review · 15 hands-on projects · definite proof + raw-artifact verification + video defense on Projects 4–5 · all targets free &amp; open-source
-</footer>
-
-</div>
+  <div class="contract"><strong>Operational source of truth.</strong> Participant details live under <code>public/advanced-stage/</code>, room metadata in <code>src/lib/advanced-stage.ts</code>, and sealed test oracles under the ignored <code>advanced-stage-staff/</code> kit.</div>
+</main>
 </body>
 </html>
