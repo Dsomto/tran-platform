@@ -188,9 +188,9 @@ const GUIDANCE: Record<AdvancedTrack, Record<ProjectNumber, GuidanceSeed>> = {
         { label: "Evidence and reporting", weight: 15 },
       ],
       environment: {
-        hardware: "A Kali or Ubuntu VM with Python 3.11 and enough disk for raw tool output; the target is programme-hosted behind the assigned VPN.",
-        cost: "The hosted target and VPN are programme resources. No public scanning service or paid subscription is required.",
-        fallback: "The engine must continue through its documented adapter fallback when one external tool is removed. If the VPN or assigned target fails, stop and report it rather than scanning elsewhere.",
+        hardware: "Any laptop that can run Python 3.11 or newer and retain raw tool output. The supplied target uses only the Python standard library and binds to 127.0.0.1.",
+        cost: "No VPN, cloud account, container runtime, public scanning service, package installation, or paid subscription is required.",
+        fallback: "The engine must include a standard-library discovery path and continue when an optional external adapter is removed. A failed local target must be restarted from the unchanged shared pack, never replaced with a public target.",
       },
     },
     2: {

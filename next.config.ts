@@ -64,6 +64,11 @@ const nextConfig: NextConfig = {
     "/api/certificate/**": ["./node_modules/pdfkit/js/data/**"],
     "/api/letter/**": ["./node_modules/pdfkit/js/data/**"],
     "/api/pass-letter/**": ["./node_modules/pdfkit/js/data/**"],
+    "/api/advanced-stage/artifact": [
+      "./stage5-artifacts/soc_analysis/stage-5/shared-stage5-b1.tar.gz",
+      "./stage5-artifacts/ethical_hacking/stage-5/shared-stage5-b1.tar.gz",
+      "./stage5-artifacts/grc/stage-5/shared-stage5-b1.tar.gz",
+    ],
   },
   outputFileTracingExcludes: {
     "**": ["./advanced-stage-staff/**", "./**/__pycache__/**"],

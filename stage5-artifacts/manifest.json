@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0",
+  "release_model": "application-bundled-shared-base-private-overlay",
+  "maximum_artifact_bytes": 104857600,
+  "artifacts": [
+    {
+      "track": "SOC_ANALYSIS",
+      "key": "soc_analysis/stage-5/shared-stage5-b1.tar.gz",
+      "size_bytes": 11778090,
+      "sha256": "b75e2d3cb1bd1aaede1ac01b074c39c8ef56e31ab45944d74ae5ba4c9882e9da"
+    },
+    {
+      "track": "ETHICAL_HACKING",
+      "key": "ethical_hacking/stage-5/shared-stage5-b1.tar.gz",
+      "size_bytes": 6119,
+      "sha256": "73d8b588d083e019fedb8e711ce3221c149c079a495b3b76538258a19f0f867a"
+    },
+    {
+      "track": "GRC",
+      "key": "grc/stage-5/shared-stage5-b1.tar.gz",
+      "size_bytes": 1186,
+      "sha256": "1bdcef29bb713d342b3748bfce5c5f7d709a59b48504dba2cfa6f33505b008f7"
+    }
+  ]
+}

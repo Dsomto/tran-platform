@@ -50,7 +50,7 @@ function overlayFor(stage: string, track: string, pool: number): string[] {
     ],
   };
 
-  return [...common, ...(overlays[`${stage}:${track}`] ?? ["Use the private artifact package whose label and hash match this pool."])];
+  return [...common, ...(overlays[`${stage}:${track}`] ?? ["Use your private marker and assignment set with the shared track artifact."])];
 }
 
 export async function GET(request: NextRequest) {
@@ -84,8 +84,7 @@ export async function GET(request: NextRequest) {
     select: { internId: true },
   });
   const internCode = resolvedInternCode(publicApp?.internId);
-  const variant = advancedVariantFor(intern.id, internCode, stage);
-  const pool = Number(variant.variant.slice(1));
+  const fallbackVariant = advancedVariantFor(intern.id, internCode, stage);
   const artifact = await prisma.advancedArtifactGrant.findUnique({
     where: { internId_stage: { internId: intern.id, stage } },
     select: {
@@ -104,11 +103,14 @@ export async function GET(request: NextRequest) {
     artifact &&
     !artifact.revokedAt &&
     artifact.track === intern.track &&
-    artifact.variant === variant.variant &&
-    artifact.marker === variant.marker &&
     (!artifact.expiresAt || artifact.expiresAt.getTime() > Date.now())
       ? artifact
       : null;
+  const variant = validArtifact
+    ? { cohort: "ADV-C1", variant: validArtifact.variant, marker: validArtifact.marker }
+    : fallbackVariant;
+  const parsedPool = Number(variant.variant.slice(1));
+  const pool = Number.isInteger(parsedPool) && parsedPool >= 1 && parsedPool <= 6 ? parsedPool : 1;
   const lines = [
     `# ${project.title} - Private Assignment Overlay`,
     "",
@@ -140,6 +142,15 @@ export async function GET(request: NextRequest) {
           "",
           "Download `/api/advanced-stage/discrepancy?stage=STAGE_5` while signed in.",
           "It assigns 96 review candidates. Exactly 80 have a valid evidence-backed benign explanation; the other 16 must be escalated.",
+        ]
+      : []),
+    ...(stage === "STAGE_5" && intern.track === "ETHICAL_HACKING"
+      ? [
+          "",
+          "## Local target startup",
+          "",
+          "Extract the shared archive and run `python3 local_lab.py --marker " + variant.marker + " --output lab-runtime`.",
+          "The target binds only to 127.0.0.1 and writes the controlling scope file into `lab-runtime/`.",
         ]
       : []),
     "",

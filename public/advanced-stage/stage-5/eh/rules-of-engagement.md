@@ -2,13 +2,13 @@
 
 | Item | Rule |
 |---|---|
-| In scope | The assigned container network and IP listed in `scope.csv` |
-| Out of scope | Every other IP, domain, local service, and the explicit decoy |
+| In scope | Only the `127.0.0.1:port` endpoints marked `IN` in the generated `scope.csv` |
+| Out of scope | Every other address, port, local service, and the explicit loopback decoy |
 | Allowed | Discovery, low-rate enumeration, vhost probing, authentication with credentials found inside the assigned target |
 | Prohibited | Denial of service, destructive writes, persistence, malware, credential reuse elsewhere, internet scanning |
 | Proof limit | Read the assigned `user.txt`; stop before privilege escalation |
 | Hours | The published assessment window only |
-| Stop condition | Unexpected third-party address, unstable target, or evidence of non-synthetic data |
+| Stop condition | Any non-loopback destination, unexpected local service, unstable target, or evidence of non-synthetic data |
 | Escalation | Stop, preserve output, and notify the assessment lead with UTC time and last command |
 
 I understand and accept the scope.

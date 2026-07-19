@@ -1,7 +1,6 @@
 import { NextRequest } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { advancedVariantFor } from "@/lib/advanced-variant";
 import { resolvedInternCode } from "@/lib/intern-code";
 import { socStage5DiscrepancyFor } from "@/lib/advanced-discrepancy";
 import { stageRank } from "@/lib/stage-login";
@@ -38,13 +37,24 @@ export async function GET(request: NextRequest) {
     return Response.json({ error: "Stage is not open" }, { status: 403 });
   }
 
-  const publicApp = await prisma.publicApplication.findFirst({
-    where: { email: session.email.toLowerCase() },
-    select: { internId: true },
-  });
+  const [publicApp, grant] = await Promise.all([
+    prisma.publicApplication.findFirst({
+      where: { email: session.email.toLowerCase() },
+      select: { internId: true },
+    }),
+    prisma.advancedArtifactGrant.findUnique({
+      where: { internId_stage: { internId: intern.id, stage: "STAGE_5" } },
+      select: { track: true, marker: true, expiresAt: true, revokedAt: true },
+    }),
+  ]);
+  if (
+    !grant || grant.track !== "SOC_ANALYSIS" || grant.revokedAt ||
+    (grant.expiresAt && grant.expiresAt.getTime() <= Date.now())
+  ) {
+    return Response.json({ error: "Discrepancy set not found" }, { status: 404 });
+  }
   const internCode = resolvedInternCode(publicApp?.internId);
-  const variant = advancedVariantFor(intern.id, internCode, "STAGE_5");
-  const discrepancy = socStage5DiscrepancyFor(intern.id, internCode, variant.marker);
+  const discrepancy = socStage5DiscrepancyFor(intern.id, internCode, grant.marker);
 
   return new Response(`${JSON.stringify(discrepancy, null, 2)}\n`, {
     headers: {

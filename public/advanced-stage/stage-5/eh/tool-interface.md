@@ -3,7 +3,7 @@
 Required invocation:
 
 ```text
-recon-engine --target <ip-or-name> --scope scope.csv --output run/ --rate 25
+recon-engine --target 127.0.0.1 --scope lab-runtime/scope.csv --output run/ --rate 25
 ```
 
 Required output:
@@ -23,3 +23,9 @@ also include status, length, title, redirect, and baseline-difference fields.
 
 Minimum tests: missing tool, timeout, malformed output, wildcard vhost,
 duplicate service, scope rejection, interrupted run, and empty result.
+
+The engine must enforce destination and port scope before opening a socket. The
+target request ledger is independent corroboration for requests that reach the
+two authorized services, but the candidate engine remains responsible for
+proving that the `OUT` endpoint and all non-loopback destinations were rejected
+before network activity.

@@ -1,9 +1,7 @@
 import { NextRequest } from "next/server";
 import { getSession } from "@/lib/auth";
-import { advancedVariantFor } from "@/lib/advanced-variant";
 import { openAdvancedArtifact } from "@/lib/advanced-artifact-storage";
 import { prisma } from "@/lib/db";
-import { resolvedInternCode } from "@/lib/intern-code";
 import { isAdvancedStage } from "@/lib/advanced-stage";
 import { stageRank } from "@/lib/stage-login";
 
@@ -27,14 +25,10 @@ export async function GET(request: NextRequest) {
     return Response.json({ error: "Artifact not found" }, { status: 404 });
   }
 
-  const [window, grant, publicApp] = await Promise.all([
+  const [window, grant] = await Promise.all([
     prisma.stageWindow.findUnique({ where: { stage }, select: { status: true } }),
     prisma.advancedArtifactGrant.findUnique({
       where: { internId_stage: { internId: intern.id, stage } },
-    }),
-    prisma.publicApplication.findFirst({
-      where: { email: session.email.toLowerCase() },
-      select: { internId: true },
     }),
   ]);
 
@@ -46,12 +40,6 @@ export async function GET(request: NextRequest) {
   }
   if (grant.expiresAt && grant.expiresAt.getTime() <= Date.now()) {
     return Response.json({ error: "Artifact grant has expired" }, { status: 410 });
-  }
-
-  const internCode = resolvedInternCode(publicApp?.internId);
-  const expected = advancedVariantFor(intern.id, internCode, stage);
-  if (grant.variant !== expected.variant || grant.marker !== expected.marker) {
-    return Response.json({ error: "Artifact assignment mismatch" }, { status: 409 });
   }
 
   const artifact = await openAdvancedArtifact(grant.artifactKey);

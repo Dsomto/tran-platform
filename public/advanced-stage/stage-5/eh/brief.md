@@ -2,12 +2,13 @@
 
 ## Authorization
 
-Only the assigned programme-hosted runtime reachable through the isolated VPN is
-authorized. Every intern receives the same target image and parser fixtures,
-but runs in an isolated namespace with a private flag and scope assignment. The
-asset marked `OUT` in `scope.csv` is a scope-discipline test. Do not probe it.
-Staff never distribute the target image, compose file, runtime environment,
-container access, or host access.
+Only the loopback endpoints marked `IN` by the supplied local lab are
+authorized. Every intern receives the same self-contained lab and parser
+fixtures. The lab derives one of six behavior profiles from the private room
+marker and creates fresh credentials, route proof, ports, and a foothold flag
+on each start. The asset marked `OUT` in `scope.csv` is a scope-discipline test.
+Do not probe it. No programme VPN, hosted target, cloud account, container
+runtime, package install, or internet connection is required.
 
 ## Window and scoring
 
@@ -24,9 +25,12 @@ enforce a request budget; and never auto-exploit. Interrupted runs must resume
 without repeating completed probes. If one external tool is missing, a
 documented fallback must complete the supported discovery path.
 
-The assigned target uses nonstandard port mapping and virtual-host routing. A
-default scan will not reveal enough to earn the foothold. Your tool must adapt
-based on observed responses. Obtain `user.txt`, record the marker, and stop.
+Start the target with Python 3.11 or newer and the exact marker in your private
+assignment overlay. It binds only to `127.0.0.1`, writes `assignment.json` and
+`scope.csv`, and uses nonstandard port mapping, a line protocol, wildcard HTTP
+responses, and virtual-host routing. A default scan will not reveal enough to
+earn the foothold. Your tool must adapt based on observed responses. Obtain
+`user.txt`, record the runtime value, and stop.
 
 ## Proof
 
@@ -36,22 +40,24 @@ based on observed responses. Obtain `user.txt`, record the marker, and stop.
 - Foothold transcript and `user.txt` marker.
 - `make test` passing public parser, scope, wildcard, resume, failure, and
   normalization fixtures.
-- Staff run 20 hidden parser/scope fixtures and a hidden hosted target. Service
-  recall must be at least 90 percent, with zero out-of-scope packets.
+- Staff run 20 unreleased parser/scope fixtures and restart the local target
+  under a different profile. Service recall must be at least 90 percent, with
+  zero out-of-scope requests and no more than the 240-request budget.
 - Staff interrupt one run and remove one external tool. The resumed/fallback run
   must produce the same normalized result hash as an uninterrupted run.
 - Artifact check: implement one adapter against the documented interface.
 
 The evidence marker shown in the room is not the `user.txt` foothold flag and
-is never accepted as proof of access. The grader verifies the distinct private
-flag issued by the hosted target.
+is never accepted as proof of access. A copied flag is also insufficient: the
+raw response chain, target request ledger, normalized record, and defense must
+reconcile. Reading or changing `local_lab.py` earns no discovery credit.
 
 Scanner output without validation is not a finding. A shell command pasted
 into a monolithic script is not a tested module.
 
 ## Mission interface and handoff
 
-- **You receive:** the shared target revision and fixtures plus a signed private runtime assignment containing only your authorized host, ports, and marker.
+- **You receive:** one shared self-contained target and fixture pack plus a private marker that selects your runtime profile.
 - **You build:** resumable scope-safe discovery with typed observations, runtime identifiers, rate limits, evidence capture, and cleanup.
-- **You prove:** the foothold comes from the target rather than the room marker and every request remains inside the supplied scope ledger.
+- **You prove:** the foothold comes through the observed protocol chain and every request remains inside the generated scope ledger.
 - **You hand forward:** discovery adapters, the runtime identifier model, evidence ledger, and cleanup interface for Stage 6.

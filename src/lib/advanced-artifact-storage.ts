@@ -20,6 +20,26 @@ export async function openAdvancedArtifact(key: string): Promise<AdvancedArtifac
   const parts = safeKey(key);
   if (!parts) return null;
 
+  const roots = [
+    path.resolve(process.cwd(), "stage5-artifacts"),
+    ...(process.env.ADVANCED_ARTIFACT_ROOT ? [path.resolve(process.env.ADVANCED_ARTIFACT_ROOT)] : []),
+  ];
+  for (const root of roots) {
+    const absolutePath = path.resolve(root, ...parts);
+    if (!absolutePath.startsWith(`${root}${path.sep}`)) continue;
+    try {
+      const details = await stat(absolutePath);
+      if (!details.isFile()) continue;
+      const stream = createReadStream(absolutePath);
+      return {
+        body: Readable.toWeb(stream) as ReadableStream<Uint8Array>,
+        size: details.size,
+      };
+    } catch {
+      // Try the next local source before the optional remote fallback.
+    }
+  }
+
   const origin = process.env.ADVANCED_ARTIFACT_ORIGIN?.replace(/\/$/, "");
   const originToken = process.env.ADVANCED_ARTIFACT_ORIGIN_TOKEN;
   if (origin && originToken) {
@@ -36,20 +56,5 @@ export async function openAdvancedArtifact(key: string): Promise<AdvancedArtifac
     };
   }
 
-  const configuredRoot = process.env.ADVANCED_ARTIFACT_ROOT;
-  if (!configuredRoot) return null;
-  const root = path.resolve(configuredRoot);
-  const absolutePath = path.resolve(root, ...parts);
-  if (!absolutePath.startsWith(`${root}${path.sep}`)) return null;
-  try {
-    const details = await stat(absolutePath);
-    if (!details.isFile()) return null;
-    const stream = createReadStream(absolutePath);
-    return {
-      body: Readable.toWeb(stream) as ReadableStream<Uint8Array>,
-      size: details.size,
-    };
-  } catch {
-    return null;
-  }
+  return null;
 }

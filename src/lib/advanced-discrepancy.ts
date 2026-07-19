@@ -1,4 +1,4 @@
-import { createHmac } from "node:crypto";
+import { createHash } from "node:crypto";
 
 const SOC_ACTIVITY_POOL_SIZE = 384;
 const SOC_ASSIGNED_REVIEW_COUNT = 96;
@@ -32,16 +32,8 @@ export type SocStage5Discrepancy = {
   }>;
 };
 
-function discrepancySecret(): string {
-  if (process.env.ADVANCED_VARIANT_SECRET) return process.env.ADVANCED_VARIANT_SECRET;
-  if (process.env.NODE_ENV === "production") {
-    throw new Error("ADVANCED_VARIANT_SECRET is required in production");
-  }
-  return process.env.NEXTAUTH_SECRET ?? "local-development-only";
-}
-
 function rank(binding: string, label: string, value: number): string {
-  return createHmac("sha256", discrepancySecret())
+  return createHash("sha256")
     .update(`${binding}:${label}:${value}`)
     .digest("hex");
 }
