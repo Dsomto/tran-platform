@@ -4,6 +4,7 @@
 **Branch:** `main`  
 **Remote:** `origin/main`  
 **Baseline before percentile implementation:** `84f8b27`
+**Percentile implementation:** `3f6e426`
 **Prepared:** 19 July 2026, WAT  
 **Purpose:** This is the complete handoff of the advanced-stage work Codex implemented and verified. Claude should use this file as an index, then inspect the referenced source files and commits before changing anything.
 
