@@ -5,6 +5,7 @@ import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { isAdvancedStage, type AdvancedTrack } from "@/lib/advanced-stage";
 import { stageRank } from "@/lib/stage-login";
+import { stageWindowHasStarted } from "@/lib/stage-window";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -81,9 +82,9 @@ export async function GET(request: NextRequest) {
 
     const window = await prisma.stageWindow.findUnique({
       where: { stage: requestedStage },
-      select: { status: true },
+      select: { status: true, activeFrom: true },
     });
-    if (window?.status !== "OPEN") {
+    if (!stageWindowHasStarted(window)) {
       return Response.json({ error: "Stage is not open" }, { status: 403 });
     }
   }

@@ -4,6 +4,7 @@ import { openAdvancedArtifact } from "@/lib/advanced-artifact-storage";
 import { prisma } from "@/lib/db";
 import { isAdvancedStage } from "@/lib/advanced-stage";
 import { stageRank } from "@/lib/stage-login";
+import { stageWindowHasStarted } from "@/lib/stage-window";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -26,13 +27,13 @@ export async function GET(request: NextRequest) {
   }
 
   const [window, grant] = await Promise.all([
-    prisma.stageWindow.findUnique({ where: { stage }, select: { status: true } }),
+    prisma.stageWindow.findUnique({ where: { stage }, select: { status: true, activeFrom: true } }),
     prisma.advancedArtifactGrant.findUnique({
       where: { internId_stage: { internId: intern.id, stage } },
     }),
   ]);
 
-  if (window?.status !== "OPEN") {
+  if (!stageWindowHasStarted(window)) {
     return Response.json({ error: "Stage is not open" }, { status: 403 });
   }
   if (!grant || grant.track !== intern.track || grant.revokedAt) {

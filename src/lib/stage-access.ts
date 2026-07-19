@@ -6,6 +6,7 @@ import {
   type StageSlug,
 } from "./stage-login";
 import { resolvedInternCode } from "./intern-code";
+import { stageWindowHasStarted } from "./stage-window";
 
 export type StageTrack = "SOC_ANALYSIS" | "ETHICAL_HACKING" | "GRC";
 
@@ -61,11 +62,12 @@ export async function getStageAccess(
 
   const window = await prisma.stageWindow.findUnique({
     where: { stage: requestedEnum },
-    select: { status: true },
+    select: { status: true, activeFrom: true },
   });
   const status = window?.status ?? "CLOSED";
   if (status === "CLOSED") return { ok: false, reason: "closed" };
   if (status === "PAUSED") return { ok: false, reason: "paused" };
+  if (!stageWindowHasStarted(window)) return { ok: false, reason: "closed" };
 
   // Track the visit. Fire-and-forget so a tracking failure can't block
   // the page render. The unique index on (internId, stage) guarantees one

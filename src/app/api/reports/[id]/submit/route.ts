@@ -8,6 +8,7 @@ import {
   isAdvancedSubmissionStage,
   submissionFolderUrlError,
 } from "@/lib/submission-links";
+import { stageWindowAcceptsSubmissions } from "@/lib/stage-window";
 
 class ConcurrentSubmissionError extends Error {}
 
@@ -57,7 +58,7 @@ export async function POST(
     const window = await prisma.stageWindow.findUnique({
       where: { stage: report.stage },
     });
-    if (!window || window.status !== "OPEN") {
+    if (!stageWindowAcceptsSubmissions(window)) {
       return Response.json(
         { error: "This stage is not currently accepting submissions" },
         { status: 409 }

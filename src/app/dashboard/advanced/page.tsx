@@ -30,6 +30,7 @@ import {
 import { advancedProjectVisual, ADVANCED_TRACK_VISUALS } from "@/lib/advanced-visuals";
 import { stageRank, type StageKey } from "@/lib/stage-login";
 import { stageUrl } from "@/lib/stage-routes";
+import { stageWindowHasStarted } from "@/lib/stage-window";
 import styles from "./advanced-track.module.css";
 
 type AdvancedStage = Extract<StageKey, "STAGE_5" | "STAGE_6" | "STAGE_7" | "STAGE_8" | "STAGE_9">;
@@ -59,7 +60,7 @@ export default async function AdvancedTrackPage() {
   const [windows, reports, artifactGrants] = await Promise.all([
     prisma.stageWindow.findMany({
       where: { stage: { in: ADVANCED_STAGES } },
-      select: { stage: true, status: true },
+      select: { stage: true, status: true, activeFrom: true },
     }),
     prisma.stageReport.findMany({
       where: { internId: intern.id, stage: { in: ADVANCED_STAGES } },
@@ -157,7 +158,7 @@ export default async function AdvancedTrackPage() {
             const deliverables = requiredAdvancedDeliverables(project);
             const reached = stageRank(stage) <= stageRank(intern.currentStage);
             const isCurrent = stage === intern.currentStage;
-            const isOpen = reached && stageWindow?.status === "OPEN";
+            const isOpen = reached && stageWindowHasStarted(stageWindow);
             const isPassed = report?.status === "PASSED";
             const statusText = isPassed
               ? "Completed"

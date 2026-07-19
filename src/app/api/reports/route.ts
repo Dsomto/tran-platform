@@ -9,6 +9,7 @@ import {
   isAdvancedSubmissionStage,
   submissionFolderUrlError,
 } from "@/lib/submission-links";
+import { stageWindowAcceptsSubmissions } from "@/lib/stage-window";
 
 const STAGE_KEYS = [
   "STAGE_0",
@@ -93,9 +94,9 @@ export async function POST(request: NextRequest) {
     // draft-time stops a parallel POST race after results are published.
     const window = await prisma.stageWindow.findUnique({
       where: { stage },
-      select: { status: true },
+      select: { status: true, activeFrom: true, submitUntil: true },
     });
-    if (!window || window.status !== "OPEN") {
+    if (!stageWindowAcceptsSubmissions(window)) {
       return Response.json(
         { error: "This stage is not currently accepting drafts." },
         { status: 409 }

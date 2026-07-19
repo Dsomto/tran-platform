@@ -5,6 +5,7 @@ import { FileText, Clock, CheckCircle2, XCircle, AlertTriangle, Award, FileSigna
 import { LinkedInIcon } from "@/components/icons/linkedin";
 import { certificateShareSig, letterShareSig, passLetterShareSig } from "@/lib/certificate-link";
 import { isReportResultReleased } from "@/lib/report-visibility";
+import { stageWindowAcceptsSubmissions } from "@/lib/stage-window";
 
 // Always re-fetch — the score field switched from `score` to `finalScore`
 // and any cached render of this route would still show the old value.
@@ -72,7 +73,7 @@ export default async function ReportsPage() {
           const r = reportByStage.get(stage as never);
           const w = windowByStage.get(stage as never);
           const meta = STAGE_META[stage];
-          const isOpen = w?.status === "OPEN";
+          const isOpen = stageWindowAcceptsSubmissions(w);
           const isClosed = (w?.status ?? "CLOSED") === "CLOSED";
           const resultReleased = isReportResultReleased(r?.status);
 
