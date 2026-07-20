@@ -303,6 +303,12 @@ section[aria-labelledby="deliverables-title"] .advanced-file-grid,
 }
 .advanced-instrument__head > div { display: flex; align-items: center; gap: 9px; }
 .advanced-instrument__head > svg { width: 17px; height: 17px; color: var(--advanced-accent); }
+.advanced-instrument__tag {
+  font-style: normal; font: 650 9.5px/1 inherit; text-transform: none; letter-spacing: 0;
+  color: #7d8894; padding: 3px 8px; border-radius: 999px;
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.10);
+  margin-left: 2px;
+}
 .advanced-instrument__status { width: 7px; height: 7px; border-radius: 50%; background: var(--advanced-accent); box-shadow: 0 0 0 4px color-mix(in srgb, var(--advanced-accent), transparent 78%); }
 .advanced-instrument__body { display: grid; grid-template-columns: .7fr 1.5fr 1fr; min-height: 200px; }
 .advanced-instrument__body > * { min-width: 0; padding: 24px; border-right: 1px solid #232c35; }

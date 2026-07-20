@@ -48,6 +48,7 @@ export function AdvancedProjectInstrument({ visual }: { visual: AdvancedProjectV
         <div>
           <span className="advanced-instrument__status" aria-hidden="true" />
           <span>{visual.deskLabel}</span>
+          <em className="advanced-instrument__tag">Preview only &middot; not interactive</em>
         </div>
         <Icon aria-hidden={true} />
       </div>
