@@ -746,6 +746,37 @@
   box-shadow: 0 1px 2px rgba(0, 0, 0, .45), 0 26px 56px -32px rgba(0, 0, 0, .70);
 }
 
+/* In-page menu bar — a sticky jump nav so the long brief reads as a
+   navigable document, not one overwhelming scroll. */
+.advanced-toc {
+  position: sticky; top: 66px; z-index: 20;
+  display: flex; gap: 5px; overflow-x: auto; scrollbar-width: none;
+  padding: 7px; margin: 0;
+  border: 1px solid #e2e6ec; border-radius: 999px;
+  background: rgba(255, 255, 255, .82);
+  -webkit-backdrop-filter: blur(12px) saturate(1.2);
+  backdrop-filter: blur(12px) saturate(1.2);
+  box-shadow: 0 10px 30px -18px rgba(16, 24, 40, .40);
+}
+.advanced-toc::-webkit-scrollbar { display: none; }
+.advanced-toc a {
+  flex: 0 0 auto;
+  padding: 7px 13px; border-radius: 999px;
+  font-size: 12.5px; font-weight: 650; white-space: nowrap;
+  color: #536171; text-decoration: none;
+  transition: background-color .18s ease, color .18s ease;
+}
+.advanced-toc a:hover { background: var(--advanced-accent-soft); color: var(--advanced-accent-strong); }
+.dark .advanced-toc {
+  border-color: #2b3742; background: rgba(20, 26, 34, .82);
+  box-shadow: 0 12px 34px -18px rgba(0, 0, 0, .70);
+}
+.dark .advanced-toc a { color: #aeb9c6; }
+.dark .advanced-toc a:hover { background: color-mix(in srgb, var(--advanced-accent) 22%, transparent); color: #fff; }
+
+/* Anchor jumps clear the sticky header (66px) + the menu bar. */
+.advanced-room [id] { scroll-margin-top: 132px; }
+
 /* Turn the hairline "table" grids into spaced, rounded cards. */
 .advanced-start-here ol { gap: 12px; background: transparent; padding: 0; }
 .advanced-start-here li {

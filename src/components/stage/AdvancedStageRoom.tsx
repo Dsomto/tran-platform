@@ -150,6 +150,20 @@ export function AdvancedStageRoom({
         </div>
       </header>
 
+      <nav className="advanced-toc" aria-label="Jump to a section of this brief">
+        <a href="#start-here-title">Start here</a>
+        <a href="#readiness-title">Foundations</a>
+        <a href="#operating-brief-title">Brief</a>
+        <a href="#assessment-title">How it&apos;s judged</a>
+        <a href="#mission-title">Mission</a>
+        <a href="#technical-title">Constraints</a>
+        <a href="#proof-title">Proof</a>
+        <a href="#decision-rules-title">Rules</a>
+        <a href="#deliverables-title">Deliverables</a>
+        <a href="#project-faq">FAQ</a>
+        <a href="#advanced-submit">Submit</a>
+      </nav>
+
       {!preview && submitUntil && (
         <StageDeadlineCountdown
           activeFrom={activeFrom}
@@ -431,7 +445,7 @@ export function AdvancedStageRoom({
         <ul>{project.pressureSlots.map((item) => <li key={item}>{item}</li>)}</ul>
       </section>
 
-      <section className="advanced-submit">
+      <section className="advanced-submit" id="advanced-submit">
         <div>
           <span className="advanced-eyebrow">One folder, one manifest, one decision</span>
           <h2>Submit the case package</h2>
