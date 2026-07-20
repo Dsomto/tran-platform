@@ -36,12 +36,31 @@ const STAGE_NAMES: Record<StageKey, string> = {
   STAGE_2: "The Attack Surface",
   STAGE_3: "Inside the Walls",
   STAGE_4: "The Debrief",
-  STAGE_5: "Advanced · Signal",
-  STAGE_6: "Advanced · Exposure",
-  STAGE_7: "Advanced · Architecture",
-  STAGE_8: "Advanced · Adversity",
-  STAGE_9: "Advanced · The Final Case",
+  STAGE_5: "Signal",
+  STAGE_6: "Exposure",
+  STAGE_7: "Architecture",
+  STAGE_8: "Adversity",
+  STAGE_9: "The Final Case",
 };
+
+// Foundational stages read "Stage N · Name"; advanced stages read
+// "Advanced M · Name" (matching the Stage Reports page and the advanced track).
+const ADVANCED_LABEL: Partial<Record<StageKey, string>> = {
+  STAGE_5: "Advanced 1",
+  STAGE_6: "Advanced 2",
+  STAGE_7: "Advanced 3",
+  STAGE_8: "Advanced 4",
+  STAGE_9: "Advanced 5",
+};
+
+const FOUNDATION_STAGES = STAGES.slice(0, 5);
+const ADVANCED_STAGES = STAGES.slice(5);
+
+function stageTitle(stage: StageKey, stageNum: string): string {
+  return ADVANCED_LABEL[stage]
+    ? `${ADVANCED_LABEL[stage]} · ${STAGE_NAMES[stage]}`
+    : `Stage ${stageNum} · ${STAGE_NAMES[stage]}`;
+}
 
 const STAGE_ENUM_TO_SLUG: Record<StageKey, StageSlug> = {
   STAGE_0: "stage-0",
@@ -95,6 +114,52 @@ export default async function AssignmentsPage() {
       timeZone: "Africa/Lagos",
     }).format(value)} WAT`;
 
+  const renderStage = (stage: StageKey) => {
+    const w = windowByStage.get(stage as never);
+    const isLocked = !stageWindowAcceptsSubmissions(w, now.getTime());
+    const rank = stageRank(stage);
+    const isAhead = rank > internRank;
+    const isPast = rank < internRank;
+    const isCurrent = rank === internRank;
+    const reportStatus = reportByStage.get(stage);
+    const stageNum = stage.replace("STAGE_", "");
+
+    // Interns can enter a stage only if the admin has it OPEN and it's
+    // at-or-behind their current stage. Locked OR ahead = greyed out.
+    const accessible = !isLocked && !isAhead;
+
+    const deadline = w?.submitUntil ? formatWat(w.submitUntil) : null;
+    const availabilityNote =
+      w?.status === "OPEN" && w.activeFrom && now < w.activeFrom
+        ? `Opens ${formatWat(w.activeFrom)}.`
+        : w?.status === "OPEN" && w.submitUntil && now > w.submitUntil
+          ? `Closed ${formatWat(w.submitUntil)}.`
+          : null;
+
+    return (
+      <StageCard
+        key={stage}
+        stage={stage}
+        stageNum={stageNum}
+        title={stageTitle(stage, stageNum)}
+        roomHref={stageUrl(STAGE_ENUM_TO_SLUG[stage])}
+        reportHref={`/dashboard/reports/${stage}`}
+        accessible={accessible}
+        isLocked={isLocked}
+        isCurrent={isCurrent}
+        isPast={isPast}
+        reportStatus={reportStatus}
+        deadline={deadline}
+        availabilityNote={availabilityNote}
+      />
+    );
+  };
+
+  const sections: Array<{ heading: string; sub: string; group: readonly StageKey[] }> = [
+    { heading: "Foundational track", sub: "Stages 0–4 · the core programme", group: FOUNDATION_STAGES },
+    { heading: "Advanced track", sub: "Stages 5–9 · specialist, one week each", group: ADVANCED_STAGES },
+  ];
+
   return (
     <>
       <Topbar
@@ -106,47 +171,18 @@ export default async function AssignmentsPage() {
       />
 
       <div className="flex-1 overflow-y-auto p-6">
-        <div className="max-w-3xl space-y-3">
-          {STAGES.map((stage) => {
-            const w = windowByStage.get(stage as never);
-            const isLocked = !stageWindowAcceptsSubmissions(w, now.getTime());
-            const rank = stageRank(stage);
-            const isAhead = rank > internRank;
-            const isPast = rank < internRank;
-            const isCurrent = rank === internRank;
-            const reportStatus = reportByStage.get(stage);
-            const stageNum = stage.replace("STAGE_", "");
-
-            // Interns can enter a stage only if the admin has it OPEN and it's
-            // at-or-behind their current stage. Locked OR ahead = greyed out.
-            const accessible = !isLocked && !isAhead;
-
-            const deadline = w?.submitUntil ? formatWat(w.submitUntil) : null;
-            const availabilityNote =
-              w?.status === "OPEN" && w.activeFrom && now < w.activeFrom
-                ? `Opens ${formatWat(w.activeFrom)}.`
-                : w?.status === "OPEN" && w.submitUntil && now > w.submitUntil
-                  ? `Closed ${formatWat(w.submitUntil)}.`
-                  : null;
-
-            return (
-              <StageCard
-                key={stage}
-                stage={stage}
-                stageNum={stageNum}
-                name={STAGE_NAMES[stage as StageKey]}
-                roomHref={stageUrl(STAGE_ENUM_TO_SLUG[stage as StageKey])}
-                reportHref={`/dashboard/reports/${stage}`}
-                accessible={accessible}
-                isLocked={isLocked}
-                isCurrent={isCurrent}
-                isPast={isPast}
-                reportStatus={reportStatus}
-                deadline={deadline}
-                availabilityNote={availabilityNote}
-              />
-            );
-          })}
+        <div className="max-w-3xl space-y-8">
+          {sections.map(({ heading, sub, group }) => (
+            <section key={heading} className="space-y-3">
+              <div className="flex items-baseline gap-3 flex-wrap">
+                <h2 className="text-sm font-semibold uppercase tracking-wider text-foreground">
+                  {heading}
+                </h2>
+                <span className="text-xs text-muted-foreground">{sub}</span>
+              </div>
+              <div className="space-y-3">{group.map((stage) => renderStage(stage))}</div>
+            </section>
+          ))}
         </div>
       </div>
     </>
@@ -155,7 +191,7 @@ export default async function AssignmentsPage() {
 
 function StageCard({
   stageNum,
-  name,
+  title,
   roomHref,
   reportHref,
   accessible,
@@ -168,7 +204,7 @@ function StageCard({
 }: {
   stage: string;
   stageNum: string;
-  name: string;
+  title: string;
   roomHref: string;
   reportHref: string;
   accessible: boolean;
@@ -206,7 +242,7 @@ function StageCard({
         <div className={`min-w-0 flex-1 ${accessible ? "" : "opacity-60"}`}>
           <div className="flex items-center gap-2 flex-wrap">
             <h2 className="text-base font-semibold text-foreground">
-              Stage {stageNum} · {name}
+              {title}
             </h2>
             {isLocked ? (
               <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded bg-surface-hover text-muted border border-border">

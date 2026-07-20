@@ -5,7 +5,7 @@ import { FileText, Clock, CheckCircle2, XCircle, AlertTriangle, Award, FileSigna
 import { LinkedInIcon } from "@/components/icons/linkedin";
 import { certificateShareSig, letterShareSig, passLetterShareSig } from "@/lib/certificate-link";
 import { isReportResultReleased } from "@/lib/report-visibility";
-import { stageWindowAcceptsSubmissions } from "@/lib/stage-window";
+import { stageWindowAcceptsSubmissions, stageWindowHasStarted } from "@/lib/stage-window";
 
 // Always re-fetch — the score field switched from `score` to `finalScore`
 // and any cached render of this route would still show the old value.
@@ -68,12 +68,22 @@ export default async function ReportsPage() {
         </p>
       </header>
 
-      <div className="grid gap-4">
-        {stages.map((stage) => {
+      {([
+        ["Foundational track", "Stages 0–4 · the core programme", stages.slice(0, 5)],
+        ["Advanced track", "Stages 5–9 · specialist, one week each", stages.slice(5)],
+      ] as const).map(([heading, sub, group]) => (
+        <section key={heading} className="mb-8">
+          <div className="flex items-baseline gap-3 flex-wrap mb-3">
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-foreground">{heading}</h2>
+            <span className="text-xs text-muted-foreground">{sub}</span>
+          </div>
+          <div className="grid gap-4">
+            {group.map((stage) => {
           const r = reportByStage.get(stage as never);
           const w = windowByStage.get(stage as never);
           const meta = STAGE_META[stage];
           const isOpen = stageWindowAcceptsSubmissions(w);
+          const hasStarted = stageWindowHasStarted(w);
           const isClosed = (w?.status ?? "CLOSED") === "CLOSED";
           const resultReleased = isReportResultReleased(r?.status);
 
@@ -160,6 +170,10 @@ export default async function ReportsPage() {
                     <span className="text-sm text-muted-foreground italic px-3 py-2">
                       Deadline passed
                     </span>
+                  ) : !hasStarted && !r ? (
+                    <span className="inline-flex items-center gap-1.5 text-sm text-muted-foreground px-3 py-2">
+                      <Clock className="h-4 w-4" /> Not open yet
+                    </span>
                   ) : (
                     <Link
                       href={`/dashboard/reports/${stage}`}
@@ -180,8 +194,10 @@ export default async function ReportsPage() {
               </div>
             </div>
           );
-        })}
-      </div>
+            })}
+          </div>
+        </section>
+      ))}
     </div>
   );
 }

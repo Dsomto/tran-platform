@@ -5,20 +5,27 @@ import { prisma } from "@/lib/db";
 import { Topbar } from "@/components/dashboard/topbar";
 import { Card } from "@/components/ui/card";
 import { SlackCard } from "@/components/dashboard/slack-card";
+import { StageDeadlineCountdown } from "@/components/stage/StageDeadlineCountdown";
 import { stageUrl, type StageSlug } from "@/lib/stage-routes";
-import { stageWindowAcceptsSubmissions } from "@/lib/stage-window";
+import { stageWindowAcceptsSubmissions, stageWindowHasStarted } from "@/lib/stage-window";
 import { formatDate, stageToNumber, trackLabel } from "@/lib/utils";
 import {
+  ADVANCED_PROJECTS,
+  ADVANCED_STAGE_META,
+  type AdvancedTrack,
+} from "@/lib/advanced-stage";
+import {
+  ArrowUpRight,
+  CheckCircle2,
   Clock,
   DoorOpen,
   FileText,
+  Layers3,
+  Lock,
   Pin,
   Star,
   Trophy,
-  Lock,
-  Layers3,
 } from "lucide-react";
-import { EggHoverNote, EggProgressGlow } from "@/components/dashboard/easter-eggs/widgets";
 
 type StageEnum =
   | "STAGE_0"
@@ -172,6 +179,47 @@ export default async function DashboardPage() {
     }),
   ]);
 
+  // ── Derived, all from real data (no invented metrics) ──
+  const hasStarted = stageWindowHasStarted(stageWindow);
+  const opensLater = stageWindow?.status === "OPEN" && !hasStarted && !!stageWindow?.activeFrom;
+  const watLabel = (value: Date) =>
+    new Intl.DateTimeFormat("en-GB", {
+      weekday: "short", hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "Africa/Lagos",
+    }).format(value);
+
+  // Scenario line + track path
+  const advProjects = isAdvancedStage ? ADVANCED_PROJECTS[intern.track as AdvancedTrack] ?? [] : [];
+  const advCurrent = advProjects.find((p) => p.stage === stageEnum) ?? null;
+  const scenario = isAdvancedStage
+    ? advCurrent?.objective ?? "Your assigned specialist project. Build the system, prove every claim, and defend it."
+    : "Read the brief, work the mission tasks, then build and submit your capstone for this stage.";
+
+  type PathItem = { key: string; label: string; meta: string; status: "cleared" | "current" | "locked" };
+  const trackPath: PathItem[] = isAdvancedStage
+    ? [
+        { key: "found", label: "Foundations · Stages 0–4", meta: "Core programme completed", status: "cleared" },
+        ...advProjects.map((p, i) => {
+          const n = stageToNumber(p.stage);
+          const status: PathItem["status"] = n < stageNum ? "cleared" : n === stageNum ? "current" : "locked";
+          return {
+            key: p.stage,
+            label: `Advanced ${i + 1} · ${ADVANCED_STAGE_META[p.stage as keyof typeof ADVANCED_STAGE_META].name}`,
+            meta: p.title,
+            status,
+          };
+        }),
+      ]
+    : [0, 1, 2, 3, 4].map((n) => ({
+        key: `STAGE_${n}`,
+        label: `Stage ${n} · ${STAGE_NAMES[`STAGE_${n}` as StageEnum]}`,
+        meta: "",
+        status: (n < stageNum ? "cleared" : n === stageNum ? "current" : "locked") as PathItem["status"],
+      }));
+
+  const railLabels = isAdvancedStage
+    ? (["STAGE_5", "STAGE_6", "STAGE_7", "STAGE_8", "STAGE_9"] as const).map((s) => ADVANCED_STAGE_META[s].name)
+    : ["Stage 0", "Stage 1", "Stage 2", "Stage 3", "Stage 4"];
+
   const isStageOpen = stageWindowAcceptsSubmissions(stageWindow);
   const roomHref = stageUrl(STAGE_ENUM_TO_SLUG[stageEnum]);
   const reportHref = `/dashboard/reports/${stageEnum}`;
@@ -203,7 +251,7 @@ export default async function DashboardPage() {
       />
 
       <div className="flex-1 overflow-y-auto">
-        <div className="max-w-3xl mx-auto px-6 py-8 space-y-6">
+        <div className="max-w-5xl mx-auto px-6 py-8 space-y-6">
           {/* Slack nudge — renders nothing if already joined */}
           {!intern.slackJoined && (
             <SlackCard
@@ -243,182 +291,227 @@ export default async function DashboardPage() {
             </section>
           )}
 
-          {/* ── Hero: your current stage ── */}
-          <section className="bg-surface border border-border rounded-2xl p-6 sm:p-8">
-            <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-blue mb-1">
-                  Your current stage
-                </p>
-                <h2 className="text-xl sm:text-2xl font-bold text-foreground">
-                  Stage {stageNum} · {stageName}
-                </h2>
-              </div>
-              {isStageOpen ? (
-                <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/30">
-                  Open
-                </span>
-              ) : (
-                <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-surface-hover text-muted border border-border">
-                  <Lock className="w-3 h-3" /> Not open yet
-                </span>
-              )}
-            </div>
-
-            {/* The dashboard changes from the five foundation chapters to the
-                five assigned-track projects after Stage 4. */}
+          {/* ── Hero: current stage command panel ── */}
+          <section className="relative overflow-hidden rounded-3xl border border-border bg-surface shadow-sm">
             <div
-              className="flex items-center gap-1 mb-2"
-              aria-label={isAdvancedStage
-                ? `On advanced project ${progressIndex + 1} of 5`
-                : `On stage ${stageNum} of 4 (${stageNum + 1} of 5 chapters)`}
+              className="relative px-6 pb-8 pt-7 text-white sm:px-8"
+              style={{ background: "radial-gradient(120% 140% at 12% 0%, #2E5BE6 0%, #1E3FB0 46%, #132A79 100%)" }}
             >
-              {Array.from({ length: 5 }).map((_, i) => (
-                <div
-                  key={i}
-                  className={`h-1.5 flex-1 rounded-full ${
-                    i <= progressIndex ? "bg-blue" : "bg-border-light"
-                  }`}
-                />
-              ))}
-            </div>
-            <EggProgressGlow value={!isAdvancedStage && stageNum >= 4 ? 100 : 0} className="block h-1.5 w-full -mt-1.5 mb-1" />
-            <p className="text-[11px] font-mono text-muted-foreground mb-6">
-              {isAdvancedStage ? (
-                <>Advanced project {progressIndex + 1} of 5 · Assigned track only</>
-              ) : stageNum > 0 ? (
-                <EggHoverNote note="You still remember the gate.">Chapter {stageNum + 1} of 5</EggHoverNote>
-              ) : (
-                <>Chapter {stageNum + 1} of 5</>
-              )}
-            </p>
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/70">
+                    {isAdvancedStage ? "Advanced track · current project" : "Your current stage"}
+                  </p>
+                  <h2 className="mt-2 text-2xl font-extrabold leading-tight tracking-tight sm:text-[30px]">
+                    {isAdvancedStage
+                      ? `Advanced ${progressIndex + 1} · ${ADVANCED_STAGE_META[stageEnum as keyof typeof ADVANCED_STAGE_META].name}`
+                      : `Stage ${stageNum} · ${stageName}`}
+                  </h2>
+                  <p className="mt-2 max-w-xl text-sm leading-relaxed text-white/75">{scenario}</p>
+                </div>
+                {isStageOpen ? (
+                  <span className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/15 px-3 py-1.5 text-xs font-semibold text-white">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-300" aria-hidden="true" /> Open now
+                  </span>
+                ) : opensLater && stageWindow?.activeFrom ? (
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-white/25 bg-white/15 px-3 py-1.5 text-xs font-semibold text-white">
+                    <Clock className="h-3.5 w-3.5" aria-hidden="true" /> Opens {watLabel(stageWindow.activeFrom)}
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white/80">
+                    <Lock className="h-3.5 w-3.5" aria-hidden="true" /> Not open yet
+                  </span>
+                )}
+              </div>
 
-            {isStageOpen ? (
-              <div className="flex flex-wrap gap-3">
+              {/* Progress rail with labels */}
+              <div
+                className="mt-6 flex gap-2"
+                aria-label={isAdvancedStage ? `Advanced project ${progressIndex + 1} of 5` : `Stage ${stageNum} of 4`}
+              >
+                {railLabels.map((lab, i) => (
+                  <div key={lab + i} className="min-w-0 flex-1">
+                    <div
+                      className={`h-[5px] rounded-full ${
+                        i < progressIndex ? "bg-white" : i === progressIndex ? "bg-emerald-300" : "bg-white/25"
+                      }`}
+                    />
+                    <p className={`mt-1.5 truncate text-[10px] font-medium ${i === progressIndex ? "text-white" : "text-white/55"}`}>
+                      {lab}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Footer: actions */}
+            <div className="flex flex-wrap items-center gap-3 px-6 py-4 sm:px-8">
+              {isStageOpen ? (
+                <>
+                  <Link href={roomHref} className="inline-flex items-center gap-1.5 rounded-full bg-blue px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-dark">
+                    <DoorOpen className="h-4 w-4" /> {isAdvancedStage ? "Open current project" : "Enter the room"}
+                  </Link>
+                  {!isAdvancedStage && (
+                    <Link href={`${roomHref}#capstone`} className="inline-flex items-center gap-1.5 rounded-full bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700">
+                      <Trophy className="h-4 w-4" /> View your capstone
+                    </Link>
+                  )}
+                  <Link href={reportHref} className="inline-flex items-center gap-1.5 rounded-full border border-border px-5 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-surface-hover">
+                    <FileText className="h-4 w-4" />
+                    {report?.status === "DRAFT" ? "Continue draft" : report?.status === "SUBMITTED" || report?.status === "UNDER_REVIEW" ? "View submission" : report?.status === "PASSED" || report?.status === "FAILED" ? "View result" : "Submit report"}
+                  </Link>
+                  {isAdvancedStage && (
+                    <Link href="/dashboard/advanced" className="inline-flex items-center gap-1.5 rounded-full border border-blue/30 bg-blue/5 px-5 py-2.5 text-sm font-semibold text-blue transition-colors hover:bg-blue/10">
+                      <Layers3 className="h-4 w-4" /> View your track
+                    </Link>
+                  )}
+                </>
+              ) : (
+                <>
+                  <p className="text-sm text-muted">
+                    {opensLater && stageWindow?.activeFrom
+                      ? `This ${isAdvancedStage ? "project" : "stage"} opens ${watLabel(stageWindow.activeFrom)}. We'll email you when it's live.`
+                      : "We'll email you the moment this opens — and pin the announcement here."}
+                  </p>
+                  {isAdvancedStage && (
+                    <Link href="/dashboard/advanced" className="ml-auto inline-flex items-center gap-1.5 rounded-full border border-blue/30 bg-blue/5 px-5 py-2.5 text-sm font-semibold text-blue transition-colors hover:bg-blue/10">
+                      <Layers3 className="h-4 w-4" /> View your track
+                    </Link>
+                  )}
+                </>
+              )}
+            </div>
+          </section>
+
+          {/* ── Deadline countdown (reuses the intern-room component) ── */}
+          {stageWindow?.submitUntil && (isStageOpen || opensLater) && (
+            <StageDeadlineCountdown
+              submitUntil={stageWindow.submitUntil.toISOString()}
+              activeFrom={stageWindow.activeFrom ? stageWindow.activeFrom.toISOString() : null}
+              className="rounded-2xl"
+            />
+          )}
+
+          {/* ── Stats ── */}
+          <section className="grid grid-cols-3 gap-3 sm:gap-4">
+            <StatTile icon={Star} label="Points" value={String(intern.points)} tone="blue" />
+            <StatTile icon={Trophy} label="Cohort rank" value={`#${rank}`} tone="amber" />
+            <StatTile icon={CheckCircle2} label="Stages cleared" value={`${passedCount} of 9`} tone="emerald" />
+          </section>
+
+          {/* ── Track path + side ── */}
+          <section className="grid gap-6 lg:grid-cols-[1fr_320px]">
+            <div className="rounded-2xl border border-border bg-surface">
+              <div className="flex items-center justify-between px-5 pt-5 sm:px-6">
+                <h3 className="text-sm font-semibold text-foreground">Your track path</h3>
                 {isAdvancedStage && (
-                  <Link
-                    href="/dashboard/advanced"
-                    className="inline-flex items-center gap-1.5 px-5 py-2.5 text-sm font-semibold rounded-full border border-blue/30 bg-blue/5 text-blue hover:bg-blue/10 transition-colors"
-                  >
-                    <Layers3 className="w-4 h-4" />
-                    View your track
+                  <Link href="/dashboard/advanced" className="inline-flex items-center gap-1 text-xs font-semibold text-blue">
+                    View track <ArrowUpRight className="h-3.5 w-3.5" />
                   </Link>
                 )}
-                <Link
-                  href={roomHref}
-                  className="inline-flex items-center gap-1.5 px-5 py-2.5 text-sm font-semibold rounded-full bg-blue text-white hover:bg-blue-dark transition-colors"
-                >
-                  <DoorOpen className="w-4 h-4" />
-                  {isAdvancedStage ? "Open current project" : "Enter the room"}
-                </Link>
-                {!isAdvancedStage && (
-                  <Link
-                    href={`${roomHref}#capstone`}
-                    className="inline-flex items-center gap-1.5 px-5 py-2.5 text-sm font-semibold rounded-full bg-indigo-600 text-white hover:bg-indigo-700 transition-colors shadow-sm"
-                  >
-                    <Trophy className="w-4 h-4" />
-                    View your capstone
+              </div>
+              <ol className="px-5 pb-4 pt-2 sm:px-6">
+                {trackPath.map((it, i) => (
+                  <li key={it.key} className="relative flex gap-4 py-2.5">
+                    {i < trackPath.length - 1 && (
+                      <span className="absolute bottom-0 left-[15px] top-9 w-px bg-border" aria-hidden="true" />
+                    )}
+                    <span
+                      className={`relative z-[1] grid h-8 w-8 shrink-0 place-items-center rounded-lg font-mono text-xs font-bold ${
+                        it.status === "cleared"
+                          ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300"
+                          : it.status === "current"
+                            ? "bg-blue text-white"
+                            : "border border-border bg-surface-hover text-muted"
+                      }`}
+                    >
+                      {it.status === "cleared" ? <CheckCircle2 className="h-4 w-4" /> : String(i)}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold text-foreground">{it.label}</p>
+                      {it.meta && <p className="mt-0.5 truncate text-xs text-muted">{it.meta}</p>}
+                    </div>
+                    <span
+                      className={`self-center whitespace-nowrap rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                        it.status === "cleared"
+                          ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300"
+                          : it.status === "current"
+                            ? "bg-blue/10 text-blue dark:text-blue-300"
+                            : "border border-border bg-surface-hover text-muted"
+                      }`}
+                    >
+                      {it.status === "cleared" ? "Cleared" : it.status === "current" ? "In progress" : "Locked"}
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+
+            <div className="space-y-6">
+              {topAnnouncement && (
+                <div className="rounded-2xl border border-border bg-surface p-5">
+                  <div className="mb-3 flex items-center justify-between">
+                    <h3 className="text-sm font-semibold text-foreground">Latest announcement</h3>
+                    <Link href="/dashboard/announcements" className="text-xs font-medium text-blue hover:text-blue-dark">
+                      See all →
+                    </Link>
+                  </div>
+                  <Link href={`/dashboard/announcements#${topAnnouncement.id}`} className="block">
+                    <div className="mb-1.5 flex items-start gap-2">
+                      {topAnnouncement.isPinned && <Pin className="mt-0.5 h-4 w-4 shrink-0 text-blue" />}
+                      <h4 className="text-sm font-semibold text-foreground">{topAnnouncement.title}</h4>
+                    </div>
+                    <p className="line-clamp-3 text-sm leading-relaxed text-muted">{topAnnouncement.content}</p>
+                    <p className="mt-2.5 text-[11px] text-muted/70">
+                      {topAnnouncement.author.firstName} {topAnnouncement.author.lastName} · {formatDate(topAnnouncement.createdAt)}
+                    </p>
                   </Link>
-                )}
-                <Link
-                  href={reportHref}
-                  className="inline-flex items-center gap-1.5 px-5 py-2.5 text-sm font-medium rounded-full border border-border text-foreground hover:bg-surface-hover transition-colors"
-                >
-                  <FileText className="w-4 h-4" />
-                  {report?.status === "DRAFT"
-                    ? "Continue draft"
-                    : report?.status === "SUBMITTED" || report?.status === "UNDER_REVIEW"
-                      ? "View submission"
-                      : report?.status === "PASSED" || report?.status === "FAILED"
-                        ? "View result"
-                        : "Submit report"}
-                </Link>
+                </div>
+              )}
+
+              <div className="rounded-2xl border border-border bg-surface p-5">
+                <h3 className="mb-3 text-sm font-semibold text-foreground">This stage&apos;s submission</h3>
                 <span
-                  className={`self-center text-[11px] font-semibold px-2 py-0.5 rounded border ${
+                  className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[11px] font-semibold ${
                     reportStatusLabel.tone === "emerald"
-                      ? "bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/30"
+                      ? "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-500/30 dark:bg-emerald-500/15 dark:text-emerald-300"
                       : reportStatusLabel.tone === "rose"
-                        ? "bg-rose-50 text-rose-800 border-rose-200 dark:bg-rose-500/15 dark:text-rose-300 dark:border-rose-500/30"
+                        ? "border-rose-200 bg-rose-50 text-rose-800 dark:border-rose-500/30 dark:bg-rose-500/15 dark:text-rose-300"
                         : reportStatusLabel.tone === "blue"
-                          ? "bg-blue/10 text-blue dark:text-blue-300 border-blue/30"
+                          ? "border-blue/30 bg-blue/10 text-blue dark:text-blue-300"
                           : reportStatusLabel.tone === "amber"
-                            ? "bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/30"
-                            : reportStatusLabel.tone === "slate"
-                              ? "bg-surface-hover text-muted border-border"
-                              : "bg-surface text-muted border-border"
+                            ? "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/15 dark:text-amber-300"
+                            : "border-border bg-surface-hover text-muted"
                   }`}
                 >
                   {reportStatusLabel.text}
                 </span>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <p className="text-sm text-muted leading-relaxed">
-                  We&apos;ll send you an email the moment this stage opens. You&apos;ll find the
-                  announcement pinned in your dashboard too.
+                <p className="mb-4 mt-3 text-xs leading-relaxed text-muted">
+                  {report?.status === "PASSED"
+                    ? "You've cleared this stage — grab your certificate on the Reports page."
+                    : report?.status === "SUBMITTED" || report?.status === "UNDER_REVIEW"
+                      ? "Your report is with the graders. We'll email you when the result is released."
+                      : report?.status === "DRAFT"
+                        ? "You have a draft saved. Finish it and submit before the deadline."
+                        : isStageOpen
+                          ? "Build your work off-platform, then paste your view-only Drive link and a short executive summary."
+                          : "Nothing to submit yet — this stage isn't open."}
                 </p>
-                {isAdvancedStage && (
-                  <Link
-                    href="/dashboard/advanced"
-                    className="inline-flex items-center gap-1.5 px-5 py-2.5 text-sm font-semibold rounded-full border border-blue/30 bg-blue/5 text-blue hover:bg-blue/10 transition-colors"
-                  >
-                    <Layers3 className="w-4 h-4" />
-                    View your track
+                {isStageOpen && (
+                  <Link href={reportHref} className="inline-flex items-center gap-1.5 text-sm font-semibold text-blue">
+                    <FileText className="h-4 w-4" /> {report ? "Open your report" : "Start your report"}
                   </Link>
                 )}
               </div>
-            )}
+            </div>
           </section>
-
-          {/* ── Two small stats ── */}
-          <section className="grid grid-cols-2 gap-4">
-            <MiniStat icon={Star} label="Points" value={String(intern.points)} tone="blue" />
-            <MiniStat icon={Trophy} label="Your rank" value={`#${rank}`} tone="amber" />
-          </section>
-
-          {/* ── Latest announcement (1 only) ── */}
-          {topAnnouncement && (
-            <section>
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide">
-                  Latest announcement
-                </h3>
-                <Link
-                  href="/dashboard/announcements"
-                  className="text-xs font-medium text-blue hover:text-blue-dark"
-                >
-                  See all →
-                </Link>
-              </div>
-              <Link
-                href={`/dashboard/announcements#${topAnnouncement.id}`}
-                className="block bg-surface border border-border rounded-2xl p-5 hover:border-blue/40 transition-colors"
-              >
-                <div className="flex items-start gap-2 mb-1.5">
-                  {topAnnouncement.isPinned && (
-                    <Pin className="w-4 h-4 text-blue shrink-0 mt-0.5" />
-                  )}
-                  <h4 className="text-sm font-semibold text-foreground">
-                    {topAnnouncement.title}
-                  </h4>
-                </div>
-                <p className="text-sm text-muted leading-relaxed line-clamp-2">
-                  {topAnnouncement.content}
-                </p>
-                <p className="text-[11px] text-muted/70 mt-2.5">
-                  {topAnnouncement.author.firstName} {topAnnouncement.author.lastName} ·{" "}
-                  {formatDate(topAnnouncement.createdAt)}
-                </p>
-              </Link>
-            </section>
-          )}
         </div>
       </div>
     </>
   );
 }
 
-function MiniStat({
+function StatTile({
   icon: Icon,
   label,
   value,
@@ -427,21 +520,21 @@ function MiniStat({
   icon: React.ElementType;
   label: string;
   value: string;
-  tone: "blue" | "amber";
+  tone: "blue" | "amber" | "emerald";
 }) {
+  const toneClasses =
+    tone === "blue"
+      ? "bg-blue/10 text-blue dark:text-blue-300"
+      : tone === "amber"
+        ? "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300"
+        : "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300";
   return (
-    <div className="bg-surface border border-border rounded-2xl p-5 flex items-center gap-4">
-      <div
-        className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${
-          tone === "blue" ? "bg-blue/10 text-blue dark:text-blue-300" : "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300"
-        }`}
-      >
+    <div className="bg-surface border border-border rounded-2xl p-4 sm:p-5 hover:border-blue/40 transition-colors">
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${toneClasses}`}>
         <Icon className="w-5 h-5" />
       </div>
-      <div>
-        <p className="text-2xl font-bold text-foreground tabular-nums leading-none">{value}</p>
-        <p className="text-xs text-muted mt-1">{label}</p>
-      </div>
+      <p className="text-2xl font-bold text-foreground tabular-nums leading-none">{value}</p>
+      <p className="text-xs text-muted mt-1.5 leading-tight">{label}</p>
     </div>
   );
 }

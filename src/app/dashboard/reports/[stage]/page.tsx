@@ -8,6 +8,7 @@ import { EVIDENCE_PACK } from "@/lib/evidence-pack";
 import { STAGE_STORIES } from "@/lib/stage-story";
 import { isReportResultReleased, publicReportStatus } from "@/lib/report-visibility";
 import { stageRank } from "@/lib/stage-login";
+import { stageWindowHasStarted } from "@/lib/stage-window";
 import { ReportEditor } from "./report-editor";
 import {
   advancedTrackLabel,
@@ -61,8 +62,10 @@ export default async function ReportEditorPage({
     ? STAGE_BRIEFS[stage as FoundationStageKey]
     : null;
   if (!brief && !advancedProject) notFound();
-  const stageStatus = window?.status ?? "CLOSED";
-  const isOpen = stageStatus === "OPEN";
+  // Time-aware gate: a stage is only truly open once its window status is OPEN
+  // AND its scheduled start (activeFrom) has passed. Checking status alone let
+  // interns open a not-yet-started advanced stage (OPEN with a future start) early.
+  const isOpen = stageWindowHasStarted(window);
   const resultReleased = isReportResultReleased(existing?.status);
 
   // Server-side gate: if the admin hasn't opened this stage, the intern
