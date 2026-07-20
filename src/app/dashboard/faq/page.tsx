@@ -1,5 +1,7 @@
+import { redirect } from "next/navigation";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { isAdvancedStage } from "@/lib/advanced-stage";
 import { Topbar } from "@/components/dashboard/topbar";
 import {
   FileText,
@@ -197,6 +199,14 @@ export default async function FAQPage() {
     where: { userId: session.id },
     select: { currentStage: true },
   });
+
+  // This page only covers the foundational-stage capstone format
+  // (Stages 0-4). Advanced-stage interns have their own project FAQ inside
+  // the stage room; falling back to Stage 0's FAQ here would be wrong and
+  // confusing, not merely unhelpful, so send them to their real dashboard.
+  if (intern?.currentStage && isAdvancedStage(intern.currentStage)) {
+    redirect("/dashboard/advanced");
+  }
 
   const currentStage: StageKey =
     intern?.currentStage && intern.currentStage in STAGE_BRIEFS

@@ -368,12 +368,14 @@ export function ReportEditor({
             <FileText className="h-4 w-4 text-blue" />
             How to submit your report
           </h2>
-          <a
-            href="/dashboard/faq"
-            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-semibold border border-blue/40 bg-surface text-blue hover:bg-blue/10"
-          >
-            Read the full Deliverables FAQ →
-          </a>
+          {!isAdvanced && (
+            <a
+              href="/dashboard/faq"
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-semibold border border-blue/40 bg-surface text-blue hover:bg-blue/10"
+            >
+              Read the full Deliverables FAQ →
+            </a>
+          )}
         </div>
         {isAdvanced ? (
           <ol className="list-decimal list-inside text-sm text-foreground/80 space-y-1.5 leading-relaxed">

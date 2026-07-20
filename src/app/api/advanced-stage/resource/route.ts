@@ -3,7 +3,8 @@ import path from "node:path";
 import { NextRequest } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { isAdvancedStage, type AdvancedTrack } from "@/lib/advanced-stage";
+import { advancedTrackLabel, isAdvancedStage, type AdvancedTrack } from "@/lib/advanced-stage";
+import { renderMarkdownPdf } from "@/lib/advanced-doc-pdf";
 import { stageRank } from "@/lib/stage-login";
 import { stageWindowAcceptsSubmissions } from "@/lib/stage-window";
 
@@ -15,6 +16,26 @@ const TRACK_SLUGS: Record<AdvancedTrack, string> = {
   ETHICAL_HACKING: "eh",
   GRC: "grc",
 };
+
+const TRACK_BY_SLUG: Record<string, AdvancedTrack> = {
+  soc: "SOC_ANALYSIS",
+  eh: "ETHICAL_HACKING",
+  grc: "GRC",
+};
+
+/** Humanize a filename into a title when the markdown has no leading "# ". */
+function titleFromFileName(fileName: string): string {
+  return fileName
+    .replace(/\.md$/i, "")
+    .replace(/[-_]+/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function docTitleAndBody(markdown: string, fileName: string): { title: string; body: string } {
+  const match = markdown.match(/^#\s+(.+?)\s*\n([\s\S]*)$/);
+  if (match) return { title: match[1].trim(), body: match[2] };
+  return { title: titleFromFileName(fileName), body: markdown };
+}
 
 const CONTENT_TYPES: Record<string, string> = {
   ".csv": "text/csv; charset=utf-8",
@@ -98,6 +119,29 @@ export async function GET(request: NextRequest) {
   try {
     const file = await readFile(absolutePath);
     const extension = path.extname(resource.fileName).toLowerCase();
+
+    // Markdown briefs/contracts/templates render as a designed PDF so
+    // interns get something meant to be read, not a raw .md file. Every
+    // other extension (json/csv/yaml/sql) is untouched — same bytes, same
+    // content type as before.
+    if (extension === ".md") {
+      const { title, body } = docTitleAndBody(file.toString("utf8"), resource.fileName);
+      const eyebrow = resource.track
+        ? `${advancedTrackLabel(TRACK_BY_SLUG[resource.track])} / ${requestedStage.replace("_", " ")}`
+        : "UBI Advanced Programme / Common";
+      const pdf = await renderMarkdownPdf({ eyebrow, title, markdown: body });
+      const pdfName = resource.fileName.replace(/\.md$/i, ".pdf");
+      return new Response(new Uint8Array(pdf), {
+        headers: {
+          "Cache-Control": "private, no-store",
+          "Content-Disposition": `inline; filename="${pdfName}"`,
+          "Content-Security-Policy": "default-src 'none'; sandbox",
+          "Content-Type": "application/pdf",
+          "X-Content-Type-Options": "nosniff",
+        },
+      });
+    }
+
     return new Response(new Uint8Array(file), {
       headers: {
         "Cache-Control": "private, no-store",

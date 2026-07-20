@@ -2,7 +2,8 @@ import { NextRequest } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { advancedVariantFor } from "@/lib/advanced-variant";
-import { getAdvancedProject, isAdvancedStage } from "@/lib/advanced-stage";
+import { advancedTrackLabel, getAdvancedProject, isAdvancedStage } from "@/lib/advanced-stage";
+import { renderMarkdownPdf } from "@/lib/advanced-doc-pdf";
 import { stageRank } from "@/lib/stage-login";
 import { resolvedInternCode } from "@/lib/intern-code";
 import { stageWindowAcceptsSubmissions } from "@/lib/stage-window";
@@ -167,10 +168,22 @@ export async function GET(request: NextRequest) {
     "",
   ];
 
-  return new Response(lines.join("\n"), {
+  // Content/logic above is unchanged — only the file format changes, from
+  // raw markdown to a designed PDF, so this is something an intern is
+  // actually meant to read rather than a plain-text export.
+  const markdown = lines.join("\n");
+  const firstLine = markdown.match(/^#\s+(.+)$/m)?.[1]?.trim() ?? `${project.title} — Private Assignment Overlay`;
+  const body = markdown.replace(/^#\s+.+\n/, "");
+  const pdf = await renderMarkdownPdf({
+    eyebrow: `${advancedTrackLabel(intern.track)} / ${stage.replace("_", " ")} · Private overlay`,
+    title: firstLine,
+    markdown: body,
+  });
+
+  return new Response(new Uint8Array(pdf), {
     headers: {
-      "Content-Type": "text/markdown; charset=utf-8",
-      "Content-Disposition": `attachment; filename="${stage.toLowerCase()}-${internCode}-assignment.md"`,
+      "Content-Type": "application/pdf",
+      "Content-Disposition": `attachment; filename="${stage.toLowerCase()}-${internCode}-assignment.pdf"`,
       "Cache-Control": "private, no-store",
     },
   });
