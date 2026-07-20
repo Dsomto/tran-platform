@@ -12,6 +12,7 @@ import {
   FileCheck2,
   Gauge,
   LifeBuoy,
+  Lightbulb,
   ListStart,
   ListChecks,
   LockKeyhole,
@@ -151,6 +152,7 @@ export function AdvancedStageRoom({
       </header>
 
       <nav className="advanced-toc" aria-label="Jump to a section of this brief">
+        <a href="#simple-terms-title">Simple terms</a>
         <a href="#start-here-title">Start here</a>
         <a href="#readiness-title">Foundations</a>
         <a href="#operating-brief-title">Brief</a>
@@ -171,6 +173,15 @@ export function AdvancedStageRoom({
           tone="dark"
         />
       )}
+
+      <section className="advanced-simple" aria-labelledby="simple-terms-title">
+        <div className="advanced-simple__icon"><Lightbulb aria-hidden="true" /></div>
+        <div>
+          <div className="advanced-eyebrow">In simple terms</div>
+          <h2 id="simple-terms-title">What is this project actually asking you to do?</h2>
+          <p>{guidance.simpleTerms}</p>
+        </div>
+      </section>
 
       <section className="advanced-start-here" aria-labelledby="start-here-title">
         <header>

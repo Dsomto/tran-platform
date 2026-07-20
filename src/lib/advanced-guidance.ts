@@ -21,6 +21,10 @@ export type AdvancedEnvironmentPlan = {
 };
 
 type GuidanceSeed = {
+  /** A short, jargon-free paragraph answering "what is this project actually
+   * asking me to do?" for readers who find the formal brief hard to parse.
+   * It must not soften or omit a real requirement — only translate it. */
+  simpleTerms: string;
   prerequisites: string[];
   glossary: AdvancedGlossaryEntry[];
   rubric: AdvancedRubricCriterion[];
@@ -45,6 +49,7 @@ type ProjectNumber = AdvancedProject["number"];
 const GUIDANCE: Record<AdvancedTrack, Record<ProjectNumber, GuidanceSeed>> = {
   SOC_ANALYSIS: {
     1: {
+      simpleTerms: "You're given a big pile of messy security log data — some of it broken on purpose, with wrong timestamps, duplicate rows, and odd formats. You write a program that cleans it up, matches records from different sources together, and uses it to find three hidden attack stories buried in the noise. You're also handed 96 suspicious-looking activities to review: 80 turn out to be harmless and 16 are real problems, and you have to correctly tell them apart using the evidence, not guesswork.",
       prerequisites: [
         "Write and test a Python command-line application with pytest.",
         "Query structured data with SQL and explain joins, types, nulls, and indexes.",
@@ -69,6 +74,7 @@ const GUIDANCE: Record<AdvancedTrack, Record<ProjectNumber, GuidanceSeed>> = {
       },
     },
     2: {
+      simpleTerms: "You're building a decoy system (a 'honeypot') that real attackers might poke at, plus a program that turns whatever it captures into something useful — grouping related activity, spotting patterns, and safely handling any malicious files it catches without ever running them. You prove it works using a sealed recording of real past attack traffic; running your own live decoy is optional extra credit, not a requirement.",
       prerequisites: [
         "Administer a Linux VM, Docker services, firewall rules, and restricted SSH access.",
         "Build a Python parser that validates and emits structured JSON or Parquet data.",
@@ -93,6 +99,7 @@ const GUIDANCE: Record<AdvancedTrack, Record<ProjectNumber, GuidanceSeed>> = {
       },
     },
     3: {
+      simpleTerms: "You build a small fake company network — different departments, firewalls, monitoring — entirely through code, not by clicking around. Then you prove with automated tests that traffic which should be blocked really is blocked, and that your monitoring actually sees what it's supposed to see. When something is deliberately broken, you have to find it, fix it, and prove it's fixed — a diagram alone doesn't count.",
       prerequisites: [
         "Configure Linux routing, nftables, Docker networks, and basic FRRouting.",
         "Explain stateful segmentation, NAT, DNS/NTP dependencies, and return paths.",
@@ -117,6 +124,7 @@ const GUIDANCE: Record<AdvancedTrack, Record<ProjectNumber, GuidanceSeed>> = {
       },
     },
     4: {
+      simpleTerms: "You're given a small, real lab — a Windows machine plus a monitoring tool — and asked to write detection rules for twelve specific attack techniques, then prove your rules catch the real thing without also flagging normal, everyday activity. Your rules then get tested against slightly different versions of the same attacks, so you can't just memorize the exact commands used in testing. There is no revision on this one — what you submit is final.",
       prerequisites: [
         "Operate a single-node Wazuh deployment and validate agent telemetry.",
         "Read Windows Event Logs and Sysmon process, network, and registry events.",
@@ -142,6 +150,7 @@ const GUIDANCE: Record<AdvancedTrack, Record<ProjectNumber, GuidanceSeed>> = {
       },
     },
     5: {
+      simpleTerms: "You're handed a sealed, realistic 'crime scene' — logs, emails, network captures — from a company that got breached across several computers. You reconstruct exactly what happened step by step, recover the data the attacker stole, and prove it with a program that rebuilds the timeline automatically, not a manually typed-up story. Then you defend your findings live, no revisions allowed.",
       prerequisites: [
         "Preserve evidence hashes, time zones, and read-only source handling.",
         "Build parser-driven timelines from host, network, identity, and email evidence.",
@@ -170,6 +179,7 @@ const GUIDANCE: Record<AdvancedTrack, Record<ProjectNumber, GuidanceSeed>> = {
   },
   ETHICAL_HACKING: {
     1: {
+      simpleTerms: "You write your own scanning and reconnaissance tool from scratch — not just running other people's tools — that respects a strict 'only touch what you're allowed to touch' boundary. You use it to find a hidden service on a practice target and grab your first proof-of-access flag, then stop right there. This project is about the discovery tool you build, not full exploitation.",
       prerequisites: [
         "Explain DNS, HTTP, TLS/SNI, TCP ports, CIDR scope, and virtual hosting.",
         "Build tested Python CLI adapters with timeouts, retries, rate limits, and safe failure.",
@@ -194,6 +204,7 @@ const GUIDANCE: Record<AdvancedTrack, Record<ProjectNumber, GuidanceSeed>> = {
       },
     },
     2: {
+      simpleTerms: "You're given a deliberately vulnerable practice computer and have to write your own working exploit code — no Metasploit, no downloaded scripts — that gets you from a small foothold to full control, reliably, five times in a row from a clean copy. Then you actually fix the two security holes you exploited and prove your own exploit no longer works afterward.",
       prerequisites: [
         "Enumerate Linux services, files, permissions, processes, and privilege boundaries.",
         "Write Python or Go code with explicit protocol handling and bounded failure.",
@@ -219,6 +230,7 @@ const GUIDANCE: Record<AdvancedTrack, Record<ProjectNumber, GuidanceSeed>> = {
       },
     },
     3: {
+      simpleTerms: "You're given a real but disposable, cost-capped cloud account with deliberately misconfigured permissions. You map out how a low-level user could climb their way up to something sensitive, actually do it, then fix the permission holes you found and prove the attack path no longer works — all under a $5 budget and same-day cleanup.",
       prerequisites: [
         "Explain AWS identities, policies, trust relationships, role assumption, boundaries, and effective permissions.",
         "Use AWS CLI, Terraform, JSON, and CloudTrail in an isolated lab account.",
@@ -244,6 +256,7 @@ const GUIDANCE: Record<AdvancedTrack, Record<ProjectNumber, GuidanceSeed>> = {
       },
     },
     4: {
+      simpleTerms: "You're given a small fake company's Windows network (Active Directory) with hidden weaknesses. You map out at least two different ways to become the network's top admin, actually pull off one of them with your own automation, then write detection rules and fix the holes so those same attacks would now get caught and blocked. No revision — this one's final.",
       prerequisites: [
         "Understand Active Directory authentication, groups, ACLs, delegation, Kerberos, and common privilege edges.",
         "Provision and snapshot an isolated vulnerable-AD range and verify host health.",
@@ -269,6 +282,7 @@ const GUIDANCE: Record<AdvancedTrack, Record<ProjectNumber, GuidanceSeed>> = {
       },
     },
     5: {
+      simpleTerms: "This is the final exam: a small fake company's website, API, and servers, each with real planted security holes. You chain together at least three separate weaknesses to reach one specific 'crown jewel' piece of data, write automated tests proving each step, then re-run everything against the patched version to confirm the holes are actually closed, not just hidden.",
       prerequisites: [
         "Plan a bounded web, API, host, and infrastructure assessment from signed rules of engagement.",
         "Validate exploitability with minimal proof and preserve an evidence chain for every finding.",
@@ -297,6 +311,7 @@ const GUIDANCE: Record<AdvancedTrack, Record<ProjectNumber, GuidanceSeed>> = {
   },
   GRC: {
     1: {
+      simpleTerms: "A company has messy, outdated security rules and only enough budget to fix exactly three things this quarter. You figure out which three, write the rules as actual running code (not a Word document) using a policy engine, and prove your code correctly allows good behavior and blocks bad behavior — including tricky edge cases like an expired exception.",
       prerequisites: [
         "Separate policy, implementation, process, and evidence gaps.",
         "Write and test basic Python plus OPA/Rego rules against structured inputs.",
@@ -321,6 +336,7 @@ const GUIDANCE: Record<AdvancedTrack, Record<ProjectNumber, GuidanceSeed>> = {
       },
     },
     2: {
+      simpleTerms: "A vendor claims their security is solid and sends you exports as 'proof.' You build a program that actually checks those files against the vendor's claims instead of taking their word for it, catches every place the evidence doesn't match what they said (including some deliberately broken records), and then make the real business call: approve them, reject them, or approve with conditions.",
       prerequisites: [
         "Perform evidence-led vendor due diligence and distinguish claims from verified operation.",
         "Validate JSON and tabular exports with Python, JSON Schema, and pytest.",
@@ -345,6 +361,7 @@ const GUIDANCE: Record<AdvancedTrack, Record<ProjectNumber, GuidanceSeed>> = {
       },
     },
     3: {
+      simpleTerms: "You run a real internal security audit — checking whether a company's evidence (files, tickets, screenshots) actually proves they follow the rules they claim to follow. You build a program that picks the audit samples fairly, so anyone re-running it gets the same samples, checks the evidence, and generates the official pass/fail findings instead of you eyeballing it and guessing.",
       prerequisites: [
         "Plan an ISO 27001:2022 internal audit using authorized criteria and defined scope.",
         "Select deterministic samples and distinguish design, implementation, and operating effectiveness.",
@@ -370,6 +387,7 @@ const GUIDANCE: Record<AdvancedTrack, Record<ProjectNumber, GuidanceSeed>> = {
       },
     },
     4: {
+      simpleTerms: "You take a plain, unsecured computer and write an automated script that locks it down properly and can safely undo itself if something breaks. You prove your script actually improved security with a before/after scan, and separately, you build a small program that takes a list of risks and a limited budget and mathematically picks the three best fixes to spend that money on. No revision on this one.",
       prerequisites: [
         "Administer a Debian or Rocky Linux VM and automate change with Ansible.",
         "Interpret Lynis/OpenSCAP findings and verify services before and after remediation.",
@@ -395,6 +413,7 @@ const GUIDANCE: Record<AdvancedTrack, Record<ProjectNumber, GuidanceSeed>> = {
       },
     },
     5: {
+      simpleTerms: "A company has been breached, and different countries have different rules about when they must be told — different deadlines and different math for who counts as 'affected.' You build a program that reads the facts of the breach and automatically works out, for the EU, Nigeria, and California, whether each law applies, when each deadline lands, and how many people are affected — then generates the actual notices and to-do list from that.",
       prerequisites: [
         "Distinguish regulator, subject, customer-contract, and internal breach obligations.",
         "Read authoritative legal sources while recording version, effective date, assumptions, and uncertainty.",
