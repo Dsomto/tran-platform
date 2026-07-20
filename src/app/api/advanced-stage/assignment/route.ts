@@ -1,4 +1,4 @@
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { advancedVariantFor } from "@/lib/advanced-variant";
@@ -65,7 +65,15 @@ function overlayFor(stage: string, track: string, pool: number): string[] {
 
 export async function GET(request: NextRequest) {
   const session = await getSession();
-  if (!session) return Response.json({ error: "Not authenticated" }, { status: 401 });
+  // This link is always opened as a direct browser navigation (target=
+  // _blank), never a fetch/XHR call. A bare 401 JSON body just shows up as
+  // unreadable text in a new tab with no way back — an expired hour-long
+  // session reads to the intern as "the download is broken." Redirect to
+  // login with a return path instead.
+  if (!session) {
+    const next = encodeURIComponent(request.nextUrl.pathname + request.nextUrl.search);
+    return NextResponse.redirect(new URL(`/login?next=${next}`, request.url));
+  }
 
   const stage = request.nextUrl.searchParams.get("stage")?.toUpperCase() ?? "";
   if (!isAdvancedStage(stage)) {

@@ -1,4 +1,4 @@
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { openAdvancedArtifact } from "@/lib/advanced-artifact-storage";
 import { prisma } from "@/lib/db";
@@ -11,7 +11,13 @@ export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   const session = await getSession();
-  if (!session) return Response.json({ error: "Not authenticated" }, { status: 401 });
+  // Always a direct browser navigation (target=_blank), never fetch/XHR — a
+  // bare 401 JSON body reads as "the download is broken" once the hour-long
+  // session expires. Redirect to login with a return path instead.
+  if (!session) {
+    const next = encodeURIComponent(request.nextUrl.pathname + request.nextUrl.search);
+    return NextResponse.redirect(new URL(`/login?next=${next}`, request.url));
+  }
 
   const stage = request.nextUrl.searchParams.get("stage")?.toUpperCase() ?? "";
   if (!isAdvancedStage(stage)) {
