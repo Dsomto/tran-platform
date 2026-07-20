@@ -9,7 +9,6 @@ import {
   Trophy,
   Users,
   MessageSquare,
-  Video,
   LogOut,
   Settings,
   ChevronLeft,
@@ -60,17 +59,12 @@ const analystLinks = [
 
 const internLinks: NavLink[] = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
-  { href: "/dashboard/slack", label: "Join Slack", icon: Hash },
   { href: "/dashboard/assignments", label: "Assignments", icon: BookOpen },
   { href: "/dashboard/advanced", label: "Advanced Track", icon: Layers3, advancedOnly: true },
   { href: "/dashboard/reports", label: "Reports", icon: FileText },
   { href: "/dashboard/announcements", label: "Announcements", icon: Megaphone },
   { href: "/dashboard/leaderboard", label: "Leaderboard", icon: Trophy },
-  { href: "/dashboard/team", label: "My Team", icon: Users },
-  { href: "/dashboard/meetings", label: "Meetings", icon: Video },
-  { href: "/dashboard/feedback", label: "Feedback", icon: MessageSquare },
   { href: "/dashboard/survey", label: "Outcomes Survey", icon: ClipboardList },
-  { href: "/dashboard/faq", label: "Deliverables FAQ", icon: FileQuestion },
   { href: "/dashboard/settings/security", label: "Security", icon: Shield },
 ];
 
@@ -106,6 +100,8 @@ export function Sidebar({ role, userName, showAdvancedTrack = false }: SidebarPr
   const searchParams = useSearchParams();
   const tab = searchParams.get("tab") ?? "";
   const [collapsed, setCollapsed] = useState(false);
+  const initials =
+    userName.split(" ").filter(Boolean).map((w) => w[0]).slice(0, 2).join("").toUpperCase() || "U";
 
   // Active-link test. Links carrying a ?tab= query (Recommended, Waitlist)
   // match only when that exact tab is open; the plain Applicants link stays
@@ -166,9 +162,9 @@ export function Sidebar({ role, userName, showAdvancedTrack = false }: SidebarPr
               key={link.href}
               href={link.href}
               className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
+                "flex items-center gap-3 px-3 py-2 rounded-lg text-[13.5px] font-medium transition-colors",
                 isActive
-                  ? "bg-blue text-white shadow-lg shadow-blue/20"
+                  ? "bg-blue/10 text-blue dark:bg-blue/15 dark:text-blue-300 font-semibold"
                   : "text-muted hover:text-foreground hover:bg-surface-hover"
               )}
               title={collapsed ? link.label : undefined}
@@ -212,11 +208,16 @@ export function Sidebar({ role, userName, showAdvancedTrack = false }: SidebarPr
         </button>
 
         {!collapsed && (
-          <div className="px-3 py-2 mt-2">
-            <p className="text-xs text-muted truncate">{userName}</p>
-            <p className="text-xs font-medium text-blue dark:text-blue-400 capitalize">
-              {role.toLowerCase().replace("_", " ")}
-            </p>
+          <div className="mt-2 flex items-center gap-3 rounded-xl border border-border bg-surface-hover/50 p-2.5">
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-blue text-xs font-bold text-white">
+              {initials}
+            </span>
+            <div className="min-w-0">
+              <p className="truncate text-[13px] font-semibold text-foreground">{userName}</p>
+              <p className="text-[11px] font-medium capitalize text-blue dark:text-blue-400">
+                {role.toLowerCase().replace("_", " ")}
+              </p>
+            </div>
           </div>
         )}
       </div>
