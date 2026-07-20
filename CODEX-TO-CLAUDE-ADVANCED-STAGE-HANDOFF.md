@@ -51,22 +51,24 @@ Verified result:
   "grants": 172,
   "artifacts": 3,
   "counts": {
-    "SOC_ANALYSIS": 94,
+    "SOC_ANALYSIS": 93,
     "ETHICAL_HACKING": 57,
-    "GRC": 21
+    "GRC": 22
   },
   "realCounts": {
-    "SOC_ANALYSIS": 93,
+    "SOC_ANALYSIS": 92,
     "ETHICAL_HACKING": 56,
-    "GRC": 20
+    "GRC": 21
   },
   "admissionHistory": 169,
-  "uniqueSocAssignments": 94,
+  "uniqueSocAssignments": 93,
   "socValidFalsePositivesPerIntern": 80
 }
 ```
 
 The difference between `counts` and `realCounts` is the one preview intern per track. The 172 total is therefore 169 real interns plus 3 preview interns.
+
+On 20 July 2026, Temitope Mustapha (`UBI-2026-0042`, `temitopemustapha95@gmail.com`) was moved from SOC Analysis to GRC before downloading an advanced artifact or creating an advanced report. All Stage 5-9 grants were atomically rebound to the official GRC artifacts and the change was recorded as `advanced-track.change`. The resulting real distribution is SOC 92, Ethical Hacking 56, GRC 21.
 
 ### Stages 6-9 audit
 
@@ -100,7 +102,7 @@ Verified result:
 }
 ```
 
-Each future stage has 172 grants: SOC 94, Ethical Hacking 57, GRC 21. Across four stages this is 688 grants. Stages 6-9 are closed and locked even though their grants and artifacts already exist.
+Each future stage has 172 grants: SOC 93, Ethical Hacking 57, GRC 22. Across four stages this is 688 grants. Stages 6-9 are closed and locked even though their grants and artifacts already exist.
 
 The local audit process prints `missing SMTP_USER` and `missing SMTP_PASS`. That is a local environment warning and did not prevent either read-only release audit from passing. Do not interpret it as proof that production email configuration is missing.
 

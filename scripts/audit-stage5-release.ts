@@ -105,7 +105,7 @@ async function main() {
     socAssignments.add(discrepancy.assignmentId);
   }
 
-  const expectedReal = { SOC_ANALYSIS: 93, ETHICAL_HACKING: 56, GRC: 20 };
+  const expectedReal = { SOC_ANALYSIS: 92, ETHICAL_HACKING: 56, GRC: 21 };
   if (Object.entries(expectedReal).some(([track, count]) => realCounts[track] !== count)) {
     throw new Error(`real cohort mismatch: ${JSON.stringify(realCounts)}`);
   }

@@ -76,7 +76,7 @@ async function main() {
     prisma.stageWindow.findUniqueOrThrow({ where: { stage: Stage.STAGE_5 } }),
   ]);
 
-  const expected = { SOC_ANALYSIS: 94, ETHICAL_HACKING: 57, GRC: 21 };
+  const expected = { SOC_ANALYSIS: 93, ETHICAL_HACKING: 57, GRC: 22 };
   const counts: Record<string, number> = {};
   const realInterns = new Set<string>();
   const previewInterns = new Set<string>();
