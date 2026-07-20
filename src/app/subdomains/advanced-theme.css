@@ -622,3 +622,136 @@
   0%, 100% { opacity: 1; }
   50% { opacity: .45; }
 }
+
+/* ──────────────────────────────────────────────────────────────
+   Motion & polish for the mission-brief room. Scoped to
+   .advanced-room, works in light and dark, and fully disabled
+   under prefers-reduced-motion. Scroll reveal uses the native
+   view() timeline where supported and degrades to plain content
+   (no hidden state) everywhere else.
+   ────────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: no-preference) {
+  /* Hover micro-interactions — supported everywhere */
+  .advanced-start-here li,
+  .advanced-facts article,
+  .advanced-file-grid > div,
+  .advanced-brief-ledger article,
+  .advanced-downloads a,
+  .advanced-download-preview,
+  .advanced-resource-badge {
+    transition: transform .22s cubic-bezier(.22,.61,.36,1),
+      box-shadow .22s ease, border-color .22s ease, background-color .22s ease, color .18s ease;
+  }
+  .advanced-start-here li:hover,
+  .advanced-facts article:hover,
+  .advanced-file-grid > div:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 14px 32px -18px rgba(16, 24, 40, .45);
+    z-index: 1;
+  }
+  .advanced-downloads a:hover,
+  .advanced-download-preview:hover { transform: translateY(-2px); }
+  .advanced-start-here li > span { transition: transform .24s cubic-bezier(.34,1.56,.64,1), background-color .2s ease, color .2s ease, border-color .2s ease; }
+  .advanced-start-here li:hover > span {
+    transform: scale(1.12) rotate(-3deg);
+    background: var(--advanced-accent-strong);
+    color: #fff;
+    border-color: var(--advanced-accent-strong);
+  }
+
+  /* Instrument console: a slow scan line + soft glow that reads as
+     "live", not decorative noise. */
+  .advanced-instrument { position: relative; overflow: hidden; }
+  .advanced-instrument::after {
+    content: "";
+    position: absolute; left: 0; right: 0; top: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--advanced-accent), transparent);
+    opacity: .55;
+    animation: advanced-scan 5.5s cubic-bezier(.5,0,.5,1) infinite;
+    pointer-events: none;
+  }
+}
+
+/* Native scroll-reveal — modern browsers only. Unsupported browsers
+   never see the hidden state because the animation is defined only
+   inside @supports. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .advanced-room > * {
+      animation: advanced-reveal linear both;
+      animation-timeline: view();
+      animation-range: entry 3% cover 22%;
+    }
+  }
+}
+
+@keyframes advanced-reveal {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes advanced-scan {
+  0% { transform: translateY(0); opacity: 0; }
+  12% { opacity: .6; }
+  50% { transform: translateY(190px); opacity: .35; }
+  88% { opacity: .6; }
+  100% { transform: translateY(0); opacity: 0; }
+}
+
+/* ──────────────────────────────────────────────────────────────
+   Depth & canvas — replace the flat fill with a layered background
+   and give the panels real elevation so the page reads as designed,
+   not a stack of hairline boxes. Both themes.
+   ────────────────────────────────────────────────────────────── */
+.bg-advanced-stage {
+  background:
+    radial-gradient(1200px 560px at 86% -8%, rgba(45, 212, 191, .10), transparent 60%),
+    radial-gradient(900px 480px at -6% 4%, rgba(37, 99, 235, .06), transparent 56%),
+    linear-gradient(180deg, #f7f8fb 0%, #eef1f5 100%);
+  background-attachment: fixed;
+}
+.dark .bg-advanced-stage {
+  background:
+    radial-gradient(1200px 560px at 86% -8%, rgba(45, 212, 191, .14), transparent 60%),
+    radial-gradient(900px 480px at -6% 4%, rgba(59, 130, 246, .12), transparent 56%),
+    linear-gradient(180deg, #0d1218 0%, #090d12 100%);
+  background-attachment: fixed;
+}
+
+/* Panel elevation. Shadows are additive, so sections without their
+   own surface simply cast nothing — safe across the whole room. */
+.advanced-start-here,
+.advanced-operating-brief,
+.advanced-facts,
+.advanced-marker,
+.advanced-rubric,
+.advanced-decision-rules,
+.advanced-pressure,
+.advanced-downloads,
+.advanced-technical,
+.advanced-faq,
+.advanced-submit {
+  box-shadow: 0 1px 2px rgba(16, 24, 40, .05), 0 22px 48px -30px rgba(16, 24, 40, .30);
+}
+.dark .advanced-start-here,
+.dark .advanced-operating-brief,
+.dark .advanced-facts,
+.dark .advanced-marker,
+.dark .advanced-rubric,
+.dark .advanced-decision-rules,
+.dark .advanced-pressure,
+.dark .advanced-downloads,
+.dark .advanced-technical,
+.dark .advanced-faq,
+.dark .advanced-submit {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .45), 0 26px 56px -32px rgba(0, 0, 0, .70);
+}
+
+/* Turn the hairline "table" grids into spaced, rounded cards. */
+.advanced-start-here ol { gap: 12px; background: transparent; padding: 0; }
+.advanced-start-here li {
+  border: 1px solid color-mix(in srgb, var(--advanced-accent) 30%, #d9dde5);
+  border-radius: 14px;
+}
+.dark .advanced-start-here li {
+  border-color: color-mix(in srgb, var(--advanced-accent) 26%, #354451);
+}
