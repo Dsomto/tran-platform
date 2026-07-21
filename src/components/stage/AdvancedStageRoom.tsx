@@ -41,6 +41,7 @@ import type { AdvancedVariant } from "@/lib/advanced-variant";
 import { advancedProjectVisual } from "@/lib/advanced-visuals";
 import { AdvancedProjectFaq } from "./AdvancedProjectFaq";
 import { AdvancedProjectInstrument } from "./AdvancedProjectInstrument";
+import { AdvancedStageFiveOnboarding } from "./AdvancedStageFiveOnboarding";
 import { AdvancedProjectWorkflow } from "./AdvancedProjectWorkflow";
 import { StageDeadlineCountdown } from "./StageDeadlineCountdown";
 
@@ -154,8 +155,8 @@ export function AdvancedStageRoom({
 
       <nav className="advanced-toc" aria-label="Jump to a section of this brief">
         <a href="#simple-terms-title">Simple terms</a>
-        <a href="#start-here-title">Start here</a>
-        <a href="#project-approach">Approach</a>
+        <a href={project.number === 1 ? "#stage-five-start" : "#start-here-title"}>Start here</a>
+        <a href="#project-approach">{project.number === 1 ? "Weekly plan" : "Approach"}</a>
         <a href="#readiness-title">Foundations</a>
         <a href="#operating-brief-title">Brief</a>
         <a href="#assessment-title">How it&apos;s judged</a>
@@ -185,27 +186,36 @@ export function AdvancedStageRoom({
         </div>
       </section>
 
-      <section className="advanced-start-here" aria-labelledby="start-here-title">
-        <header>
-          <div className="advanced-start-here__icon"><ListStart aria-hidden="true" /></div>
-          <div>
-            <div className="advanced-eyebrow">Before you touch the case</div>
-            <h2 id="start-here-title">Start here</h2>
-            <p>Complete these five actions in order. If one cannot be completed safely, stop and use the escalation guidance below.</p>
-            <a className="advanced-faq-jump" href="#project-faq"><CircleHelp aria-hidden="true" /> Read this project&apos;s FAQ</a>
-          </div>
-        </header>
-        <ol>
-          {guidance.startHere.map((item, index) => (
-            <li key={item}>
-              <span>{String(index + 1).padStart(2, "0")}</span>
-              <p>{item}</p>
-            </li>
-          ))}
-        </ol>
-      </section>
+      {project.number === 1 ? (
+        <AdvancedStageFiveOnboarding track={track} trackLabel={trackLabel} />
+      ) : (
+        <section className="advanced-start-here" aria-labelledby="start-here-title">
+          <header>
+            <div className="advanced-start-here__icon"><ListStart aria-hidden="true" /></div>
+            <div>
+              <div className="advanced-eyebrow">Before you touch the case</div>
+              <h2 id="start-here-title">Start here</h2>
+              <p>Complete these five actions in order. If one cannot be completed safely, stop and use the escalation guidance below.</p>
+              <a className="advanced-faq-jump" href="#project-faq"><CircleHelp aria-hidden="true" /> Read this project&apos;s FAQ</a>
+            </div>
+          </header>
+          <ol>
+            {guidance.startHere.map((item, index) => (
+              <li key={item}>
+                <span>{String(index + 1).padStart(2, "0")}</span>
+                <p>{item}</p>
+              </li>
+            ))}
+          </ol>
+        </section>
+      )}
 
-      <AdvancedProjectWorkflow project={project} track={track} trackLabel={trackLabel} />
+      <AdvancedProjectWorkflow
+        project={project}
+        track={track}
+        trackLabel={trackLabel}
+        showFirstHour={project.number !== 1}
+      />
 
       <section className="advanced-summary" aria-label="Project summary">
         <article>

@@ -11,9 +11,15 @@ type Props = {
   project: AdvancedProject;
   track: AdvancedTrack;
   trackLabel: string;
+  showFirstHour?: boolean;
 };
 
-export function AdvancedProjectWorkflow({ project, track, trackLabel }: Props) {
+export function AdvancedProjectWorkflow({
+  project,
+  track,
+  trackLabel,
+  showFirstHour = true,
+}: Props) {
   const workflow = advancedProjectWorkflow(track, project);
 
   return (
@@ -31,39 +37,41 @@ export function AdvancedProjectWorkflow({ project, track, trackLabel }: Props) {
         </div>
       </header>
 
-      <div className="advanced-workflow__first-hour">
-        <div className="advanced-workflow__first-hour-copy">
-          <span><Clock3 aria-hidden="true" /> First 60 minutes</span>
-          <h3>Do this first, in this order</h3>
-          <ol>
-            {workflow.firstHour.actions.map((action) => <li key={action}>{action}</li>)}
-          </ol>
-        </div>
+      {showFirstHour && (
+        <div className="advanced-workflow__first-hour">
+          <div className="advanced-workflow__first-hour-copy">
+            <span><Clock3 aria-hidden="true" /> First 60 minutes</span>
+            <h3>Do this first, in this order</h3>
+            <ol>
+              {workflow.firstHour.actions.map((action) => <li key={action}>{action}</li>)}
+            </ol>
+          </div>
 
-        <div className="advanced-workflow__terminal" aria-label="Starter commands">
-          <div className="advanced-workflow__terminal-title">
-            <TerminalSquare aria-hidden="true" />
-            <span>Starter commands</span>
+          <div className="advanced-workflow__terminal" aria-label="Starter commands">
+            <div className="advanced-workflow__terminal-title">
+              <TerminalSquare aria-hidden="true" />
+              <span>Starter commands</span>
+            </div>
+            <p>Run these from your project workspace. Replace values inside <code>&lt;...&gt;</code> with the issued filename, marker, or command.</p>
+            <div className="advanced-workflow__commands">
+              {workflow.firstHour.commands.map((command, index) => (
+                <div key={`${index}-${command}`}>
+                  <span aria-hidden="true">$</span>
+                  <code>{command}</code>
+                </div>
+              ))}
+            </div>
           </div>
-          <p>Run these from your project workspace. Replace values inside <code>&lt;...&gt;</code> with the issued filename, marker, or command.</p>
-          <div className="advanced-workflow__commands">
-            {workflow.firstHour.commands.map((command, index) => (
-              <div key={`${index}-${command}`}>
-                <span aria-hidden="true">$</span>
-                <code>{command}</code>
-              </div>
-            ))}
-          </div>
-        </div>
 
-        <div className="advanced-workflow__gate">
-          <CheckCircle2 aria-hidden="true" />
-          <div>
-            <strong>Do not continue until</strong>
-            <p>{workflow.firstHour.readyWhen}</p>
+          <div className="advanced-workflow__gate">
+            <CheckCircle2 aria-hidden="true" />
+            <div>
+              <strong>Do not continue until</strong>
+              <p>{workflow.firstHour.readyWhen}</p>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       <div className="advanced-workflow__phase-heading">
         <div>

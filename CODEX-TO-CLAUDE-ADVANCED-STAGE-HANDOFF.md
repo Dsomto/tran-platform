@@ -665,6 +665,42 @@ npm run build
 
 All passed. The build retained the pre-existing broad Prisma/NFT trace warning described above.
 
+## 23. Stage 5 Eased-In Onboarding
+
+Codex replaced the generic Stage 5 startup checklist with a much more explicit onboarding bridge for all three tracks. Stages 6-9 retain the existing generic first-hour and six-phase workflow.
+
+Each Stage 5 room now presents, in this exact order:
+
+- the existing simple-English explanation;
+- a one-sentence description of the finished job;
+- four plain-English parts explaining exactly what the intern must build;
+- an explicit statement of what the task is not;
+- the exact shared artifact filename and complete room-download checklist;
+- separate setup paths for macOS/Linux host, Windows PowerShell host, and Ubuntu Linux VM;
+- copyable setup, hash, extraction, dependency, and first-run commands;
+- an expected result after every command group;
+- four first-working-result steps, each with separate Unix/VM and PowerShell commands;
+- a concrete first milestone that must pass before the full dataset or case is attempted; and
+- the original six-phase Monday-Friday technical execution plan after onboarding.
+
+Important safety and environment clarification:
+
+- Ethical Hacking Stage 5 requires no Docker, VPN, cloud account, Kali VM, package installation, or programme target.
+- If an EH intern chooses a VM, both `local_lab.py` and the candidate recon engine must run inside that same VM. Host `127.0.0.1` and VM `127.0.0.1` are different loopback hosts; exposing the target to bridge them is prohibited.
+- SOC and GRC can run directly on a suitable host; their Ubuntu VM paths are clean fallbacks, not requirements.
+- Windows startup steps no longer show Unix-only `cp`, `grep`, `wc`, or `rm` commands.
+
+Implementation files:
+
+- `src/lib/advanced-stage5-onboarding.ts`
+- `src/lib/advanced-stage5-onboarding.test.ts`
+- `src/components/stage/AdvancedStageFiveOnboarding.tsx`
+- `src/components/stage/AdvancedStageRoom.tsx`
+- `src/components/stage/AdvancedProjectWorkflow.tsx`
+- `src/app/subdomains/advanced-theme.css`
+
+The dark-mode sticky room navigation was also corrected from a white translucent background to a high-contrast dark surface. The new long Stage 5 section is excluded from the scroll-linked reveal animation because that animation left very tall sections partially transparent on mobile.
+
 ## Bottom Line
 
 The advanced-stage website, track isolation, 15 technical project contracts, 15 project-specific startup/build guides, artifacts, private overlays, admin stage controls, fixed schedule, countdown, submissions, themes, previews, FAQs, release audits, and corrected 169-person cohort are implemented.

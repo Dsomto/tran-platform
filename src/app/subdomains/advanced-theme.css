@@ -75,6 +75,7 @@
 /* Shared "panel" look for every top-level section. One consistent
    card system instead of fifteen bespoke bordered boxes. */
 .advanced-start-here,
+.advanced-stage5-guide,
 .advanced-workflow,
 .advanced-summary,
 .advanced-readiness,
@@ -217,6 +218,165 @@ section[aria-labelledby="deliverables-title"] .advanced-file-grid,
 .dark .advanced-simple { background: color-mix(in srgb, #f59e0b, #12171e 88%); border-color: color-mix(in srgb, #f59e0b, #232c35 66%); }
 .dark .advanced-simple__icon { color: #fbbf24; }
 .dark .advanced-simple p { color: #f3d9ab; }
+
+/* ── Stage 5 guided onboarding ─────────────────────────────── */
+.advanced-stage5-guide { overflow: hidden; }
+.advanced-stage5-guide__header {
+  display: flex; align-items: flex-start; gap: 16px; padding: 30px 32px 26px;
+}
+.advanced-stage5-guide__header-icon {
+  width: 44px; height: 44px; flex: 0 0 auto; display: grid; place-items: center;
+  border-radius: 12px; color: var(--advanced-accent-strong);
+  background: color-mix(in srgb, var(--advanced-accent), transparent 86%);
+}
+.advanced-stage5-guide__header-icon svg { width: 21px; height: 21px; }
+.advanced-stage5-guide__header h2 {
+  margin: 4px 0 7px; color: var(--room-fg); font-size: 26px; line-height: 1.2;
+  font-weight: 750; letter-spacing: 0;
+}
+.advanced-stage5-guide__header p {
+  max-width: 76ch; margin: 0; color: var(--room-muted); font-size: 13.5px; line-height: 1.65;
+}
+.advanced-stage5-guide__plain {
+  padding: 28px 32px; border-top: 1px solid var(--room-border); border-bottom: 1px solid var(--room-border);
+  background: color-mix(in srgb, var(--advanced-accent), var(--room-card) 95%);
+}
+.advanced-stage5-guide__plain > span {
+  color: var(--advanced-accent-strong); font-size: 10.5px; font-weight: 800;
+  text-transform: uppercase; letter-spacing: .08em;
+}
+.advanced-stage5-guide__plain > p {
+  max-width: 80ch; margin: 8px 0 22px; color: var(--room-fg); font-size: 17px; line-height: 1.65; font-weight: 600;
+}
+.advanced-stage5-guide__job-parts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.advanced-stage5-guide__job-parts > div {
+  min-width: 0; display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 12px;
+  padding: 15px; border: 1px solid color-mix(in srgb, var(--advanced-accent), var(--room-border) 70%);
+  border-radius: 8px; background: var(--room-card);
+}
+.advanced-stage5-guide__job-parts strong {
+  width: 32px; height: 32px; display: grid; place-items: center; border-radius: 8px;
+  color: var(--advanced-accent-strong); background: color-mix(in srgb, var(--advanced-accent), transparent 84%);
+  font-size: 11px;
+}
+.advanced-stage5-guide__job-parts p { margin: 0; color: #3f4756; font-size: 13px; line-height: 1.6; }
+.advanced-stage5-guide__plain aside {
+  display: flex; align-items: flex-start; gap: 10px; margin-top: 14px; padding: 14px 15px;
+  border: 1px solid #f2cf86; border-radius: 8px; background: #fff9e9;
+}
+.advanced-stage5-guide__plain aside svg { width: 17px; height: 17px; flex: 0 0 auto; margin-top: 2px; color: #9a5d08; }
+.advanced-stage5-guide__plain aside p { margin: 0; color: #6c4a16; font-size: 12.5px; line-height: 1.55; }
+
+.advanced-stage5-guide__downloads { padding: 28px 32px; border-bottom: 1px solid var(--room-border); }
+.advanced-stage5-guide__downloads > div { display: flex; align-items: center; gap: 12px; }
+.advanced-stage5-guide__downloads > div > svg {
+  width: 38px; height: 38px; flex: 0 0 auto; box-sizing: border-box; padding: 9px;
+  border-radius: 10px; color: var(--advanced-accent-strong);
+  background: color-mix(in srgb, var(--advanced-accent), transparent 86%);
+}
+.advanced-stage5-guide__downloads h3,
+.advanced-stage5-guide__machines h3,
+.advanced-stage5-guide__first-result h3 {
+  margin: 4px 0 0; color: var(--room-fg); font-size: 20px; line-height: 1.3; font-weight: 750; letter-spacing: 0;
+}
+.advanced-stage5-guide__downloads ul { margin: 18px 0 18px; padding-left: 20px; color: #3f4756; font-size: 13px; line-height: 1.65; }
+.advanced-stage5-guide__downloads li { margin: 7px 0; padding-left: 3px; }
+.advanced-stage5-guide__downloads li::marker { color: var(--advanced-accent-strong); }
+.advanced-stage5-guide__downloads a {
+  display: inline-flex; align-items: center; min-height: 36px; padding: 0 13px;
+  border: 1px solid var(--advanced-accent-strong); border-radius: 7px;
+  color: var(--advanced-accent-strong); font-size: 12.5px; font-weight: 700; text-decoration: none;
+}
+.advanced-stage5-guide__downloads a:hover { background: color-mix(in srgb, var(--advanced-accent), transparent 90%); }
+
+.advanced-stage5-guide__machines { padding: 28px 32px 32px; border-bottom: 1px solid var(--room-border); }
+.advanced-stage5-guide__machines > header p,
+.advanced-stage5-guide__first-result > header p {
+  max-width: 76ch; margin: 7px 0 0; color: var(--room-muted); font-size: 13px; line-height: 1.6;
+}
+.advanced-stage5-guide__machines > header code { color: var(--room-fg); font: 650 11.5px/1.4 ui-monospace, monospace; }
+.advanced-stage5-guide__machine-list { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+.advanced-stage5-guide__machine-list details {
+  overflow: hidden; border: 1px solid var(--room-border); border-radius: 8px; background: var(--room-card);
+}
+.advanced-stage5-guide__machine-list summary {
+  min-width: 0; display: grid; grid-template-columns: 38px minmax(0, 1fr) auto; align-items: center; gap: 12px;
+  padding: 15px 16px; cursor: pointer; list-style: none;
+}
+.advanced-stage5-guide__machine-list summary::-webkit-details-marker { display: none; }
+.advanced-stage5-guide__machine-list summary:hover { background: color-mix(in srgb, var(--advanced-accent), transparent 95%); }
+.advanced-stage5-guide__machine-icon {
+  width: 36px; height: 36px; display: grid; place-items: center; border-radius: 8px;
+  color: var(--advanced-accent-strong); background: color-mix(in srgb, var(--advanced-accent), transparent 86%);
+}
+.advanced-stage5-guide__machine-icon svg { width: 18px; height: 18px; }
+.advanced-stage5-guide__machine-list summary > span:nth-child(2) { min-width: 0; }
+.advanced-stage5-guide__machine-list summary strong { display: block; color: var(--room-fg); font-size: 13.5px; }
+.advanced-stage5-guide__machine-list summary small { display: block; margin-top: 3px; color: var(--room-muted); font-size: 11.5px; line-height: 1.5; }
+.advanced-stage5-guide__machine-list summary em {
+  padding: 5px 8px; border-radius: 6px; color: var(--advanced-accent-strong);
+  background: color-mix(in srgb, var(--advanced-accent), transparent 87%);
+  font-size: 10px; line-height: 1.2; font-style: normal; font-weight: 750; white-space: nowrap;
+}
+.advanced-stage5-guide__machine-body { padding: 0 16px 18px 66px; border-top: 1px solid var(--room-border); }
+.advanced-stage5-guide__machine-body > section { padding: 19px 0; border-bottom: 1px solid var(--room-border); }
+.advanced-stage5-guide__machine-body > section:last-child { padding-bottom: 0; border-bottom: 0; }
+.advanced-stage5-guide__machine-body h4 {
+  display: flex; align-items: center; gap: 8px; margin: 0 0 10px; color: var(--room-fg);
+  font-size: 12.5px; line-height: 1.4; font-weight: 750;
+}
+.advanced-stage5-guide__machine-body h4 svg { width: 15px; height: 15px; color: var(--advanced-accent-strong); }
+.advanced-stage5-guide__important {
+  display: flex; align-items: flex-start; gap: 9px; margin-top: 16px; padding: 12px;
+  border: 1px solid #f2cf86; border-radius: 7px; background: #fff9e9;
+}
+.advanced-stage5-guide__important svg { width: 16px; height: 16px; flex: 0 0 auto; margin-top: 2px; color: #9a5d08; }
+.advanced-stage5-guide__important p { margin: 0; color: #6c4a16; font-size: 12px; line-height: 1.55; }
+
+.advanced-stage5-guide__commands { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
+.advanced-stage5-guide__commands > div {
+  min-width: 0; display: grid; grid-template-columns: 14px minmax(0, 1fr); gap: 8px;
+  padding: 9px 11px; border: 1px solid #293744; border-radius: 6px; background: #111a22;
+}
+.advanced-stage5-guide__commands span { color: var(--advanced-accent); font: 700 11px/1.55 ui-monospace, monospace; }
+.advanced-stage5-guide__commands code {
+  min-width: 0; overflow-x: auto; color: #e8eef2; font: 600 11px/1.55 ui-monospace, monospace;
+  white-space: nowrap; scrollbar-width: thin;
+}
+.advanced-stage5-guide__expected {
+  display: flex; align-items: flex-start; gap: 8px; margin-top: 10px;
+  color: #344054;
+}
+.advanced-stage5-guide__expected svg { width: 16px; height: 16px; flex: 0 0 auto; margin-top: 2px; color: var(--advanced-accent-strong); }
+.advanced-stage5-guide__expected p { margin: 0; font-size: 12px; line-height: 1.55; }
+
+.advanced-stage5-guide__first-result { padding: 28px 32px 10px; }
+.advanced-stage5-guide__first-result > ol { margin: 20px 0 0; padding: 0; list-style: none; }
+.advanced-stage5-guide__first-result > ol > li {
+  min-width: 0; display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 15px;
+  padding: 20px 0; border-top: 1px solid var(--room-border);
+}
+.advanced-stage5-guide__step-number {
+  width: 38px; height: 38px; display: grid; place-items: center; border-radius: 10px;
+  color: var(--advanced-accent-strong); background: color-mix(in srgb, var(--advanced-accent), transparent 86%);
+  font-size: 11px; font-weight: 800;
+}
+.advanced-stage5-guide__step-body { min-width: 0; }
+.advanced-stage5-guide__step-body h4 { margin: 0 0 6px; color: var(--room-fg); font-size: 15px; line-height: 1.4; font-weight: 750; }
+.advanced-stage5-guide__step-body > p { margin: 0 0 12px; color: #475467; font-size: 13px; line-height: 1.6; }
+.advanced-stage5-guide__step-body h5 {
+  margin: 14px 0 7px; color: var(--room-muted); font-size: 10.5px; line-height: 1.4;
+  font-weight: 750; text-transform: uppercase; letter-spacing: .06em;
+}
+.advanced-stage5-guide__step-body > p + h5 { margin-top: 0; }
+.advanced-stage5-guide__milestone {
+  display: flex; align-items: flex-start; gap: 12px; padding: 18px 32px;
+  border-top: 1px solid color-mix(in srgb, var(--advanced-accent), var(--room-border) 64%);
+  background: color-mix(in srgb, var(--advanced-accent), var(--room-card) 91%);
+}
+.advanced-stage5-guide__milestone > svg { width: 20px; height: 20px; flex: 0 0 auto; color: var(--advanced-accent-strong); }
+.advanced-stage5-guide__milestone strong { color: var(--room-fg); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
+.advanced-stage5-guide__milestone p { margin: 4px 0 0; color: #344054; font-size: 12.5px; line-height: 1.6; }
 
 /* ── Start here ────────────────────────────────────────────── */
 .advanced-start-here { padding: 30px 32px 32px; }
@@ -700,6 +860,9 @@ section[aria-labelledby="deliverables-title"] .advanced-file-grid,
 
 .dark .advanced-room { --room-card: #12171e; --room-border: #232c35; --room-fg: #f2f4f7; --room-muted: #9aa5b3; }
 .dark .advanced-room { --room-shadow: 0 1px 2px rgba(0,0,0,.5), 0 24px 52px -30px rgba(0,0,0,.65); }
+.dark .advanced-toc { background: rgba(18,23,30,.9); border-color: #2a333d; }
+.dark .advanced-toc a { color: #b7c0ca; }
+.dark .advanced-toc a:hover { color: var(--advanced-accent); background: color-mix(in srgb, var(--advanced-accent), transparent 88%); }
 
 .dark .advanced-progress > div { color: #7d8894; }
 .dark .advanced-progress > div.is-current { color: #0b0f14; background: var(--advanced-accent); }
@@ -710,6 +873,21 @@ section[aria-labelledby="deliverables-title"] .advanced-file-grid,
 
 .dark .advanced-start-here li { background: color-mix(in srgb, var(--advanced-accent), #12171e 92%); border-color: color-mix(in srgb, var(--advanced-accent), #232c35 78%); }
 .dark .advanced-start-here li p { color: #d7dee5; }
+.dark .advanced-stage5-guide__plain { background: color-mix(in srgb, var(--advanced-accent), #12171e 94%); }
+.dark .advanced-stage5-guide__job-parts > div,
+.dark .advanced-stage5-guide__machine-list details { background: #151b22; border-color: #2a333d; }
+.dark .advanced-stage5-guide__job-parts p,
+.dark .advanced-stage5-guide__downloads ul,
+.dark .advanced-stage5-guide__step-body > p,
+.dark .advanced-stage5-guide__expected,
+.dark .advanced-stage5-guide__milestone p { color: #c4ccd5; }
+.dark .advanced-stage5-guide__plain aside,
+.dark .advanced-stage5-guide__important { background: #292311; border-color: #5e4b20; }
+.dark .advanced-stage5-guide__plain aside p,
+.dark .advanced-stage5-guide__important p { color: #f4d79a; }
+.dark .advanced-stage5-guide__machine-list summary:hover { background: color-mix(in srgb, var(--advanced-accent), transparent 92%); }
+.dark .advanced-stage5-guide__machine-body { border-color: #2a333d; }
+.dark .advanced-stage5-guide__milestone { background: color-mix(in srgb, var(--advanced-accent), #12171e 89%); }
 .dark .advanced-workflow__step-body > ul,
 .dark .advanced-workflow__checkpoint { color: #c4ccd5; }
 .dark .advanced-workflow__step-number { color: var(--advanced-accent); }
@@ -804,6 +982,18 @@ section[aria-labelledby="deliverables-title"] .advanced-file-grid,
   .advanced-start-here { padding: 22px 18px; }
   .advanced-start-here ol { grid-template-columns: 1fr; }
   .advanced-start-here li:last-child { grid-column: auto; }
+  .advanced-stage5-guide__header { padding: 24px 20px 22px; }
+  .advanced-stage5-guide__plain,
+  .advanced-stage5-guide__downloads,
+  .advanced-stage5-guide__machines { padding: 24px 20px; }
+  .advanced-stage5-guide__job-parts { grid-template-columns: 1fr; }
+  .advanced-stage5-guide__machine-list summary { grid-template-columns: 34px minmax(0, 1fr); }
+  .advanced-stage5-guide__machine-list summary em { grid-column: 2; justify-self: start; }
+  .advanced-stage5-guide__machine-body { padding: 0 14px 16px; }
+  .advanced-stage5-guide__first-result { padding: 24px 20px 8px; }
+  .advanced-stage5-guide__first-result > ol > li { grid-template-columns: 34px minmax(0, 1fr); gap: 11px; }
+  .advanced-stage5-guide__step-number { width: 32px; height: 32px; border-radius: 8px; }
+  .advanced-stage5-guide__milestone { padding: 17px 20px; }
   .advanced-workflow__header { padding: 24px 20px 22px; }
   .advanced-workflow__first-hour { grid-template-columns: 1fr; }
   .advanced-workflow__first-hour-copy,
@@ -920,7 +1110,7 @@ section[aria-labelledby="deliverables-title"] .advanced-file-grid,
     /* The hero and simple-terms box are already visible on load — they
        don't need a scroll-triggered entrance, only the staggered/glow
        animations above. */
-    .advanced-progress, .advanced-hero, .advanced-simple, .advanced-toc { animation: none; }
+    .advanced-progress, .advanced-hero, .advanced-simple, .advanced-stage5-guide, .advanced-toc { animation: none; }
   }
 }
 
