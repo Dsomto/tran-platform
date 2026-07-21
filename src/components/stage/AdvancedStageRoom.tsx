@@ -41,6 +41,7 @@ import type { AdvancedVariant } from "@/lib/advanced-variant";
 import { advancedProjectVisual } from "@/lib/advanced-visuals";
 import { AdvancedProjectFaq } from "./AdvancedProjectFaq";
 import { AdvancedProjectInstrument } from "./AdvancedProjectInstrument";
+import { AdvancedProjectWorkflow } from "./AdvancedProjectWorkflow";
 import { StageDeadlineCountdown } from "./StageDeadlineCountdown";
 
 type Props = {
@@ -154,6 +155,7 @@ export function AdvancedStageRoom({
       <nav className="advanced-toc" aria-label="Jump to a section of this brief">
         <a href="#simple-terms-title">Simple terms</a>
         <a href="#start-here-title">Start here</a>
+        <a href="#project-approach">Approach</a>
         <a href="#readiness-title">Foundations</a>
         <a href="#operating-brief-title">Brief</a>
         <a href="#assessment-title">How it&apos;s judged</a>
@@ -202,6 +204,8 @@ export function AdvancedStageRoom({
           ))}
         </ol>
       </section>
+
+      <AdvancedProjectWorkflow project={project} track={track} trackLabel={trackLabel} />
 
       <section className="advanced-summary" aria-label="Project summary">
         <article>

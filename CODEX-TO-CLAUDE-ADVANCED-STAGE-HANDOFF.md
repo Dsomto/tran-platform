@@ -526,7 +526,7 @@ Known build warning:
 
 - Turbopack warns that `next.config.ts` participates in a broad Prisma/NFT trace through `src/generated/prisma/index.js` and an admin email route. The build still completes. This warning predates the FAQ work and is not a failure of the advanced-stage implementation.
 
-No automated browser screenshot was captured in the latest FAQ pass because no supported in-app browser runtime was available. Route HTML, responsive CSS, compile checks, and production build were verified. Claude should perform a manual visual check in a real browser before making design claims beyond that.
+The later project-guide pass captured Playwright screenshots for SOC Stage 5 in light mode, Ethical Hacking Stage 8 in dark mode, and GRC Stage 9 on a 390px dark-mode viewport. All three showed the guide, four starter commands, and six work phases with zero document-level horizontal overflow. Claude should still perform a manual production-browser check before making claims about the deployed site.
 
 ## 18. Important Open Issues and Honest Limitations
 
@@ -631,8 +631,42 @@ http://localhost:3004/stage-preview/grc/9
 
 Do not run grant/admission/reinstatement scripts with `COMMIT=1` merely to validate them. The database is already populated and the release audits pass.
 
+## 22. Project-Specific Step-by-Step Guides
+
+Codex added a distinct implementation path for every one of the 15 track/stage combinations. This is not the earlier generic readiness checklist. Each secured room and design-preview room now contains:
+
+- a project-specific explanation of how to think about the assignment;
+- a literal first-60-minutes sequence naming the downloads, folders, boundary checks, and first small test;
+- four safe starter commands or issued-pack command placeholders;
+- a visible “Do not continue until” readiness gate;
+- six technical phases from Monday morning through the Friday 18:10 WAT submission deadline;
+- a concrete checkpoint after every phase; and
+- an `Approach` link in the sticky room navigation.
+
+Implementation files:
+
+- `src/lib/advanced-workflow.ts`: all 15 typed guides, first-hour commands, actions, and checkpoints.
+- `src/components/stage/AdvancedProjectWorkflow.tsx`: the shared accessible renderer.
+- `src/components/stage/AdvancedStageRoom.tsx`: room integration and navigation link.
+- `src/app/subdomains/advanced-theme.css`: responsive light/dark presentation and horizontally scrollable long commands.
+- `src/lib/advanced-workflow.test.ts`: completeness and per-track-difference tests.
+- `src/lib/advanced-guidance.ts`: removed stale fixed-70 and score-cap wording from eligibility requirements; the copy now matches within-track percentile selection.
+
+Validation performed:
+
+```bash
+npx tsx --test src/lib/advanced-workflow.test.ts
+npx eslint src/components/stage/AdvancedProjectWorkflow.tsx \
+  src/components/stage/AdvancedStageRoom.tsx src/lib/advanced-workflow.ts \
+  src/lib/advanced-workflow.test.ts src/lib/advanced-guidance.ts
+npx tsc --noEmit --pretty false
+npm run build
+```
+
+All passed. The build retained the pre-existing broad Prisma/NFT trace warning described above.
+
 ## Bottom Line
 
-The advanced-stage website, track isolation, 15 technical project contracts, artifacts, private overlays, admin stage controls, fixed schedule, countdown, submissions, themes, previews, FAQs, release audits, and corrected 169-person cohort are implemented and pushed.
+The advanced-stage website, track isolation, 15 technical project contracts, 15 project-specific startup/build guides, artifacts, private overlays, admin stage controls, fixed schedule, countdown, submissions, themes, previews, FAQs, release audits, and corrected 169-person cohort are implemented.
 
 The percentile policy is no longer an open product decision. It is implemented across the shared engine, admin review/finalization, result evidence, intern room, FAQs, staff plan, and read-only final ranking. Claude should now pressure-test the implementation on non-production data, verify the exact live per-track counts before each result run, and avoid using the legacy foundation-stage cutoff field for Stages 5-9.

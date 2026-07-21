@@ -467,11 +467,11 @@ export function advancedLearnerGuidance(
       submit: `${deliverables.length} exact named outputs in one view-only, hash-verified package, including the assessment manifest and continuity record.`,
     },
     passRequirements: [
-      "Earn at least 70 points out of 100.",
-      "Submit a runnable implementation that reproduces the scored outputs from a clean supported environment; otherwise the score is capped at 49.",
-      "Pass the published acceptance suite; failure caps the score at 59.",
-      "Pass the hidden transfer fixture using the published interface; failure caps the score at 69 and therefore below pass.",
-      "Keep every safety, scope, authorship, and evidence-integrity gate. An automatic fail overrides the numeric score.",
+      "Complete the published 100-point rubric. Your result becomes a within-track percentile; there is no fixed advanced-stage pass mark.",
+      "Submit a runnable implementation that reproduces the scored outputs from a clean supported environment. Reproduction failure invokes the published technical hold or fail rule before ranking.",
+      "Pass the published acceptance suite and the hidden transfer fixture through the published interface.",
+      "Keep every safety, scope, authorship, and evidence-integrity gate. An automatic fail overrides the numeric score and removes the submission from percentile selection.",
+      "Meet this stage's published selection boundary after technical validation, quality assurance, and any audited tie-break review.",
     ],
     revisionRule,
     automaticFailureRules: [
