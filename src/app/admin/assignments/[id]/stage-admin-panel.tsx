@@ -49,6 +49,7 @@ interface Props {
   initialScheduled: boolean;
   initialActiveFrom: string | null;
   initialSubmitUntil: string | null;
+  canEditTiming: boolean;
   accessRows: AccessRow[];
   submissions: ReportRow[];
 }
@@ -60,6 +61,7 @@ export function StageAdminPanel({
   initialScheduled,
   initialActiveFrom,
   initialSubmitUntil,
+  canEditTiming,
   accessRows,
   submissions,
 }: Props) {
@@ -122,6 +124,7 @@ export function StageAdminPanel({
         scheduled={scheduled}
         initialActiveFrom={initialActiveFrom}
         initialSubmitUntil={initialSubmitUntil}
+        canEditTiming={canEditTiming}
         onStatusChange={(s, nextScheduled) => {
           setStatus(s);
           setScheduled(nextScheduled);
@@ -267,6 +270,7 @@ function StatusControls({
   scheduled,
   initialActiveFrom,
   initialSubmitUntil,
+  canEditTiming,
   onStatusChange,
 }: {
   stage: string;
@@ -275,6 +279,7 @@ function StatusControls({
   scheduled: boolean;
   initialActiveFrom: string | null;
   initialSubmitUntil: string | null;
+  canEditTiming: boolean;
   onStatusChange: (s: Status, scheduled: boolean) => void;
 }) {
   const [busy, setBusy] = useState<Status | "SCHEDULE" | null>(null);
@@ -292,6 +297,14 @@ function StatusControls({
     withAnnounce: boolean = false,
     scheduleOnly: boolean = false
   ) {
+    let cadenceOverrideReason: string | undefined;
+    if (scheduleOnly && Number(stageNum) >= 5) {
+      const confirmed = window.confirm(
+        "Advanced stages normally run Monday 09:00 WAT to Friday 18:10 WAT. Save this timing as an audited super-admin schedule decision?"
+      );
+      if (!confirmed) return;
+      cadenceOverrideReason = "Exceptional advanced-stage timing approved in the super-admin stage controls";
+    }
     setBusy(scheduleOnly ? "SCHEDULE" : next);
     setErr(null);
     try {
@@ -303,6 +316,7 @@ function StatusControls({
           status: next,
           activeFrom: watDateTimeToIso(activeFrom),
           submitUntil: watDateTimeToIso(submitUntil),
+          ...(cadenceOverrideReason ? { cadenceOverrideReason } : {}),
           ...(withAnnounce ? { announce: { title, message } } : {}),
         }),
       });
@@ -339,7 +353,8 @@ function StatusControls({
             type="datetime-local"
             value={activeFrom}
             onChange={(event) => setActiveFrom(event.target.value)}
-            className="w-full h-10 px-3 rounded-lg border border-border bg-white text-sm"
+            disabled={!canEditTiming}
+            className="w-full h-10 px-3 rounded-lg border border-border bg-white text-sm disabled:bg-muted/40 disabled:text-muted-foreground"
           />
         </label>
         <label className="block">
@@ -348,18 +363,25 @@ function StatusControls({
             type="datetime-local"
             value={submitUntil}
             onChange={(event) => setSubmitUntil(event.target.value)}
-            className="w-full h-10 px-3 rounded-lg border border-border bg-white text-sm"
+            disabled={!canEditTiming}
+            className="w-full h-10 px-3 rounded-lg border border-border bg-white text-sm disabled:bg-muted/40 disabled:text-muted-foreground"
           />
         </label>
-        <button
-          type="button"
-          onClick={() => setStageState(status, false, true)}
-          disabled={busy !== null}
-          className="h-10 inline-flex items-center justify-center gap-1.5 px-4 rounded-lg border border-blue/40 text-blue text-sm font-semibold hover:bg-blue/5 disabled:opacity-50"
-        >
-          {busy === "SCHEDULE" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CalendarClock className="h-3.5 w-3.5" />}
-          Save timing
-        </button>
+        {canEditTiming ? (
+          <button
+            type="button"
+            onClick={() => setStageState(status, false, true)}
+            disabled={busy !== null}
+            className="h-10 inline-flex items-center justify-center gap-1.5 px-4 rounded-lg border border-blue/40 text-blue text-sm font-semibold hover:bg-blue/5 disabled:opacity-50"
+          >
+            {busy === "SCHEDULE" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CalendarClock className="h-3.5 w-3.5" />}
+            Save timing
+          </button>
+        ) : (
+          <div className="h-10 inline-flex items-center text-xs text-muted-foreground">
+            Super-admin timing control
+          </div>
+        )}
       </div>
 
       {err && (

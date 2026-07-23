@@ -36,7 +36,7 @@ export default async function StageDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  await requireAdmin();
+  const session = await requireAdmin();
   const { id } = await params;
 
   const normalized = id.toUpperCase().replace(/-/g, "_");
@@ -126,6 +126,7 @@ export default async function StageDetailPage({
           initialScheduled={status === "OPEN" && !stageWindowHasStarted(stageWindow)}
           initialActiveFrom={stageWindow?.activeFrom?.toISOString() ?? null}
           initialSubmitUntil={stageWindow?.submitUntil?.toISOString() ?? null}
+          canEditTiming={session.role === "SUPER_ADMIN"}
           accessRows={accessRows}
           submissions={submissions}
         />

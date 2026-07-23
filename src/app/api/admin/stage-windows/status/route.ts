@@ -5,6 +5,11 @@ import { scheduleCohortBroadcast } from "@/lib/email";
 import { publicAppUrl } from "@/lib/public-url";
 import { requireApiAdmin } from "@/lib/api-auth";
 import { auditMetaFromRequest, recordAudit } from "@/lib/audit";
+import {
+  advancedCadenceError,
+  isAdvancedStageKey,
+  stageTimingChanged,
+} from "@/lib/stage-schedule";
 
 const STAGE_KEYS = [
   "STAGE_0", "STAGE_1", "STAGE_2", "STAGE_3", "STAGE_4",
@@ -22,33 +27,6 @@ function isStatus(v: unknown): v is StageStatus {
   return typeof v === "string" && (VALID_STATUSES as readonly string[]).includes(v);
 }
 
-function advancedCadenceError(
-  stage: StageKey,
-  activeFrom: Date | null,
-  submitUntil: Date | null
-): string | null {
-  const stageNumber = Number(stage.replace("STAGE_", ""));
-  if (stageNumber < 5) return null;
-  if (!activeFrom || !submitUntil) {
-    return "Advanced stages require both a Monday start and Friday deadline";
-  }
-  const validStart =
-    activeFrom.getUTCDay() === 1 &&
-    activeFrom.getUTCHours() === 8 &&
-    activeFrom.getUTCMinutes() === 0 &&
-    activeFrom.getUTCSeconds() === 0;
-  const validDeadline =
-    submitUntil.getUTCDay() === 5 &&
-    submitUntil.getUTCHours() === 17 &&
-    submitUntil.getUTCMinutes() === 10 &&
-    submitUntil.getUTCSeconds() === 0;
-  const sameWeeklyWindow = submitUntil.getTime() - activeFrom.getTime() === 378_600_000;
-  if (!validStart || !validDeadline || !sameWeeklyWindow) {
-    return "Advanced-stage cadence is fixed: Monday 09:00 WAT to Friday 18:10 WAT";
-  }
-  return null;
-}
-
 function escapeHtml(s: string): string {
   return s
     .replace(/&/g, "&amp;")
@@ -59,7 +37,8 @@ function escapeHtml(s: string): string {
 }
 
 // POST /api/admin/stage-windows/status
-// Body: { stage, status, activeFrom?, submitUntil?, announce?: { title, message } }
+// Body: { stage, status, activeFrom?, submitUntil?, cadenceOverrideReason?,
+//         announce?: { title, message } }
 //
 // Sets the stage's status. If status === OPEN AND announce is provided,
 // also creates a pinned announcement and broadcasts to every active intern.
@@ -70,7 +49,14 @@ export async function POST(request: NextRequest) {
     if (auth.response) return auth.response;
     const session = auth.session;
     const body = await request.json().catch(() => ({}));
-    const { stage, status, activeFrom, submitUntil, announce } = body ?? {};
+    const {
+      stage,
+      status,
+      activeFrom,
+      submitUntil,
+      cadenceOverrideReason,
+      announce,
+    } = body ?? {};
 
     if (!isStageKey(stage)) {
       return Response.json({ error: "Invalid stage" }, { status: 400 });
@@ -103,11 +89,6 @@ export async function POST(request: NextRequest) {
     ) {
       return Response.json({ error: "Submission deadline must be after the start time" }, { status: 400 });
     }
-    const cadenceError = advancedCadenceError(stage, parsedActiveFrom, parsedSubmitUntil);
-    if (cadenceError) {
-      return Response.json({ error: cadenceError }, { status: 400 });
-    }
-
     const now = new Date();
     if (announce && parsedActiveFrom && parsedActiveFrom.getTime() > now.getTime()) {
       return Response.json({ error: "A future stage can be scheduled silently, then announced when it goes live" }, { status: 400 });
@@ -116,30 +97,70 @@ export async function POST(request: NextRequest) {
       where: { stage },
       select: { status: true, activeFrom: true, submitUntil: true },
     });
+    const timingChanged = stageTimingChanged(previous, parsedActiveFrom, parsedSubmitUntil);
+    if (timingChanged && session.role !== "SUPER_ADMIN") {
+      return Response.json(
+        { error: "Only a super-admin can change a stage start time or submission deadline" },
+        { status: 403 }
+      );
+    }
 
-    const window = await prisma.stageWindow.upsert({
-      where: { stage },
-      create: {
-        stage,
-        status,
-        passingScore: 70,
-        activeFrom: parsedActiveFrom,
-        submitUntil: parsedSubmitUntil,
-        // Legacy mirror so anything still reading isLocked sees the right thing.
-        isLocked: status !== "OPEN",
-        ...(status === "OPEN"
-          ? { openedAt: now, openedById: session.id }
-          : {}),
-      },
-      update: {
-        status,
-        isLocked: status !== "OPEN",
-        activeFrom: parsedActiveFrom,
-        submitUntil: parsedSubmitUntil,
-        ...(status === "OPEN"
-          ? { openedAt: now, openedById: session.id }
-          : {}),
-      },
+    const cadenceError = advancedCadenceError(stage, parsedActiveFrom, parsedSubmitUntil);
+    if (isAdvancedStageKey(stage) && (!parsedActiveFrom || !parsedSubmitUntil)) {
+      return Response.json({ error: cadenceError }, { status: 400 });
+    }
+    const overrideReason = typeof cadenceOverrideReason === "string"
+      ? cadenceOverrideReason.trim().slice(0, 500)
+      : "";
+    if (timingChanged && cadenceError && !overrideReason) {
+      return Response.json(
+        {
+          error: `${cadenceError}. A super-admin must confirm the exception and provide a reason.`,
+        },
+        { status: 400 }
+      );
+    }
+    const openingNow = status === "OPEN" && previous?.status !== "OPEN";
+
+    const { window, artifactGrantsUpdated } = await prisma.$transaction(async (tx) => {
+      const savedWindow = await tx.stageWindow.upsert({
+        where: { stage },
+        create: {
+          stage,
+          status,
+          passingScore: 70,
+          activeFrom: parsedActiveFrom,
+          submitUntil: parsedSubmitUntil,
+          // Legacy mirror so anything still reading isLocked sees the right thing.
+          isLocked: status !== "OPEN",
+          ...(openingNow
+            ? { openedAt: now, openedById: session.id }
+            : {}),
+        },
+        update: {
+          status,
+          isLocked: status !== "OPEN",
+          activeFrom: parsedActiveFrom,
+          submitUntil: parsedSubmitUntil,
+          ...(openingNow
+            ? { openedAt: now, openedById: session.id }
+            : {}),
+        },
+      });
+
+      let updatedGrantCount = 0;
+      if (timingChanged && isAdvancedStageKey(stage)) {
+        const updated = await tx.advancedArtifactGrant.updateMany({
+          where: { stage, revokedAt: null },
+          data: { expiresAt: parsedSubmitUntil },
+        });
+        updatedGrantCount = updated.count;
+      }
+
+      return {
+        window: savedWindow,
+        artifactGrantsUpdated: updatedGrantCount,
+      };
     });
 
     let notifying = 0;
@@ -193,7 +214,9 @@ export async function POST(request: NextRequest) {
 
     await recordAudit({
       actor: session,
-      action: "stage-window.status.change",
+      action: timingChanged
+        ? "stage-window.schedule.change"
+        : "stage-window.status.change",
       targetType: "STAGE_WINDOW",
       targetId: window.id,
       details: {
@@ -206,11 +229,14 @@ export async function POST(request: NextRequest) {
         toActiveFrom: parsedActiveFrom?.toISOString() ?? null,
         fromSubmitUntil: previous?.submitUntil?.toISOString() ?? null,
         toSubmitUntil: parsedSubmitUntil?.toISOString() ?? null,
+        cadenceOverride: timingChanged && Boolean(cadenceError),
+        cadenceOverrideReason: timingChanged && cadenceError ? overrideReason : null,
+        artifactGrantsUpdated,
       },
       ...auditMetaFromRequest(request),
     });
 
-    return Response.json({ window, notifying });
+    return Response.json({ window, notifying, artifactGrantsUpdated });
   } catch (error) {
     logger.error("stage_status_change_failed", error);
     return Response.json({ error: "Internal server error" }, { status: 500 });
