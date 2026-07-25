@@ -1,4 +1,4 @@
-import { copyFile, mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { config } from "dotenv";
 import { PrismaClient } from "../src/generated/prisma";
@@ -11,27 +11,15 @@ const SEND = process.env.SEND === "1";
 const FORCE = process.env.FORCE === "1";
 const TRIAL_TO = process.env.TRIAL_TO?.trim().toLowerCase() || null;
 const CONFIRMATION = "STAGE5-MOMENTUM-APPROVED";
-const FROM =
-  process.env.RESEND_FROM ||
-  `"Somto from Ubuntu Bridge Initiative" <noreply@ubuntubridgeinitiatives.org>`;
+const FROM = `"Somto from UBI" <noreply@ubuntubridgeinitiatives.org>`;
+const REPLY_TO = "dsomto891@gmail.com";
 const ORIGIN =
   process.env.PUBLIC_APP_URL && !process.env.PUBLIC_APP_URL.includes("localhost")
     ? process.env.PUBLIC_APP_URL.replace(/\/$/, "")
     : "https://ubuntubridgeinitiatives.org";
 const DASHBOARD_URL = `${ORIGIN}/dashboard/advanced`;
 const HERO_URL = `${ORIGIN}/email/stage5-keep-pushing.png`;
-const HERO_SOURCE_PATH = path.join(
-  process.cwd(),
-  "public",
-  "email",
-  "stage5-keep-pushing.png"
-);
-const PREVIEW_HERO_PATH = path.join(
-  process.cwd(),
-  ".tmp",
-  "stage5-keep-pushing.png"
-);
-const SUBJECT = "Imagine the life you want - keep pushing through Stage 5";
+const SUBJECT = "A personal note from me about Stage 5";
 const PREVIEW_PATH = path.join(
   process.cwd(),
   ".tmp",
@@ -72,143 +60,115 @@ function deadlineLabel(deadline: Date | null): string {
     .concat(" WAT");
 }
 
-function statCell(value: number, label: string, color: string): string {
-  return `
-    <td width="33.33%" valign="top" style="padding:0 4px;">
-      <div style="min-height:88px;padding:15px 10px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;text-align:center;">
-        <div style="font-size:28px;line-height:1;font-weight:800;color:${color};">${value}</div>
-        <div style="margin-top:8px;font-size:11px;line-height:1.35;font-weight:700;text-transform:uppercase;color:#64748B;">${label}</div>
-      </div>
-    </td>`;
-}
-
-function renderEmail(
-  firstName: string,
-  stats: CampaignStats,
-  heroUrl = HERO_URL
-): string {
+function renderEmail(firstName: string, stats: CampaignStats): string {
   const safeName = escapeHtml(firstName || "there");
   const closes = escapeHtml(deadlineLabel(stats.deadline));
-  const safeHeroUrl = escapeHtml(heroUrl);
 
   return `
-    <div style="margin:0;background:#E9EEF5;padding:32px 12px;color:#0F172A;">
-      <div style="max-width:600px;margin:0 auto;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
-        <div style="background:#FFFFFF;border-radius:12px;overflow:hidden;box-shadow:0 1px 2px rgba(15,23,42,0.08),0 12px 28px rgba(15,23,42,0.08);">
-          <img
-            src="${safeHeroUrl}"
-            width="600"
-            alt="Keep moving forward through Stage 5"
-            style="display:block;width:100%;max-width:600px;height:auto;border:0;"
-          >
-          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+    <div style="margin:0;background:#F3F5F7;padding:28px 12px;color:#202124;">
+      <div style="max-width:580px;margin:0 auto;background:#FFFFFF;border:1px solid #DADCE0;border-radius:8px;overflow:hidden;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.7;">
+        <div style="height:4px;background:#A61B1B;"></div>
+        <div style="padding:24px 30px 28px;">
+          <div style="margin:0 0 24px;padding-bottom:15px;border-bottom:1px solid #E8EAED;">
+            <div style="color:#202124;font-size:13px;font-weight:700;">Ubuntu Bridge Initiative</div>
+            <div style="color:#80868B;font-size:12px;">A personal note from Somto</div>
+          </div>
+
+          <p style="margin:0 0 18px;">Hi ${safeName},</p>
+          <p style="margin:0 0 18px;">
+            <strong>Imagine the life you want.</strong> Imagine yourself as the Chief Information
+            Security Officer of an international bank, walking into the room where difficult
+            decisions are made and knowing your judgement can protect millions of people. Imagine
+            the confidence, freedom, and life that level of mastery could give you. Whatever your
+            own picture is, hold it in your mind for a moment.
+          </p>
+
+          <div style="margin:22px 0;text-align:center;">
+            <img src="${HERO_URL}" width="390" alt="Keep moving forward" style="display:inline-block;width:100%;max-width:390px;height:auto;border:0;border-radius:6px;">
+          </div>
+
+          <p style="margin:0 0 18px;">
+            I know some of you may not like me very much right now. Some of you may even joke that
+            you hate me because the tasks are hard and I keep asking for more. I can accept that for
+            now. I did not make this difficult to punish you. I made it difficult because the life
+            you are imagining will demand judgement, discipline, and the ability to keep moving when
+            the answer is not obvious.
+          </p>
+
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:22px 0;">
             <tr>
-              <td width="6" style="width:6px;background:#B91C1C;"></td>
-              <td style="padding:27px 30px 20px;">
-                <div style="font-size:11px;font-weight:800;letter-spacing:0.12em;color:#64748B;text-transform:uppercase;">
-                  Ubuntu Bridge Initiative
+              <td width="33.33%" style="padding:0 4px 0 0;">
+                <div style="padding:13px 6px;background:#F8F9FA;border:1px solid #E0E3E7;border-radius:6px;text-align:center;">
+                  <div style="font-size:23px;font-weight:700;color:#202124;">${stats.cohort}</div>
+                  <div style="font-size:10px;color:#6B7280;text-transform:uppercase;">Active</div>
                 </div>
-                <div style="margin-top:3px;font-size:11px;color:#94A3B8;">
-                  Cybersecurity Internship &middot; Advanced Stage
+              </td>
+              <td width="33.33%" style="padding:0 2px;">
+                <div style="padding:13px 6px;background:#F8F9FA;border:1px solid #E0E3E7;border-radius:6px;text-align:center;">
+                  <div style="font-size:23px;font-weight:700;color:#202124;">${stats.entered}</div>
+                  <div style="font-size:10px;color:#6B7280;text-transform:uppercase;">Entered</div>
+                </div>
+              </td>
+              <td width="33.33%" style="padding:0 0 0 4px;">
+                <div style="padding:13px 6px;background:#F8F9FA;border:1px solid #E0E3E7;border-radius:6px;text-align:center;">
+                  <div style="font-size:23px;font-weight:700;color:#202124;">${stats.downloaded}</div>
+                  <div style="font-size:10px;color:#6B7280;text-transform:uppercase;">Downloaded</div>
                 </div>
               </td>
             </tr>
           </table>
 
-          <div style="padding:5px 30px 32px 36px;">
-            <div style="font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#B91C1C;font-weight:800;">
-              A personal note from Somto
-            </div>
-            <h1 style="font-size:28px;font-weight:800;line-height:1.18;margin:11px 0 10px;color:#0A1F44;">
-              Imagine the life you want, ${safeName}.
-            </h1>
-            <p style="font-size:15px;line-height:1.72;color:#334155;margin:0 0 22px;">
-              Imagine yourself as the Chief Information Security Officer of an international bank.
-              Imagine walking into the room where the difficult decisions are made, knowing that
-              your judgement can protect millions of people. Imagine the confidence, the freedom,
-              and the life that level of mastery could give you. Whatever your own picture is,
-              hold it in your mind for a moment.
-            </p>
+          <p style="margin:0 0 18px;">
+            ${stats.notDownloaded} active candidates still have no recorded download. I am not
+            sharing these figures to frighten you. I am sharing them to remind you that continuing
+            matters. You are still here. Keep going.
+          </p>
+          <p style="margin:0 0 18px;">
+            Remember why you started. You have already crossed four stages to reach this point.
+            Do not let tiredness make the decision for you. Take a breath, return to the work, and
+            finish what you came here to do.
+          </p>
 
-            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:0 0 23px;">
-              <tr>
-                ${statCell(stats.cohort, "Active cohort", "#0A1F44")}
-                ${statCell(stats.entered, "Entered Stage 5", "#1D4ED8")}
-                ${statCell(stats.downloaded, "Downloaded artefact", "#047857")}
-              </tr>
-            </table>
-
-            <div style="margin:0 0 22px;padding:17px 18px;background:#EFF6FF;border-left:4px solid #2563EB;border-radius:7px;">
-              <div style="font-size:12px;font-weight:800;text-transform:uppercase;color:#1E40AF;margin:0 0 7px;">
-                You are closer than it feels
-              </div>
-              <p style="font-size:14px;line-height:1.68;color:#1E3A8A;margin:0;">
-                ${stats.entered} people have entered Stage 5 and ${stats.downloaded} have downloaded
-                their assigned artefact. ${stats.notDownloaded} active candidates still have no
-                recorded download. These numbers are not here to frighten you. They are here to
-                remind you that continuing, finishing, and submitting still matters. You are still
-                in the room. Keep going.
-              </p>
-            </div>
-
-            <p style="font-size:14px;line-height:1.72;color:#334155;margin:0 0 20px;">
-              I know some of you may not like me very much right now. Some of you may even joke that
-              you hate me because the tasks are hard, the evidence requirements are strict, and I
-              keep asking for more. I can accept that for now. I did not make this difficult to
-              punish you. I made it difficult because the life you are imagining will demand
-              judgement, discipline, and the ability to keep moving when the answer is not obvious.
-            </p>
-
-            <div style="margin:0 0 23px;padding:18px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;">
-              <div style="font-size:12px;font-weight:800;text-transform:uppercase;color:#0A1F44;margin:0 0 10px;">
-                Keep moving
-              </div>
-              <p style="font-size:14px;line-height:1.65;color:#334155;margin:0 0 7px;">
-                <strong>1.</strong> Return to the task and take the next clear step.
-              </p>
-              <p style="font-size:14px;line-height:1.65;color:#334155;margin:0 0 7px;">
-                <strong>2.</strong> Finish the work carefully, even if it is not yet perfect.
-              </p>
-              <p style="font-size:14px;line-height:1.65;color:#334155;margin:0;">
-                <strong>3.</strong> Package your evidence, submit it, and give yourself the chance
-                to be assessed.
-              </p>
-            </div>
-
-            <div style="text-align:center;margin:0 0 22px;">
-              <a href="${DASHBOARD_URL}" style="display:inline-block;background:#B91C1C;color:#FFFFFF;padding:12px 24px;border-radius:8px;font-size:14px;font-weight:700;text-decoration:none;">
-                Finish Stage 5
-              </a>
-            </div>
-
-            <div style="padding:14px 16px;background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;text-align:center;">
-              <div style="font-size:11px;font-weight:800;text-transform:uppercase;color:#991B1B;">Submission closes</div>
-              <div style="margin-top:5px;font-size:15px;font-weight:800;color:#7F1D1D;">${closes}</div>
-            </div>
-
-            <p style="font-size:15px;line-height:1.72;color:#334155;margin:24px 0 0;">
-              Remember why you started. You have already crossed four stages to reach this room.
-              Opportunities that ask this much of you and give you this much room to prove yourself
-              do not appear every day. Do not let tiredness make the decision for you. Take a breath,
-              return to the work, and finish what you came here to do.
-            </p>
-            <p style="font-size:15px;line-height:1.72;color:#0A1F44;margin:17px 0 0;font-weight:700;">
-              This is me telling you personally: keep pushing. I believe the effort will be worth it.
-            </p>
-
-            <div style="margin-top:27px;padding-top:19px;border-top:1px solid #E2E8F0;">
-              <p style="margin:0;color:#0F172A;font-size:14px;line-height:1.7;">
-                &mdash; Somto Okoma<br>
-                <span style="color:#64748B;font-size:13px;">Head of Programme, Ubuntu Bridge Initiative</span>
-              </p>
-            </div>
+          <div style="margin:21px 0;padding:14px 16px;background:#F8F9FA;border-left:3px solid #A61B1B;">
+            <div style="font-size:12px;color:#5F6368;">Stage 5 closes</div>
+            <div style="font-size:15px;font-weight:700;color:#202124;">${closes}</div>
           </div>
+
+          <p style="margin:0 0 18px;">
+            You can return to
+            <a href="${DASHBOARD_URL}" style="color:#1155CC;text-decoration:underline;">your Stage 5 dashboard here</a>.
+          </p>
+          <p style="margin:0 0 24px;font-weight:700;">
+            This is me telling you personally: keep pushing. I believe the effort will be worth it.
+          </p>
+          <p style="margin:0;">
+            Somto Okoma<br>
+            <span style="color:#5F6368;">Head of Programme, Ubuntu Bridge Initiative</span>
+          </p>
         </div>
-        <p style="text-align:center;color:#7C8798;font-size:11px;line-height:1.55;margin:17px 0 0;">
-          Sent from the programme office &middot; TRAN, The Root Access Network
-        </p>
       </div>
     </div>`;
+}
+
+function renderText(firstName: string, stats: CampaignStats): string {
+  return `Hi ${firstName || "there"},
+
+Imagine the life you want. Imagine yourself as the Chief Information Security Officer of an international bank, walking into the room where difficult decisions are made and knowing your judgement can protect millions of people. Whatever your own picture is, hold it in your mind for a moment.
+
+I know some of you may not like me very much right now. Some of you may even joke that you hate me because the tasks are hard and I keep asking for more. I can accept that for now. I did not make this difficult to punish you. I made it difficult because the life you are imagining will demand judgement, discipline, and the ability to keep moving when the answer is not obvious.
+
+Right now, ${stats.entered} people have entered Stage 5 and ${stats.downloaded} have downloaded their assigned artefact. ${stats.notDownloaded} active candidates still have no recorded download. I am not sharing those figures to frighten you. I am sharing them to remind you that continuing matters. You are still here. Keep going.
+
+Remember why you started. Do not let tiredness make the decision for you. Take a breath, return to the work, and finish what you came here to do.
+
+Stage 5 closes ${deadlineLabel(stats.deadline)}.
+${DASHBOARD_URL}
+
+This is me telling you personally: keep pushing. I believe the effort will be worth it.
+
+Somto Okoma
+Head of Programme
+Ubuntu Bridge Initiative`;
 }
 
 function renderPreviewDocument(emailHtml: string): string {
@@ -225,25 +185,12 @@ ${emailHtml}
 </html>`;
 }
 
-async function sendEmail(
-  to: string,
-  html: string,
-  inlineHero = false
-): Promise<void> {
+async function sendEmail(to: string, html: string, text: string): Promise<void> {
   const key = process.env.RESEND_API_KEY || process.env.api_key;
   if (!key) {
     throw new Error("No Resend key is configured in RESEND_API_KEY or api_key.");
   }
 
-  const attachments = inlineHero
-    ? [
-        {
-          content: (await readFile(HERO_SOURCE_PATH)).toString("base64"),
-          filename: "stage5-keep-pushing.png",
-          content_id: "stage5-hero",
-        },
-      ]
-    : undefined;
   const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
@@ -255,7 +202,8 @@ async function sendEmail(
       to,
       subject: SUBJECT,
       html,
-      ...(attachments ? { attachments } : {}),
+      text,
+      reply_to: REPLY_TO,
     }),
   });
 
@@ -303,12 +251,8 @@ async function main(): Promise<void> {
     notDownloaded: interns.length - downloaded,
     deadline: stageWindow?.submitUntil ?? null,
   };
-  const previewHeroUrl = "http://localhost:4173/stage5-keep-pushing.png";
-  const previewHtml = renderPreviewDocument(
-    renderEmail("Somto", stats, previewHeroUrl)
-  );
+  const previewHtml = renderPreviewDocument(renderEmail("Somto", stats));
   await mkdir(path.dirname(PREVIEW_PATH), { recursive: true });
-  await copyFile(HERO_SOURCE_PATH, PREVIEW_HERO_PATH);
   await writeFile(PREVIEW_PATH, previewHtml, "utf8");
 
   console.log(`Mode: ${SEND ? "SEND" : "PREVIEW ONLY"}`);
@@ -338,8 +282,8 @@ async function main(): Promise<void> {
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(TRIAL_TO)) {
       throw new Error(`Invalid TRIAL_TO address: ${TRIAL_TO}`);
     }
-    const html = renderEmail("Somto", stats, "cid:stage5-hero");
-    await sendEmail(TRIAL_TO, html, true);
+    const html = renderEmail("Somto", stats);
+    await sendEmail(TRIAL_TO, html, renderText("Somto", stats));
     console.log(`Trial sent to ${TRIAL_TO}. No cohort recipients were contacted.`);
     return;
   }
@@ -358,7 +302,11 @@ async function main(): Promise<void> {
 
     const html = renderEmail(intern.user.firstName, stats);
     try {
-      await sendEmail(intern.user.email, html);
+      await sendEmail(
+        intern.user.email,
+        html,
+        renderText(intern.user.firstName, stats)
+      );
       await prisma.email.create({
         data: {
           userId: intern.userId,
