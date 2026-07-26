@@ -46,7 +46,13 @@ interface Pending {
   elimination: PendingRow[];
 }
 
+interface PreRankingReview {
+  rows: PendingRow[];
+}
+
 type Bucket = "promotion" | "elimination";
+type ReviewBucket = Bucket | "unranked";
+type ReviewRow = PendingRow & { bucket: ReviewBucket };
 type SortKey = "name" | "report" | "final" | "terminal";
 
 const STAGES = [
@@ -64,6 +70,7 @@ const STAGES = [
 
 export function CutoffReviewPanel({ stage }: { stage: string }) {
   const [pending, setPending] = useState<Pending | null>(null);
+  const [preRankingReview, setPreRankingReview] = useState<PreRankingReview | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busyRowId, setBusyRowId] = useState<string | null>(null);
@@ -80,6 +87,9 @@ export function CutoffReviewPanel({ stage }: { stage: string }) {
   const stageLabel =
     STAGES.find((s) => s.key === stage)?.label ?? stage;
   const isAdvanced = Number(stage.replace("STAGE_", "")) >= 5;
+  const preRankingMode = isAdvanced && pending === null && preRankingReview !== null;
+  const hasUnrankedRows = (preRankingReview?.rows.length ?? 0) > 0;
+  const hasReview = pending !== null || preRankingReview !== null;
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -90,8 +100,10 @@ export function CutoffReviewPanel({ stage }: { stage: string }) {
       if (!res.ok) {
         setError(data.error || "Failed to load");
         setPending(null);
+        setPreRankingReview(null);
       } else {
         setPending(data.pending ?? null);
+        setPreRankingReview(data.preRankingReview ?? null);
       }
     } catch {
       setError("Network error");
@@ -110,16 +122,24 @@ export function CutoffReviewPanel({ stage }: { stage: string }) {
   }
 
   const allRows = useMemo(() => {
-    if (!pending) return [] as Array<PendingRow & { bucket: Bucket }>;
-    const promo = pending.promotion.map((r) => ({ ...r, bucket: "promotion" as Bucket }));
-    const elim = pending.elimination.map((r) => ({ ...r, bucket: "elimination" as Bucket }));
-    return [...promo, ...elim];
-  }, [pending]);
+    const unranked = (preRankingReview?.rows ?? []).map((row) => ({
+      ...row,
+      bucket: "unranked" as const,
+    }));
+    if (pending) {
+      const promo = pending.promotion.map((r) => ({ ...r, bucket: "promotion" as const }));
+      const elim = pending.elimination.map((r) => ({ ...r, bucket: "elimination" as const }));
+      return [...promo, ...elim, ...unranked] as ReviewRow[];
+    }
+    return unranked;
+  }, [pending, preRankingReview]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     let rows = allRows;
-    if (bucketFilter !== "all") rows = rows.filter((r) => r.bucket === bucketFilter);
+    if (!preRankingMode && bucketFilter !== "all") {
+      rows = rows.filter((r) => r.bucket === bucketFilter);
+    }
     if (q) {
       rows = rows.filter(
         (r) => r.fullName.toLowerCase().includes(q) || r.email.toLowerCase().includes(q)
@@ -146,7 +166,7 @@ export function CutoffReviewPanel({ stage }: { stage: string }) {
       return 0;
     });
     return rows;
-  }, [allRows, search, bucketFilter, sortKey, sortDir]);
+  }, [allRows, search, bucketFilter, sortKey, sortDir, preRankingMode]);
 
   async function post(body: Record<string, unknown>): Promise<Record<string, unknown> | null> {
     const res = await fetch("/api/admin/stage-results", {
@@ -162,7 +182,8 @@ export function CutoffReviewPanel({ stage }: { stage: string }) {
     return data;
   }
 
-  async function swap(row: PendingRow & { bucket: Bucket }) {
+  async function swap(row: ReviewRow) {
+    if (row.bucket === "unranked") return;
     setBusyRowId(row.reportId);
     setError(null);
     try {
@@ -181,7 +202,7 @@ export function CutoffReviewPanel({ stage }: { stage: string }) {
     }
   }
 
-  async function saveRow(row: PendingRow & { bucket: Bucket }) {
+  async function saveRow(row: ReviewRow) {
     const rawScore = draftScore[row.reportId];
     const rawFb = draftFeedback[row.reportId];
     const score = Number(rawScore);
@@ -221,7 +242,7 @@ export function CutoffReviewPanel({ stage }: { stage: string }) {
     }
   }
 
-  async function toggleQa(row: PendingRow & { bucket: Bucket }) {
+  async function toggleQa(row: ReviewRow) {
     setBusyQaId(row.reportId);
     setError(null);
     try {
@@ -291,7 +312,11 @@ export function CutoffReviewPanel({ stage }: { stage: string }) {
         </div>
         <p className="text-muted-foreground text-sm mt-1 max-w-3xl">
           {isAdvanced
-            ? "Review the within-track percentile buckets, verify every row, and use Swap only for an exact boundary tie or documented correction. Any score edit invalidates the saved rank; return to Stage Results and rerun percentile ranking."
+            ? preRankingMode
+              ? "Check every technical score, read the grader feedback, correct anything necessary, and mark each row QA verified. No percentile decision has been calculated yet."
+              : hasUnrankedRows
+                ? "Review the existing percentile decisions and every newly graded Not ranked row. Ranking cannot be recalculated until all rows are QA verified."
+              : "Review the within-track percentile decisions, verify every row, and use Swap only for an exact boundary tie or documented correction. Any score edit invalidates the saved rank."
             : "Edit any intern's score and feedback in place. Saving recomputes the final score against the cutoff and may move the row. Use Swap to override the bucket without changing the score."}
         </p>
       </header>
@@ -308,39 +333,49 @@ export function CutoffReviewPanel({ stage }: { stage: string }) {
         </div>
       )}
 
-      {loading && !pending && (
+      {loading && !hasReview && (
         <div className="p-8 text-center text-muted-foreground">
           <Loader2 className="h-5 w-5 animate-spin mx-auto" />
         </div>
       )}
 
-      {!loading && !pending && (
+      {!loading && !hasReview && (
         <div className="p-8 bg-white border border-border rounded-xl text-center">
           <p className="text-foreground font-medium mb-2">No pending review for this stage.</p>
           <p className="text-sm text-muted-foreground">
             {isAdvanced
-              ? "Apply the published percentile ranking on Stage Results to populate the advance and elimination buckets."
+              ? "There are no graded advanced-stage reports ready for review."
               : "Apply a cutoff on Stage Results to populate the pass and fail buckets."}
           </p>
         </div>
       )}
 
-      {pending && (
+      {hasReview && (
         <>
           <section className="mb-5 grid grid-cols-3 gap-3">
             <Stat
               label={isAdvanced ? "Selection" : "Cutoff"}
-              value={isAdvanced ? "Percentile" : pending.cutoff ?? "—"}
+              value={
+                isAdvanced
+                  ? preRankingMode ? "Not applied" : "Percentile"
+                  : pending?.cutoff ?? "—"
+              }
               tone="blue"
             />
             <Stat
-              label="Pending pass"
-              value={pending.promotion.length}
+              label={preRankingMode ? "Reports to review" : "Pending pass"}
+              value={preRankingMode ? allRows.length : pending?.promotion.length ?? 0}
               tone="emerald"
             />
             <Stat
-              label="Pending fail"
-              value={pending.elimination.length}
+              label={preRankingMode ? "QA remaining" : hasUnrankedRows ? "New unranked" : "Pending fail"}
+              value={
+                preRankingMode
+                  ? allRows.filter((row) => !row.qaVerified).length
+                  : hasUnrankedRows
+                    ? preRankingReview?.rows.length ?? 0
+                  : pending?.elimination.length ?? 0
+              }
               tone="rose"
             />
           </section>
@@ -359,15 +394,17 @@ export function CutoffReviewPanel({ stage }: { stage: string }) {
                 className="flex-1 p-2 border border-border rounded-lg text-sm"
               />
             </div>
-            <select
-              value={bucketFilter}
-              onChange={(e) => setBucketFilter(e.target.value as "all" | Bucket)}
-              className="p-2 border border-border rounded-lg text-sm bg-white"
-            >
-              <option value="all">All buckets</option>
-              <option value="promotion">Pass only</option>
-              <option value="elimination">Fail only</option>
-            </select>
+            {!preRankingMode && (
+              <select
+                value={bucketFilter}
+                onChange={(e) => setBucketFilter(e.target.value as "all" | Bucket)}
+                className="p-2 border border-border rounded-lg text-sm bg-white"
+              >
+                <option value="all">All buckets</option>
+                <option value="promotion">Pass only</option>
+                <option value="elimination">Fail only</option>
+              </select>
+            )}
             <div className="text-xs text-muted-foreground">
               Showing {filtered.length} of {allRows.length}
             </div>
@@ -402,7 +439,9 @@ export function CutoffReviewPanel({ stage }: { stage: string }) {
                   >
                     Final {sortKey === "final" ? (sortDir === "asc" ? "↑" : "↓") : ""}
                   </th>
-                  <th className="px-3 py-2.5 text-center">Bucket</th>
+                  <th className="px-3 py-2.5 text-center">
+                    {preRankingMode ? "Ranking" : "Bucket"}
+                  </th>
                   <th className="px-3 py-2.5 text-right">Action</th>
                 </tr>
               </thead>
@@ -436,7 +475,7 @@ export function CutoffReviewPanel({ stage }: { stage: string }) {
                       }
                       onSave={() => saveRow(row)}
                       onReset={() => resetRow(row)}
-                      onSwap={() => swap(row)}
+                      onSwap={row.bucket === "unranked" ? undefined : () => swap(row)}
                       onToggleQa={() => toggleQa(row)}
                     />
                   );
@@ -454,7 +493,11 @@ export function CutoffReviewPanel({ stage }: { stage: string }) {
 
           <p className="text-xs text-muted-foreground mt-4">
             {isAdvanced
-              ? "Final score = 0.8 × report + 0.2 × terminal %. A score change clears the saved rank and requires a fresh percentile calculation on Stage Results. Saved feedback is included when results are finalized."
+              ? preRankingMode
+                ? "Final score = 0.8 × report + 0.2 × terminal %. Score and feedback edits reopen QA. After every row is QA verified, return to Stage Results and apply the published percentile rule."
+                : hasUnrankedRows
+                  ? "Rows marked Not ranked arrived after the saved ranking. Review and QA them, then return to Stage Results and recalculate percentile ranking before finalizing."
+                : "Final score = 0.8 × report + 0.2 × terminal %. A score change clears the saved rank and requires a fresh percentile calculation on Stage Results. Saved feedback is included when results are finalized."
               : "Final score = 0.8 × report + 0.2 × terminal %. Changing the report score recomputes the final score and may move the row across the cutoff. Saved feedback is included when results are finalized."}
           </p>
         </>
@@ -481,7 +524,7 @@ function RowFragment({
 }: {
   open: boolean;
   onToggle: () => void;
-  row: PendingRow & { bucket: Bucket };
+  row: ReviewRow;
   scoreVal: string;
   fbVal: string;
   dirty: boolean;
@@ -491,13 +534,21 @@ function RowFragment({
   onFeedbackChange: (v: string) => void;
   onSave: () => void;
   onReset: () => void;
-  onSwap: () => void;
+  onSwap?: () => void;
   onToggleQa: () => void;
 }) {
   const bucketColor =
     row.bucket === "promotion"
       ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-      : "bg-rose-50 text-rose-800 border-rose-200";
+      : row.bucket === "elimination"
+        ? "bg-rose-50 text-rose-800 border-rose-200"
+        : "bg-slate-50 text-slate-700 border-slate-200";
+  const bucketLabel =
+    row.bucket === "promotion"
+      ? "Pass"
+      : row.bucket === "elimination"
+        ? "Fail"
+        : "Not ranked";
   return (
     <>
       <tr className={`border-t border-border hover:bg-muted/20 ${row.qaVerified ? "bg-emerald-50/30" : ""}`}>
@@ -513,11 +564,7 @@ function RowFragment({
         <td className="px-4 py-2.5">
           <div className="text-sm text-foreground">{row.fullName}</div>
           <div className="text-[11px] font-mono text-muted-foreground">{row.email}</div>
-          {row.advancedGateFailed ? (
-            <div className="mt-1 text-[11px] font-medium text-rose-700">
-              Automatic gate: {row.advancedGateReason ?? "recorded"}
-            </div>
-          ) : row.advancedRank !== null ? (
+          {row.advancedRank !== null ? (
             <div className="mt-1 text-[11px] text-muted-foreground">
               {row.track} · rank {row.advancedRank}/{row.advancedCohortSize ?? "?"} · stage percentile {row.advancedPercentile?.toFixed(2) ?? "?"}
               {row.advancedCumulativePercentile !== null
@@ -562,7 +609,7 @@ function RowFragment({
           <span
             className={`px-2 py-0.5 rounded-full text-[11px] font-medium border ${bucketColor}`}
           >
-            {row.bucket === "promotion" ? "Pass" : "Fail"}
+            {bucketLabel}
           </span>
         </td>
         <td className="px-3 py-2.5 text-right whitespace-nowrap">
@@ -607,7 +654,7 @@ function RowFragment({
               </button>
             </>
           )}
-          {!dirty && (
+          {!dirty && onSwap && (
             <button
               onClick={onSwap}
               disabled={busy}

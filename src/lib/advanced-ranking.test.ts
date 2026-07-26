@@ -43,7 +43,7 @@ test("Stage 5 eliminates the bottom 20 percent per track", () => {
   assert.equal(result.rows.filter((row) => row.selected).length, 16);
 });
 
-test("automatic fail gates are removed before the percentile target is calculated", () => {
+test("all scored candidates remain in the percentile cohort", () => {
   const rows = candidates(20);
   rows[0].gateFailed = true;
   const scoreRows = records("STAGE_5", rows).map((row) => ({
@@ -51,12 +51,13 @@ test("automatic fail gates are removed before the percentile target is calculate
     gateFailed: row.internId === rows[0].internId,
   }));
   const result = rankAdvancedStage("STAGE_5", rows, scoreRows)[0];
-  assert.equal(result.eligible, 19);
+  assert.equal(result.eligible, 20);
   assert.equal(result.advanceTarget, 16);
   assert.equal(result.rows.find((row) => row.rank === 1)?.percentile, 100);
-  assert.equal(result.rows.find((row) => row.rank === 19)?.percentile, 0);
-  assert.equal(result.rows.find((row) => row.rank === 1)?.cohortSize, 19);
-  assert.equal(result.rows.find((row) => row.gateFailed)?.selected, false);
+  assert.equal(result.rows.find((row) => row.rank === 20)?.percentile, 0);
+  assert.equal(result.rows.find((row) => row.rank === 1)?.cohortSize, 20);
+  assert.equal(result.rows.find((row) => row.gateFailed)?.selected, true);
+  assert.equal(result.gateFailed, 0);
 });
 
 test("published elimination rates produce exact deterministic targets", () => {

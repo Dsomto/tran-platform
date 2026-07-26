@@ -146,7 +146,6 @@ function rankingKey(row: Pick<AdvancedRankedCandidate, "selectionMetric" | "curr
 function percentileMap(records: AdvancedScoreRecord[]): Map<string, number> {
   const byStageTrack = new Map<string, AdvancedScoreRecord[]>();
   for (const record of records) {
-    if (record.gateFailed === true) continue;
     const key = `${record.stage}:${record.track}`;
     const list = byStageTrack.get(key) ?? [];
     list.push(record);
@@ -211,16 +210,14 @@ export function rankAdvancedStage(
         selected: false,
         incomplete,
         selectionMetric,
-        selectionReason: candidate.gateFailed
-          ? "Automatic fail gate recorded before ranking"
-          : incomplete
-            ? "Held: one or more required advanced-stage scores are missing"
-            : policy.label,
+        selectionReason: incomplete
+          ? "Held: one or more required advanced-stage scores are missing"
+          : policy.label,
       };
     });
 
     const eligibleRows = rows
-      .filter((row) => !row.gateFailed && !row.incomplete && row.selectionMetric !== null)
+      .filter((row) => !row.incomplete && row.selectionMetric !== null)
       .sort(
         (left, right) =>
           right.selectionMetric! - left.selectionMetric! ||
@@ -264,8 +261,8 @@ export function rankAdvancedStage(
     return {
       track,
       eligible: eligibleRows.length,
-      gateFailed: rows.filter((row) => row.gateFailed).length,
-      incomplete: rows.filter((row) => row.incomplete && !row.gateFailed).length,
+      gateFailed: 0,
+      incomplete: rows.filter((row) => row.incomplete).length,
       advanceTarget,
       boundaryTie,
       boundaryReportIds,
