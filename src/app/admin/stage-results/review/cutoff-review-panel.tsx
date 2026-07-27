@@ -19,6 +19,7 @@ import {
 interface PendingRow {
   reportId: string;
   internId: string;
+  isNonSubmitter: boolean;
   fullName: string;
   email: string;
   reportScore: number;
@@ -475,8 +476,14 @@ export function CutoffReviewPanel({ stage }: { stage: string }) {
                       }
                       onSave={() => saveRow(row)}
                       onReset={() => resetRow(row)}
-                      onSwap={row.bucket === "unranked" ? undefined : () => swap(row)}
-                      onToggleQa={() => toggleQa(row)}
+                      onSwap={
+                        row.bucket === "unranked" || row.isNonSubmitter
+                          ? undefined
+                          : () => swap(row)
+                      }
+                      onToggleQa={
+                        row.isNonSubmitter ? undefined : () => toggleQa(row)
+                      }
                     />
                   );
                 })}
@@ -535,7 +542,7 @@ function RowFragment({
   onSave: () => void;
   onReset: () => void;
   onSwap?: () => void;
-  onToggleQa: () => void;
+  onToggleQa?: () => void;
 }) {
   const bucketColor =
     row.bucket === "promotion"
@@ -544,7 +551,9 @@ function RowFragment({
         ? "bg-rose-50 text-rose-800 border-rose-200"
         : "bg-slate-50 text-slate-700 border-slate-200";
   const bucketLabel =
-    row.bucket === "promotion"
+    row.isNonSubmitter
+      ? "Fail: no submission"
+      : row.bucket === "promotion"
       ? "Pass"
       : row.bucket === "elimination"
         ? "Fail"
@@ -595,6 +604,7 @@ function RowFragment({
             min={0}
             max={100}
             value={scoreVal}
+            disabled={row.isNonSubmitter}
             onChange={(e) => onScoreChange(e.target.value)}
             className={`w-16 p-1.5 text-right border rounded-md text-sm tabular-nums ${dirty ? "border-amber-400 bg-amber-50" : "border-border"}`}
           />
@@ -613,23 +623,29 @@ function RowFragment({
           </span>
         </td>
         <td className="px-3 py-2.5 text-right whitespace-nowrap">
-          <button
-            onClick={onToggleQa}
-            disabled={qaBusy}
-            title={row.qaVerified ? "QA verified. Click to reopen." : "Mark QA verified"}
-            className={`mr-1 inline-flex items-center gap-1 px-2 py-1.5 text-xs rounded-md border disabled:opacity-50 ${
-              row.qaVerified
-                ? "border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100"
-                : "border-border text-muted-foreground hover:bg-muted/40 hover:text-foreground"
-            }`}
-          >
-            {qaBusy ? (
-              <Loader2 className="h-3 w-3 animate-spin" />
-            ) : (
-              <CircleCheck className="h-3 w-3" />
-            )}
-            {row.qaVerified ? "QA verified" : "QA"}
-          </button>
+          {onToggleQa ? (
+            <button
+              onClick={onToggleQa}
+              disabled={qaBusy}
+              title={row.qaVerified ? "QA verified. Click to reopen." : "Mark QA verified"}
+              className={`mr-1 inline-flex items-center gap-1 px-2 py-1.5 text-xs rounded-md border disabled:opacity-50 ${
+                row.qaVerified
+                  ? "border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100"
+                  : "border-border text-muted-foreground hover:bg-muted/40 hover:text-foreground"
+              }`}
+            >
+              {qaBusy ? (
+                <Loader2 className="h-3 w-3 animate-spin" />
+              ) : (
+                <CircleCheck className="h-3 w-3" />
+              )}
+              {row.qaVerified ? "QA verified" : "QA"}
+            </button>
+          ) : (
+            <span className="mr-1 text-xs text-muted-foreground">
+              No report to QA
+            </span>
+          )}
           {dirty && (
             <>
               <button

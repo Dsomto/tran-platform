@@ -503,6 +503,18 @@ model PublicApplication {
   loginPassword   String?                   // plain text stored temporarily for email, hashed on first login
   createdAt       DateTime @default(now())
 
+  // ─── Returning-candidate code ───────────────────────────
+  // Issued to an intern who SUBMITTED a stage but was eliminated at Finalize
+  // (never to a non-submitter). It is delivered in their elimination email and,
+  // when a future cohort's applications open, entering it on /apply auto-approves
+  // them back in (status -> "queued_approved"). Bound to THIS row's email: it must
+  // be redeemed with the same address it was issued to. See src/lib/returning-code.ts
+  // and docs/RETURNING-CANDIDATE-CODES.md for the full flow.
+  returningCode           String?   @unique   // e.g. NF-ABCD-2345; null until issued
+  returningCodeIssuedAt   DateTime?           // when Finalize minted it
+  returningCodeStage      Int?                // stage the intern was eliminated from (0-9)
+  returningCodeRedeemedAt DateTime?           // when it was used to re-enter; null = still valid
+
   @@index([createdAt(sort: Desc)])
   @@index([stage, stageStatus])
   @@index([status])

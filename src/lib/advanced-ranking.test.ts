@@ -36,7 +36,7 @@ test("percentile rank is 100 for first and 0 for last", () => {
   assert.equal(percentileFromRank(1, 1), 100);
 });
 
-test("Stage 5 eliminates the bottom 20 percent per track", () => {
+test("Stage 5 removes 20 percent of the full track cohort", () => {
   const rows = candidates(20);
   const result = rankAdvancedStage("STAGE_5", rows, records("STAGE_5", rows))[0];
   assert.equal(result.advanceTarget, 16);
@@ -61,13 +61,53 @@ test("all scored candidates remain in the percentile cohort", () => {
 });
 
 test("published elimination rates produce exact deterministic targets", () => {
-  assert.equal(advancedAdvanceTarget("STAGE_5", 93), 75);
-  assert.equal(advancedAdvanceTarget("STAGE_5", 56), 45);
+  assert.equal(advancedAdvanceTarget("STAGE_5", 93), 74);
+  assert.equal(advancedAdvanceTarget("STAGE_5", 56), 44);
   assert.equal(advancedAdvanceTarget("STAGE_5", 20), 16);
   assert.equal(advancedAdvanceTarget("STAGE_6", 20), 15);
-  assert.equal(advancedAdvanceTarget("STAGE_7", 15), 11);
+  assert.equal(advancedAdvanceTarget("STAGE_7", 15), 10);
   assert.equal(advancedAdvanceTarget("STAGE_8", 20), 6);
   assert.equal(advancedAdvanceTarget("STAGE_9", 6), 3);
+});
+
+test("later percentage stages also count non-submitters before graded attrition", () => {
+  assert.equal(advancedAdvanceTarget("STAGE_6", 16, 20), 15);
+  assert.equal(advancedAdvanceTarget("STAGE_7", 11, 15), 10);
+  assert.equal(advancedAdvanceTarget("STAGE_6", 10, 20), 10);
+  assert.equal(advancedAdvanceTarget("STAGE_7", 9, 15), 9);
+});
+
+test("non-submitters consume the elimination quota before scored reports", () => {
+  const rows = candidates(10);
+  const result = rankAdvancedStage(
+    "STAGE_5",
+    rows,
+    records("STAGE_5", rows),
+    { SOC_ANALYSIS: 20 }
+  )[0];
+  assert.equal(result.rows[0].cohortSize, 20);
+  assert.equal(result.advanceTarget, 10);
+  assert.equal(result.rows.filter((row) => row.selected).length, 10);
+  assert.equal(result.rows.at(-1)?.percentile, 52.63);
+});
+
+test("only the remaining attrition shortfall comes from graded reports", () => {
+  const rows = candidates(18);
+  const result = rankAdvancedStage(
+    "STAGE_5",
+    rows,
+    records("STAGE_5", rows),
+    { SOC_ANALYSIS: 20 }
+  )[0];
+  assert.equal(result.advanceTarget, 16);
+  assert.equal(result.rows.filter((row) => row.selected).length, 16);
+  assert.equal(result.rows.filter((row) => !row.selected).length, 2);
+});
+
+test("Stage 5 final cohort counts allocate attrition per track", () => {
+  assert.equal(advancedAdvanceTarget("STAGE_5", 83, 92), 73);
+  assert.equal(advancedAdvanceTarget("STAGE_5", 44, 56), 44);
+  assert.equal(advancedAdvanceTarget("STAGE_5", 20, 21), 16);
 });
 
 test("Stage 8 advances six using cumulative weighted percentiles", () => {

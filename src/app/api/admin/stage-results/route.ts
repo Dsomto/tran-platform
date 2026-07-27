@@ -18,6 +18,7 @@ import {
 } from "@/lib/advanced-ranking";
 import { Prisma } from "@/generated/prisma";
 import { requireApiSuperAdmin } from "@/lib/api-auth";
+import { generateUniqueReturningCode } from "@/lib/returning-code";
 import type { SessionUser } from "@/lib/auth";
 
 const STAGE_KEYS = [
@@ -40,6 +41,7 @@ function isStageKey(v: unknown): v is StageKey {
 type PendingRow = {
   reportId: string;
   internId: string;
+  isNonSubmitter: boolean;
   fullName: string;
   email: string;
   reportScore: number;
@@ -151,6 +153,7 @@ export async function GET(request: NextRequest) {
       const toRow = (r: (typeof pendingReports)[number]): PendingRow => ({
         reportId: r.id,
         internId: r.intern.id,
+        isNonSubmitter: false,
         fullName: `${r.intern.user.firstName} ${r.intern.user.lastName}`.trim(),
         email: r.intern.user.email,
         reportScore: r.score ?? 0,
@@ -173,12 +176,84 @@ export async function GET(request: NextRequest) {
         advancedSelectionRule: r.advancedSelectionRule,
       });
       const percentileMode = isAdvancedRankingStage(stage);
+      let nonSubmitterRows: PendingRow[] = [];
+      if (percentileMode) {
+        const cohortGrants = await prisma.advancedArtifactGrant.findMany({
+          where: {
+            stage,
+            revokedAt: null,
+            intern: {
+              user: { email: { not: { endsWith: "@netforge.invalid" } } },
+            },
+          },
+          select: {
+            internId: true,
+            track: true,
+            intern: {
+              select: {
+                user: {
+                  select: {
+                    firstName: true,
+                    lastName: true,
+                    email: true,
+                  },
+                },
+              },
+            },
+          },
+        });
+        const submittedInternIds = new Set(
+          (
+            await prisma.stageReport.findMany({
+              where: {
+                stage,
+                status: { not: "DRAFT" },
+                internId: { in: cohortGrants.map((grant) => grant.internId) },
+              },
+              select: { internId: true },
+            })
+          ).map((report) => report.internId)
+        );
+        nonSubmitterRows = cohortGrants
+          .filter((grant) => !submittedInternIds.has(grant.internId))
+          .map((grant) => ({
+            reportId: `non-submission:${grant.internId}`,
+            internId: grant.internId,
+            isNonSubmitter: true,
+            fullName:
+              `${grant.intern.user.firstName ?? ""} ${grant.intern.user.lastName ?? ""}`.trim(),
+            email: grant.intern.user.email,
+            reportScore: 0,
+            terminalScore: null,
+            finalScore: 0,
+            feedback:
+              "No Stage 5 report was submitted before the deadline. A saved draft does not count as a submission.",
+            reportUrl: null,
+            qaVerified: true,
+            qaVerifiedAt: null,
+            track: grant.track,
+            advancedGateFailed: false,
+            advancedGateReason: null,
+            advancedRank: null,
+            advancedCohortSize:
+              cohortGrants.filter((row) => row.track === grant.track).length,
+            advancedPercentile: null,
+            advancedCumulativePercentile: null,
+            advancedSelectionRule:
+              "No submission: removed before any remaining attrition shortfall is filled from graded reports.",
+          }));
+      }
       pending = {
         cutoff: percentileMode ? null : win?.passingScore ?? null,
         selectionMode: percentileMode ? "PERCENTILE" : "CUTOFF",
         policyLabel: percentileMode ? advancedSelectionPolicy(stage).label : null,
         promotion: pendingReports.filter((r) => r.status === "PENDING_PROMOTION").map(toRow),
-        elimination: pendingReports.filter((r) => r.status === "PENDING_ELIMINATION").map(toRow),
+        elimination: [
+          ...pendingReports
+            .filter((r) => r.status === "PENDING_ELIMINATION")
+            .map(toRow),
+          ...nonSubmitterRows,
+        ],
       };
     }
 
@@ -225,6 +300,7 @@ export async function GET(request: NextRequest) {
             return {
               reportId: report.id,
               internId: report.intern.id,
+              isNonSubmitter: false,
               fullName: `${report.intern.user.firstName} ${report.intern.user.lastName}`.trim(),
               email: report.intern.user.email,
               reportScore,
@@ -560,9 +636,21 @@ async function handleApplyPercentile(
     return Response.json({ error: "A valid advanced stage is required" }, { status: 400 });
   }
 
+  const cohortGrants = await prisma.advancedArtifactGrant.findMany({
+    where: {
+      stage,
+      revokedAt: null,
+      intern: {
+        user: { email: { not: { endsWith: "@netforge.invalid" } } },
+      },
+    },
+    select: { internId: true, track: true },
+  });
+  const cohortInternIds = cohortGrants.map((grant) => grant.internId);
   const unresolved = await prisma.stageReport.count({
     where: {
       stage,
+      internId: { in: cohortInternIds },
       OR: [
         { divergent: true },
         { status: { in: ["SUBMITTED", "UNDER_REVIEW"] } },
@@ -579,6 +667,7 @@ async function handleApplyPercentile(
   const reports = await prisma.stageReport.findMany({
     where: {
       stage,
+      internId: { in: cohortInternIds },
       status: { in: ["GRADED", "PENDING_PROMOTION", "PENDING_ELIMINATION"] },
     },
     select: {
@@ -634,6 +723,7 @@ async function handleApplyPercentile(
   const history = await prisma.stageReport.findMany({
     where: {
       stage: { in: [...includedStages] },
+      internId: { in: cohortInternIds },
       status: {
         in: ["GRADED", "PENDING_PROMOTION", "PENDING_ELIMINATION", "PASSED", "FAILED"],
       },
@@ -643,6 +733,7 @@ async function handleApplyPercentile(
       stage: true,
       score: true,
       finalScore: true,
+      advancedCohortSize: true,
       intern: { select: { track: true } },
     },
   });
@@ -668,11 +759,23 @@ async function handleApplyPercentile(
       track: report.intern.track as AdvancedRankingTrack,
       stage: report.stage,
       score,
+      cohortSize: report.advancedCohortSize,
       gateFailed: false,
     }];
   });
 
-  const ranking = rankAdvancedStage(stage, candidates, scoreRecords);
+  const cohortSizes: Partial<Record<AdvancedRankingTrack, number>> = {};
+  for (const grant of cohortGrants) {
+    const track = grant.track as AdvancedRankingTrack;
+    cohortSizes[track] = (cohortSizes[track] ?? 0) + 1;
+  }
+
+  const ranking = rankAdvancedStage(
+    stage,
+    candidates,
+    scoreRecords,
+    cohortSizes
+  );
   const incomplete = ranking.flatMap((track) => track.rows.filter((row) => row.incomplete));
   if (incomplete.length > 0) {
     return Response.json(
@@ -721,7 +824,13 @@ async function handleApplyPercentile(
       policy,
       tracks: ranking.map((track) => ({
         track: track.track,
+        cohortSize: track.rows[0]?.cohortSize ?? cohortSizes[track.track] ?? 0,
         eligible: track.eligible,
+        nonSubmitters: Math.max(
+          0,
+          (track.rows[0]?.cohortSize ?? cohortSizes[track.track] ?? 0) -
+            track.eligible
+        ),
         gateFailed: track.gateFailed,
         advanceTarget: track.advanceTarget,
         boundaryTie: track.boundaryTie,
@@ -740,7 +849,13 @@ async function handleApplyPercentile(
     boundaryReviewRequired: ranking.some((track) => track.boundaryTie),
     tracks: ranking.map((track) => ({
       track: track.track,
+      cohortSize: track.rows[0]?.cohortSize ?? cohortSizes[track.track] ?? 0,
       eligible: track.eligible,
+      nonSubmitters: Math.max(
+        0,
+        (track.rows[0]?.cohortSize ?? cohortSizes[track.track] ?? 0) -
+          track.eligible
+      ),
       gateFailed: track.gateFailed,
       advanceTarget: track.advanceTarget,
       boundaryTie: track.boundaryTie,
@@ -1054,6 +1169,37 @@ async function handleToggleQaVerified(
 //
 // Idempotent: re-running checks for an existing pending no-submission email
 // from this run (same kind + subject) and skips anyone already queued.
+async function activeNonSubmitters(stage: StageKey) {
+  const internsOnStage = await prisma.intern.findMany({
+    where: {
+      isActive: true,
+      currentStage: stage,
+      user: { email: { not: { endsWith: "@netforge.invalid" } } },
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+        },
+      },
+    },
+  });
+  const internIdsWithSubmittedReport = new Set(
+    (
+      await prisma.stageReport.findMany({
+        where: { stage, status: { not: "DRAFT" } },
+        select: { internId: true },
+      })
+    ).map((report) => report.internId)
+  );
+  return internsOnStage.filter(
+    (intern) => !internIdsWithSubmittedReport.has(intern.id)
+  );
+}
+
 async function handleFinalizeNonSubmitters(
   request: NextRequest,
   admin: SessionUser,
@@ -1066,17 +1212,7 @@ async function handleFinalizeNonSubmitters(
   const stageNum = stage.replace("STAGE_", "");
   const subject = `Stage ${stageNum} — A note on your submission`;
 
-  // Anyone still active on this stage with no StageReport row for the stage.
-  const internsOnStage = await prisma.intern.findMany({
-    where: { isActive: true, currentStage: stage },
-    include: { user: { select: { id: true, firstName: true, lastName: true, email: true } } },
-  });
-  const internIdsWithReport = new Set(
-    (await prisma.stageReport.findMany({ where: { stage }, select: { internId: true } })).map(
-      (r) => r.internId
-    )
-  );
-  const nonSubmitters = internsOnStage.filter((i) => !internIdsWithReport.has(i.id));
+  const nonSubmitters = await activeNonSubmitters(stage);
 
   // Skip anyone already queued the same subject (idempotent re-run).
   const alreadyQueuedUserIds = new Set(
@@ -1098,6 +1234,15 @@ async function handleFinalizeNonSubmitters(
   let deactivated = 0;
   for (const intern of nonSubmitters) {
     const skipEmail = alreadyQueuedUserIds.has(intern.user.id);
+    // Returning-candidate code — non-submitters who reached this stage get one
+    // too. Idempotent: reuse an existing code so a re-run keeps it valid.
+    const nsEmail = intern.user.email.toLowerCase();
+    const nsApp = await prisma.publicApplication.findFirst({
+      where: { email: nsEmail },
+      select: { returningCode: true },
+    });
+    const nsReturningCode = nsApp?.returningCode ?? (await generateUniqueReturningCode());
+    const nsMintCode = !nsApp?.returningCode;
     const ops: Prisma.PrismaPromise<unknown>[] = [
       prisma.intern.update({
         where: { id: intern.id },
@@ -1105,10 +1250,17 @@ async function handleFinalizeNonSubmitters(
       }),
       // Mirror PublicApplication.stageStatus — auth.ts uses THIS field as
       // the login gate. Without it a non-submitter with a fresh password
-      // can still log in until their JWT expires.
+      // can still log in until their JWT expires. Same update mints the code.
       prisma.publicApplication.updateMany({
-        where: { email: intern.user.email.toLowerCase() },
-        data: { stageStatus: "eliminated" },
+        where: { email: nsEmail },
+        data: nsMintCode
+          ? {
+              stageStatus: "eliminated",
+              returningCode: nsReturningCode,
+              returningCodeIssuedAt: new Date(),
+              returningCodeStage: Number(stageNum),
+            }
+          : { stageStatus: "eliminated" },
       }),
     ];
     if (!skipEmail) {
@@ -1122,6 +1274,7 @@ async function handleFinalizeNonSubmitters(
             body: renderNoSubmissionEmail({
               firstName: intern.user.firstName,
               stageNumber: stageNum,
+              returningCode: nsReturningCode,
             }),
             context: { stage, reason: "non-submission-deactivation" },
           },
@@ -1212,7 +1365,15 @@ async function handleFinalize(
     for (const track of tracks) {
       const rows = pending.filter((report) => report.intern.track === track);
       const eligible = rows.filter((report) => report.advancedRank !== null);
-      const expected = advancedAdvanceTarget(advancedPolicy.stage, eligible.length);
+      const cohortCount = Math.max(
+        eligible.length,
+        ...rows.map((report) => report.advancedCohortSize ?? 0)
+      );
+      const expected = advancedAdvanceTarget(
+        advancedPolicy.stage,
+        eligible.length,
+        cohortCount
+      );
       const actual = rows.filter((report) => report.status === "PENDING_PROMOTION").length;
       if (actual !== expected) {
         return Response.json(
@@ -1231,6 +1392,60 @@ async function handleFinalize(
   const nextStage = `STAGE_${Number(stageNum) + 1}` as StageKey;
   const origin = process.env.PUBLIC_APP_URL || "https://ubuntubridgeinitiatives.org";
   const slackUrl = process.env.SLACK_CHANNEL_URL || "";
+
+  let nonSubmittersEliminated = 0;
+  if (advancedPolicy) {
+    const nonSubmitters = await activeNonSubmitters(stage);
+    const subject = `Stage ${stageNum} — A note on your submission`;
+    for (const intern of nonSubmitters) {
+      // Reaching an advanced stage at all counts — non-submitters here get a
+      // returning-candidate code too. Idempotent, same as the submitter path.
+      const nsEmail = intern.user.email.toLowerCase();
+      const nsApp = await prisma.publicApplication.findFirst({
+        where: { email: nsEmail },
+        select: { returningCode: true },
+      });
+      const nsReturningCode = nsApp?.returningCode ?? (await generateUniqueReturningCode());
+      const nsMintCode = !nsApp?.returningCode;
+      const nsIssuedAt = new Date();
+      await prisma.$transaction([
+        prisma.intern.update({
+          where: { id: intern.id },
+          data: { isActive: false, eliminatedAt: new Date() },
+        }),
+        prisma.publicApplication.updateMany({
+          where: { email: nsEmail },
+          data: nsMintCode
+            ? {
+                stageStatus: "eliminated",
+                returningCode: nsReturningCode,
+                returningCodeIssuedAt: nsIssuedAt,
+                returningCodeStage: Number(stageNum),
+              }
+            : { stageStatus: "eliminated" },
+        }),
+        prisma.emailQueueItem.create({
+          data: {
+            userId: intern.user.id,
+            toEmail: intern.user.email,
+            kind: "GENERAL",
+            subject,
+            body: renderNoSubmissionEmail({
+              firstName: intern.user.firstName,
+              stageNumber: stageNum,
+              returningCode: nsReturningCode,
+            }),
+            context: {
+              stage,
+              reason: "non-submission-deactivation",
+              finalizedWithAdvancedResults: true,
+            },
+          },
+        }),
+      ]);
+      nonSubmittersEliminated++;
+    }
+  }
 
   let promoted = 0;
   let eliminated = 0;
@@ -1384,6 +1599,18 @@ async function handleFinalize(
       // single source of truth — both the email and the letter PDF compute
       // effectiveDate from it.
       const effectiveDate = new Date(issuedAt.getTime() + ELIMINATION_GRACE_MS);
+      // Returning-candidate code. This intern is in the PENDING_ELIMINATION set,
+      // which only holds graded submitters — so they qualify for a come-back
+      // code (non-submitters, handled above, do not). Idempotent: if a code was
+      // already minted on a prior Finalize we reuse it so the emailed code stays
+      // valid. See src/lib/returning-code.ts.
+      const eliminatedEmail = r.intern.user.email.toLowerCase();
+      const existingApp = await prisma.publicApplication.findFirst({
+        where: { email: eliminatedEmail },
+        select: { returningCode: true },
+      });
+      const returningCode = existingApp?.returningCode ?? (await generateUniqueReturningCode());
+      const mintCode = !existingApp?.returningCode;
       await prisma.$transaction([
         prisma.stageReport.update({
           where: { id: r.id },
@@ -1396,9 +1623,17 @@ async function handleFinalize(
         // Mirror PublicApplication.stageStatus — auth.ts uses THIS field as the
         // login-gate signal. Without this mirror an eliminated intern can still
         // sign in with a fresh password until their session expires naturally.
+        // Same update stamps the returning-candidate code when first minted.
         prisma.publicApplication.updateMany({
-          where: { email: r.intern.user.email.toLowerCase() },
-          data: { stageStatus: "eliminated" },
+          where: { email: eliminatedEmail },
+          data: mintCode
+            ? {
+                stageStatus: "eliminated",
+                returningCode,
+                returningCodeIssuedAt: issuedAt,
+                returningCodeStage: Number(stageNum),
+              }
+            : { stageStatus: "eliminated" },
         }),
         prisma.emailQueueItem.create({
           data: {
@@ -1419,6 +1654,7 @@ async function handleFinalize(
               slackUrl,
               issuedAt,
               effectiveDate,
+              returningCode,
               advancedSelection: advancedPolicy
                 ? {
                     label: advancedPolicy.label,
@@ -1464,6 +1700,7 @@ async function handleFinalize(
       threshold: advancedPolicy ? null : threshold,
       promoted,
       eliminated,
+      nonSubmittersEliminated,
     },
     ...auditMetaFromRequest(request),
   });
@@ -1472,6 +1709,7 @@ async function handleFinalize(
     finalized: true,
     promoted,
     eliminated,
+    nonSubmittersEliminated,
     selectionMode: advancedPolicy ? "PERCENTILE" : "CUTOFF",
     threshold: advancedPolicy ? null : threshold,
   });
@@ -1552,6 +1790,37 @@ function ctaButton(href: string, label: string, bg: string): string {
     </a>`;
 }
 
+// The "comeback pass" — the returning-candidate code, rendered as a distinctive
+// emerald ticket so it reads as something earned and worth keeping, not a
+// generic footer note. Table-based with a solid-colour fallback so it survives
+// email clients that drop CSS gradients. See src/lib/returning-code.ts.
+function returningCodeVoucher(code: string): string {
+  const c = emailEscape(code);
+  return `
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:4px 0 24px;border-collapse:separate;">
+      <tr><td style="background:#047857;background:linear-gradient(135deg,#065F46 0%,#047857 55%,#0D9488 100%);border-radius:14px;padding:22px 24px;">
+        <div style="font-size:11px;font-weight:800;letter-spacing:0.16em;text-transform:uppercase;color:#A7F3D0;margin:0 0 5px;">
+          Your comeback pass
+        </div>
+        <div style="font-size:14px;line-height:1.55;color:#ECFDF5;margin:0 0 15px;font-weight:500;">
+          You reached this stage and put in the work — so the door stays open for you.
+        </div>
+        <div style="background:rgba(255,255,255,0.12);border:1px dashed rgba(167,243,208,0.75);border-radius:10px;padding:14px 16px;text-align:center;margin:0 0 15px;">
+          <div style="font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:#A7F3D0;margin:0 0 7px;">Returning-candidate code</div>
+          <div style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:26px;font-weight:800;letter-spacing:0.16em;color:#FFFFFF;line-height:1;">${c}</div>
+        </div>
+        <div style="font-size:13px;line-height:1.75;color:#D1FAE5;">
+          When applications for the next cohort open:<br/>
+          <strong style="color:#FFFFFF;">1.</strong>&nbsp; Apply with <strong style="color:#FFFFFF;">this same email address</strong>.<br/>
+          <strong style="color:#FFFFFF;">2.</strong>&nbsp; Enter this code — you skip the queue and come straight back in.
+        </div>
+        <div style="font-size:12px;color:#6EE7B7;margin:13px 0 0;">
+          Keep this somewhere safe. It is unique to you and can be used once.
+        </div>
+      </td></tr>
+    </table>`;
+}
+
 function emailEscape(value: string): string {
   return value
     .replaceAll("&", "&amp;")
@@ -1593,6 +1862,8 @@ function renderResultEmail(opts: {
     percentile: number | null;
     cumulativePercentile: number | null;
   } | null;
+  // Returning-candidate code — only set on eliminated (passed:false) emails.
+  returningCode?: string | null;
 }): string {
   const {
     firstName,
@@ -1616,9 +1887,15 @@ function renderResultEmail(opts: {
     cardUrl,
     badgeUrl,
     advancedSelection,
+    returningCode,
   } = opts;
   const nextStageNum = Number(stageNumber) + 1;
   const mondayLabel = nextMondayLabel(issuedAt);
+
+  // Shared block shown on elimination emails: the come-back code + how to use
+  // it. Rendered only when a code was minted (submitters only). See
+  // src/lib/returning-code.ts.
+  const returningCodeBlock = returningCode ? returningCodeVoucher(returningCode) : "";
 
   // Stage 4 is graduation to Cyber Core Associate — there is no "next stage",
   // so it gets its own email rather than the generic "Stage N+1 opens Monday".
@@ -1829,31 +2106,39 @@ function renderResultEmail(opts: {
     const effectiveLabel = effectiveDate
       ? effectiveDate.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })
       : "";
-    const selectionLabel = emailEscape(advancedSelection.label);
     const rankLine = advancedSelection.rank !== null
       ? `Your reviewed track rank was <strong>${advancedSelection.rank} of ${advancedSelection.cohortSize ?? "-"}</strong>, with a stage percentile of <strong>${advancedSelection.percentile ?? "-"}</strong>.`
       : "No percentile rank was available because the required ranking record was incomplete.";
     const body = `
-      <div style="font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:#B91C1C;font-weight:700;">
-        Ubuntu Bridge Initiative &nbsp;&middot;&nbsp; Advanced Stage
+      <div style="font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:#0F766E;font-weight:700;">
+        Ubuntu Bridge Initiative &nbsp;&middot;&nbsp; Advanced Stage ${stageNumber}
       </div>
-      <h1 style="font-size:24px;font-weight:700;line-height:1.3;margin:18px 0 6px;color:#0F172A;">Hi ${firstName},</h1>
-      <p style="font-size:15px;line-height:1.65;color:#334155;margin:0 0 18px;">
-        We finished the Stage ${stageNumber} scoring and within-track ranking. You did not finish
-        inside this stage's advance boundary.
+      <h1 style="font-size:25px;font-weight:800;line-height:1.25;margin:16px 0 10px;color:#0F172A;">Hi ${firstName},</h1>
+      <p style="font-size:15px;line-height:1.7;color:#334155;margin:0 0 16px;">
+        Thank you for everything you put into Stage ${stageNumber}. This was the most demanding stage
+        of the programme, and getting this far — through every stage before it — already puts you
+        in rare company. I want to be honest with you, which you deserve: after the full review and
+        within-track ranking, your work did not finish inside this stage's advance boundary, so this
+        is where your run in this cohort ends.
       </p>
-      <div style="margin:0 0 20px;padding:16px 18px;background:#FEF2F2;border:1px solid #FECACA;border-radius:10px;color:#7F1D1D;font-size:14px;line-height:1.65;">
-        ${rankLine}<br/>Raw stage score: <strong>${score}/100</strong>.<br/>Decision rule: ${selectionLabel}.
+      <p style="font-size:15px;line-height:1.7;color:#334155;margin:0 0 20px;">
+        That is a line about one stage, not a verdict on you. What you built and submitted is real,
+        and the detailed reviewer notes below walk through exactly what worked, what didn't quite
+        reconcile, and how to close the gap next time — please read them; they were written for you.
+      </p>
+      ${returningCodeBlock}
+      <div style="margin:0 0 20px;">
+        ${letterPdfUrl ? ctaButton(letterPdfUrl, "Download your letter (PDF)", "#0F172A") : ""}
+        &nbsp;${ctaButton(feedbackUrl, "Read my reviewer notes", "#0F766E")}
       </div>
-      <p style="font-size:14px;line-height:1.7;color:#475569;margin:0 0 22px;">
-        Your review notes remain on the dashboard. Your credentials wind down
-        ${effectiveLabel ? `on ${effectiveLabel}` : "in two days"}, so download anything you need before then.
+      <p style="font-size:13px;line-height:1.65;color:#94A3B8;margin:0 0 6px;">
+        Your dashboard access winds down ${effectiveLabel ? `on ${effectiveLabel}` : "in two days"} —
+        download anything you'd like to keep before then. For your records, ${rankLine.replace(/<[^>]+>/g, "")}
       </p>
-      <div style="margin:0 0 18px;">
-        ${letterPdfUrl ? ctaButton(letterPdfUrl, "Download the letter (PDF)", "#0F172A") : ""}
-        &nbsp;${ctaButton(feedbackUrl, "Open review notes", "#B91C1C")}
-      </div>`;
-    return emailShell({ accent: "#B91C1C", body });
+      <p style="font-size:14px;line-height:1.7;color:#334155;margin:22px 0 0;">
+        I mean it about the door staying open. Come back stronger.
+      </p>`;
+    return emailShell({ accent: "#0F766E", body });
   }
 
   // Foundation-stage fail result.
@@ -1909,6 +2194,7 @@ function renderResultEmail(opts: {
       </ul>
     </div>
 
+    ${returningCodeBlock}
     <div style="margin:0 0 18px;">
       ${letterPdfUrl ? ctaButton(letterPdfUrl, "Download the letter (PDF)", "#0F172A") : ""}
       &nbsp;&nbsp;
@@ -1929,8 +2215,10 @@ function renderResultEmail(opts: {
 function renderNoSubmissionEmail(opts: {
   firstName: string;
   stageNumber: string;
+  returningCode?: string | null;
 }): string {
-  const { firstName, stageNumber } = opts;
+  const { firstName, stageNumber, returningCode } = opts;
+  const returningCodeBlock = returningCode ? returningCodeVoucher(returningCode) : "";
   const body = `
     <h1 style="font-size:24px;font-weight:700;line-height:1.3;margin:18px 0 6px;color:#0F172A;">
       Hi ${firstName},
@@ -1949,6 +2237,8 @@ function renderNoSubmissionEmail(opts: {
       programme. Worth remembering for the next thing you apply to,
       wherever that is.
     </p>
+
+    ${returningCodeBlock}
 
     <div style="margin:0 0 22px;padding:18px 20px;background:#F0F9FF;border-left:4px solid #0284C7;border-radius:0 8px 8px 0;">
       <p style="margin:0 0 6px;font-size:14px;font-weight:700;color:#0C4A6E;">

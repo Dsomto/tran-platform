@@ -5,6 +5,7 @@ import { logger } from "@/lib/logger";
 import { Prisma } from "@/generated/prisma";
 import { getApplicationState } from "@/lib/system-settings";
 import { rateLimit, rateLimitResponse, getClientKey, RATE_LIMITS } from "@/lib/rate-limit";
+import { redeemReturningCode } from "@/lib/returning-code";
 
 export async function POST(request: NextRequest) {
   try {
@@ -33,6 +34,7 @@ export async function POST(request: NextRequest) {
       fullName, email, country, ageRange, gender,
       currentStatus, experience, trackInterest,
       dedication, goals, whyPickYou, referralSource,
+      returningCode,
     } = body;
 
     // Validate required fields
@@ -58,6 +60,44 @@ export async function POST(request: NextRequest) {
     }
 
     const normalizedEmail = email.toLowerCase().trim();
+
+    // Returning-candidate code path. A past intern who reached (and was
+    // eliminated at) a stage received a unique code in their result email.
+    // Redeeming it here re-enters them straight into the approved queue by
+    // updating their existing application row, rather than creating a new one
+    // (which the email-unique constraint would block). See
+    // src/lib/returning-code.ts. Non-returning applicants leave this blank.
+    if (typeof returningCode === "string" && returningCode.trim()) {
+      const result = await redeemReturningCode(returningCode, normalizedEmail, {
+        fullName: fullName.trim(),
+        country: country.trim(),
+        ageRange,
+        gender: gender || null,
+        currentStatus,
+        experience: experience.trim(),
+        trackInterest,
+        dedication,
+        goals: goals.trim(),
+        whyPickYou: whyPickYou.trim(),
+        referralSource: referralSource?.trim() || null,
+      });
+      if (!result.ok) {
+        const message =
+          result.reason === "already_used"
+            ? "That returning-candidate code has already been used."
+            : result.reason === "email_mismatch"
+              ? "This code must be used with the same email address it was issued to."
+              : "That returning-candidate code isn't valid. Check it and try again.";
+        return Response.json({ error: message }, { status: 400 });
+      }
+      try {
+        await sendApplicationConfirmation(normalizedEmail, fullName.trim());
+      } catch (err) {
+        logger.error("send_application_confirmation_failed", err, { email: normalizedEmail });
+      }
+      return Response.json({ success: true, returning: true }, { status: 201 });
+    }
+
     try {
       await prisma.publicApplication.create({
         data: {

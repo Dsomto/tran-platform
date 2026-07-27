@@ -270,10 +270,8 @@ export function generateStageCertificate(opts: {
       .text(
         isCyberCore
           ? `for completing Cyber Core, the core programme of the Ubuntu Bridge Cybersecurity Internship, ` +
-            `across Stages 0 to 4 with a final score of ${score} out of 100 against a ${passingScore} pass mark, ` +
-            `and being conferred the standing of Cyber Core Associate.`
-          : `for successfully completing ${certificateStageLabel} in the Ubuntu Bridge Cybersecurity Internship, ` +
-            `with a final score of ${score} out of 100 against a ${passingScore} pass mark.`,
+            `across Stages 0 to 4, and being conferred the standing of Cyber Core Associate.`
+          : `for successfully completing ${certificateStageLabel} in the Ubuntu Bridge Cybersecurity Internship.`,
         cx - bodyW / 2,
         bodyY,
         { align: "center", width: bodyW, lineGap: 3 }

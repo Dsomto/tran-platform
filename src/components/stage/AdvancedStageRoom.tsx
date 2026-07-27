@@ -164,6 +164,7 @@ export function AdvancedStageRoom({
         <a href="#technical-title">Constraints</a>
         <a href="#proof-title">Proof</a>
         <a href="#decision-rules-title">Rules</a>
+        {project.number === 1 && <a href="#stage-five-report">Report</a>}
         <a href="#deliverables-title">Deliverables</a>
         <a href="#project-faq">FAQ</a>
         <a href="#advanced-submit">Submit</a>
@@ -325,9 +326,13 @@ export function AdvancedStageRoom({
           <aside>
             <h3>Selection rule</h3>
             <p>
-              {selectionPolicy.label}. Explicit automatic fail gates are applied before ranking.
-              Your 100-point result is converted to a percentile only against interns in your own
-              track; there is no fixed 70% advanced-stage pass mark.
+              {selectionPolicy.label}. Your 100-point result is converted to a percentile only
+              against interns in your own track; there is no fixed 70% advanced-stage pass mark.
+              {selectionPolicy.eliminationRate !== null
+                ? ` The denominator is the full cohort that entered this stage in your track. Non-submitters are removed first and count toward the ${Math.round(selectionPolicy.eliminationRate * 100)}% attrition target; only a remaining shortfall is taken from the lowest-ranked graded reports.`
+                : " The denominator is the full cohort assigned to this stage in your track."}
+              {" "}Safety, integrity, and reproduction concerns require documented staff review
+              and are not silently removed before ranking.
               {selectionPolicy.basis === "CUMULATIVE_WEIGHTED_PERCENTILE"
                 ? " The cumulative calculation weights Stages 5-9 at 1, 1, 1.5, 2, and 2.5 respectively."
                 : " This stage uses the current project percentile."}
@@ -368,7 +373,7 @@ export function AdvancedStageRoom({
           <ul>{project.proof.map((item) => <li key={item}>{item}</li>)}</ul>
         </div>
         <div>
-          <div className="advanced-section-title"><AlertTriangle aria-hidden="true" /><h2>Automatic hold / fail gates</h2></div>
+          <div className="advanced-section-title"><AlertTriangle aria-hidden="true" /><h2>Technical holds and review triggers</h2></div>
           <ul>{project.gates.map((item) => <li key={item}>{item}</li>)}</ul>
         </div>
       </section>
@@ -384,7 +389,7 @@ export function AdvancedStageRoom({
             <p>{guidance.revisionRule}</p>
           </article>
           <article>
-            <h3><AlertTriangle aria-hidden="true" /> What stops a pass</h3>
+            <h3><AlertTriangle aria-hidden="true" /> What triggers staff review</h3>
             <ul>{guidance.automaticFailureRules.map((item) => <li key={item}>{item}</li>)}</ul>
           </article>
           <article>

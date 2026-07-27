@@ -510,6 +510,9 @@ function sharedQuestions(project: AdvancedProject): AdvancedFaqItem[] {
   const decisionDetail = policy.basis === "CUMULATIVE_WEIGHTED_PERCENTILE"
     ? "The cumulative percentile uses completed advanced-stage percentiles with weights of 1, 1, 1.5, 2, and 2.5 for Stages 5 through 9."
     : "This decision uses the percentile from the current project only.";
+  const cohortDetail = policy.eliminationRate !== null
+    ? `The denominator is the full cohort that entered this stage in your track, including people who did not submit. Non-submitters are removed first and count toward the ${Math.round(policy.eliminationRate * 100)}% attrition target. If that does not reach the target, only the remaining shortfall is taken from the lowest-ranked graded reports.`
+    : "The denominator is the full cohort assigned to this stage in your track; a non-submitter cannot advance.";
 
   return [
     setup(
@@ -518,7 +521,7 @@ function sharedQuestions(project: AdvancedProject): AdvancedFaqItem[] {
     ),
     build(
       "How does my score become an advancement or elimination decision?",
-      `${policy.label}. Staff first apply every explicit automatic fail gate in this project's brief. Remaining candidates are ranked only against interns in the same track, never against another track. The highest result receives the highest percentile; for more than one eligible candidate the published percentile is 100 × (cohort size − competition rank) ÷ (cohort size − 1). ${decisionDetail} There is no fixed 70% advanced-stage pass mark. Exact ties at the selection boundary are resolved through an audited defense or blinded review, not an arbitrary hidden cutoff.`,
+      `${policy.label}. Candidates are ranked only against interns in the same track, never against another track. ${cohortDetail} No report is silently removed before ranking: safety, integrity, and reproduction concerns are recorded in the reviewed technical result and require a documented staff decision. The highest result receives the highest percentile; for more than one cohort member the published percentile is 100 × (cohort size − competition rank) ÷ (cohort size − 1). ${decisionDetail} There is no fixed 70% advanced-stage pass mark. Exact ties at the selection boundary are resolved through an audited defense or blinded review, not an arbitrary hidden cutoff.`,
     ),
     submit(
       "How should I organize the final Drive folder?",

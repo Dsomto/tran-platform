@@ -22,6 +22,20 @@ export type StageFiveStartStep = {
   expected: string;
 };
 
+export type StageFiveReportGuide = {
+  purpose: string;
+  files: Array<{
+    name: string;
+    role: string;
+  }>;
+  sections: Array<{
+    title: string;
+    mustExplain: string;
+  }>;
+  writingRules: string[];
+  finalCheck: string;
+};
+
 export type StageFiveOnboarding = {
   oneSentence: string;
   jobParts: string[];
@@ -29,6 +43,7 @@ export type StageFiveOnboarding = {
   downloadItems: string[];
   machinePaths: StageFiveMachinePath[];
   startSteps: StageFiveStartStep[];
+  reportGuide: StageFiveReportGuide;
   firstMilestone: string;
 };
 
@@ -234,6 +249,51 @@ const ONBOARDING: Record<AdvancedTrack, StageFiveOnboarding> = {
         expected: "make test is the single unattended test command. By submission, make build from the empty work directory creates clean.db, results.json, quarantine.csv, and reconciliation.json.",
       },
     ],
+    reportGuide: {
+      purpose:
+        "The report tells a reviewer what you built, how the pipeline reached its conclusions, what the evidence proves, and how to reproduce the work. It must interpret the machine outputs rather than repeat them.",
+      files: [
+        {
+          name: "hunt-investigation-report.pdf",
+          role: "The required human-readable investigation and engineering report for your complete SOC Stage 5 work.",
+        },
+      ],
+      sections: [
+        {
+          title: "Executive result",
+          mustExplain: "State the investigation objective, the main campaign conclusions, the disposition of the 96 assigned reviews, and the most important operational recommendation in language a SOC lead can understand.",
+        },
+        {
+          title: "Environment and reproduction",
+          mustExplain: "State the operating system, Python and DuckDB versions, repository commit, input archive hash, private discrepancy filename, exact make test and make build commands, runtime, and peak memory.",
+        },
+        {
+          title: "Data handling and quality",
+          mustExplain: "Describe each source, schema versions, row accounting, quarantine reasons, duplicate logic, timestamp correction, equal-time ordering, and identity or host alias resolution. Explain why the raw files remained untouched.",
+        },
+        {
+          title: "Hunt method and campaign findings",
+          mustExplain: "For each campaign, explain the hypothesis, correlation method, sequence of activity, at least two independent source locators per decisive edge, confidence, one rejected alternative, and the next collection action.",
+        },
+        {
+          title: "Review-case reconciliation",
+          mustExplain: "Explain the decision rule used for all 96 assigned review IDs, how raw activity was matched to asset, actor, approval, status, and time window, the aggregate outcome, and representative examples linked to tp-fp-table.csv.",
+        },
+        {
+          title: "Testing, limitations, and recommendations",
+          mustExplain: "Summarize public fixture coverage, clean rebuild and determinism results, benchmark results, known limitations, unresolved uncertainty, and concrete detection or collection improvements.",
+        },
+      ],
+      writingRules: [
+        "Write in your own words and describe the work you actually performed. Do not paste terminal output or generated tool text as the explanation.",
+        "Every material claim must point to evidence-index.csv and include an exact raw locator, generated output locator, or query name.",
+        "Use tables and small diagrams when they clarify a timeline, data flow, campaign relationship, or reconciliation rule; screenshots are supporting orientation only.",
+        "Keep secrets and private overlay facts inside the submitted private folder. Do not publish another intern's discrepancy data or your report publicly.",
+        "Ensure every number and verdict in the PDF matches the final CSV, JSON, database, test, and benchmark outputs.",
+      ],
+      finalCheck:
+        "A reviewer who reads the PDF and follows its locators must be able to understand the investigation, find the underlying evidence quickly, and reproduce the results with the submitted commands. There is no supplied report template.",
+    },
     firstMilestone:
       "Stop the setup phase when the archive hash matches, raw files are read-only, all downloads are present, one public AUTH fixture passes through your own adapter, and make test runs that check. Only then load the complete pack.",
   },
@@ -430,6 +490,51 @@ const ONBOARDING: Record<AdvancedTrack, StageFiveOnboarding> = {
         expected: "One allowed request appears in both ledgers, at least one normalized observation points to its raw file, and the OUT endpoint still has zero requests.",
       },
     ],
+    reportGuide: {
+      purpose:
+        "The report explains the authorized attack surface, the recon engine you built, the discovery path your evidence supports, and why the foothold proof is trustworthy and within scope. Scanner output by itself is not the report.",
+      files: [
+        {
+          name: "attack-surface-report.pdf",
+          role: "The required technical report covering the engine, discovered services, validated foothold path, testing, safety, and recommendations.",
+        },
+      ],
+      sections: [
+        {
+          title: "Executive result and authorization",
+          mustExplain: "State the assessment objective, runtime ID, exact authorized boundary, proof limit, high-level result, and the fact that testing stopped after the assigned user.txt foothold.",
+        },
+        {
+          title: "Environment and engine design",
+          mustExplain: "State the operating system and Python version, repository commit, artifact hash, exact commands, CLI interface, module boundaries, normalized schema, request budget, rate handling, timeouts, retries, resume design, and fallback behavior.",
+        },
+        {
+          title: "Scope enforcement and safety proof",
+          mustExplain: "Explain how host, port, CIDR, and budget checks occur before network activity. Reconcile the candidate request ledger with the target ledger and prove the OUT decoy and every non-loopback destination received zero requests.",
+        },
+        {
+          title: "Discovery methodology and attack surface",
+          mustExplain: "Describe the sequence of observations, wildcard or virtual-host baselining, protocol fingerprinting, validation method, discovered services, and why each reported service is real rather than a scanner guess.",
+        },
+        {
+          title: "Foothold evidence chain",
+          mustExplain: "Trace the authorized path from entry observation through the line protocol, route or host evidence, credential discovery, and user.txt retrieval. Cite raw responses, normalized records, and request IDs; refer to foothold-evidence.txt instead of unnecessarily repeating credentials in the narrative.",
+        },
+        {
+          title: "Testing, cleanup, limitations, and recommendations",
+          mustExplain: "Report parser, scope, malformed-input, wildcard, interruption, resume, fallback, deduplication, and empty-result tests; then state cleanup performed, limitations, false leads, and improvements for the next assessment.",
+        },
+      ],
+      writingRules: [
+        "Write a reasoned assessment, not a chronological dump of commands. Explain why each probe or conclusion was necessary.",
+        "Every finding must link to raw-output, normalized.json, request-ledger.csv, and an exact target-ledger locator where applicable.",
+        "Sanitize credentials from explanatory screenshots and prose. Keep required private proof in foothold-evidence.txt inside the restricted submission folder.",
+        "Clearly distinguish observed fact, analyst inference, rejected explanation, and recommendation.",
+        "The PDF, engine output, scope register, ledgers, test results, and foothold evidence must describe the same run and runtime ID.",
+      ],
+      finalCheck:
+        "A reviewer must be able to verify scope compliance, follow the complete evidence chain, understand the engine design, and reproduce the allowed run without guessing. There is no supplied report template.",
+    },
     firstMilestone:
       "Stop the setup phase when the local target is running, you can explain every scope.csv row, rejected destinations produce no packets, the CLI exposes the required interface, and one allowed observation is preserved raw and normalized. Do not chase user.txt until this foundation works.",
   },
@@ -639,6 +744,55 @@ const ONBOARDING: Record<AdvancedTrack, StageFiveOnboarding> = {
         expected: "opa-decisions.json is valid JSON and every decision includes a policy ID, resource locator, allow/deny, violation code, and evidence locator.",
       },
     ],
+    reportGuide: {
+      purpose:
+        "GRC submits two connected PDFs: one explains the evidence, gaps, mapping, and three-control decision; the other states the enforceable policy language. Both must reconcile with the OPA decisions and tests.",
+      files: [
+        {
+          name: "policy-gap-report.pdf",
+          role: "The analytical report explaining the evidence reviewed, gap classification, corrected mapping, exactly three assigned outcomes, deferrals, and implementation decision.",
+        },
+        {
+          name: "policy-addendum.pdf",
+          role: "The concise two-page policy instrument stating enforceable requirements for only the three assigned outcomes.",
+        },
+      ],
+      sections: [
+        {
+          title: "Policy-gap report: executive decision",
+          mustExplain: "State the organisation context, board constraint, exactly three assigned outcomes, overall recommendation, implementation sequence, owners, deadline, and the material risks that are deferred, accepted, transferred, or already reduced.",
+        },
+        {
+          title: "Policy-gap report: evidence and gap analysis",
+          mustExplain: "Classify each issue as policy, implementation, process, or evidence gap. Grade what each artifact proves and does not prove, address the stale MDM screenshot, and separate unsupported assertions from confirmed control failures.",
+        },
+        {
+          title: "Policy-gap report: mapping and stakeholder judgment",
+          mustExplain: "Show the corrected NIST CSF and ISO Annex A identifiers, explain the planted bad mapping, address Engineering and Legal concerns, state legal assumptions and the NDPA source, and avoid reproducing licensed ISO text.",
+        },
+        {
+          title: "Policy-gap report: executable verification",
+          mustExplain: "Explain the input schema, Rego package structure, exception fields, fail-closed behavior, violation codes, public-test coverage, generated compliance result, limitations, and exact reproduction commands.",
+        },
+        {
+          title: "Policy addendum: enforceable clauses",
+          mustExplain: "For each of the three assigned outcomes, state owner, scope, mandatory requirement, trigger, exception request and approval route, expiry, compensating control, enforcement evidence, non-compliance response, and review cadence.",
+        },
+        {
+          title: "Cross-file reconciliation",
+          mustExplain: "Show how each report conclusion and addendum clause maps to a control ID, source evidence, Rego decision, public test, compliance-report.json result, evidence-index locator, and decision-log entry.",
+        },
+      ],
+      writingRules: [
+        "The policy-gap report explains judgment and evidence. The policy addendum states requirements; do not turn the addendum into another analysis report.",
+        "Implement and report exactly the three assigned outcomes. Additional material risks receive an explicit disposition, owner, and review trigger instead of a fourth control.",
+        "Use concise professional language and cite valid framework identifiers and the authoritative NDPA source. Do not copy licensed ISO clauses.",
+        "Label assumptions, insufficient evidence, stakeholder constraints, and legal uncertainty instead of presenting them as proven facts.",
+        "Every written conclusion must match compliance-report.json, control-mapping.csv, decision-log.md, the Rego bundle, and test results.",
+      ],
+      finalCheck:
+        "A board reader must understand why these three outcomes were selected and how they will be enforced; a technical reviewer must be able to trace every claim into OPA and evidence. No report or policy-addendum template is supplied.",
+    },
     firstMilestone:
       "Stop the setup phase when all issued inputs are present and unchanged, the three assigned outcomes are frozen in decision-log.md, OPA and pytest run, one public fixture passes through a generic Rego rule, and a machine-readable decision file can be generated.",
   },

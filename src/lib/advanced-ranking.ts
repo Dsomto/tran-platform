@@ -34,21 +34,21 @@ export const ADVANCED_SELECTION_POLICIES: Record<
     basis: "CURRENT_STAGE_PERCENTILE",
     eliminationRate: 0.2,
     fixedAdvancePerTrack: null,
-    label: "Eliminate the bottom 20% within each track",
+    label: "Remove 20% of the full track cohort, counting non-submitters first",
   },
   STAGE_6: {
     stage: "STAGE_6",
     basis: "CURRENT_STAGE_PERCENTILE",
     eliminationRate: 0.25,
     fixedAdvancePerTrack: null,
-    label: "Eliminate the bottom 25% within each track",
+    label: "Remove 25% of the full track cohort, counting non-submitters first",
   },
   STAGE_7: {
     stage: "STAGE_7",
     basis: "CURRENT_STAGE_PERCENTILE",
     eliminationRate: 0.33,
     fixedAdvancePerTrack: null,
-    label: "Eliminate the bottom 33% within each track",
+    label: "Remove 33% of the full track cohort, counting non-submitters first",
   },
   STAGE_8: {
     stage: "STAGE_8",
@@ -80,6 +80,7 @@ export type AdvancedScoreRecord = {
   track: AdvancedRankingTrack;
   stage: AdvancedRankingStage;
   score: number;
+  cohortSize?: number | null;
   gateFailed?: boolean;
 };
 
@@ -117,13 +118,18 @@ export function advancedSelectionPolicy(stage: AdvancedRankingStage): AdvancedSe
 
 export function advancedAdvanceTarget(
   stage: AdvancedRankingStage,
-  eligibleCount: number
+  eligibleCount: number,
+  cohortCount = eligibleCount
 ): number {
   const policy = advancedSelectionPolicy(stage);
   if (policy.fixedAdvancePerTrack !== null) {
     return Math.min(policy.fixedAdvancePerTrack, eligibleCount);
   }
-  return eligibleCount - Math.floor(eligibleCount * policy.eliminationRate!);
+  const population = Math.max(eligibleCount, cohortCount);
+  return Math.min(
+    eligibleCount,
+    population - Math.ceil(population * policy.eliminationRate!)
+  );
 }
 
 export function percentileFromRank(rank: number, cohortSize: number): number {
@@ -143,7 +149,11 @@ function rankingKey(row: Pick<AdvancedRankedCandidate, "selectionMetric" | "curr
   return [row.selectionMetric?.toFixed(2) ?? "missing", row.currentFinalScore, row.currentReportScore].join(":");
 }
 
-function percentileMap(records: AdvancedScoreRecord[]): Map<string, number> {
+function percentileMap(
+  records: AdvancedScoreRecord[],
+  currentStage: AdvancedRankingStage,
+  cohortSizes: Partial<Record<AdvancedRankingTrack, number>>
+): Map<string, number> {
   const byStageTrack = new Map<string, AdvancedScoreRecord[]>();
   for (const record of records) {
     const key = `${record.stage}:${record.track}`;
@@ -153,14 +163,29 @@ function percentileMap(records: AdvancedScoreRecord[]): Map<string, number> {
   }
 
   const result = new Map<string, number>();
-  for (const rows of byStageTrack.values()) {
+  for (const [key, rows] of byStageTrack.entries()) {
+    const [recordStage, recordTrack] = key.split(":") as [
+      AdvancedRankingStage,
+      AdvancedRankingTrack,
+    ];
+    const recordedCohortSize = Math.max(
+      0,
+      ...rows.map((row) => row.cohortSize ?? 0)
+    );
+    const currentCohortSize =
+      recordStage === currentStage ? cohortSizes[recordTrack] ?? 0 : 0;
+    const cohortSize = Math.max(
+      rows.length,
+      recordedCohortSize,
+      currentCohortSize
+    );
     rows.sort((left, right) => right.score - left.score || left.internId.localeCompare(right.internId));
     let priorScore: number | null = null;
     let rank = 0;
     rows.forEach((row, index) => {
       if (priorScore === null || row.score !== priorScore) rank = index + 1;
       priorScore = row.score;
-      result.set(`${row.stage}:${row.internId}`, percentileFromRank(rank, rows.length));
+      result.set(`${row.stage}:${row.internId}`, percentileFromRank(rank, cohortSize));
     });
   }
   return result;
@@ -169,10 +194,11 @@ function percentileMap(records: AdvancedScoreRecord[]): Map<string, number> {
 export function rankAdvancedStage(
   stage: AdvancedRankingStage,
   candidates: AdvancedRankingCandidate[],
-  scoreRecords: AdvancedScoreRecord[]
+  scoreRecords: AdvancedScoreRecord[],
+  cohortSizes: Partial<Record<AdvancedRankingTrack, number>> = {}
 ): AdvancedTrackRanking[] {
   const policy = advancedSelectionPolicy(stage);
-  const percentiles = percentileMap(scoreRecords);
+  const percentiles = percentileMap(scoreRecords, stage, cohortSizes);
   const includedStages = ADVANCED_RANKING_STAGES.slice(0, stageIndex(stage) + 1);
 
   return TRACKS.map((track) => {
@@ -226,8 +252,12 @@ export function rankAdvancedStage(
           left.internId.localeCompare(right.internId)
       );
 
+    const cohortSize = Math.max(
+      eligibleRows.length,
+      cohortSizes[track] ?? eligibleRows.length
+    );
     rows.forEach((row) => {
-      row.cohortSize = eligibleRows.length;
+      row.cohortSize = cohortSize;
     });
 
     let priorKey: string | null = null;
@@ -239,13 +269,17 @@ export function rankAdvancedStage(
       row.rank = rank;
     });
 
-    const advanceTarget = advancedAdvanceTarget(stage, eligibleRows.length);
+    const advanceTarget = advancedAdvanceTarget(
+      stage,
+      eligibleRows.length,
+      cohortSize
+    );
 
     eligibleRows.forEach((row, index) => {
       row.selected = index < advanceTarget;
       row.selectionReason = row.selected
-        ? `${policy.label}; provisional rank ${row.rank} of ${eligibleRows.length}`
-        : `${policy.label}; provisional rank ${row.rank} of ${eligibleRows.length} falls below the advance boundary`;
+        ? `${policy.label}; provisional rank ${row.rank} of ${cohortSize}`
+        : `${policy.label}; provisional rank ${row.rank} of ${cohortSize} falls below the advance boundary`;
     });
 
     const lastSelected = advanceTarget > 0 ? eligibleRows[advanceTarget - 1] : null;

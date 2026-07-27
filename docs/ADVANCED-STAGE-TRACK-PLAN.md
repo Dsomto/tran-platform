@@ -77,9 +77,9 @@ Five projects per track. **41 calendar days.** Difficulty ramps every project; t
 
 | Window | Project | Days | Difficulty posture | Revision | Gate |
 |---|---|---:|---|---|---|
-| Stage 5 | Project 1 | Mon 09:00–Fri 18:10 WAT | Controlled, evidence-heavy, one clear objective | 1 allowed | Top 80% within track after gates |
-| Stage 6 | Project 2 | Mon 09:00–Fri 18:10 WAT | More artifacts, less guidance, real tooling | 1 allowed | Top 75% within track after gates |
-| Stage 7 | Project 3 | Mon 09:00–Fri 18:10 WAT | Ambiguous, noisy, multi-source, planted false lead | 1 allowed | Top 67% within track after gates |
+| Stage 5 | Project 1 | Mon 09:00–Fri 18:10 WAT | Controlled, evidence-heavy, one clear objective | 1 allowed | Remove 20% of full track cohort, non-submitters first |
+| Stage 6 | Project 2 | Mon 09:00–Fri 18:10 WAT | More artifacts, less guidance, real tooling | 1 allowed | Remove 25% of full track cohort, non-submitters first |
+| Stage 7 | Project 3 | Mon 09:00–Fri 18:10 WAT | Ambiguous, noisy, multi-source, planted false lead | 1 allowed | Remove 33% of full track cohort, non-submitters first |
 | Stage 8 | Project 4 | Mon 09:00–Fri 18:10 WAT | Professional-grade, **no revision**, written defense | None | Top 6 per track by cumulative percentile |
 | Stage 9 | Project 5 | Mon 09:00–Fri 18:10 WAT | Capstone, **no revision**, written + oral defense | None | Top 3 per track by cumulative percentile |
 
@@ -92,9 +92,9 @@ Weekly rhythm per project:
 
 ### Bands, and the winnow to the top 3 per track
 
-Advanced stages have no fixed point pass threshold. The 100-point rubric produces the technical result; explicit automatic fail gates are applied first; every remaining intern is then ranked only against people in the same track.
+Advanced stages have no fixed point pass threshold. The 100-point rubric produces the reviewed technical result, and every scored intern is ranked only against people in the same track. Safety, integrity, and reproduction concerns require an explicit staff review; the ranking engine does not silently remove a scored report.
 
-For a track with more than one eligible intern, percentile is `100 × (cohort size − competition rank) ÷ (cohort size − 1)`. Equal scores receive the same competition rank. Stage 5 eliminates the bottom 20%, Stage 6 the bottom 25% of the remaining cohort, and Stage 7 the bottom 33% of the remaining cohort. The advance count is deterministic: `eligible − floor(eligible × elimination rate)`.
+For a track with more than one cohort member, percentile is `100 × (cohort size − competition rank) ÷ (cohort size − 1)`. Equal scores receive the same competition rank. The cohort denominator includes everyone assigned to that stage in the track, whether or not they submitted. A non-submitter cannot advance and counts first toward the published attrition target. If non-submitters do not reach that target, only the remaining shortfall is taken from the lowest-ranked graded reports. The total elimination target is `ceil(full track cohort × elimination rate)`, and the advance count is capped by the number of valid graded submissions. Stage 5 removes 20%, Stage 6 removes 25%, and Stage 7 removes 33% of their respective full track cohorts.
 
 **The final cuts.** Stage 8 retains the top 6 per track and Stage 9 retains the top 3 per track by cumulative weighted percentile. Completed advanced-stage percentiles are weighted toward the later projects (P1:1× · P2:1× · P3:1.5× · P4:2× · P5:2.5×). An exact boundary tie is resolved by an audited defense or blinded review; the system enforces the exact per-track count before finalization.
 

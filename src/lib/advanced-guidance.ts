@@ -455,7 +455,7 @@ export function advancedLearnerGuidance(
   return {
     ...seed,
     startHere: [
-      "Read the Project brief first, then the Submission contract and Technical assessment contract. Write down the scope boundary and every fail gate.",
+      "Read the Project brief first, then the Submission contract and Technical assessment contract. Write down the scope boundary, acceptance criteria, and review triggers.",
       "Download your private assignment overlay and evidence pack. Confirm the filename, participant binding, manifest signature, and SHA-256 before extraction or analysis.",
       "Run the environment preflight and save its output. Do not begin scored work with an unsupported machine, missing license, unsafe network, or unapproved cost.",
       "Create the exact submission-root structure, copy the supplied templates, add your evidence marker, and make the first clean version-control commit.",
@@ -468,9 +468,9 @@ export function advancedLearnerGuidance(
     },
     passRequirements: [
       "Complete the published 100-point rubric. Your result becomes a within-track percentile; there is no fixed advanced-stage pass mark.",
-      "Submit a runnable implementation that reproduces the scored outputs from a clean supported environment. Reproduction failure invokes the published technical hold or fail rule before ranking.",
+      "Submit a runnable implementation that reproduces the scored outputs from a clean supported environment. Reproduction failure is recorded in the technical score and feedback.",
       "Pass the published acceptance suite and the hidden transfer fixture through the published interface.",
-      "Keep every safety, scope, authorship, and evidence-integrity gate. An automatic fail overrides the numeric score and removes the submission from percentile selection.",
+      "Keep every safety, scope, authorship, and evidence-integrity requirement. Any concern requires documented staff review; the ranking engine does not silently remove a scored report.",
       "Meet this stage's published selection boundary after technical validation, quality assurance, and any audited tie-break review.",
     ],
     revisionRule,

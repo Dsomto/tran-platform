@@ -143,6 +143,7 @@ function ApplyPage() {
       goals: fd.get("goals") as string,
       whyPickYou: fd.get("whyPickYou") as string,
       referralSource: fd.get("referralSource") as string,
+      returningCode: (fd.get("returningCode") as string) || "",
     };
 
     try {
@@ -463,6 +464,26 @@ function ApplyPage() {
                     <option value="Other">Other</option>
                   </select>
                 </div>
+              </div>
+
+              {/* Returning-candidate code — only relevant to past interns who
+                  reached a stage and were eliminated. Optional for everyone else. */}
+              <div className="mb-6">
+                <label htmlFor="returningCode" className={labelClass}>
+                  Returning-candidate code <span className="text-muted-foreground font-normal">(optional)</span>
+                </label>
+                <input
+                  type="text"
+                  id="returningCode"
+                  name="returningCode"
+                  placeholder="e.g. NF-ABCD-2345"
+                  autoCapitalize="characters"
+                  className={inputClass}
+                />
+                <p className="mt-2 text-xs text-muted-foreground">
+                  Were you in a previous cohort and received a returning-candidate code? Enter it here
+                  with the same email address it was issued to, and you&apos;ll be admitted straight away.
+                </p>
               </div>
 
               {/* Error */}

@@ -2,6 +2,7 @@ import {
   AlertTriangle,
   CheckCircle2,
   Download,
+  FileText,
   Laptop,
   ListChecks,
   TerminalSquare,
@@ -141,6 +142,49 @@ export function AdvancedStageFiveOnboarding({ track, trackLabel }: Props) {
             </li>
           ))}
         </ol>
+      </div>
+
+      <div className="advanced-stage5-guide__report" id="stage-five-report">
+        <header>
+          <FileText aria-hidden="true" />
+          <div>
+            <div className="advanced-eyebrow">Required written deliverable</div>
+            <h3>How to write your report</h3>
+            <p>{guide.reportGuide.purpose}</p>
+          </div>
+        </header>
+
+        <div className="advanced-stage5-guide__report-files">
+          {guide.reportGuide.files.map((file) => (
+            <div key={file.name}>
+              <code>{file.name}</code>
+              <p>{file.role}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="advanced-stage5-guide__report-body">
+          <section aria-labelledby="report-content-title">
+            <h4 id="report-content-title">What the report must explain</h4>
+            <ol>
+              {guide.reportGuide.sections.map((reportSection) => (
+                <li key={reportSection.title}>
+                  <strong>{reportSection.title}</strong>
+                  <p>{reportSection.mustExplain}</p>
+                </li>
+              ))}
+            </ol>
+          </section>
+          <aside>
+            <h4>Writing and evidence rules</h4>
+            <ul>{guide.reportGuide.writingRules.map((rule) => <li key={rule}>{rule}</li>)}</ul>
+          </aside>
+        </div>
+
+        <div className="advanced-stage5-guide__report-check">
+          <CheckCircle2 aria-hidden="true" />
+          <p><strong>Final report check:</strong> {guide.reportGuide.finalCheck}</p>
+        </div>
       </div>
 
       <div className="advanced-stage5-guide__milestone">

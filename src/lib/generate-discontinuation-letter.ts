@@ -94,9 +94,11 @@ export function generateDiscontinuationLetter(opts: {
 
     para(
       `Following the assessment of your ${stageLabel} capstone submission for Cohort 1 of the ` +
-        `Ubuntu Bridge Initiative Cybersecurity Internship, we are writing to inform you that you ` +
-        `did not meet the passing threshold for this stage. Your recorded score was ${score} out ` +
-        `of 100, against a passing mark of ${passingScore}.`
+        `Ubuntu Bridge Initiative Cybersecurity Internship, we are writing to confirm your ` +
+        `participation in this stage. After the full review and within-track ranking, your work ` +
+        `did not fall inside this stage's advance boundary, so your place in Cohort 1 concludes here. ` +
+        `This is a decision about one stage of a demanding programme — not a mark against the effort ` +
+        `you invested or the work you produced.`
     );
 
     para(

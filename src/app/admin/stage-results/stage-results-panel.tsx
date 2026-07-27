@@ -27,6 +27,7 @@ interface Summary {
 interface PendingRow {
   reportId: string;
   internId: string;
+  isNonSubmitter: boolean;
   fullName: string;
   email: string;
   reportScore: number;
@@ -217,7 +218,15 @@ export function StageResultsPanel() {
       const data = await post({ action: "apply-percentile", stage });
       if (data) {
         const tracks = Array.isArray(data.tracks)
-          ? (data.tracks as Array<{ track: string; advanceTarget: number }>).map((row) => `${row.track}: ${row.advanceTarget}`).join(" · ")
+          ? (data.tracks as Array<{
+              track: string;
+              cohortSize: number;
+              nonSubmitters: number;
+              advanceTarget: number;
+            }>).map(
+              (row) =>
+                `${row.track}: advance ${row.advanceTarget} of ${row.cohortSize} (${row.nonSubmitters} non-submitter${row.nonSubmitters === 1 ? "" : "s"})`
+            ).join(" · ")
           : "";
         setResult(
           `${data.policy}. ${data.pendingPromotion} pending promotion, ${data.pendingElimination} pending elimination. ${tracks}${data.boundaryReviewRequired ? " Boundary tie detected: resolve it with an audited swap." : ""}`
@@ -252,7 +261,7 @@ export function StageResultsPanel() {
     const msg =
       `Finalize Stage ${stage.replace("STAGE_", "")}?\n\n` +
       `${pending.promotion.length} will be PROMOTED (advanced + congratulations email + certificate).\n` +
-      `${pending.elimination.length} will be ELIMINATED (removed from the programme + result email).\n\n` +
+          `${pending.elimination.length} will be ELIMINATED, including non-submitters (removed from the programme + result email).\n\n` +
       (isAdvanced
         ? "The API will enforce exact per-track percentile targets and QA verification.\n\n"
         : "") +
@@ -265,7 +274,7 @@ export function StageResultsPanel() {
       const data = await post({ action: "finalize", stage });
       if (data) {
         setResult(
-          `Finalized. ${data.promoted} promoted, ${data.eliminated} eliminated. Emails queued.`
+          `Finalized. ${data.promoted} promoted, ${data.eliminated} scored submissions eliminated, ${data.nonSubmittersEliminated ?? 0} non-submitters eliminated. Emails queued.`
         );
         await loadSummary(stage);
       }
@@ -445,10 +454,13 @@ export function StageResultsPanel() {
                     </h2>
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    Stage 5 removes the bottom 20% per track, Stage 6 the bottom 25%, and Stage 7
-                    the bottom 33%. Stage 8 advances six per track and Stage 9 selects three per
-                    track using cumulative weighted percentiles. Exact boundary ties require an
-                    audited defense or blinded-review swap.
+                    Each percentage is measured against the full cohort that entered that stage in
+                    that track. Non-submitters are removed first and count toward the target; only
+                    a remaining shortfall is filled from the lowest-ranked graded reports. Stage 5
+                    removes 20%, Stage 6 removes 25%, and Stage 7 removes 33%. Stage 8 advances six
+                    per track and Stage 9 selects three per track using cumulative weighted
+                    percentiles. Exact boundary ties require an audited defense or blinded-review
+                    swap.
                   </p>
                   <p className="mt-3 text-xs font-medium text-foreground">
                     {pending
@@ -484,7 +496,7 @@ export function StageResultsPanel() {
                     {pending
                       ? "Recalculate percentile ranking"
                       : stage === "STAGE_5"
-                        ? "Apply bottom 20%"
+                        ? "Apply 20% track attrition"
                         : "Apply percentile ranking"}
                   </button>
                 </div>
@@ -631,6 +643,7 @@ export function StageResultsPanel() {
             </>
           )}
 
+          {!isAdvanced && (
           <section className="mt-6 bg-white border border-amber-200 rounded-xl p-5">
             <h2 className="text-sm font-semibold text-amber-900 mb-2 uppercase tracking-wide">
               Process non-submitters
@@ -638,8 +651,9 @@ export function StageResultsPanel() {
             <p className="text-sm text-muted-foreground mb-4 max-w-2xl">
               Every active intern still on Stage {stage.replace("STAGE_", "")} who never submitted
               a capstone gets the soft &ldquo;did not submit&rdquo; email and their account is
-              deactivated. Safe to run after Finalize — it only touches interns who don&apos;t
-              have a report row at all. Re-running skips anyone already emailed.
+              deactivated. For advanced stages, complete this required step before finalizing the
+              graded review buckets. These removals already count toward the track&apos;s published
+              attrition target. Re-running skips anyone already emailed.
             </p>
             <button
               onClick={finalizeNonSubmitters}
@@ -650,6 +664,7 @@ export function StageResultsPanel() {
               Process non-submitters
             </button>
           </section>
+          )}
 
           {finalized && (
             <section className="mt-6 bg-white border border-rose-200 rounded-xl p-5">

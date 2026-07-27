@@ -153,9 +153,9 @@ export function generatePassLetter(opts: {
     }
 
     para(
-      `Your capstone and write-ups were assessed against the programme rubric and scored ` +
-        `${score} out of 100, against a pass mark of ${passingScore}. Your reviewer's notes ` +
-        `are on your dashboard. Read them closely, because the next desk assumes you already have.`
+      `Your capstone and write-ups were assessed against the programme rubric and met the standard ` +
+        `for this stage. Your reviewer's notes are on your dashboard. Read them closely, because ` +
+        `the next desk assumes you already have.`
     );
 
     if (nextStageLabel) {
