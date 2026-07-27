@@ -137,3 +137,23 @@ test("Stage 9 advances three and surfaces an exact boundary tie", () => {
   assert.equal(result.boundaryTie, true);
   assert.deepEqual(result.boundaryReportIds.sort(), ["report-3", "report-4"]);
 });
+
+test("keep-both-on-tie: candidates tied at the advance boundary are both kept", () => {
+  const rows = candidates(5);
+  // report-3 and report-4 tie at 90 straddling the top-3 boundary; report-5 alone at 80.
+  rows[2].currentFinalScore = 90;
+  rows[2].currentReportScore = 90;
+  rows[3].currentFinalScore = 90;
+  rows[3].currentReportScore = 90;
+  rows[4].currentFinalScore = 80;
+  rows[4].currentReportScore = 80;
+  const history = (["STAGE_5", "STAGE_6", "STAGE_7", "STAGE_8", "STAGE_9"] as const).flatMap((stage) =>
+    records(stage, rows)
+  );
+  const result = rankAdvancedStage("STAGE_9", rows, history)[0];
+  const selected = result.rows.filter((row) => row.selected).map((row) => row.reportId).sort();
+  // Nominal target is 3, but the boundary tie is not split — both tied reports
+  // are kept, so 4 advance and only the lone lower score (report-5) is removed.
+  assert.deepEqual(selected, ["report-1", "report-2", "report-3", "report-4"]);
+  assert.equal(result.rows.find((row) => row.reportId === "report-5")?.selected, false);
+});

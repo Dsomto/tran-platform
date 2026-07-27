@@ -1375,10 +1375,13 @@ async function handleFinalize(
         cohortCount
       );
       const actual = rows.filter((report) => report.status === "PENDING_PROMOTION").length;
-      if (actual !== expected) {
+      // Keep-both-on-tie: advancing MORE than the nominal target is allowed when
+      // the surplus comes from candidates tied at the boundary score (we never
+      // split equal scores). Advancing FEWER than the target is still an error.
+      if (actual < expected) {
         return Response.json(
           {
-            error: `${track} must have exactly ${expected} pending promotion${expected === 1 ? "" : "s"}; found ${actual}. Resolve boundary ties with audited swaps before finalizing.`,
+            error: `${track} has only ${actual} pending promotion${actual === 1 ? "" : "s"} but the advance target is ${expected}. Too few are set to advance — re-apply ranking before finalizing.`,
           },
           { status: 409 }
         );

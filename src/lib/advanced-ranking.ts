@@ -275,13 +275,11 @@ export function rankAdvancedStage(
       cohortSize
     );
 
-    eligibleRows.forEach((row, index) => {
-      row.selected = index < advanceTarget;
-      row.selectionReason = row.selected
-        ? `${policy.label}; provisional rank ${row.rank} of ${cohortSize}`
-        : `${policy.label}; provisional rank ${row.rank} of ${cohortSize} falls below the advance boundary`;
-    });
-
+    // Keep-both-on-tie: if the advance boundary falls in the middle of a group
+    // of candidates with the same ranking key, we do NOT split equal scores
+    // arbitrarily. Everyone tied at the boundary score is kept (advanced), which
+    // removes FEWER than the nominal target rather than dropping one of two
+    // identical results. Determined before selection so the tie group is kept.
     const lastSelected = advanceTarget > 0 ? eligibleRows[advanceTarget - 1] : null;
     const firstReserve = advanceTarget < eligibleRows.length ? eligibleRows[advanceTarget] : null;
     const boundaryTie = Boolean(
@@ -291,6 +289,16 @@ export function rankAdvancedStage(
     const boundaryReportIds = boundaryKey
       ? eligibleRows.filter((row) => rankingKey(row) === boundaryKey).map((row) => row.reportId)
       : [];
+
+    eligibleRows.forEach((row, index) => {
+      const keptByTie = boundaryKey !== null && rankingKey(row) === boundaryKey;
+      row.selected = index < advanceTarget || keptByTie;
+      row.selectionReason = !row.selected
+        ? `${policy.label}; provisional rank ${row.rank} of ${cohortSize} falls below the advance boundary`
+        : keptByTie && index >= advanceTarget
+          ? `${policy.label}; tied at the advance boundary (rank ${row.rank} of ${cohortSize}) — kept under keep-both-on-tie`
+          : `${policy.label}; provisional rank ${row.rank} of ${cohortSize}`;
+    });
 
     return {
       track,
