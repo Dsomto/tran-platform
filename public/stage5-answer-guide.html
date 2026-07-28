@@ -1,0 +1,767 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Stage 5 Answer Guide and Lab Walkthrough, Ubuntu Bridge Initiative</title>
+<style>
+  :root{ --ink:#0B1220; --body:#1E293B; --soft:#475569; --muted:#64748B; --line:#D8DEE9;
+    --code:#0E1726; --codeink:#E2E8F0; --soc:#1D4ED8; --socsoft:#EFF4FF; --eh:#0F766E; --ehsoft:#ECFDF5; --grc:#B45309; --grcsoft:#FFF7ED;
+    --ok:#15803D; --oksoft:#F0FDF4; --bad:#B91C1C; --badsoft:#FEF2F2; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:#fff; color:var(--body); font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,Helvetica,Arial,sans-serif; font-size:14px; line-height:1.55; }
+  .page{ max-width:900px; margin:0 auto; padding:0 36px 40px; }
+  .cover{ padding:60px 36px 34px; border-bottom:4px solid var(--ink); }
+  .cover .kick{ font-size:11px; letter-spacing:0.2em; text-transform:uppercase; color:var(--soc); font-weight:800; }
+  .cover h1{ font-size:30px; font-weight:800; margin:10px 0 6px; color:var(--ink); letter-spacing:-0.01em; }
+  .cover .sub{ color:var(--muted); font-size:14px; max-width:660px; }
+  .toc{ background:#F8FAFC; border:1px solid var(--line); border-radius:10px; padding:16px 22px; margin:24px 0; }
+  .toc h4{ margin:0 0 8px; text-transform:uppercase; font-size:11px; letter-spacing:0.08em; color:var(--muted); }
+  .toc ol{ margin:0; padding-left:20px; } .toc li{ margin:3px 0; }
+  h2{ font-size:20px; color:var(--ink); margin:34px 0 8px; padding:8px 0 6px; border-bottom:2px solid var(--ink); }
+  h3{ font-size:16px; margin:20px 0 4px; color:var(--ink); } h3 .n{ font-weight:800; margin-right:7px; }
+  h4{ font-size:12px; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted); margin:14px 0 4px; }
+  .soc h2{ border-color:var(--soc);} .eh h2{ border-color:var(--eh);} .grc h2{ border-color:var(--grc);}
+  .banner{ padding:10px 16px; border-radius:8px; font-weight:800; font-size:13px; letter-spacing:0.14em; text-transform:uppercase; color:#fff; margin:38px 0 0; }
+  .soc .banner{ background:var(--soc);} .eh .banner{ background:var(--eh);} .grc .banner{ background:var(--grc);}
+  p{ margin:6px 0; } ul,ol{ margin:6px 0; padding-left:22px; } li{ margin:3px 0; }
+  table{ border-collapse:collapse; width:100%; margin:10px 0; font-size:13px; }
+  th,td{ border:1px solid var(--line); padding:6px 10px; text-align:left; vertical-align:top; }
+  th{ background:#F1F5F9; font-size:11px; text-transform:uppercase; letter-spacing:0.04em; color:var(--soft); }
+  code{ font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:12.5px; background:#EDF1F7; padding:1px 5px; border-radius:4px; color:#0B1220; }
+  pre{ background:var(--code); color:var(--codeink); border-radius:8px; padding:13px 15px; overflow-x:auto; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:12.2px; line-height:1.5; margin:10px 0; }
+  pre .m{ color:#94A3B8; } pre .g{ color:#7DD3A8; } pre .c{ color:#7DA9F0; }
+  .box{ border:1px solid var(--line); border-left:4px solid var(--soft); background:#F8FAFC; border-radius:0 8px 8px 0; padding:11px 15px; margin:11px 0; }
+  .box h4{ margin-top:0; }
+  .answer{ border-left-color:var(--ok); background:var(--oksoft); } .answer h4{ color:var(--ok); }
+  .miss{ border-left-color:var(--bad); background:var(--badsoft); } .miss h4{ color:var(--bad); }
+  .checklist{ list-style:none; padding-left:0; } .checklist li{ padding-left:24px; position:relative; }
+  .checklist li:before{ content:"\2713"; position:absolute; left:0; color:var(--ok); font-weight:800; }
+  .note{ border:1px solid #FDE68A; background:#FFFBEB; border-radius:10px; padding:14px 18px; margin:18px 0; color:#78350F; font-size:13.5px; }
+  .foot{ margin-top:36px; padding-top:14px; border-top:1px solid var(--line); color:var(--muted); font-size:12px; }
+  @media print{ body{ font-size:11px; } .page,.cover{ max-width:none; padding-left:0; padding-right:0; } pre{ font-size:10px; } h2{ page-break-after:avoid; } .box,pre,table{ page-break-inside:avoid; } .banner{ page-break-before:always; } a{color:inherit; text-decoration:none;} }
+</style>
+</head>
+<body>
+<div class="cover">
+  <div class="kick">Ubuntu Bridge Initiative · Cybersecurity Internship · Stage 5</div>
+  <h1>Answer Guide and Lab Walkthrough</h1>
+  <div class="sub">The full model answer for the Stage 5 capstone across all three tracks. Written so you can learn from it: what each task required, where people most often went wrong, the correct findings, and a step-by-step path you can run yourself.</div>
+</div>
+<div class="page">
+  <div class="toc">
+    <h4>Contents</h4>
+    <ol>
+      <li>How to use this guide</li>
+      <li>SOC Analysis (blue team)</li>
+      <li>Ethical Hacking (red team)</li>
+      <li>Governance, Risk and Compliance</li>
+    </ol>
+  </div>
+
+  <div class="note">
+    <b>A note on the answer key.</b> The full staff answer key is confidential and cannot be shared. This document is a refurbished, candidate-facing version of it, rewritten so you can learn the model answer. It deliberately contains no live flags, no per-person markers, and no unreleased private fixture values. The illustrative examples in it are fictional and are there to teach the method, not to hand over answers.
+  </div>
+
+  <h3>How to use this guide</h3>
+  <p>Find your track. Read the whole section once to see the shape of a strong answer, then read it a second time next to your own submission and your reviewer notes (on your dashboard). The goal is not just to see the right answer, but to see exactly where your version and the model answer part ways, and what you would change to close that gap.</p>
+  <p>One theme ran through every track. Your score measured what your delivered files actually proved, not how much you wrote or how polished it looked. The people who ran their work and delivered the concrete outputs and findings scored well. Building or describing the approach without producing the results did not, however good the write-up. Keep that in mind as you read.</p>
+
+<div class="soc">
+<div class="banner">Track 1 · SOC Analysis</div>
+<h2>SOC Analysis: turning raw logs into proven incidents</h2>
+<p>You worked a live-style incident as a blue-team analyst. Five raw log sources landed on your desk, each arriving in three different formats, riddled with a few deliberately broken rows and one source whose clock was wrong. Your job was to build one trustworthy timeline out of all of it, prove three planted attack campaigns from that timeline, and correctly judge 96 flagged activities as either routine or worth escalating. This section walks through exactly what a strong answer looked like, where most people lost marks, and a lab you can rerun end to end.</p>
+<p>Read it once for the shape of the whole thing, then read it a second time with your own submission open beside it. The single most useful question you can ask is: <b>for every claim I made, did a delivered file actually prove it?</b> That is the question the rubric asks, and it is the one that separated the strong submissions from the polished-but-empty ones.</p>
+
+<h3><span class="n">1.1</span>How it was scored, and what separated high from low</h3>
+<table>
+  <tr><th>Criterion</th><th>Max</th><th>What earned the marks</th></tr>
+  <tr><td>Pipeline and data quality</td><td>20</td><td>A runnable normalizer over five sources and three schema versions each, with quarantine, the clock fix, alias resolution, dedup with provenance, reconciliation, and deterministic output.</td></tr>
+  <tr><td>Campaign accuracy</td><td>30</td><td>All three campaigns reconstructed as ordered chains, each edge backed by two independent raw sources, not by keyword search.</td></tr>
+  <tr><td>Evidence and correlation</td><td>25</td><td>All 96 review candidates itemised, each with a structured verdict tied to a real evidence locator.</td></tr>
+  <tr><td>False-positive restraint</td><td>15</td><td>Separating the 80 benign from the 16 escalated without over-escalating routine, approved work.</td></tr>
+  <tr><td>Communication and reproducibility</td><td>10</td><td>A README, manifest, integrity attestation, and a build another analyst can rerun to the same result.</td></tr>
+</table>
+<p><b>Pipeline and data quality (20).</b> The dividing line here was runnable versus described. High answers shipped a normalizer you could execute against the pack and watch produce the outputs. Low answers described the pipeline in prose, or shipped code that did not run as delivered. The examiner did not award these points for a report that merely listed the eleven behaviours (below). The proof lived in the generated database, the reconciliation file, and a second clean run, not in the write-up.</p>
+<p><b>Campaign accuracy (30), the largest single block.</b> The gap between high and low was whether each link in a campaign was proven from two independent raw sources or asserted from one keyword hit. A submission that found the sprayed IP and stopped scored far below one that walked the ordered chain (many failures over time, then a success on the sprayed account, then the follow-on action) with each step backed by a distinct source. Three generic SQL queries earned very little here, however clean the SQL.</p>
+<p><b>Evidence and correlation (25).</b> This measured whether all 96 review candidates were actually adjudicated, each to a real locator, rather than summarised. Writing the aggregate "80 and 16" in prose scored near the bottom of this band. Itemising every unique <code>REVIEW-####</code> id with a structured verdict and a pointer to the evidence scored at the top.</p>
+<p><b>False-positive restraint (15).</b> This rewarded judgment. Escalating everything to look thorough is easy and wrong. The strong answers correctly left the 80 approved, in-window, change-covered activities as benign and escalated only the 16 that genuinely broke a check. Over-escalation and under-escalation both cost marks here.</p>
+<p><b>Communication and reproducibility (10).</b> The smallest block, but it is where a good submission proved it was trustworthy. A reviewer who could take your README, run your build, and land on the same hashes gave full marks. A submission with no manifest, no attestation, or a build that only ran on the author's laptop lost them.</p>
+
+<h3><span class="n">1.2</span>The data model: five sources, three schemas each</h3>
+<p>You received five raw sources. Each source shipped in three schema versions, because in real life log formats drift as tools get upgraded, and a normalizer has to survive that drift. Every version of a source had to normalize to one canonical event contract, so that downstream correlation never had to care which format a row originally came in.</p>
+<table>
+  <tr><th>Source</th><th>Schema versions</th><th>Normalizes to</th></tr>
+  <tr><td>Authentication</td><td>AUTH-V1, AUTH-V2, AUTH-V3</td><td>One canonical auth event (actor, source IP, host, outcome, UTC time)</td></tr>
+  <tr><td>Web</td><td>WEB-V1, WEB-V2, WEB-V3</td><td><code>web_request</code> (client IP, request id, host, bytes, UTC time)</td></tr>
+  <tr><td>DNS</td><td>DNS-V1, DNS-V2, DNS-V3</td><td><code>dns_query</code> (client, query name, response, UTC time)</td></tr>
+  <tr><td>Firewall</td><td>FIREWALL-V1, FIREWALL-V2, FIREWALL-V3</td><td><code>network_deny</code> (source, destination, port, action, UTC time)</td></tr>
+  <tr><td>Endpoint</td><td>ENDPOINT-V1, ENDPOINT-V2, ENDPOINT-V3</td><td>One canonical endpoint event (host, actor, process or file, device, UTC time)</td></tr>
+</table>
+<p>The point of three versions is that a field can move, get renamed, or change type between versions, but the meaning is stable. Your adapter for AUTH-V1 and your adapter for AUTH-V3 read different-looking rows and emit the same canonical shape. Correlation then joins on canonical fields (actor, IP, host, object, time) and never has to branch on format again. Here is a small, clearly fictional illustration of two auth rows arriving in two different schema versions and normalizing to the same event.</p>
+<div class="box"><h4>One event, two schemas, one canonical result (illustrative)</h4>
+<pre><span class="c">// AUTH-V1 raw row (flat, epoch seconds, verb "result")</span>
+{ <span class="c">"u"</span>: <span class="g">"amina@example.invalid"</span>, <span class="c">"src"</span>: <span class="g">"198.51.100.124"</span>,
+  <span class="c">"host"</span>: <span class="g">"amina-ad4"</span>, <span class="c">"result"</span>: <span class="g">"fail"</span>, <span class="c">"ts"</span>: <span class="g">1752393600</span> }
+
+<span class="c">// AUTH-V3 raw row (nested, ISO time, verb "status")</span>
+{ <span class="c">"actor"</span>: { <span class="c">"name"</span>: <span class="g">"EXAMPLE\\amina"</span> },
+  <span class="c">"network"</span>: { <span class="c">"source_ip"</span>: <span class="g">"198.51.100.124"</span> },
+  <span class="c">"asset"</span>: <span class="g">"amina-ad4"</span>, <span class="c">"status"</span>: <span class="g">"failure"</span>,
+  <span class="c">"time"</span>: <span class="g">"2026-07-13T08:00:00Z"</span> }
+
+<span class="g">// BOTH normalize to the same canonical auth event:</span>
+{ <span class="c">"actor"</span>: <span class="g">"amina"</span>, <span class="c">"source_ip"</span>: <span class="g">"198.51.100.124"</span>,
+  <span class="c">"host"</span>: <span class="g">"amina-ad4"</span>, <span class="c">"outcome"</span>: <span class="g">"fail"</span>,
+  <span class="c">"ts_utc"</span>: <span class="g">"2026-07-13T08:00:00Z"</span>,
+  <span class="c">"source_file"</span>: <span class="g">"auth-v1.log"</span>, <span class="c">"row"</span>: <span class="g">42</span> }</pre>
+Notice three things the normalizer had to do even in this tiny example: reconcile two different actor spellings to <code>amina</code>, map two different outcome verbs (<code>fail</code> and <code>failure</code>) to one canonical value, and carry the original file and row number so any downstream claim can be traced back. That last part, provenance, is what makes an evidence locator possible later.</div>
+
+<h3><span class="n">1.3</span>The eleven normalizer behaviours, and why each one matters</h3>
+<p>A correct normalizer showed eleven distinct behaviours. Each one exists for a reason, and skipping any of them quietly corrupts the timeline or the reconciliation. Work through these with your own code open.</p>
+<ol>
+  <li><b>Parse all three schema versions per source through explicit adapters (or equivalent typed logic).</b> Why it matters: if you only handle the version you happened to open first, rows in the other two versions are silently dropped, and dropped rows mean missing edges in a campaign.</li>
+  <li><b>Preserve source filename and row locator on every event.</b> Why it matters: an evidence locator is not optional decoration. It is the difference between "trust me, there was a login" and "auth-v2.log line 118." Every one of your 96 verdicts and every campaign edge depends on this.</li>
+  <li><b>Quarantine malformed JSON as <code>invalid_json</code>.</b> Why it matters: a broken row must not crash the run and must not be silently discarded. It goes to quarantine with a reason so the counts still reconcile.</li>
+  <li><b>Quarantine a row with no usable timestamp as <code>missing_time</code>.</b> Why it matters: an event with no time cannot be placed on a timeline or correlated across sources, so it is set aside with a named reason rather than guessed at.</li>
+  <li><b>Detect unsupported schema variants instead of dropping them silently.</b> Why it matters: if a fourth, unknown format appears, the safe behaviour is to flag it, not to pretend it parsed. Silent loss here is invisible and dangerous.</li>
+  <li><b>Apply the endpoint clock correction of minus 3,900 seconds.</b> Why it matters: this is the trap that broke the most timelines. See the worked example below.</li>
+  <li><b>Resolve identity aliases to one canonical identity.</b> Why it matters: <code>amina@example.invalid</code> and <code>EXAMPLE\amina</code> are the same person as <code>amina</code>. If you treat them as three actors, the spray-then-success chain never joins up.</li>
+  <li><b>Remove or account for duplicates without losing provenance.</b> Why it matters: the same event can appear in two feeds. You dedup to one canonical event, but you keep a record of both origins so counts still reconcile and so you can cite either source.</li>
+  <li><b>Keep stable ordering for equal timestamps.</b> Why it matters: when two events share a timestamp, a deterministic tiebreak (for example by source file then row) means two runs produce the same ordered timeline, which is what makes hashes match.</li>
+  <li><b>Reconcile accepted, quarantined, and duplicate counts to the source manifest.</b> Why it matters: this is your proof that nothing was lost. See the reconciliation identity below.</li>
+  <li><b>Produce identical output hashes across two clean runs.</b> Why it matters: determinism is how a reviewer confirms your result is real and not accidental. Non-deterministic output (unstable ordering, unsorted maps, timestamps of the run itself) fails this.</li>
+</ol>
+<div class="box"><h4>Worked micro-example: the endpoint clock fix</h4>The endpoint source ran 65 minutes fast, which is 3,900 seconds. Every endpoint event needs minus 3,900 seconds applied before it joins the timeline.
+<pre><span class="m"># before correction (endpoint clock is 65 minutes fast)</span>
+endpoint event stamped  2026-07-13T09:05:00Z
+<span class="m"># apply the correction: minus 3900 seconds</span>
+09:05:00Z  -  3900s  =  08:00:00Z
+<span class="g"># after correction</span>
+endpoint true event time   2026-07-13T08:00:00Z</pre>
+Why this matters so much: the campaigns cross from web or auth into endpoint activity. If your endpoint events sit an hour late, the endpoint step of a campaign lands after the DNS or web step it was supposed to follow, the ordered chain breaks, and the correlation looks like noise. Miss this one correction and two of the three campaigns quietly fall apart even though every other behaviour is perfect.</div>
+<div class="box"><h4>Worked micro-example: quarantine, not silent loss</h4>
+<pre><span class="c">// a row that is not valid JSON at all</span>
+{ "actor": "svc-backup", "outcome": "ok",   <span class="m">&lt;- trailing comma, unterminated</span>
+<span class="g">// -&gt; quarantine.csv: reason=invalid_json, source_file=..., row=...</span>
+
+<span class="c">// a row that parses but has no usable time</span>
+{ "actor": "amina", "source_ip": "198.51.100.124", "host": "amina-ad4" }
+<span class="g">// -&gt; quarantine.csv: reason=missing_time, source_file=..., row=...</span></pre>
+Both rows leave the accepted stream, but neither vanishes. Each lands in <code>quarantine.csv</code> with a named reason and its locator, which is exactly what lets the reconciliation add back up.</div>
+<div class="box"><h4>Worked micro-example: alias resolution and dedup with provenance</h4>
+<pre><span class="m"># three spellings, one person</span>
+amina@example.invalid  -&gt;  amina
+EXAMPLE\amina          -&gt;  amina
+amina                  -&gt;  amina
+
+<span class="m"># same event seen in two feeds -&gt; one canonical event, both origins kept</span>
+firewall-v2.log:301   network_deny 203.0.113.92 -&gt; ...
+firewall-v3.log:067   network_deny 203.0.113.92 -&gt; ...  <span class="m">(duplicate)</span>
+<span class="g"># canonical event keeps provenance: origins=[firewall-v2.log:301, firewall-v3.log:067]</span>
+<span class="g"># counted once as accepted, once as duplicate, so reconciliation still balances</span></pre></div>
+<div class="box"><h4>The reconciliation identity, and determinism</h4>Your <code>reconciliation.json</code> had to satisfy, for every source, one simple equation:
+<pre><span class="g">accepted  +  quarantined  +  duplicates  ==  manifest row count</span></pre>
+If that does not hold, a row was lost or double-counted somewhere, and the timeline cannot be trusted. Determinism is the twin of this: run the clean build twice and the normalized-timeline hash and the results hash must be identical. If they drift between runs, something in your pipeline is non-deterministic (usually unstable sort order or a map iterated without sorting), and a reviewer cannot reproduce you.</div>
+
+<h3><span class="n">1.4</span>The four required machine outputs (plus timeline and graph)</h3>
+<p>A contract-complete clean build produced four machine outputs, plus the normalized timeline and the campaign graph, plus the human artifacts. If any of these were missing or empty, the pipeline marks simply could not be earned, because there was nothing to inspect.</p>
+<table>
+  <tr><th>Output</th><th>What it contains</th></tr>
+  <tr><td><code>clean.db</code></td><td>The normalized store: every accepted canonical event across all five sources and all three schema versions, each carrying its source file, row locator, corrected UTC time, and resolved identity. This is the single source of truth every later query runs against.</td></tr>
+  <tr><td><code>results.json</code></td><td>The structured findings: the three reconstructed campaigns and the 96 review verdicts, in machine-readable form, each tied to evidence locators.</td></tr>
+  <tr><td><code>quarantine.csv</code></td><td>Every rejected row with its reason (<code>invalid_json</code>, <code>missing_time</code>, unsupported variant) and its source file and row locator. This is your honesty record: nothing dropped without a name.</td></tr>
+  <tr><td><code>reconciliation.json</code></td><td>Per-source counts proving <code>accepted + quarantined + duplicates == manifest</code>, so a reviewer can confirm no data was lost or invented.</td></tr>
+</table>
+<p><b>The normalized timeline</b> is the ordered, UTC, deterministic sequence of all accepted events, with stable tiebreaks for equal timestamps. It is what you query for each campaign pivot. <b>The campaign graph</b> (or an equivalent structured campaign result) expresses each campaign as nodes (actors, hosts, IPs, objects) and ordered edges, where each edge points to the two independent raw locators that prove it. Alongside these, a complete submission also delivered all 96 verdicts, a test result and repeatability evidence, and a README, manifest, integrity attestation, and continuity record. Equivalent filenames were fine as long as the schema and purpose were unambiguous.</p>
+
+<h3><span class="n">1.5</span>The three campaigns, in full</h3>
+<p>This is where the most marks lived and where the clearest advice applies: a campaign is a <b>story with an ordered chain of evidence</b>, not a list of matching keywords. For every campaign you needed ordered UTC events; actor, host, IP, and object reconciled to canonical values; two independent raw locators for every claimed edge; one rejected alternative; a confidence level; and one concrete next collection action. An edge proven from a single source, or a campaign asserted from one keyword hit, did not count.</p>
+
+<div class="box answer"><h4>Campaign 1 · slow spray and compromise</h4>
+<b>The story.</b> An attacker at <code>198.51.100.124</code> ran a low-and-slow password spray against the <code>amina-ad4</code> host and the <code>amina</code> identity: many failed logins spread out over time to stay under alerting thresholds, then eventually one success, then a follow-on action using that access.
+<br><br><b>The exact pivots.</b> Source IP <code>198.51.100.124</code>; target identity <code>amina</code> (remember the alias resolution) on host <code>amina-ad4</code>; a spray or low-and-slow failure pattern; then a successful authentication; then a consequence of that access.
+<br><br><b>The ordered chain that proves it.</b>
+<pre><span class="m"># all times UTC, from the normalized timeline</span>
+1. many auth <span class="g">fail</span> events, actor=amina, host=amina-ad4,
+   src=198.51.100.124, spread over time    <span class="c">[auth source]</span>
+2. one auth <span class="g">success</span>, same actor/host/src           <span class="c">[auth source]</span>
+3. follow-on activity from that access
+   (session / endpoint / network action)   <span class="c">[second source]</span></pre>
+The mark was for proving the <b>sequence ending in success and follow-on</b>, not for counting failures. Repeated failures alone are a spray attempt; they are not a compromise.
+<br><br><b>One edge proven from two independent sources (worked).</b> Take the compromise edge, the claim "the spray succeeded and was used." Prove it from two sources that do not depend on each other: the <b>auth</b> source shows the failure-then-success transition on <code>amina</code> from <code>198.51.100.124</code>, and a <b>second, independent</b> source (for example a firewall <code>network_deny</code> or endpoint event from that same host and IP in the minutes after the success) shows activity consistent with the access being used. Two independent feeds agreeing on the same actor, host, IP, and time window is what turns a guess into evidence.
+<br><br><b>Rejected alternative:</b> a legitimate user fat-fingering their password repeatedly then logging in. Rejected because the failures come from a single external IP at a machine-like cadence and are followed by activity that does not match the user's normal pattern. <b>Confidence:</b> high, given two independent sources on the compromise edge. <b>Next collection action:</b> pull full session and process telemetry from <code>amina-ad4</code> for the window after the success to scope what the access touched.</div>
+
+<div class="box answer"><h4>Campaign 2 · web to endpoint exfiltration</h4>
+<b>The story.</b> Activity pivoting through the web tier at <code>203.0.113.92</code> and <code>203.0.113.147</code>, tied to a specific request <code>req-v1-x1</code>, ending in a large data transfer of <code>884,944</code> bytes leaving the environment, correlated from web activity through to the endpoint.
+<br><br><b>The exact pivots.</b> IPs <code>203.0.113.92</code> and <code>203.0.113.147</code>; request id <code>req-v1-x1</code>; the <code>884,944</code> byte transfer; and a link from web activity to the endpoint and to data leaving.
+<br><br><b>The ordered chain that proves it.</b>
+<pre><span class="m"># all times UTC, endpoint events already clock-corrected (-3900s)</span>
+1. web_request from 203.0.113.92 / 203.0.113.147,
+   request req-v1-x1                         <span class="c">[web source]</span>
+2. endpoint activity on the tied host,
+   correlated by actor/host/time             <span class="c">[endpoint source]</span>
+3. transfer of 884944 bytes off the host     <span class="c">[web / network source]</span></pre>
+<b>One edge proven from two independent sources (worked).</b> Take the exfiltration edge, "884,944 bytes left the host." The <b>web</b> source shows request <code>req-v1-x1</code> from <code>203.0.113.92</code> with the <code>884,944</code> byte payload; the <b>endpoint</b> source shows the matching file or process activity on the tied host at the corrected time. This is precisely where the clock fix earns its keep: without minus 3,900 seconds the endpoint step lands an hour off and the two sources no longer line up.
+<br><br><b>Rejected alternative:</b> a routine large download or backup. Rejected because the byte count matches a specific tracked request id and the endpoint activity is not an approved backup job on the change record. <b>Confidence:</b> high on the transfer size and request id (they are exact), medium on intent. <b>Next collection action:</b> retrieve the full web payload and proxy logs for <code>req-v1-x1</code> and the destination reputation for both IPs. A generic endpoint-to-DNS query is <b>not</b> automatically this campaign; the byte count, request id, and web-to-endpoint join are what make it Campaign 2.</div>
+
+<div class="box answer"><h4>Campaign 3 · insider removable-media copy</h4>
+<b>The story.</b> An insider, <code>nora.contractor</code>, used a removable device <code>usb-v1</code> to copy a sensitive file, <code>synthetic-payroll-q2.csv</code>, off an endpoint. This is a people-and-process incident as much as a technical one.
+<br><br><b>The exact pivots.</b> Actor <code>nora.contractor</code>; device <code>usb-v1</code>; object <code>synthetic-payroll-q2.csv</code>; endpoint or file activity; and a removable-media context.
+<br><br><b>The ordered chain that proves it.</b>
+<pre><span class="m"># all times UTC, endpoint events clock-corrected</span>
+1. removable device usb-v1 attached,
+   actor=nora.contractor                     <span class="c">[endpoint source]</span>
+2. file synthetic-payroll-q2.csv accessed
+   / copied to usb-v1                         <span class="c">[endpoint / file source]</span>
+3. corroborating event tying actor+device
+   +object together                          <span class="c">[second source]</span></pre>
+<b>One edge proven from two independent sources (worked).</b> Take the copy edge, "nora.contractor copied synthetic-payroll-q2.csv to usb-v1." The <b>endpoint</b> source shows the file access or copy to device <code>usb-v1</code>; a <b>second, independent</b> record (a device-attach event or file-audit entry) confirms the same actor, device, and object in the same window. Two independent records on the same three pivots is the proof.
+<br><br><b>Rejected alternative:</b> an approved data export or a sanctioned transfer to portable media. Rejected because no change record or approval covers this actor moving this file to this device, and the file is sensitive payroll data. <b>Confidence:</b> high on actor, device, and object (all exact pivots), medium on intent pending an HR and manager check. <b>Next collection action:</b> preserve the endpoint disk image and the USB device metadata, and open an insider-risk case with HR rather than acting unilaterally.</div>
+
+<div class="box miss"><h4>Where people went wrong on campaigns</h4>Claiming a campaign from keyword matches alone; passing off a generic endpoint-to-DNS query as the exfiltration; showing many failed logins but never proving the later success and follow-on; proving edges from a single source instead of two independent ones; skipping the clock fix so the endpoint steps never lined up; and piling up huge locator counts around a conclusion that was simply wrong. A wrong conclusion with a hundred citations still scores as a wrong conclusion.</div>
+
+<h3><span class="n">1.6</span>The 96 review candidates</h3>
+<p>Every intern was assigned 96 review candidates, each a flagged activity with a unique <code>REVIEW-####</code> id. The correct aggregate was <b>80 benign and 16 escalated</b>. But the aggregate was never the point: you had to inspect all 96 unique ids and record a structured verdict for each, tied to a locator. Writing "80 and 16" in prose without the itemised rows earned almost nothing on the evidence and false-positive criteria, because there was no proof you had actually looked.</p>
+<p>A row is <b>benign only if all eight of these checks reconcile.</b> If even one fails, the row escalates.</p>
+<table>
+  <tr><th>#</th><th>Check</th><th>What it confirms</th></tr>
+  <tr><td>1</td><td>Activity id present</td><td>The row points to a real, identifiable activity, not a vague description.</td></tr>
+  <tr><td>2</td><td>Asset match</td><td>The asset in the activity is the asset the change or approval was for.</td></tr>
+  <tr><td>3</td><td>Actor or owner match</td><td>The actor performing it is the authorised actor or owner, not a lookalike.</td></tr>
+  <tr><td>4</td><td>Correct approver</td><td>The person who approved it was actually entitled to approve it.</td></tr>
+  <tr><td>5</td><td><code>APPROVED</code> status</td><td>The structured status field says approved, not pending or denied.</td></tr>
+  <tr><td>6</td><td>In-window timestamp</td><td>It happened inside the authorised change or maintenance window.</td></tr>
+  <tr><td>7</td><td>Covering change record</td><td>A specific change record exists that covers this activity.</td></tr>
+  <tr><td>8</td><td>Evidence locator</td><td>You can point to the exact source and row that shows all of the above.</td></tr>
+</table>
+<div class="box answer"><h4>Worked example: a benign row passing all eight (illustrative)</h4>
+<pre>REVIEW-0007  approved vulnerability scan
+  1 activity id     ACT-scan-8841                <span class="g">present</span>
+  2 asset           subnet 203.0.113.0/24        <span class="g">matches change CR-2211</span>
+  3 actor           svc-scanner                  <span class="g">= authorised scanner identity</span>
+  4 approver        approved by security lead     <span class="g">entitled to approve</span>
+  5 status          APPROVED                      <span class="g">structured field</span>
+  6 timestamp       2026-07-13T02:00:00Z          <span class="g">inside 01:00-03:00 window</span>
+  7 change record   CR-2211 covers this scan      <span class="g">covering record exists</span>
+  8 evidence        firewall-v2.log:412, cr-2211  <span class="g">locator provided</span>
+  =&gt; VERDICT: benign (approved scanner family)</pre>
+All eight reconcile, so this is correctly benign, and the verdict cites its evidence.</div>
+<div class="box miss"><h4>Worked example: an escalated row failing exactly one check (illustrative)</h4>
+<pre>REVIEW-0063  backup job to external target
+  1 activity id     ACT-backup-5502              present
+  2 asset           payroll share                matches change CR-3040
+  3 actor           svc-backup                   = authorised backup account
+  4 approver        approved by ops lead         entitled
+  5 status          APPROVED                     structured field
+  6 timestamp       2026-07-13T14:20:00Z         <span class="m">FAILS: window was 22:00-23:00</span>
+  7 change record   CR-3040 covers backups        exists
+  8 evidence        endpoint clock-corrected row  locator provided
+  =&gt; VERDICT: escalate. Failed check 6 (out-of-window timestamp).</pre>
+Seven checks pass, but the activity ran hours outside its authorised window, so it escalates, and the verdict names <b>which</b> check failed (check 6). Naming the failed check is what turns an escalation into a usable finding.</div>
+<p><b>The benign families</b> you should recognise: approved scanner activity (including the supplied scanner context), approved backup activity tied to the <code>svc-backup</code> service account, and signed updater activity. Seeing one of these families is a strong hint toward benign, but you still had to run all eight checks. A family match is a starting point, not a verdict.</p>
+<div class="box miss"><h4>The trap that cost the most false-positive-restraint marks</h4>Do not mark an escalated row benign just because its own narrative discusses a benign hypothesis and then rejects it. Some rows are written to sound reassuring while the structured facts say otherwise. Judge on the structured <code>status</code> and the eight checks, not on the prose. Equally, do not escalate a genuinely benign, approved, in-window, change-covered activity just to look thorough. Both mistakes are false-positive-restraint failures.</div>
+
+<h3><span class="n">1.7</span>Reproduce it yourself</h3>
+<pre><span class="m"># Isolated review environment only. Never run untrusted code on a live host.</span>
+
+<span class="m"># 1. verify the shared pack hash, then extract into a READ-ONLY input dir</span>
+sha256sum stage5-soc-pack.tar.gz          <span class="m"># compare to the published hash</span>
+mkdir -p input &amp;&amp; tar -xzf stage5-soc-pack.tar.gz -C input
+chmod -R a-w input                        <span class="m"># inputs are read-only, never edited</span>
+
+<span class="m"># 2. run the tests from a clean checkout, then build</span>
+make test                                 <span class="m"># confirm tests actually exercise the pipeline</span>
+make clean
+make build INPUT=input
+
+<span class="m"># 3. confirm the four machine outputs exist AND are non-empty</span>
+ls -l clean.db results.json quarantine.csv reconciliation.json
+
+<span class="m"># 4. reconcile every source: accepted + quarantined + duplicates == manifest</span>
+<span class="g"># if any source fails this equation, a row was lost or double-counted</span>
+
+<span class="m"># 5. query the normalized timeline for each campaign pivot</span>
+<span class="m">#    198.51.100.124 / amina-ad4  ->  Campaign 1</span>
+<span class="m">#    203.0.113.92 / 203.0.113.147 / req-v1-x1 / 884944  ->  Campaign 2</span>
+<span class="m">#    nora.contractor / usb-v1 / synthetic-payroll-q2.csv ->  Campaign 3</span>
+
+<span class="m"># 6. follow EVERY campaign edge back to two independent raw locators</span>
+<span class="m">#    (spot-check the clock fix: endpoint 09:05:00Z should read 08:00:00Z)</span>
+
+<span class="m"># 7. count unique REVIEW-#### ids (expect 96) and adjudicate all of them</span>
+<span class="m">#    validate every benign row against its covering change record (8 checks)</span>
+<span class="m">#    expect 80 benign / 16 escalated, each escalation naming the failed check</span>
+
+<span class="m"># 8. run a SECOND clean build and compare hashes</span>
+make clean &amp;&amp; make build INPUT=input
+<span class="g"># identical normalized-timeline and results hashes across two runs == deterministic</span>
+
+<span class="m"># 9. record runtime against the published grader limit</span></pre>
+
+<h3><span class="n">1.8</span>The scoring caps, and the reasoning behind each</h3>
+<p>Some submissions hit a published technical cap that held the final score below the raw sum of the criteria. A cap is not an automatic elimination; it is a ceiling that reflects a method too weak to trust at full marks.</p>
+<table>
+  <tr><th>Cap</th><th>Ceiling</th><th>Why</th></tr>
+  <tr><td>Grep-only analysis</td><td>55</td><td>Searching for strings finds keywords, not chains. It cannot prove an ordered sequence across two independent sources, which is the core of the task, so it is capped below a pass-with-confidence.</td></tr>
+  <tr><td>Single-line campaign attribution</td><td>60</td><td>Naming a campaign in one line asserts a conclusion without walking the evidence. The work of proving pivots, order, and two sources per edge simply was not shown.</td></tr>
+  <tr><td>Screenshots without raw rows or queries</td><td>50</td><td>A screenshot shows a result but not the reproducible path to it. A reviewer cannot rerun a picture, so it cannot earn full evidence or reproducibility credit.</td></tr>
+  <tr><td>Copied input earns nothing</td><td>no authored credit</td><td>Reproducing the supplied pack, an assignment PDF, or provided context is not your analysis. Authored-work credit attaches only to what you produced.</td></tr>
+  <tr><td>Huge locator counts do not fix a wrong conclusion</td><td>no rescue</td><td>Volume of citations cannot repair an incorrect finding. A hundred locators pointing at the wrong campaign is still the wrong campaign; correctness is judged first.</td></tr>
+</table>
+<p>Undeclared source edits or fabricated evidence went to integrity review rather than a numeric cap. The honest path always scored better than the impressive-looking shortcut, because the whole rubric is built to reward proof a second analyst can reproduce.</p>
+
+<h3><span class="n">1.9</span>Your checklist for a top SOC answer</h3>
+<ul class="checklist">
+  <li>A normalizer that runs, handling all five sources across all three schema versions each through explicit adapters.</li>
+  <li>Every accepted event carries its source file and row locator (provenance is not optional).</li>
+  <li>Malformed rows quarantined as <code>invalid_json</code>, timeless rows as <code>missing_time</code>, unknown variants flagged, none silently dropped.</li>
+  <li>The endpoint clock corrected by minus 3,900 seconds (09:05:00 becomes 08:00:00).</li>
+  <li>Identity aliases resolved: <code>amina@example.invalid</code> and <code>EXAMPLE\amina</code> both become <code>amina</code>.</li>
+  <li>Duplicates removed with provenance kept, and stable ordering for equal timestamps.</li>
+  <li>Reconciliation holds for every source: accepted + quarantined + duplicates == manifest.</li>
+  <li>Two clean runs produce identical normalized and result hashes.</li>
+  <li>All four machine outputs delivered and non-empty, plus the normalized timeline and campaign graph.</li>
+  <li>All three campaigns as ordered UTC chains, each edge proven from two independent raw sources.</li>
+  <li>Each campaign carries a rejected alternative, a confidence level, and one next collection action.</li>
+  <li>All 96 <code>REVIEW-####</code> ids adjudicated individually, not summarised as "80 and 16."</li>
+  <li>Every benign verdict passes all eight checks; every escalation names the check it failed.</li>
+  <li>No over-escalation of approved, in-window, change-covered activity, and no benign verdict trusting a reassuring narrative over the structured status.</li>
+  <li>A README, manifest, and integrity attestation that let another analyst rerun your build to the same result.</li>
+</ul>
+</div>
+
+<div class="eh">
+<div class="banner">Track 2 · Ethical Hacking</div>
+<h2>Ethical Hacking: disciplined recon to a proven foothold</h2>
+<p>This track asked you to think and behave like a professional penetration tester working under a signed engagement letter. That framing matters more than any single technical step, so read this before anything else. A professional is not the person who finds the most services or fires the most packets. A professional is the person who stays inside the authorised boundary, keeps a defensible record of every action, turns noisy tool output into clean structured evidence, and can prove a foothold with a chain that another engineer can follow and reproduce. Every part of the rubric below is really a test of that discipline.</p>
+<p>Concretely, you built a reconnaissance engine that had to do four things at once: stay strictly inside an authorised scope, stay under a hard request budget, convert several different tool output formats into one clean normalized record shape, and finally reach a foothold by retrieving your own <code>user.txt</code> value together with the full request chain that produced it. The engine had a fixed command-line interface and a fixed output layout so a reviewer could run it the same way for everyone. The lab itself was personalised: each intern's lab was derived from a private marker, so there was never one shared answer key of ports and flags. That is deliberate. It means you could not pass by copying a friend, and it means the only proof that counts is proof generated by your own run against your own lab.</p>
+<p>As you read, keep one sentence in mind. Your score measured what your delivered files actually proved, not how much you wrote, how many services you listed, or how polished the report looked. The interns who ran their engine, kept the outputs, and reconciled them scored well. The interns who described a great engine but delivered an empty <code>raw/</code> folder, or who pasted a flag value with no request behind it, did not, however good the prose.</p>
+
+<h3><span class="n">2.1</span>How it was scored</h3>
+<p>The track was marked out of 100 across five criteria. The table gives the headline; the paragraphs after it explain what each criterion was really testing, because the difference between a middling and a strong score almost always lived in that detail.</p>
+<table>
+  <tr><th>Criterion</th><th>Max</th><th>What earned the marks</th></tr>
+  <tr><td>Scope and safety</td><td>20</td><td>Every scope and budget check performed before any connection was opened; zero traffic to the trap endpoint; a delivered request ledger within 240 requests.</td></tr>
+  <tr><td>Engine design and tests</td><td>25</td><td>A real, tested parser and adapter layer that handled every input format, with tests that actually invoke the engine rather than asserting trivialities.</td></tr>
+  <tr><td>Discovery completeness</td><td>20</td><td>Normalized records carrying all nine required fields, plus the extra virtual-host fields, across the services your run actually observed.</td></tr>
+  <tr><td>Foothold proof</td><td>20</td><td>Your own <code>user.txt</code> value retrieved through the full request chain and reconciled across every piece of evidence.</td></tr>
+  <tr><td>Evidence and reporting</td><td>15</td><td>A clear report, evidence index, scope register, and request ledger that all agree with each other and with the raw output.</td></tr>
+</table>
+<p><b>Scope and safety, 20 marks.</b> This criterion answered one question: could you be trusted with a live target? It rewarded an engine that made every authorisation decision before it opened a socket, that never sent a single packet to the out-of-scope trap, and whose delivered ledger stayed under the ceiling. It is the criterion where good intentions in the source code counted for nothing if the behaviour on disk contradicted them. A comment saying "we respect scope" next to a ledger showing a request to the trap endpoint lost these marks in full.</p>
+<p><b>Engine design and tests, 25 marks.</b> This was the largest single criterion because it measured whether you built an engine at all, as opposed to a shell script that shells out to a scanner and pipes the result to a file. It rewarded a parser-and-adapter design: one tested adapter per input format, each with tests that feed it a known input and assert on the exact normalized output. Tests that never call your code, or that assert <code>True</code>, earned nothing here regardless of how many there were.</p>
+<p><b>Discovery completeness, 20 marks.</b> This measured whether your discovery turned into clean, complete, structured data. Every normalized service record needed all nine required fields, populated and correct, and virtual-host records needed the additional fields. Completeness here is about the records being whole and faithful to what your run observed, not about padding the list with services you never actually saw.</p>
+<p><b>Foothold proof, 20 marks.</b> This measured whether you reached a foothold and could prove it. The proof was your own authenticated <code>user.txt</code> value plus the chain behind it. A flag-shaped string with no chain was not proof; the chain with no value was incomplete; the two together, reconciled across your evidence, earned the marks.</p>
+<p><b>Evidence and reporting, 15 marks.</b> This measured whether a reviewer could believe you. It rewarded a report, an evidence index, a scope register, and a request ledger that told one consistent story and that matched the raw files on disk. Contradictions between artifacts (a report claiming a service the normalized data never lists, a ledger that disagrees with the raw responses) cost marks here even when the underlying work was real.</p>
+
+<h3><span class="n">2.2</span>Scope and safety in depth</h3>
+<p>Because scope discipline gated so much, it is worth being precise about exactly what was authorised and exactly what the engine had to check. The generated <code>scope.csv</code> listed loopback endpoints, each marked <code>IN</code> or <code>OUT</code>. Only the endpoints marked <code>IN</code> were authorised. The <code>OUT</code> endpoint was not a mistake and not an afterthought; it was a deliberate scope test placed in your file to see whether your engine would touch it. It had to receive <b>zero requests</b>. Not one connection attempt, not one probe, not one "just checking if it is alive" packet. In a real engagement, the equivalent endpoint might be a neighbouring company's server on the same subnet, and touching it is a crime. The lab treats it with the same seriousness.</p>
+<p>The order of operations is the whole point. Before the engine opened a socket or sent a single byte, it had to evaluate every one of these checks and let the target through only if all of them passed:</p>
+<ul>
+  <li><b>Host or resolved IP.</b> Resolve the name if you were given a name, then check the address you will actually connect to. Checking the hostname string alone is not enough, because a name can resolve to an address outside scope.</li>
+  <li><b>CIDR.</b> The resolved address must fall inside an authorised range. This is the check that stops you wandering onto a neighbouring host.</li>
+  <li><b>Protocol.</b> Only the authorised protocol for that endpoint. A UDP probe to a TCP-only authorisation is out of scope.</li>
+  <li><b>Port.</b> The port must be inside the allowed range for that endpoint. A port one above the allowed ceiling is out of scope, however tempting.</li>
+  <li><b>Rate.</b> The engine must honour the requested rate so it never floods the target.</li>
+  <li><b>Total request budget.</b> The running total of requests must stay under the mission ceiling.</li>
+</ul>
+<p>The mission ceiling was <b>240 requests</b>. This is a total across the whole run, not a per-port or per-tool figure. A budget object sitting in your source code that says "max 240" did not earn full safety credit if the delivered target ledger showed more than 240 requests actually went out. The ledger is the truth; the intention in the code is not.</p>
+<div class="box"><h4>Worked example: allowed versus denied (fictional values)</h4>
+<p>Suppose your generated scope authorised a single endpoint: host <code>127.0.0.1</code> resolving inside <code>192.0.2.0/28</code>, protocol TCP, ports <code>8000</code> to <code>9000</code>, and it also listed a trap endpoint marked <code>OUT</code> at the decoy hostname <code>staging.decoy.invalid</code>. Here is how the pre-flight check should decide, before any socket opens:</p>
+<table>
+  <tr><th>Candidate request</th><th>Failing check</th><th>Decision</th></tr>
+  <tr><td>TCP to <code>192.0.2.14</code> port <code>8443</code></td><td>none</td><td>ALLOW, then connect</td></tr>
+  <tr><td>TCP to <code>192.0.2.16</code> port <code>8443</code></td><td>CIDR (outside the <code>/28</code>)</td><td>DENY, no socket</td></tr>
+  <tr><td>TCP to <code>staging.decoy.invalid</code> port <code>8443</code></td><td>host (the OUT decoy)</td><td>DENY, no socket</td></tr>
+  <tr><td>TCP to <code>192.0.2.14</code> port <code>9443</code></td><td>port (above <code>9000</code>)</td><td>DENY, no socket</td></tr>
+  <tr><td>UDP to <code>192.0.2.14</code> port <code>8443</code></td><td>protocol (TCP only)</td><td>DENY, no socket</td></tr>
+  <tr><td>request number 241 to a valid endpoint</td><td>budget (ceiling 240)</td><td>DENY, no socket</td></tr>
+</table>
+<p>Note that only the first row ever reaches the network. Every DENY is recorded (a denied attempt is useful evidence that your guard works) but no packet leaves. The <code>/28</code> gives sixteen addresses, so <code>192.0.2.14</code> is inside it while <code>192.0.2.16</code> is the first address of the next block and is correctly rejected.</p></div>
+<div class="box miss"><h4>The single most common failure: a guard that was never wired in</h4>
+<p>By far the most frequent way interns lost scope marks was writing a perfectly correct scope guard and then never calling it on the path that actually opens the socket. The function existed, it had tests, it returned the right answer when asked. But the code that connected to a target called the socket directly, or went through a helper that skipped the guard. The result: a beautiful <code>is_in_scope()</code> function and a ledger showing traffic to the trap. The lesson is that the guard must sit on the one and only path to the network, so there is no way to open a connection without passing through it. If there are two ways to reach a socket in your engine, one of them will eventually be the unguarded one. Reviewers checked the delivered ledger against the scope, so an unwired guard was visible immediately.</p></div>
+
+<h3><span class="n">2.3</span>The required interface and output</h3>
+<p>The engine had a fixed interface so a reviewer could run everyone's the same way. It was invoked like this:</p>
+<pre>recon-engine --target 127.0.0.1 --scope lab-runtime/scope.csv --output run/ --rate 25</pre>
+<p>And it had to produce this output layout under the directory given by <code>--output</code>:</p>
+<pre>run/
+  run.json          <span class="m"># run metadata: target, scope, timing, request ledger, totals</span>
+  raw/&lt;tool&gt;/        <span class="m"># untouched output from each tool, one subdirectory per tool</span>
+  normalized/assets.jsonl   <span class="m"># one normalized record per line</span>
+  report.html       <span class="m"># the human-readable report</span>
+  errors.jsonl      <span class="m"># one record per malformed or rejected input</span></pre>
+<p>Each part carries weight. The <code>run.json</code> is the run's spine: it records what you targeted, which scope you loaded, when things happened, and the request ledger that proves you stayed under budget. The <code>raw/&lt;tool&gt;/</code> tree is your chain of custody: the untouched output of each tool, preserved exactly as produced, so every normalized record can be traced back to the bytes it came from. An empty <code>raw/</code> is not evidence of anything, and it undermines every record that claims to derive from it. The <code>normalized/assets.jsonl</code> file is your structured findings, one JSON object per line. The <code>report.html</code> is the story a human reads. The <code>errors.jsonl</code> is where malformed inputs and rejected records go, so nothing is silently dropped.</p>
+<h4>The nine required normalized fields</h4>
+<p>Every normalized service record needed all nine of these fields, populated and correct:</p>
+<table>
+  <tr><th>Field</th><th>Meaning</th></tr>
+  <tr><td><code>observed_at</code></td><td>When this observation was made, in UTC.</td></tr>
+  <tr><td><code>target</code></td><td>The host or address the observation is about.</td></tr>
+  <tr><td><code>port</code></td><td>The port. A record with no port is invalid.</td></tr>
+  <tr><td><code>protocol</code></td><td>TCP or UDP.</td></tr>
+  <tr><td><code>service</code></td><td>The service identified on that port, for example <code>https</code> or <code>ssh</code>.</td></tr>
+  <tr><td><code>source_tool</code></td><td>The tool that produced the observation.</td></tr>
+  <tr><td><code>source_file</code></td><td>The exact raw file the record was parsed from, so it traces to <code>raw/</code>.</td></tr>
+  <tr><td><code>confidence</code></td><td>How confident the identification is.</td></tr>
+  <tr><td><code>notes</code></td><td>Free text for anything a reviewer needs to interpret the record.</td></tr>
+</table>
+<p>Virtual-host records needed five more fields on top of the nine, because a virtual host is judged by how its response differs from a baseline: <b>status</b> (the HTTP status code), <b>length</b> (the response body length), <b>title</b> (the page title), <b>redirect</b> (any redirect target), and the <b>baseline-difference</b> fields that record how this response differed from the wildcard baseline. Those difference fields are what let you decide whether a virtual host is real or just the default catch-all answering under a different name.</p>
+<div class="box answer"><h4>One fully-populated normalized record (fictional)</h4>
+<pre>{
+  "observed_at": "2026-07-20T14:02:11Z",
+  "target": "192.0.2.10",
+  "port": 8443,
+  "protocol": "tcp",
+  "service": "https",
+  "source_tool": "portscan",
+  "source_file": "raw/portscan/scan-01.xml",
+  "confidence": "high",
+  "notes": "TLS service, self-signed certificate, banner suppressed"
+}</pre>
+<p>Notice that <code>source_file</code> points straight into <code>raw/</code>. That is what makes the record verifiable: a reviewer can open that exact file and confirm the record is faithful to it. A record whose <code>source_file</code> points at nothing, or whose values do not match the raw bytes, is not trustworthy evidence.</p></div>
+
+<h3><span class="n">2.4</span>Parser and behaviour answers in full</h3>
+<p>The engine was tested against several sample input formats and several edge-case behaviours. Below are the canonical answers. Treat them as the acceptance tests your parsers had to pass. The values are the published public fixtures, so they are safe to teach here; your own lab used its own personalised values, but the parsing rules are identical.</p>
+<h4>The four parse cases</h4>
+<table>
+  <tr><th>Case</th><th>Input</th><th>Canonical parsed result</th></tr>
+  <tr><td><b>PARSE-01</b></td><td>XML scan result</td><td>host <code>192.0.2.10</code>, port <code>8443</code>, protocol TCP, service <code>https</code>, state <code>open</code></td></tr>
+  <tr><td><b>PARSE-02</b></td><td>JSON scan result</td><td>preserve both <code>target.invalid</code> and <code>192.0.2.11</code>, port <code>2222</code>, protocol TCP</td></tr>
+  <tr><td><b>PARSE-03</b></td><td>HTTP response line</td><td>host <code>ops.target.invalid</code>, port <code>8443</code>, status <code>401</code></td></tr>
+  <tr><td><b>PARSE-04</b></td><td>line-protocol record</td><td>host <code>192.0.2.12</code>, port <code>8022</code>, protocol TCP, service <code>ssh</code>, version <code>OpenSSH_9.2</code></td></tr>
+</table>
+<p>Two general rules sit underneath these. First, <b>malformed input goes to <code>errors.jsonl</code></b>; it is never silently dropped and never guessed at. Second, <b>a record without a port is invalid</b>, because a service observation with no port cannot be acted on or reconciled. In PARSE-02 the point is that both the hostname form (<code>target.invalid</code>) and the address form (<code>192.0.2.11</code>) are preserved, because throwing one away loses information a later step may need.</p>
+<h4>Scope behaviour at the boundary</h4>
+<p>The scope logic had to give exactly these answers on the public fixture:</p>
+<ul>
+  <li>Permit <code>192.0.2.14</code>, which lies inside the supplied <code>/28</code>.</li>
+  <li>Reject <code>192.0.2.16</code>, which lies just outside that <code>/28</code>.</li>
+  <li>Reject the decoy hostname (the <code>OUT</code> trap), whatever it resolves to.</li>
+  <li>Reject port <code>9443</code> when the allowed range ends at <code>9000</code>.</li>
+</ul>
+<h4>Virtual-host, resume, dedup, and fallback behaviour</h4>
+<ul>
+  <li><b>Virtual hosts.</b> A virtual host whose response is identical to the wildcard baseline is suppressed, because it is just the default answering. A virtual host with a material difference from the baseline is retained, because that difference is a real finding.</li>
+  <li><b>Resume.</b> An interrupted run, when resumed, returns the next unfinished port and carries on from there. A run whose checkpoint is already complete returns no next port, because there is nothing left to do.</li>
+  <li><b>Deduplication.</b> Two identical TCP service observations deduplicate to a single row, because they describe the same fact. An equivalent-looking TCP observation and UDP observation stay as two rows, because protocol is part of a service's identity and they are genuinely different services.</li>
+  <li><b>Fallback.</b> A missing optional tool triggers the documented fallback and the run continues. A missing required parser with no fallback causes the engine to exit non-zero, because it cannot honestly complete.</li>
+</ul>
+<div class="box"><h4>Why one tested adapter per format, and why a single shell wrapper fails</h4>
+<p>The engine design criterion specifically rewarded a parser-and-adapter architecture: one small, tested adapter per input format, each taking raw bytes and returning normalized records, each with tests that feed a known input and assert on the exact output. This is not bureaucracy. It is what lets you prove each format is handled correctly in isolation, and it is what lets a reviewer see, format by format, that your engine does what you claim.</p>
+<p>A single monolithic shell-command wrapper (one script that runs a scanner and greps its stdout) fails this for concrete reasons. It cannot be unit-tested against a fixture without running the external tool, so it cannot prove its parsing in isolation. It usually handles only the one output shape it happened to see, so a format variation slips through as garbage. And it tends to blur the raw-versus-normalized boundary, so provenance is lost. A wrapper can produce output; it cannot demonstrate correctness. That is why it does not earn the design marks even when it appears to work.</p></div>
+<div class="box answer"><h4>A small worked parse (fictional)</h4>
+<p>Suppose the adapter for line-protocol input receives this single raw line from <code>raw/svc-probe/probe-02.txt</code>:</p>
+<pre>192.0.2.12:8022/tcp open ssh OpenSSH_9.2</pre>
+<p>The correct adapter emits exactly one normalized record and writes nothing to <code>errors.jsonl</code>:</p>
+<pre>{
+  "observed_at": "2026-07-20T14:05:40Z",
+  "target": "192.0.2.12",
+  "port": 8022,
+  "protocol": "tcp",
+  "service": "ssh",
+  "source_tool": "svc-probe",
+  "source_file": "raw/svc-probe/probe-02.txt",
+  "confidence": "high",
+  "notes": "banner OpenSSH_9.2"
+}</pre>
+<p>If the same file also contained a line with no port, that second line would produce no normalized record and one entry in <code>errors.jsonl</code> explaining why it was rejected. The good line and the bad line are both accounted for; neither is invented and neither is silently lost.</p></div>
+
+<h3><span class="n">2.5</span>The foothold in full</h3>
+<p>The foothold is where interns most often confused activity with proof, so read this slowly. There was no universal user flag. Each lab start derived its own profile, ports, route, credentials, virtual-host behaviour, and <code>user.txt</code> value from the intern's private marker. That means the only correct answer for you was the value your own authenticated request returned from your own lab. There was never a shared flag to look up, and there was never a way to guess it.</p>
+<div class="box answer"><h4>What actually counted as proof</h4>
+<p>The correct foothold proof was the value returned from <b>your own authenticated <code>user.txt</code> request</b>, reconciled across all of the following so they tell one consistent story:</p>
+<ul>
+  <li>the <b>raw response</b> that contained the value;</li>
+  <li>the <b>target request ledger</b> showing the request that fetched it;</li>
+  <li>the <b>normalized record</b> for the service you reached;</li>
+  <li>the <b>route proof</b> showing how you got there;</li>
+  <li>the <b>credential evidence</b> showing where the credentials came from;</li>
+  <li>the <b>report</b> narrating the chain;</li>
+  <li>the <b>evidence index</b> pointing at each artifact;</li>
+  <li>the <b>hashes</b> that let a reviewer confirm nothing was altered.</li>
+</ul></div>
+<p>The chain that produced that value ran in three linked steps, and each step had to be evidenced, not asserted:</p>
+<ol>
+  <li><b>Route to the virtual host.</b> Your discovery found a virtual host that differed materially from the wildcard baseline. That difference was the doorway, and your baseline-difference fields are the evidence that it was real rather than the default catch-all.</li>
+  <li><b>Recover the credentials.</b> Following that route led you to credentials. The credential evidence has to show where they came from, not simply that you had them.</li>
+  <li><b>Make the authenticated request.</b> With the credentials you made an authenticated request that returned <code>user.txt</code>. That request appears in the ledger and its response appears in <code>raw/</code>.</li>
+</ol>
+<div class="box miss"><h4>Where people went wrong on the foothold</h4>
+<ul>
+  <li><b>Treating the room marker as the flag.</b> The room marker is not the flag. Presenting it as the answer showed the chain was never actually walked.</li>
+  <li><b>A flag string with no chain.</b> A flag-shaped value sitting in a text file, with no request and response behind it, is not full proof. Anyone can type a string. Proof is the request that produced it.</li>
+  <li><b>Reading or editing the lab file.</b> Opening <code>local_lab.py</code> to read the value out of it, or editing it, earned no discovery credit at all. That is not finding the flag; it is looking at the answer sheet, and the reviewers could see it in the evidence.</li>
+  <li><b>The value without reconciliation.</b> Even a genuine value lost marks if the ledger, normalized record, route, credentials, report, index, and hashes did not line up. A foothold you cannot reconcile is a foothold a reviewer cannot trust.</li>
+</ul></div>
+<p>One firm rule for your own write-up: do not invent or guess a value. If your run did not reach <code>user.txt</code>, say so honestly and show how far the chain got. An honest partial chain is assessable and can earn real credit for the steps you did prove; a fabricated flag is an integrity problem and earns nothing.</p>
+
+<h3><span class="n">2.6</span>Reproduce it yourself</h3>
+<p>This is the exact path a reviewer walked, written so you can walk it too in an isolated environment. Do not run it against anything but your own lab, and keep the supplied lab file untouched.</p>
+<pre><span class="m"># Use Python 3.11 or later. Work in an isolated environment.</span>
+<span class="m"># Step 1: start your lab from your own private marker. Do not edit local_lab.py.</span>
+python3 local_lab.py --marker &lt;your-exact-private-marker&gt; --output lab-runtime
+
+<span class="m"># Step 2: read the two files the lab generated for you.</span>
+<span class="m">#   assignment.json describes your profile; scope.csv lists IN and OUT endpoints.</span>
+<span class="m">#   Confirm ONLY the two IN loopback endpoints are authorised.</span>
+
+<span class="m"># Step 3: run your own tests. Then check they actually call the engine.</span>
+<span class="m">#   Reject vacuous tests such as assertTrue(True) that prove nothing.</span>
+
+<span class="m"># Step 4: run the engine through its published interface.</span>
+recon-engine --target 127.0.0.1 --scope lab-runtime/scope.csv --output run/ --rate 25
+
+<span class="m"># Step 5: confirm the safety properties on the DELIVERED evidence, not the source.</span>
+<span class="m">#   - zero requests to the OUT endpoint anywhere in the ledger</span>
+<span class="m">#   - no more than 240 total requests in the ledger</span>
+grep -c . run/run.json            <span class="m"># inspect the recorded ledger and totals</span>
+ls -R run/raw/                    <span class="m"># raw/ must be populated, not empty</span>
+
+<span class="m"># Step 6: check discovery completeness.</span>
+<span class="m">#   Every normalized record has all nine fields; vhost records have the extras.</span>
+
+<span class="m"># Step 7: exercise the edge behaviours.</span>
+<span class="m">#   - interrupt one run and resume it; it should continue at the next port</span>
+<span class="m">#   - remove one optional tool; the documented fallback should take over</span>
+<span class="m">#   - run an equivalent configuration twice and compare normalized hashes</span>
+sha256sum run/normalized/assets.jsonl
+
+<span class="m"># Step 8: walk the foothold chain and STOP at user proof.</span>
+<span class="m">#   route to the vhost -> recover credentials -> authenticated request</span>
+<span class="c"># retrieve YOUR user.txt through the authenticated request, then stop</span>
+
+<span class="m"># Step 9: stop the target with Ctrl-C and reconcile the two ledgers.</span>
+<span class="g"># the target's ledger and your engine's ledger must agree, and all</span>
+<span class="g"># evidence (raw, normalized, route, credentials, report, index, hashes)</span>
+<span class="g"># must tell one consistent story</span></pre>
+
+<h3><span class="n">2.7</span>The scoring caps, and why each exists</h3>
+<p>Some outcomes triggered a cap or a review that no amount of narrative could undo. Each one exists to stop a specific way of appearing to succeed without actually succeeding.</p>
+<ul>
+  <li><b>No runnable implementation is subject to the published technical cap.</b> If there was no engine that actually ran, the technical score was capped, because a description of an engine is not an engine.</li>
+  <li><b>Hard-coded runtime flags trigger an integrity review.</b> If the <code>user.txt</code> value or route was baked into the source rather than discovered at runtime, it went to integrity review and a cap applied, because that is presenting the answer as if it were found.</li>
+  <li><b>A ledger above 240 requests loses points.</b> Exceeding the mission ceiling cost meaningful safety and validation marks, because staying under budget is a core safety property, not a nice-to-have.</li>
+  <li><b>An empty <code>raw/</code> directory is not evidence.</b> Without preserved raw output there is no chain of custody, so normalized records that claim to derive from it cannot be trusted and the discovery marks fall away.</li>
+  <li><b>Vacuous tests earn nothing.</b> Tests that never invoke the engine, or that assert trivially true statements, prove nothing about the code and so earned no engine-and-tests credit no matter how many there were.</li>
+</ul>
+
+<h3><span class="n">2.8</span>Your checklist for a strong Ethical Hacking submission</h3>
+<ul class="checklist">
+  <li>Only the <code>IN</code> loopback endpoints are treated as authorised; the <code>OUT</code> trap receives zero requests.</li>
+  <li>The scope guard sits on the one and only path to a socket, checking host or resolved IP, CIDR, protocol, port, rate, and budget before any connection.</li>
+  <li>The delivered request ledger stays at or under 240 requests.</li>
+  <li>The engine runs through its published interface and produces <code>run.json</code>, a populated <code>raw/&lt;tool&gt;/</code>, <code>normalized/assets.jsonl</code>, <code>report.html</code>, and <code>errors.jsonl</code>.</li>
+  <li>Every normalized record carries all nine required fields; virtual-host records add status, length, title, redirect, and baseline-difference.</li>
+  <li>Each input format has its own tested adapter, and the tests actually invoke the engine.</li>
+  <li>Malformed input lands in <code>errors.jsonl</code>; a record with no port is treated as invalid.</li>
+  <li>Resume continues at the next unfinished port; identical TCP observations dedupe while equivalent TCP and UDP stay separate; a missing optional tool falls back and a missing required parser exits non-zero.</li>
+  <li>The foothold is your own <code>user.txt</code> value, reached through route, credentials, and an authenticated request, and reconciled across raw response, ledger, normalized record, route proof, credential evidence, report, evidence index, and hashes.</li>
+  <li>No value is invented; an honest partial chain is shown where the run stopped short.</li>
+</ul>
+</div>
+
+<div class="grc">
+<div class="banner">Track 3 · Governance, Risk and Compliance</div>
+<h2>GRC: real gaps, honest evidence, controls that run</h2>
+<p>This track asked you to think like a compliance engineer, not a report writer. You received a fictional company's security posture pack: a set of policies, screenshots, tickets, exports, and an assigned control-state input. Your job was to find the real gaps in that posture, map each gap to the control family that must fix it, judge every piece of evidence honestly, implement exactly three machine-enforceable controls in code (Open Policy Agent, written in Rego), and draft a policy addendum that could actually be enforced. The single hardest lesson of the whole track is this: a beautiful document earned very little on its own. What earned marks was work that <b>ran against your own assigned state and produced a defensible decision for every asset</b>. Read this section once to see the shape of a strong answer, then read it again next to your own submission and your reviewer notes so you can see exactly where the two part ways.</p>
+
+<h3><span class="n">3.1</span>How it was scored</h3>
+<p>The rubric had five criteria that sum to 100. Nothing was awarded for effort, length, or polish by itself. Each criterion rewarded a specific, checkable behaviour in your delivered files.</p>
+<table>
+  <tr><th>Criterion</th><th>Max</th><th>What earned the marks</th></tr>
+  <tr><td>Gap accuracy</td><td>25</td><td>A typed gap register that correctly classified the seven planted issues, including the two that were traps and were NOT simple gaps.</td></tr>
+  <tr><td>Control mapping</td><td>20</td><td>Each real gap mapped to the correct control family and to a requirement the control must enforce, including fixing the one planted bad mapping.</td></tr>
+  <tr><td>Evidence judgment</td><td>20</td><td>A recorded verdict for every artifact that separated observed fact from interpretation, and refused to over-claim from weak proof.</td></tr>
+  <tr><td>Exactly-three-control decision</td><td>20</td><td>Exactly three data-driven Rego controls that evaluate your assigned state, default to deny, and emit a complete decision per asset.</td></tr>
+  <tr><td>Enforceable drafting</td><td>15</td><td>Policy clauses that name an owner, scope, requirement, exception route, enforcement evidence, and review cadence.</td></tr>
+</table>
+<p><b>Gap accuracy (25).</b> This measured whether you found the genuine problems and, just as important, whether you resisted calling two deliberate distractors "gaps" when they were not. A register that flagged all seven items as failures scored worse than one that flagged five and correctly reasoned that two were either risk-based judgement calls or contextual. Full marks required a typed register: each entry naming the issue, the class of gap (policy, process, privacy, evidence, or implementation), the affected assets or population, and the verdict with its reasoning. Prose paragraphs that buried the finding lost marks because a reviewer could not reconcile them to a control.</p>
+<p><b>Control mapping (20).</b> Finding a gap is only half the work. Each real gap had to point at the control family responsible for closing it and, crucially, at <i>what that control must require</i>. "This maps to access control" is not a mapping; "this maps to the privileged-identity control, which must require phishing-resistant MFA on every privileged identity and produce an enforcement record" is. One item in the pack came pre-mapped incorrectly on purpose, and correcting that mapping was worth real marks.</p>
+<p><b>Evidence judgment (20).</b> Compliance lives or dies on the honesty of its evidence. This criterion rewarded a verdict for every artifact that split what you literally observed from what you inferred, and that assigned a confidence level. The people who scored well said "this screenshot proves X about a subset at a past date" rather than "this proves the estate is encrypted." Over-claiming from a weak artifact cost more than admitting the artifact was insufficient.</p>
+<p><b>Exactly-three-control decision (20).</b> This was the executable heart of the track. Three controls, no more and no fewer, each one a data-driven Rego package that reads your assigned input, defaults to deny, and emits a full decision for every asset. Marks here depended almost entirely on whether the code <i>ran</i> and whether it <i>evaluated state</i> rather than hard-coding answers. A polished write-up with no running controls could not pass the technical assessment for this project.</p>
+<p><b>Enforceable drafting (15).</b> The addendum had to be enforceable, not aspirational. Every clause needed an owner who is accountable, a scope that says who and what it covers, a concrete requirement, a route to request an exception, the evidence that proves enforcement, and a review cadence. A clause that said "all devices should be secure" earned nothing because no one could be held to it and nothing could check it.</p>
+
+<h3><span class="n">3.2</span>The seven planted gaps, in full</h3>
+<p>The pack contained seven items placed deliberately. Five were genuine gaps. Two were traps: one was a judgement that is only a gap if you overstate it, and one was a document whose age is context, not a defect. Getting the two traps right separated strong candidates from candidates who simply flagged everything.</p>
+
+<div class="box answer"><h4>Gap 1 · Optional privileged MFA (policy and implementation gap)</h4>
+<p>The pack showed a screenshot in which several administrators had multi-factor authentication enabled, and a policy that <i>recommended</i> MFA for privileged accounts. This is a genuine gap on two levels at once. It is a <b>policy gap</b> because "recommended" is not "required"; an optional control is an unowned control. It is an <b>implementation gap</b> because a screenshot showing that some admins use MFA does not prove that every privileged identity is covered, nor that the factor is phishing-resistant.</p>
+<p><b>What a strong write-up contained:</b> the finding that the control must be mandatory, not optional; a requirement for <i>phishing-resistant</i> MFA (not SMS or one-time codes that can be relayed) on <i>every</i> privileged identity, including break-glass and service-linked admin accounts; and the explicit statement that a screenshot is not evidence of a rule. A rule is proven by policy text plus an enforcement mechanism that denies privileged access without the required factor, not by a picture of a few accounts. The correct verdict is "policy and implementation gap; requires a mandatory phishing-resistant MFA rule for all privileged identities, enforced and evidenced."</p></div>
+
+<div class="box answer"><h4>Gap 2 · Manager-requested access reviews (policy, process, and evidence gap)</h4>
+<p>The pack described access reviews that happen "when a manager asks for one." That is not an access-review programme; it is an occasional favour. This is a three-part gap: <b>policy</b> (no defined obligation), <b>process</b> (no defined mechanism), and <b>evidence</b> (nothing retained to prove a review ever occurred).</p>
+<p><b>What a strong write-up contained:</b> a defensible control that defines a <i>cadence</i> (for example quarterly for privileged access, at least annually for standard access), a named <i>owner</i> accountable for the programme, an explicit <i>scope</i> (which systems and which identity classes), <i>reviewer independence</i> where segregation of duties requires it (the person reviewing should not be the person who granted or benefits from the access), <i>retained evidence</i> of each review and its decisions, an <i>overdue escalation</i> path when a review is missed, and a <i>remediation</i> step that actually removes access found to be inappropriate. A review that finds problems but never revokes anything is theatre. The correct verdict names all of cadence, owner, scope, independence, evidence, escalation, and remediation.</p></div>
+
+<div class="box answer"><h4>Gap 3 · Over-broad BYOD inspection (policy, privacy, and process gap, with a planted bad mapping)</h4>
+<p>This is the item most people got half-right. The pack proposed inspecting personal (bring-your-own) devices broadly, and it came <b>pre-mapped to a single data-loss-prevention control as if that control alone justified the inspection</b>. That mapping is the planted trap. Treating a technical data-loss control as sufficient authority to inspect personal devices ignores the entire privacy dimension of the problem.</p>
+<p><b>What a strong write-up contained:</b> first, the correction of the mapping. The data-loss control is relevant but is not the controlling consideration; the gap is fundamentally a <b>privacy and personal-data</b> problem. A defensible correction discusses privacy and protection of personal data on the device, acceptable-use boundaries, <i>notice</i> to the device owner about what is inspected, a <i>lawful basis</i> for any inspection, <i>data minimisation</i> (inspect only what is necessary, ideally only the managed work container rather than the whole device), <i>retention</i> limits on anything collected, <i>proportionality</i> (the inspection must be no broader than the risk warrants), and a <i>legal review</i> before any such programme goes live. The correct verdict is "over-broad; inspection of personal devices must be minimised, proportionate, noticed, lawfully based, and legally reviewed; the single data-loss control mapping is insufficient." Do not quote licensed control-standard text to make this point; describe the requirement in your own words.</p></div>
+
+<div class="box answer"><h4>Gap 4 · Helpdesk-only incident route (policy and process gap)</h4>
+<p>The pack routed all incidents through the general helpdesk with no security path. A security incident that sits in a helpdesk queue behind password resets is an incident that is not being handled.</p>
+<p><b>What a strong write-up contained:</b> a control that adds <i>security triage</i> so suspected security events are recognised and pulled out of the general queue quickly; clear <i>incident ownership</i> so a named function owns the response rather than a ticket bouncing between teams; a <i>regulatory and privacy escalation</i> path so events that may involve personal data or reportable breaches reach the people who must notify regulators or affected individuals within the required time; defined <i>response times</i> keyed to severity; and <i>retained evidence</i> of the response for later review and for any regulator. The correct verdict is "policy and process gap; needs a dedicated security incident path with triage, ownership, regulatory and privacy escalation, response-time targets, and retained evidence."</p></div>
+
+<div class="box answer"><h4>Gap 5 · Forced 90-day rotation (a trap: too-absolute conclusion, not a simple gap)</h4>
+<p>The pack asserted that forcing every user to change their password every 90 days makes the organisation safer. The trap here is to nod along, or to flag it as a missing control. Neither is right. The claim that frequent forced rotation is <i>automatically</i> safer is too absolute. Blanket short rotation drives users toward predictable, incremented passwords and adds little against modern credential theft.</p>
+<p><b>What a strong write-up contained:</b> the correct framing that credential management should be <b>risk-based</b>. Rotate on evidence of compromise; apply stronger, targeted controls to privileged and service accounts (which is where rotation and secret hygiene genuinely matter); prefer length, uniqueness, and phishing-resistant factors over calendar-driven churn for ordinary users. The correct verdict is not "gap" and not "fine as written"; it is "the stated conclusion is too absolute and should be replaced with a risk-based credential policy." Marking this a plain gap, or accepting the 90-day claim uncritically, both lost marks.</p></div>
+
+<div class="box answer"><h4>Gap 6 · Stale MDM screenshot (weak evidence, not proof of compliance)</h4>
+<p>The pack included a mobile-device-management screenshot dated well in the past. It showed 91 managed devices and 89 of them encrypted. The current device population, however, is 176 devices plus an unknown number of personal devices, and the screenshot carried no export metadata (no verifiable date, query, or scope of the export).</p>
+<p><b>What a strong write-up contained:</b> the honest reading. This is <b>limited historical evidence for a subset</b> of a now-larger estate. It does not prove current, universal encryption. Ninety-one of a then-population is not 176 of the current population, an old date is not today, 89 encrypted is not 100 percent even within that subset, and with no export metadata you cannot even fully trust the snapshot's scope. The correct verdict rejects the screenshot as proof of current compliance and states what would actually prove it: a current, dated, scoped export covering the full managed population, ideally reconciled to the device inventory. This gap is examined again as the worked example in the evidence-judgment section below.</p></div>
+
+<div class="box answer"><h4>Gap 7 · Old policy document (a trap: age is context, not a defect)</h4>
+<p>The pack included a policy document with an old effective date. The trap is to flag "old = out of date = gap." Age alone is not a finding.</p>
+<p><b>What a strong write-up contained:</b> the reasoning that an old document is <i>not automatically a gap</i> when its annual-review clause is appropriate and the review has actually been performed. The correct move is to record the document's age as evidence <i>context</i>, then check the substantive question: does the policy require periodic review, and is there evidence the last review happened on schedule? If the review clause is sound and reviews are occurring, there is no gap; if the clause is missing or the reviews lapsed, <i>that</i> is the gap, not the age. Flagging the document purely for being old lost marks; reasoning about the review clause earned them.</p></div>
+
+<div class="box miss"><h4>Where people went wrong on the seven</h4>
+<p>The most common failure was flagging all seven as gaps to look thorough, which meant failing both traps (Gap 5 and Gap 7). The second was under-analysing Gap 3: naming BYOD as a gap but keeping the planted data-loss mapping and never mentioning privacy, notice, or proportionality. The third was accepting Gap 6's screenshot as proof of encryption. Precision beat coverage here.</p></div>
+
+<h3><span class="n">3.3</span>Control mapping in depth</h3>
+<p>A mapping is a promise about <i>what a control must enforce</i>, not a label. The pattern that scored well was: gap, then control family, then the concrete requirement the control has to check and evidence. Below is a small illustrative crosswalk. The control families are fictional-but-representative names used for teaching; use your assigned control identifiers in your own work.</p>
+<table>
+  <tr><th>Gap</th><th>Control family</th><th>What the control must require</th></tr>
+  <tr><td>Optional privileged MFA</td><td>Privileged identity assurance</td><td>Mandatory phishing-resistant MFA on every privileged identity; deny privileged access without it; retain an enforcement record.</td></tr>
+  <tr><td>Manager-requested reviews</td><td>Access review programme</td><td>Fixed cadence, named owner, defined scope, independent reviewer where required, retained decisions, overdue escalation, and revocation on failure.</td></tr>
+  <tr><td>Over-broad BYOD inspection</td><td>Privacy and personal-data protection (corrected from data-loss only)</td><td>Minimised, proportionate inspection of the work container only; prior notice; lawful basis; retention limits; legal review before rollout.</td></tr>
+  <tr><td>Helpdesk-only incidents</td><td>Incident response</td><td>Security triage, named incident owner, regulatory and privacy escalation, severity-based response times, retained response evidence.</td></tr>
+  <tr><td>Stale device encryption evidence</td><td>Managed endpoint health</td><td>Current, dated, full-population export proving disk encryption; reconcile managed count to device inventory.</td></tr>
+</table>
+<p>Notice the corrected BYOD row. The pack's own mapping pointed only at a data-loss control, which addresses data leaving the device but says nothing about whether the organisation may lawfully and proportionately inspect a personal device in the first place. The mapping that earned marks reassigned the primary control to privacy and personal-data protection and kept the data-loss control as a secondary, supporting control rather than the justification.</p>
+
+<h3><span class="n">3.4</span>Evidence judgment in depth</h3>
+<p>Every artifact in the pack needed a verdict, and every verdict needed to separate three things: what you literally <i>observed</i>, how you <i>interpreted</i> it, and what rubric-relevant <i>conclusion</i> it can and cannot support. The discipline is to state a confidence level and to consider the alternative reading before you reject it. Here is the stale device screenshot worked all the way through, because it is the artifact that most tempted people into over-claiming.</p>
+<div class="box"><h4>Worked example: the stale device-management screenshot</h4>
+<p><b>Observed fact.</b> An image dated in a past period shows a management console reporting 91 managed devices, of which 89 report disk encryption enabled. The image carries no export metadata: no verifiable generation date, no query, and no statement of what population it covered.</p>
+<p><b>Interpretation.</b> At some past moment, most of a then-managed subset appeared encrypted. But the current inventory is 176 devices plus an unknown number of personal devices. So the screenshot describes roughly half of today's estate at best, at an unknown past date, and even within its own subset it shows two unencrypted devices.</p>
+<p><b>Verdict.</b> Low-confidence historical evidence for a subset. <b>Rejected</b> as proof of current, universal encryption. It can support a much weaker claim ("encryption was largely deployed to the managed subset at some past point") but not the compliance claim the pack invited.</p>
+<p><b>Alternative considered and rejected.</b> One could argue "89 of 91 is 98 percent, so the estate is essentially encrypted." Rejected, because the denominator is wrong (91 is not 176), the date is stale, personal devices are entirely absent from the count, and with no export metadata the scope of even the 91 is unverifiable. To prove current compliance you would need a current, dated, full-population export reconciled to the device inventory.</p></div>
+<p>Apply the same three-part structure to every artifact: the MFA screenshot proves a few accounts, not a rule; the old policy proves an effective date, not a lapsed review; a ticket proves a request, not an outcome. Confidence lives in the gap between observation and conclusion, and your marks lived there too.</p>
+
+<h3><span class="n">3.5</span>The exactly-three machine controls</h3>
+<p>You implemented exactly three controls in Rego, evaluated by Open Policy Agent. No fourth control, and you must not replace an assigned one with a substitute of your own choosing. The three were:</p>
+<ol>
+  <li><code>NF.IDENTITY.PRIVILEGED_ASSURANCE</code>: privileged identities must have a valid owner, phishing-resistant MFA, and fresh credentials.</li>
+  <li><code>NF.STORAGE.RESTRICTED_PROTECTION</code>: restricted data stores must be non-public, encrypted, and logging access.</li>
+  <li><code>NF.ENDPOINT.MANAGED_HEALTH</code>: endpoints must be managed, disk-encrypted, running healthy endpoint protection, and not stale.</li>
+</ol>
+<p>Every decision your policy emitted had to carry all five of these fields, and the policy had to <b>default to deny</b>: an asset that does not affirmatively satisfy the control is denied, not silently allowed.</p>
+<table>
+  <tr><th>Field</th><th>Meaning</th></tr>
+  <tr><td><code>policy_id</code></td><td>Which of the three controls produced this decision.</td></tr>
+  <tr><td><code>asset_locator</code></td><td>Which specific asset from your assigned state the decision is about.</td></tr>
+  <tr><td>allow or deny</td><td>The decision itself, with deny as the default.</td></tr>
+  <tr><td><code>violation_code</code></td><td>Which violation family was triggered on a deny (empty or none on an allow).</td></tr>
+  <tr><td><code>evidence_locator</code></td><td>Where in your state the fact that drove the decision can be found.</td></tr>
+</table>
+<h4>The public violation families</h4>
+<p>Deny decisions used a fixed vocabulary so that decisions were comparable across candidates. The public families were:</p>
+<table>
+  <tr><th>Identity</th><th>Storage</th><th>Endpoint</th><th>Exception</th></tr>
+  <tr><td><code>IDENTITY_MFA_WEAK</code><br><code>IDENTITY_OWNER_MISSING</code><br><code>IDENTITY_CREDENTIAL_STALE</code></td><td><code>STORAGE_PUBLIC</code><br><code>STORAGE_UNENCRYPTED</code><br><code>STORAGE_LOG_MISSING</code></td><td><code>ENDPOINT_UNMANAGED</code><br><code>ENDPOINT_DISK_UNENCRYPTED</code><br><code>ENDPOINT_EDR_UNHEALTHY</code><br><code>ENDPOINT_STALE</code></td><td><code>EXCEPTION_EXPIRED</code><br><code>EXCEPTION_INCOMPLETE</code></td></tr>
+</table>
+<p>Documented aliases were acceptable only when they reconciled unambiguously to these families. Inventing an unrelated code, or emitting a bare "deny" with no family, lost mapping and decision marks because a reviewer could not tell <i>why</i> the asset was denied.</p>
+<div class="box"><h4>Exception validation</h4>
+<p>Real compliance allows for approved, temporary exceptions, so your policy had to handle them without becoming a backdoor. A <b>valid</b> exception needed all five of: an <i>owner</i> accountable for it, a <i>reason</i>, a recorded <i>approval</i>, an <i>expiry</i> date, and a <i>compensating control</i> that reduces the risk in the meantime. If any of those were missing the exception is incomplete; if it was structurally broken it is malformed; if the expiry has passed it is expired. In every one of those cases the correct behaviour is to <b>deny</b> and emit <code>EXCEPTION_INCOMPLETE</code> or <code>EXCEPTION_EXPIRED</code>. An exception is a documented, owned, time-boxed acceptance of risk, never an "allow anyway" flag.</p></div>
+<div class="box"><h4>The rule that decided most GRC scores</h4>
+<p>The Rego had to <b>evaluate the actual state of your assigned inputs</b>. It must not embed asset ids, must not depend on the ordering of the input fixtures, and must not contain copied expected results. If your policy would produce the right ledger only because the answers were baked into the code, it evaluated nothing and earned nothing for the decision criterion. Concretely, the policy had to pass <code>opa check</code> (it parses and compiles) and <code>opa test</code> (its tests pass), with the Rego <b>language mode declared and consistent</b>. Mixing an older test syntax against a newer policy syntax, or the reverse, meant the bundle did not run as submitted, and a bundle that does not run cannot earn decision marks no matter how correct it looks on paper.</p></div>
+<p>Below is a small, deliberately fictional, illustration of the <i>shape</i> of a deny decision. It is not copied from any candidate or fixture; it exists only to show the five required fields flowing out of an evaluated fact. Your real policy would derive every value from your own input, never from literals like these.</p>
+<pre><span class="m"># ILLUSTRATIVE ONLY - shape, not a copyable answer.</span>
+<span class="m"># Endpoint control: deny by default, allow only if fully healthy.</span>
+package grc.compliance
+
+<span class="c">default</span> endpoint_allow := false
+
+<span class="m"># an asset is allowed only when EVERY health fact holds</span>
+endpoint_allow if {
+  some d in input.endpoints
+  d.managed == true
+  d.disk_encrypted == true
+  d.edr_healthy == true
+  d.last_seen_days &lt;= input.policy.max_stale_days
+}
+
+<span class="m"># emit a full decision per endpoint, defaulting to deny</span>
+decisions contains decision if {
+  some d in input.endpoints
+  not d.disk_encrypted
+  decision := {
+    <span class="c">"policy_id"</span>:        "NF.ENDPOINT.MANAGED_HEALTH",
+    <span class="c">"asset_locator"</span>:    d.locator,          <span class="m"># from state, not a literal id</span>
+    <span class="c">"decision"</span>:         "deny",
+    <span class="c">"violation_code"</span>:   <span class="g">"ENDPOINT_DISK_UNENCRYPTED"</span>,
+    <span class="c">"evidence_locator"</span>: d.evidence_ref,      <span class="m"># points back into your input</span>
+  }
+}</pre>
+<p>The teaching point is not the exact syntax; it is that <code>asset_locator</code> and <code>evidence_locator</code> come <i>out of the input</i>, the decision follows from a <i>fact</i> in the state (<code>not d.disk_encrypted</code>), and the default is deny. A policy written that way produces the right ledger for whatever state it is handed, which is exactly what the private fixtures test.</p>
+
+<h3><span class="n">3.6</span>Enforceable drafting</h3>
+<p>The addendum was where governance met accountability. Every clause had to be something a person could be held to and a reviewer could check. Six elements made a clause enforceable: an <b>owner</b> (a named, accountable role), a <b>scope</b> (who and what it applies to), a <b>requirement</b> (the concrete, testable obligation), an <b>exception route</b> (how to request a time-boxed, compensated exception), <b>enforcement evidence</b> (what artifact proves the clause is being met), and a <b>review cadence</b> (when the clause itself is re-examined). A clause missing any of these was aspirational, and aspiration is not enforceable.</p>
+<div class="box answer"><h4>Illustrative clause skeleton (fictional)</h4>
+<p><b>Clause: privileged access requires phishing-resistant MFA.</b></p>
+<ul>
+  <li><b>Owner:</b> Head of Identity.</li>
+  <li><b>Scope:</b> every privileged identity across production systems, including break-glass and admin service accounts.</li>
+  <li><b>Requirement:</b> privileged authentication must use a phishing-resistant factor; access without it is denied.</li>
+  <li><b>Exception route:</b> request via the exception register with owner, reason, approval, expiry, and a compensating control; expired or incomplete exceptions deny automatically.</li>
+  <li><b>Enforcement evidence:</b> the identity control's decision ledger showing allow or deny per privileged identity, retained.</li>
+  <li><b>Review cadence:</b> reviewed quarterly, and on any material change to the identity platform.</li>
+</ul></div>
+<p>Note how the enforcement-evidence line ties the written clause back to the machine control from section 3.5. That is the join the strongest submissions made: the policy said what must be true, and the running control proved it per asset. A polished addendum with no working controls behind it could not pass the technical assessment; the words and the code had to agree.</p>
+
+<h3><span class="n">3.7</span>Reproduce it yourself</h3>
+<p>Everything in this track is checkable on your own machine. Load <i>your</i> assigned state, never an invented scenario, and run the following. The last two steps are the ones that prove your policy evaluates state rather than memorising answers.</p>
+<pre><span class="m"># 1. preserve the supplied input hashes; work from YOUR assigned state</span>
+<span class="m"># 2. confirm the bundle parses and compiles</span>
+opa check policy-bundle/
+
+<span class="m"># 3. run your tests with the declared language mode; do not mix versions</span>
+opa test policy-bundle/ -v
+
+<span class="m"># 4. produce the decision ledger from your own input state</span>
+opa eval --format=json \
+  --data policy-bundle/ \
+  --input input/control-state.json \
+  <span class="c">'data.grc.compliance.decisions'</span>
+
+<span class="m"># 5. THE STATE TEST: change one asset id and reorder the input array</span>
+<span class="m">#    then re-run step 4 against the edited input</span>
+<span class="g"># decisions must follow the changed facts, and each asset's decision</span>
+<span class="g"># must be unchanged by mere reordering. if a decision moves because you</span>
+<span class="g"># renamed an id or shuffled the list, the policy is not evaluating state.</span>
+
+<span class="m"># 6. reconcile the whole submission so it tells one story:</span>
+<span class="m">#    policy  <-> tests  <-> decision ledger  <-> evidence index</span>
+<span class="m">#    <-> addendum clauses  <-> residual-risk deferrals</span></pre>
+<p>Step 5 is the exact spirit of the private fixtures staff ran: the same policy, handed a different state, must yield the decisions that state deserves. Every material risk you did not turn into a machine control still needed a disposition in your deferrals (defer, accept, transfer, or reduce through an existing control), each with an owner, a rationale, any dependency, and a review trigger. The private fixture ids were never expected in your files; staff supply and run those.</p>
+
+<h3><span class="n">3.8</span>Where people went wrong</h3>
+<div class="box miss"><h4>The three failures that cost the most</h4>
+<ul>
+  <li><b>A beautiful document with no controls.</b> Some submissions were genuinely well written: clear gaps, thoughtful mappings, a polished addendum, and no running Rego, or Rego that was really just prose in a code block. The drafting criterion is only 15 of 100, and the decision criterion (20) plus much of mapping and evidence depend on controls that actually run. Words alone could not pass this project's technical bar.</li>
+  <li><b>Rego that did not run, or mixed language versions.</b> Bundles that failed <code>opa check</code>, contained invalid inline logic, defaulted to allow instead of deny, or paired old-syntax tests with new-syntax policies did not run as submitted. A control that does not execute proves nothing about your assets, so the decision marks could not be awarded however plausible the code looked.</li>
+  <li><b>Analysing an invented scenario instead of the assigned inputs.</b> Some candidates described a generic company and wrote generic controls, never touching the specific state they were given. Because the policy has to evaluate <i>your</i> assigned state, work aimed at an imagined scenario could not be reconciled to the fixtures and earned little, even when the general reasoning was sound.</li>
+</ul></div>
+
+<h3><span class="n">3.9</span>Your checklist for next time</h3>
+<ul class="checklist">
+  <li>Build a typed gap register: issue, class of gap, affected population, verdict, reasoning.</li>
+  <li>Correctly classify all seven items, including the two traps (risk-based rotation and the aged-but-reviewed policy).</li>
+  <li>Correct the planted BYOD mapping from data-loss-only to privacy and personal-data protection.</li>
+  <li>Record an evidence verdict for every artifact: observed fact, interpretation, verdict, alternative rejected.</li>
+  <li>Reject the stale device screenshot as proof of current universal encryption; state what real proof would be.</li>
+  <li>Implement exactly three controls: privileged assurance, restricted storage protection, managed endpoint health.</li>
+  <li>Emit every decision with policy_id, asset_locator, allow or deny, violation_code, and evidence_locator.</li>
+  <li>Default to deny, and use only the published violation families.</li>
+  <li>Validate exceptions on owner, reason, approval, expiry, and compensating control; deny anything missing or expired.</li>
+  <li>Make the Rego evaluate state: no embedded asset ids, no fixture ordering, no copied expected results.</li>
+  <li>Pass opa check and opa test with the language mode declared and consistent.</li>
+  <li>Prove it: change an asset id and reorder the input, and confirm decisions follow state, not identifiers or order.</li>
+  <li>Draft every clause with owner, scope, requirement, exception route, enforcement evidence, and review cadence.</li>
+  <li>Reconcile policy, tests, ledger, evidence index, addendum, and deferrals into one consistent story.</li>
+</ul>
+</div>
+
+  <div class="foot">Ubuntu Bridge Initiative Cybersecurity Internship, Programme Office, TRAN. This guide describes the assessment after the fact and contains no live flags, private markers, or per-person values. Your individual reviewer notes are on your dashboard.</div>
+</div>
+</body>
+</html>
