@@ -136,6 +136,18 @@ async function main() {
     });
   }
 
+  const author = await prisma.user.findFirst({
+    where: {
+      role: "SUPER_ADMIN",
+      OR: [
+        { firstName: { contains: "Somto", mode: "insensitive" } },
+        { lastName: { contains: "Okoma", mode: "insensitive" } },
+      ],
+    },
+    select: { id: true },
+  });
+  if (!author) throw new Error("Somto Okoma SUPER_ADMIN account was not found");
+
   let announcementAction = "DRY_RUN";
   if (commit) {
     for (let offset = 0; offset < updates.length; offset += 20) {
@@ -148,18 +160,6 @@ async function main() {
         )
       );
     }
-
-    const author = await prisma.user.findFirst({
-      where: {
-        role: "SUPER_ADMIN",
-        OR: [
-          { firstName: { contains: "Somto", mode: "insensitive" } },
-          { lastName: { contains: "Okoma", mode: "insensitive" } },
-        ],
-      },
-      select: { id: true },
-    });
-    if (!author) throw new Error("Somto Okoma SUPER_ADMIN account was not found");
 
     const title = "Stage 6 EH correction: B2 assigned flags";
     const content = [
