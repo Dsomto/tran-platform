@@ -323,7 +323,23 @@ async function main(): Promise<void> {
         firstName: intern.user.firstName,
         userId: intern.userId,
       }));
+  let sent = 0;
+  let skipped = 0;
   for (const recipient of recipients) {
+    if (recipient.userId) {
+      const existing = await prisma.email.count({
+        where: {
+          userId: recipient.userId,
+          subject: SUBJECT,
+          status: "sent",
+        },
+      });
+      if (existing > 0) {
+        skipped++;
+        continue;
+      }
+    }
+
     const html = renderEmail(recipient.firstName, stats);
     await sendEmail(recipient.email, html, renderText(recipient.firstName, stats));
     if (recipient.userId) {
@@ -336,9 +352,10 @@ async function main(): Promise<void> {
         },
       });
     }
+    sent++;
     await new Promise((resolve) => setTimeout(resolve, 1_100));
   }
-  console.log(`Sent ${recipients.length} email${recipients.length === 1 ? "" : "s"}.`);
+  console.log(`Sent ${sent}; skipped ${skipped} already-sent recipient${skipped === 1 ? "" : "s"}.`);
 }
 
 main()
