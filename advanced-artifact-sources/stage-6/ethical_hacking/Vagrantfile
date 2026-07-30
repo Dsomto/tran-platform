@@ -1,4 +1,9 @@
 Vagrant.configure("2") do |config|
+  marker = ENV.fetch("UBI_STAGE6_MARKER", "").strip
+  unless marker.match?(/\AUBI-A6-[A-F0-9]{12}\z/)
+    abort "Set UBI_STAGE6_MARKER to the exact Stage 6 evidence marker from your private overlay."
+  end
+
   config.vm.box = "generic/ubuntu2204"
   config.vm.synced_folder ".", "/vagrant", disabled: false
 
@@ -10,7 +15,7 @@ Vagrant.configure("2") do |config|
         provider.memory = 2048
         provider.cpus = 2
       end
-      node.vm.provision "shell", path: "provision.sh", args: [name]
+      node.vm.provision "shell", path: "provision.sh", args: [name, marker]
     end
   end
 end

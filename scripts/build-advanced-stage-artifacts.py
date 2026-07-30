@@ -38,6 +38,9 @@ PROJECT_NAMES = {
     (9, "ethical_hacking"): "Bounded Full-Stack Assessment",
     (9, "grc"): "Breach Governance Engine",
 }
+REVISIONS = {
+    (6, "ethical_hacking"): "B2",
+}
 REQUIREMENTS = {
     (6, "soc_analysis"): "The sealed replay is complete and scored. A live candidate-owned T-Pot sensor is an additional implementation path, never a programme dependency.",
     (6, "ethical_hacking"): "Build the supplied vulnerable and patched Vagrant sources on an isolated host-only network owned by you.",
@@ -52,6 +55,42 @@ REQUIREMENTS = {
     (9, "ethical_hacking"): "Run the vulnerable and patched estate from the supplied source on your own isolated Docker host; only loopback front doors are published.",
     (9, "grc"): "No external service is required; incident facts, inventory, jurisdiction fixtures, and deadline interfaces are included.",
 }
+
+
+def validate_source_contract(stage: int, track: str) -> None:
+    if (stage, track) != (6, "ethical_hacking"):
+        return
+
+    source = SOURCES / "stage-6" / "ethical_hacking"
+    required_files = [
+        source / "Vagrantfile",
+        source / "provision.sh",
+        source / "install-assigned-flags.sh",
+    ]
+    missing = [str(path.relative_to(ROOT)) for path in required_files if not path.is_file()]
+    if missing:
+        raise RuntimeError(f"Stage 6 EH flag contract is incomplete: missing {missing}")
+
+    vagrant = (source / "Vagrantfile").read_text(encoding="utf-8")
+    provision = (source / "provision.sh").read_text(encoding="utf-8")
+    installer = (source / "install-assigned-flags.sh").read_text(encoding="utf-8")
+    assertions = {
+        "Vagrant marker input": "UBI_STAGE6_MARKER" in vagrant,
+        "marker passed to provisioning": "args: [name, marker]" in vagrant,
+        "flag installer invoked": "install-assigned-flags" in provision,
+        "user flag path": "/home/support/user.txt" in installer,
+        "root flag path": "/root/root.txt" in installer,
+        "root-only permissions": "chmod 0400" in installer,
+        "user flag test": "FLAG-USER" in (
+            PUBLIC / "stage-6" / "eh" / "public-tests.json"
+        ).read_text(encoding="utf-8"),
+        "root flag test": "FLAG-ROOT" in (
+            PUBLIC / "stage-6" / "eh" / "public-tests.json"
+        ).read_text(encoding="utf-8"),
+    }
+    failed = [name for name, passed in assertions.items() if not passed]
+    if failed:
+        raise RuntimeError(f"Stage 6 EH flag contract failed: {', '.join(failed)}")
 
 
 def sha256(path: Path) -> str:
@@ -157,6 +196,7 @@ def main() -> int:
         temporary = Path(temp)
         for stage in range(6, 10):
             for track, slug in TRACKS.items():
+                validate_source_contract(stage, track)
                 participant = temporary / f"stage-{stage}" / track
                 participant.mkdir(parents=True)
                 write_start_here(participant, stage, track)
@@ -170,13 +210,14 @@ def main() -> int:
                 if track == "soc_analysis":
                     add_soc_evidence(participant, evidence_root, stage)
 
-                key = f"{track}/stage-{stage}/shared-stage{stage}-b1.tar.gz"
+                revision = REVISIONS.get((stage, track), "B1")
+                key = f"{track}/stage-{stage}/shared-stage{stage}-{revision.lower()}.tar.gz"
                 destination = output / key
                 details = archive(participant, destination)
                 artifacts.append({
                     "track": track,
                     "stage": f"STAGE_{stage}",
-                    "revision": "B1",
+                    "revision": revision,
                     "artifact_key": key,
                     **details,
                 })

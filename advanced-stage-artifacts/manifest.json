@@ -14,10 +14,10 @@
     {
       "track": "ethical_hacking",
       "stage": "STAGE_6",
-      "revision": "B1",
-      "artifact_key": "ethical_hacking/stage-6/shared-stage6-b1.tar.gz",
-      "size_bytes": 10387,
-      "sha256": "be9b5c540f1dab556dbd60d66846880ad147ea0f45394c04b8518a8117eff7ea"
+      "revision": "B2",
+      "artifact_key": "ethical_hacking/stage-6/shared-stage6-b2.tar.gz",
+      "size_bytes": 11460,
+      "sha256": "c656a7b4ae9884a86a174c392c9778550e4959a4e05fa4bcf8bc27f89a8da047"
     },
     {
       "track": "grc",

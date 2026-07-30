@@ -7,6 +7,13 @@ host-only network and a clean snapshot. No internet targets, denial of service,
 destructive persistence, or data damage. Stop after reading the assigned
 `root.txt` marker and proving effective UID 0.
 
+Set `UBI_STAGE6_MARKER` to the exact marker in your private overlay before the
+first `vagrant up`. B2 provisioning creates `/home/support/user.txt` and
+`/root/root.txt`. If you already built B1, use the B2 migration procedure in
+`lab-source/README.md`; you do not need to rebuild the VM. B1 UID-0 evidence
+captured before the correction remains valid and missing B1 flags are not
+penalized.
+
 ## Window and scoring
 
 Monday 09:00 WAT to Friday 18:10 WAT. One revision. 100 points: scope/safety 15, enumeration and path

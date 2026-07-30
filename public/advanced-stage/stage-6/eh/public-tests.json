@@ -9,6 +9,8 @@
     { "id": "CLEANUP-FILE", "postcondition": { "uploaded_files": 0 }, "expected": "pass" },
     { "id": "CLEANUP-PROCESS", "postcondition": { "candidate_processes": 0 }, "expected": "pass" },
     { "id": "CLEANUP-ACCOUNT", "postcondition": { "candidate_accounts": 0 }, "expected": "pass" },
+    { "id": "FLAG-USER", "state": "provisioned", "path": "/home/support/user.txt", "expected": { "owner": "support", "group": "support", "mode": "0400", "prefix": "UBI{A6_USER_" } },
+    { "id": "FLAG-ROOT", "state": "provisioned", "path": "/root/root.txt", "expected": { "owner": "root", "group": "root", "mode": "0400", "prefix": "UBI{A6_ROOT_" } },
     { "id": "PATCH-PRECONDITION", "state": "patched", "expected_failure_stage": "vulnerability_precondition" },
     { "id": "SERVICE-REGRESSION", "state": "patched", "service_expected": "healthy" }
   ]

@@ -25,6 +25,11 @@ function overlayFor(stage: string, track: string, pool: number): string[] {
       `The planned launch date is ${["17", "18", "20", "22", "24", "27"][pool - 1]} July 2026.`,
       `Risk acceptance above USD ${[25, 40, 55, 70, 85, 100][pool - 1]},000 requires CEO approval.`,
     ],
+    "STAGE_6:ETHICAL_HACKING": [
+      "Before building B2, export `UBI_STAGE6_MARKER` with the exact evidence marker printed above, then run `vagrant up vulnerable patched`.",
+      "If you already built B1, copy B2 `lab-source/install-assigned-flags.sh` into the existing B1 `lab-source/` directory and follow the B1 migration commands in `lab-source/README.md`.",
+      "B1 UID-0 evidence captured before the correction remains valid; missing B1 flags are not penalized.",
+    ],
     "STAGE_7:GRC": [
       `Your audit sample must expand one of these controls: ${["A.5.16", "A.5.18", "A.5.19", "A.8.5", "A.8.8", "A.8.32"][pool - 1]}.`,
       "Add two evidence requests for that control and state the sampling rationale.",
