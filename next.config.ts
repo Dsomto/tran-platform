@@ -70,6 +70,7 @@ const nextConfig: NextConfig = {
       "./stage5-artifacts/grc/stage-5/shared-stage5-b1.tar.gz",
       "./advanced-stage-artifacts/soc_analysis/stage-6/shared-stage6-b1.tar.gz",
       "./advanced-stage-artifacts/ethical_hacking/stage-6/shared-stage6-b1.tar.gz",
+      "./advanced-stage-artifacts/ethical_hacking/stage-6/shared-stage6-b2.tar.gz",
       "./advanced-stage-artifacts/grc/stage-6/shared-stage6-b1.tar.gz",
       "./advanced-stage-artifacts/soc_analysis/stage-7/shared-stage7-b1.tar.gz",
       "./advanced-stage-artifacts/ethical_hacking/stage-7/shared-stage7-b1.tar.gz",
