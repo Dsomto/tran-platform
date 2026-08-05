@@ -2,6 +2,9 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { logger } from "@/lib/logger";
 import { generateDiscontinuationLetter } from "@/lib/generate-discontinuation-letter";
+import { generateHonourableCloseLetter } from "@/lib/generate-honourable-close-letter";
+import { isAdvancedStage } from "@/lib/advanced-credential";
+import { isAdvancedTrack } from "@/lib/advanced-stage";
 import { isValidLetterShareSig, letterIdFor } from "@/lib/certificate-link";
 
 export const runtime = "nodejs";
@@ -54,13 +57,6 @@ export async function GET(
       report.intern.user.email;
     const stageLabel = STAGE_LABEL[report.stage] ?? report.stage;
 
-    // StageWindow.passingScore is the threshold at the time of finalize.
-    const win = await prisma.stageWindow.findUnique({
-      where: { stage: report.stage },
-      select: { passingScore: true },
-    });
-    const passingScore = win?.passingScore ?? 70;
-
     // Effective discontinuation date is computed from finalizedAt (set when
     // the admin clicked Finalize) so the PDF reads the same date the email
     // already promised. Falls back to gradedAt if finalizedAt is missing
@@ -68,18 +64,50 @@ export async function GET(
     const issuedAt = report.finalizedAt ?? report.gradedAt ?? new Date();
     const effectiveDate = new Date(issuedAt.getTime() + 2 * 24 * 60 * 60 * 1000);
 
-    const pdf = await generateDiscontinuationLetter({
-      fullName,
-      stageLabel,
-      score: report.finalScore ?? report.score ?? 0,
-      passingScore,
-      issuedAt,
-      effectiveDate,
-      letterId: letterIdFor(report.id),
-    });
+    const letterId = letterIdFor(report.id);
+    let pdf: Buffer;
+    if (isAdvancedStage(report.stage)) {
+      if (!isAdvancedTrack(report.intern.track)) {
+        logger.error("advanced_close_letter_invalid_track", {
+          reportId: report.id,
+          track: report.intern.track,
+        });
+        return Response.json({ error: "Invalid advanced-programme track" }, { status: 500 });
+      }
+      const application = await prisma.publicApplication.findFirst({
+        where: { email: report.intern.user.email.toLowerCase() },
+        select: { returningCode: true },
+      });
+      pdf = await generateHonourableCloseLetter({
+        fullName,
+        stage: report.stage,
+        track: report.intern.track,
+        issuedAt,
+        effectiveDate,
+        letterId,
+        returningCode: application?.returningCode ?? null,
+        cohortAtStage: report.advancedCohortSize,
+      });
+    } else {
+      // Core-stage letters retain the score-threshold wording used before the
+      // advanced programme moved to within-track ranking.
+      const win = await prisma.stageWindow.findUnique({
+        where: { stage: report.stage },
+        select: { passingScore: true },
+      });
+      pdf = await generateDiscontinuationLetter({
+        fullName,
+        stageLabel,
+        score: report.finalScore ?? report.score ?? 0,
+        passingScore: win?.passingScore ?? 70,
+        issuedAt,
+        effectiveDate,
+        letterId,
+      });
+    }
 
     const safeName = fullName.replace(/[^A-Za-z0-9\s-]/g, "").replace(/\s+/g, "-");
-    const filename = `UBI-Letter-${safeName}-${report.stage}.pdf`;
+    const filename = `UBI-Close-Letter-${safeName}-${report.stage}-${report.intern.track}.pdf`;
 
     return new Response(pdf as unknown as BodyInit, {
       status: 200,

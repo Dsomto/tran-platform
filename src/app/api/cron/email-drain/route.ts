@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { logger } from "@/lib/logger";
-import nodemailer from "nodemailer";
+import { MAX_ATTEMPTS, SEND_INTERVAL_MS, pacedSend, smtpConfigured } from "@/lib/smtp-send";
 
 // FIFO drain of queued emails with a lease to prevent double-send.
 //
@@ -27,11 +27,22 @@ async function handleDrain(request: NextRequest): Promise<Response> {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    if (!smtpConfigured()) {
+      return Response.json({ error: "SMTP env not configured" }, { status: 500 });
+    }
+
+    // Sending is paced at one message per second, so the batch size that
+    // actually fits is set by the function's time budget, not by how many rows
+    // are waiting. Claiming far more than we can send just leases rows we then
+    // have to release. MAX_BUDGET_MS leaves headroom under `maxDuration`.
+    const MAX_BUDGET_MS = 270_000;
+    const startedAt = Date.now();
+    const deadline = startedAt + MAX_BUDGET_MS;
+    const fitsInBudget = Math.floor(MAX_BUDGET_MS / SEND_INTERVAL_MS) - 10;
+
     const url = new URL(request.url);
-    const batch = Math.min(
-      1000,
-      Math.max(1, parseInt(url.searchParams.get("limit") || "300") || 300)
-    );
+    const requested = Math.max(1, parseInt(url.searchParams.get("limit") || "200") || 200);
+    const batch = Math.min(requested, fitsInBudget);
 
     // Lease step. A row is claimable if it is PENDING and either unlocked or
     // lock-stale. We re-assert that exact condition inside the updateMany so
@@ -101,60 +112,80 @@ async function handleDrain(request: NextRequest): Promise<Response> {
       return Response.json({ drained: 0, remaining, note: "No rows survived lease step" });
     }
 
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || "smtp.zoho.com",
-      port: parseInt(process.env.SMTP_PORT || "587"),
-      secure: false,
-      auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
-      pool: true,
-      maxConnections: 3,
-      maxMessages: 100,
-    });
+    // Send paced, one connection per message, aborting on a provider block.
+    // Every branch below clears lockedAt, so a row is never left leased.
+    const outcome = await pacedSend(
+      pending,
+      async (item, result) => {
+        if (result.kind === "sent") {
+          await prisma.emailQueueItem.update({
+            where: { id: item.id },
+            data: {
+              status: "SENT",
+              sentAt: new Date(),
+              attempts: item.attempts + 1,
+              failReason: null,
+              lockedAt: null,
+            },
+          });
+          return;
+        }
 
-    const from = `"Somto from Ubuntu Bridge Initiative" <noreply@ubuntubridgeinitiatives.org>`;
+        if (result.kind === "blocked") {
+          // Not delivered and not rejected. Release the lease without burning
+          // an attempt so the row is retried cleanly once the block clears.
+          await prisma.emailQueueItem.update({
+            where: { id: item.id },
+            data: { failReason: `Provider block: ${result.reason}`.slice(0, 500), lockedAt: null },
+          });
+          return;
+        }
 
-    let sent = 0;
-    let failed = 0;
-
-    for (const item of pending) {
-      try {
-        await transporter.sendMail({
-          from,
-          to: item.toEmail,
-          subject: item.subject,
-          html: item.body,
-        });
-        await prisma.emailQueueItem.update({
-          where: { id: item.id },
-          data: {
-            status: "SENT",
-            sentAt: new Date(),
-            attempts: item.attempts + 1,
-            lockedAt: null,
-          },
-        });
-        sent++;
-      } catch (err) {
-        failed++;
-        const msg = err instanceof Error ? err.message : String(err);
+        // A 5xx is the mailbox refusing us for good — fail it now rather than
+        // mailing a dead address twice more. A throttle or timeout is not the
+        // recipient's fault and keeps its retries.
         const nextAttempts = item.attempts + 1;
+        const exhausted = nextAttempts >= MAX_ATTEMPTS;
         await prisma.emailQueueItem.update({
           where: { id: item.id },
           data: {
-            status: nextAttempts >= 3 ? "FAILED" : "PENDING",
+            status: result.kind === "permanent" || exhausted ? "FAILED" : "PENDING",
             attempts: nextAttempts,
-            failReason: msg.slice(0, 500),
+            failReason: result.reason,
             lockedAt: null,
           },
         });
-        logger.error("email_drain_item_failed", err, { itemId: item.id, attempts: nextAttempts });
-      }
+        logger.error("email_drain_item_failed", new Error(result.reason), {
+          itemId: item.id, attempts: nextAttempts, permanent: result.kind === "permanent",
+        });
+      },
+      { deadline }
+    );
+
+    // Anything we never attempted must not stay leased, or it waits out the
+    // full stale window before another drain can touch it.
+    const untouched = outcome.skipped.map((s) => s.id);
+    if (untouched.length) {
+      await prisma.emailQueueItem.updateMany({
+        where: { id: { in: untouched }, status: "PENDING" },
+        data: { lockedAt: null },
+      });
     }
 
-    transporter.close();
-
     const remaining = await prisma.emailQueueItem.count({ where: { status: "PENDING" } });
-    return Response.json({ sent, failed, drained: sent + failed, remaining });
+    const failed = outcome.permanent + outcome.transient;
+    return Response.json({
+      sent: outcome.sent,
+      failed,
+      drained: outcome.sent + failed,
+      remaining,
+      skipped: untouched.length,
+      timedOut: outcome.timedOut,
+      blocked: outcome.blockedReason,
+      ...(outcome.blockedReason
+        ? { note: "Provider blocked the connection. Stop sending and wait at least 5 minutes — reconnecting sooner extends the block." }
+        : {}),
+    });
   } catch (error) {
     logger.error("email_drain_failed", error);
     return Response.json({ error: "Internal server error" }, { status: 500 });

@@ -2,6 +2,9 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { logger } from "@/lib/logger";
 import { generatePassLetter } from "@/lib/generate-pass-letter";
+import { generateAchievementLetter } from "@/lib/generate-achievement-letter";
+import { isAdvancedStage } from "@/lib/advanced-credential";
+import { isAdvancedTrack } from "@/lib/advanced-stage";
 import { isValidPassLetterShareSig, passLetterIdFor } from "@/lib/certificate-link";
 
 export const runtime = "nodejs";
@@ -53,28 +56,49 @@ export async function GET(
       `${report.intern.user.firstName} ${report.intern.user.lastName}`.trim() ||
       report.intern.user.email;
     const stageLabel = STAGE_LABEL[report.stage] ?? report.stage;
-    const win = await prisma.stageWindow.findUnique({
-      where: { stage: report.stage },
-      select: { passingScore: true },
-    });
-
     const stageNum = Number(report.stage.replace("STAGE_", ""));
     const nextKey = `STAGE_${stageNum + 1}`;
     const nextStageLabel = STAGE_LABEL[nextKey];
-
-    const pdf = await generatePassLetter({
-      fullName,
-      stageLabel,
-      score: report.finalScore ?? report.score ?? 0,
-      passingScore: win?.passingScore ?? 70,
-      issuedAt: report.gradedAt ?? new Date(),
-      letterId: passLetterIdFor(report.id),
-      nextStageLabel,
-      stageKey: report.stage,
-    });
+    const issuedAt = report.finalizedAt ?? report.gradedAt ?? new Date();
+    const letterId = passLetterIdFor(report.id);
+    let pdf: Buffer;
+    if (isAdvancedStage(report.stage)) {
+      if (!isAdvancedTrack(report.intern.track)) {
+        logger.error("advanced_achievement_letter_invalid_track", {
+          reportId: report.id,
+          track: report.intern.track,
+        });
+        return Response.json({ error: "Invalid advanced-programme track" }, { status: 500 });
+      }
+      pdf = await generateAchievementLetter({
+        fullName,
+        stage: report.stage,
+        track: report.intern.track,
+        issuedAt,
+        letterId,
+        rank: report.advancedRank,
+        cohortSize: report.advancedCohortSize,
+        nextStageLabel,
+      });
+    } else {
+      const win = await prisma.stageWindow.findUnique({
+        where: { stage: report.stage },
+        select: { passingScore: true },
+      });
+      pdf = await generatePassLetter({
+        fullName,
+        stageLabel,
+        score: report.finalScore ?? report.score ?? 0,
+        passingScore: win?.passingScore ?? 70,
+        issuedAt,
+        letterId,
+        nextStageLabel,
+        stageKey: report.stage,
+      });
+    }
 
     const safeName = fullName.replace(/[^A-Za-z0-9\s-]/g, "").replace(/\s+/g, "-");
-    const filename = `UBI-Letter-${safeName}-${report.stage}.pdf`;
+    const filename = `UBI-Achievement-Letter-${safeName}-${report.stage}-${report.intern.track}.pdf`;
 
     return new Response(pdf as unknown as BodyInit, {
       status: 200,

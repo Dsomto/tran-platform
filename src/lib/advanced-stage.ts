@@ -1,6 +1,10 @@
 import type { StageKey, StageSlug } from "./stage-login";
 
 export type AdvancedTrack = "SOC_ANALYSIS" | "ETHICAL_HACKING" | "GRC";
+
+export function isAdvancedTrack(value: string): value is AdvancedTrack {
+  return value === "SOC_ANALYSIS" || value === "ETHICAL_HACKING" || value === "GRC";
+}
 export const ADVANCED_STAGE_WINDOW_LABEL = "Mon 09:00 WAT - Fri 18:10 WAT";
 
 export type AdvancedResource = {

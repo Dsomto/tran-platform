@@ -34,10 +34,11 @@ export function buildAddToProfileUrl(opts: {
   issuedAt: Date;
   certId: string;
   certUrl: string;
+  credentialName?: string;
 }): string {
   const params = new URLSearchParams({
     startTask: "CERTIFICATION_NAME",
-    name: stageCertName(opts.stageKey),
+    name: opts.credentialName ?? stageCertName(opts.stageKey),
     organizationId: UBI_LINKEDIN_ORG_ID,
     organizationName: UBI_LINKEDIN_ORG_NAME,
     issueYear: String(opts.issuedAt.getUTCFullYear()),

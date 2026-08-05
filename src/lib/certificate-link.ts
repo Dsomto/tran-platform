@@ -134,6 +134,63 @@ export function passLetterUrl(opts: {
   return `${opts.origin.replace(/\/$/, "")}/api/pass-letter/${opts.reportId}?sig=${sig}`;
 }
 
+// Employer-facing reference letter for advanced-programme interns. Its own
+// scope: this is the one document an intern is expected to forward to a third
+// party, so a leaked reference URL must not open the close letter (which names
+// their returning code) or the performance record (which carries every score).
+export function referenceShareSig(reportId: string, internId: string): string {
+  return shortHmac(documentSigningSecret(), `reference:${reportId}:${internId}`, 16);
+}
+
+export function isValidReferenceShareSig(
+  reportId: string,
+  internId: string,
+  sig: string | null
+): boolean {
+  return validShareSig("reference", reportId, internId, sig);
+}
+
+export function referenceIdFor(reportId: string): string {
+  return shortHmac(documentSigningSecret(), `reference-id:${reportId}`, 12).toUpperCase();
+}
+
+export function referenceUrl(opts: {
+  origin: string;
+  reportId: string;
+  internId: string;
+}): string {
+  const sig = referenceShareSig(opts.reportId, opts.internId);
+  return `${opts.origin.replace(/\/$/, "")}/api/reference-letter/${opts.reportId}?sig=${sig}`;
+}
+
+// Personal performance record — every stage score and the reviewer's notes.
+// The most sensitive document in the set, so it keeps its own scope and the
+// route additionally refuses to serve it to anyone but the intern.
+export function performanceRecordShareSig(reportId: string, internId: string): string {
+  return shortHmac(documentSigningSecret(), `performance-record:${reportId}:${internId}`, 16);
+}
+
+export function isValidPerformanceRecordShareSig(
+  reportId: string,
+  internId: string,
+  sig: string | null
+): boolean {
+  return validShareSig("performance-record", reportId, internId, sig);
+}
+
+export function performanceRecordIdFor(reportId: string): string {
+  return shortHmac(documentSigningSecret(), `performance-record-id:${reportId}`, 12).toUpperCase();
+}
+
+export function performanceRecordUrl(opts: {
+  origin: string;
+  reportId: string;
+  internId: string;
+}): string {
+  const sig = performanceRecordShareSig(opts.reportId, opts.internId);
+  return `${opts.origin.replace(/\/$/, "")}/api/performance-record/${opts.reportId}?sig=${sig}`;
+}
+
 // Proof-of-work badge for Stage 3 passers. Kept on its own scope so a
 // certificate or letter URL cannot be replayed against the badge endpoint.
 export function proofBadgeShareSig(reportId: string, internId: string): string {

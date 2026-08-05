@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { logger } from "@/lib/logger";
-import { certificateUrl, letterUrl, passLetterUrl, proofBadgeUrl, verifyUrl, certificateIdFor, cyberCorePieceUrl } from "@/lib/certificate-link";
+import { certificateUrl, letterUrl, passLetterUrl, proofBadgeUrl, verifyUrl, certificateIdFor, cyberCorePieceUrl, referenceUrl, performanceRecordUrl } from "@/lib/certificate-link";
 import { buildAddToProfileUrl } from "@/lib/linkedin";
 import { ELIMINATION_GRACE_MS } from "@/lib/elimination-grace";
 import { recordAudit, auditMetaFromRequest } from "@/lib/audit";
@@ -1540,6 +1540,11 @@ async function handleFinalize(
     if (r.status === "PENDING_PROMOTION") {
       const certUrlValue = certificateUrl({ origin, reportId: r.id, internId: r.intern.id });
       const passLetterUrlValue = passLetterUrl({ origin, reportId: r.id, internId: r.intern.id });
+      // Reference letter is an advanced-programme document only; core stages
+      // have no per-track brief for it to attest to.
+      const referenceUrlValue = advancedPolicy
+        ? referenceUrl({ origin, reportId: r.id, internId: r.intern.id })
+        : null;
       const proofBadgeUrlValue =
         stage === "STAGE_3" ? proofBadgeUrl({ origin, reportId: r.id, internId: r.intern.id }) : null;
       const feedbackUrl = `${origin.replace(/\/$/, "")}/dashboard/reports`;
@@ -1581,6 +1586,7 @@ async function handleFinalize(
               passingScore: threshold,
               certUrl: certUrlValue,
               letterPdfUrl: passLetterUrlValue,
+              referenceLetterUrl: referenceUrlValue,
               proofBadgeUrl: proofBadgeUrlValue,
               feedbackUrl,
               slackUrl,
@@ -1677,6 +1683,15 @@ async function handleFinalize(
       // the discontinuation letter (PDF) + a feedback dashboard link. Feedback
       // text itself is no longer inlined in the email.
       const letterPdfUrl = letterUrl({ origin, reportId: r.id, internId: r.intern.id });
+      // Advanced-only companions. These matter most here: dashboard access ends
+      // in two days, so the reference letter and the performance record are the
+      // intern's lasting copy of what they did and how it was assessed.
+      const referenceUrlValue = advancedPolicy
+        ? referenceUrl({ origin, reportId: r.id, internId: r.intern.id })
+        : null;
+      const performanceRecordUrlValue = advancedPolicy
+        ? performanceRecordUrl({ origin, reportId: r.id, internId: r.intern.id })
+        : null;
       const feedbackUrl = `${origin.replace(/\/$/, "")}/dashboard/reports`;
       const issuedAt = new Date();
       // Credentials wind down 2 days after the result email. This matches the
@@ -1735,6 +1750,8 @@ async function handleFinalize(
               passingScore: threshold,
               certUrl: null,
               letterPdfUrl,
+              referenceLetterUrl: referenceUrlValue,
+              performanceRecordUrl: performanceRecordUrlValue,
               proofBadgeUrl: null,
               feedbackUrl,
               slackUrl,
@@ -1766,6 +1783,8 @@ async function handleFinalize(
               advancedPercentile: r.advancedPercentile,
               advancedCumulativePercentile: r.advancedCumulativePercentile,
               letterPdfUrl,
+              referenceLetterUrl: referenceUrlValue,
+              performanceRecordUrl: performanceRecordUrlValue,
             },
           },
         }),
@@ -1950,6 +1969,11 @@ function renderResultEmail(opts: {
   } | null;
   // Returning-candidate code — only set on eliminated (passed:false) emails.
   returningCode?: string | null;
+  // Advanced-programme extras. The reference letter goes to both outcomes; the
+  // performance record is offered on elimination, when dashboard access is
+  // about to end and the reviewer notes would otherwise be lost.
+  referenceLetterUrl?: string | null;
+  performanceRecordUrl?: string | null;
 }): string {
   const {
     firstName,
@@ -1974,6 +1998,8 @@ function renderResultEmail(opts: {
     badgeUrl,
     advancedSelection,
     returningCode,
+    referenceLetterUrl,
+    performanceRecordUrl,
   } = opts;
   const nextStageNum = Number(stageNumber) + 1;
   const mondayLabel = nextMondayLabel(issuedAt);
@@ -2075,6 +2101,7 @@ function renderResultEmail(opts: {
       <div style="margin:0 0 10px;">
         ${certUrl ? ctaButton(certUrl, "Download final-case certificate", "#B91C1C") : ""}
         ${letterPdfUrl ? `&nbsp;${ctaButton(letterPdfUrl, "Download achievement letter", "#111827")}` : ""}
+        ${referenceLetterUrl ? `&nbsp;${ctaButton(referenceLetterUrl, "Download reference letter", "#1D4ED8")}` : ""}
       </div>
       <p style="font-size:13px;line-height:1.6;color:#64748B;margin:22px 0 0;">
         Your review notes are available on your dashboard,
@@ -2213,10 +2240,25 @@ function renderResultEmail(opts: {
         reconcile, and how to close the gap next time — please read them; they were written for you.
       </p>
       ${returningCodeBlock}
-      <div style="margin:0 0 20px;">
+      <div style="margin:0 0 12px;">
         ${letterPdfUrl ? ctaButton(letterPdfUrl, "Download your letter (PDF)", "#0F172A") : ""}
         &nbsp;${ctaButton(feedbackUrl, "Read my reviewer notes", "#0F766E")}
       </div>
+      ${
+        referenceLetterUrl || performanceRecordUrl
+          ? `<div style="margin:0 0 20px;padding:14px 16px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;">
+              <div style="font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:#0F766E;font-weight:700;margin:0 0 10px;">
+                Yours to keep
+              </div>
+              <p style="font-size:13px;line-height:1.6;color:#475569;margin:0 0 12px;">
+                Two documents you can download now and use later. The reference is written
+                for an employer and can be forwarded exactly as it is.
+              </p>
+              ${referenceLetterUrl ? ctaButton(referenceLetterUrl, "Download reference letter", "#1D4ED8") : ""}
+              ${performanceRecordUrl ? `&nbsp;${ctaButton(performanceRecordUrl, "Download performance record", "#334155")}` : ""}
+            </div>`
+          : ""
+      }
       <p style="font-size:13px;line-height:1.65;color:#94A3B8;margin:0 0 6px;">
         Your dashboard access winds down ${effectiveLabel ? `on ${effectiveLabel}` : "in two days"} —
         download anything you'd like to keep before then. For your records, ${rankLine.replace(/<[^>]+>/g, "")}

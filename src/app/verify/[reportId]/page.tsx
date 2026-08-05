@@ -2,6 +2,14 @@ import { prisma } from "@/lib/db";
 import { isValidCertificateShareSig, certificateUrl, verifyUrl } from "@/lib/certificate-link";
 import { certificateIdFor } from "@/lib/certificate-link";
 import { buildAddToProfileUrl, stageCertName } from "@/lib/linkedin";
+import {
+  ADVANCED_CREDENTIALS,
+  TRACK_LABEL,
+  credentialFor,
+  isAdvancedStage,
+  standingFor,
+} from "@/lib/advanced-credential";
+import { isAdvancedTrack } from "@/lib/advanced-stage";
 import { LogoMark } from "@/components/logo";
 import { VerifyActions } from "./verify-actions";
 import { CheckCircle2 } from "lucide-react";
@@ -53,11 +61,21 @@ export default async function VerifyPage({
   if (!isValidCertificateShareSig(report.id, report.intern.id, sig ?? null)) {
     return <Invalid msg="This verification link is missing or invalid. Open it from the link issued to the holder." />;
   }
+  if (isAdvancedStage(report.stage) && !isAdvancedTrack(report.intern.track)) {
+    return <Invalid msg="This advanced credential has an invalid track binding and cannot be verified." />;
+  }
 
   const fullName =
     `${report.intern.user.firstName} ${report.intern.user.lastName}`.trim() ||
     report.intern.user.email;
   const stageLabel = STAGE_LABEL[report.stage] ?? report.stage;
+  const advancedContext = isAdvancedStage(report.stage) && isAdvancedTrack(report.intern.track)
+    ? {
+        standing: standingFor(report.stage, report.intern.track),
+        project: credentialFor(report.stage, report.intern.track).project,
+        title: ADVANCED_CREDENTIALS[report.stage].title,
+      }
+    : null;
   const issuedAt = report.finalizedAt ?? report.gradedAt ?? new Date();
   const certId = certificateIdFor(report.id);
   const origin = process.env.PUBLIC_APP_URL || "https://ubuntubridgeinitiatives.org";
@@ -69,6 +87,7 @@ export default async function VerifyPage({
     issuedAt,
     certId,
     certUrl: thisUrl,
+    credentialName: advancedContext?.standing,
   });
 
   const issuedStr = issuedAt.toLocaleDateString("en-GB", { year: "numeric", month: "long", day: "numeric" });
@@ -98,7 +117,10 @@ export default async function VerifyPage({
               <p className="text-xs uppercase tracking-wide text-muted">This certifies that</p>
               <h1 className="text-2xl sm:text-3xl font-bold text-foreground mt-1">{fullName}</h1>
               <p className="text-muted mt-2">
-                {report.stage === "STAGE_4" ? (
+                {advancedContext ? (
+                  <>was conferred the standing of <span className="font-semibold text-foreground">{advancedContext.standing}</span> after
+                  completing the <span className="font-semibold text-foreground">{advancedContext.project}</span> brief.</>
+                ) : report.stage === "STAGE_4" ? (
                   <>was conferred the standing of <span className="font-semibold text-foreground">Cyber Core Associate</span> on
                   completing the Ubuntu Bridge Cybersecurity Internship.</>
                 ) : (
@@ -111,7 +133,15 @@ export default async function VerifyPage({
             <dl className="grid grid-cols-2 gap-x-6 gap-y-4 text-sm">
               <div>
                 <dt className="text-muted">Programme stage</dt>
-                <dd className="font-medium text-foreground mt-0.5">{stageLabel}</dd>
+                <dd className="font-medium text-foreground mt-0.5">{advancedContext?.title ?? stageLabel}</dd>
+              </div>
+              <div>
+                <dt className="text-muted">Track</dt>
+                <dd className="font-medium text-foreground mt-0.5">
+                  {advancedContext && isAdvancedTrack(report.intern.track)
+                    ? TRACK_LABEL[report.intern.track]
+                    : "Core programme"}
+                </dd>
               </div>
               <div>
                 <dt className="text-muted">Issued</dt>

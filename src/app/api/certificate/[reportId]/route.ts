@@ -2,6 +2,9 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { logger } from "@/lib/logger";
 import { generateStageCertificate } from "@/lib/generate-certificate";
+import { generateAdvancedCertificate } from "@/lib/generate-advanced-certificate";
+import { isAdvancedStage } from "@/lib/advanced-credential";
+import { isAdvancedTrack } from "@/lib/advanced-stage";
 import { certificateIdFor, isValidCertificateShareSig } from "@/lib/certificate-link";
 
 export const runtime = "nodejs";
@@ -54,22 +57,42 @@ export async function GET(
       report.intern.user.email;
     const stageLabel = STAGE_LABEL[report.stage] ?? report.stage;
 
-    const win = await prisma.stageWindow.findUnique({
-      where: { stage: report.stage },
-      select: { passingScore: true },
-    });
-    const pdf = await generateStageCertificate({
-      fullName,
-      stageLabel,
-      stageKey: report.stage,
-      score: report.finalScore ?? report.score ?? 0,
-      passingScore: win?.passingScore ?? 70,
-      issuedAt: report.finalizedAt ?? report.gradedAt ?? new Date(),
-      certId: certificateIdFor(report.id),
-    });
+    const issuedAt = report.finalizedAt ?? report.gradedAt ?? new Date();
+    const certId = certificateIdFor(report.id);
+    let pdf: Buffer;
+    if (isAdvancedStage(report.stage)) {
+      if (!isAdvancedTrack(report.intern.track)) {
+        logger.error("advanced_certificate_invalid_track", {
+          reportId: report.id,
+          track: report.intern.track,
+        });
+        return Response.json({ error: "Invalid advanced-programme track" }, { status: 500 });
+      }
+      pdf = await generateAdvancedCertificate({
+        fullName,
+        stage: report.stage,
+        track: report.intern.track,
+        issuedAt,
+        certId,
+      });
+    } else {
+      const win = await prisma.stageWindow.findUnique({
+        where: { stage: report.stage },
+        select: { passingScore: true },
+      });
+      pdf = await generateStageCertificate({
+        fullName,
+        stageLabel,
+        stageKey: report.stage,
+        score: report.finalScore ?? report.score ?? 0,
+        passingScore: win?.passingScore ?? 70,
+        issuedAt,
+        certId,
+      });
+    }
 
     const safeName = fullName.replace(/[^A-Za-z0-9\s-]/g, "").replace(/\s+/g, "-");
-    const filename = `UBI-Certificate-${safeName}-${report.stage}.pdf`;
+    const filename = `UBI-Certificate-${safeName}-${report.stage}-${report.intern.track}.pdf`;
     // inline=1 lets the verify page (the LinkedIn "credential URL" target) embed
     // the actual certificate rather than force a download.
     const disposition = url.searchParams.get("inline") === "1" ? "inline" : "attachment";

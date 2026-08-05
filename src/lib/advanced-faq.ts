@@ -514,6 +514,15 @@ function sharedQuestions(project: AdvancedProject): AdvancedFaqItem[] {
     ? `The denominator is the full cohort that entered this stage in your track, including people who did not submit. Non-submitters are removed first and count toward the ${Math.round(policy.eliminationRate * 100)}% attrition target. If that does not reach the target, only the remaining shortfall is taken from the lowest-ranked graded reports.`
     : "The denominator is the full cohort assigned to this stage in your track; a non-submitter cannot advance.";
 
+  const stageSixVideo = project.number === 2
+    ? [
+        submit(
+          "Is a screen recording or video required for Stage 6?",
+          "No. A Stage 6 video is optional supporting evidence. It carries no standalone marks, and omitting it does not reduce your score. Grading is based on the submitted implementation, tests, raw evidence, machine-readable outputs, report, and reproducibility record. If you voluntarily include a recording, keep it focused and remove unrelated tabs, accounts, notifications, credentials, and private keys.",
+        ),
+      ]
+    : [];
+
   return [
     setup(
       "When is this project open, and may I submit after the deadline?",
@@ -535,6 +544,7 @@ function sharedQuestions(project: AdvancedProject): AdvancedFaqItem[] {
       "How do I check that staff can open my submission?",
       `Open the submitted folder URL in a private or incognito browser where you are not signed in. Confirm the root opens without a permission request, every file is downloadable, manifest.sha256 verifies, and the clean build or test command in README.md is exact. ${project.revision === "No revision" ? "This project has no revision, so complete this check before submitting." : "One revision may be offered under the published rule, but inaccessible or missing evidence can still prevent assessment."}`,
     ),
+    ...stageSixVideo,
   ];
 }
 
