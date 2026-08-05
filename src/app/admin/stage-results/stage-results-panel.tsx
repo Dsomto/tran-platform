@@ -48,6 +48,8 @@ interface Pending {
   cutoff: number | null;
   selectionMode: "CUTOFF" | "PERCENTILE";
   policyLabel: string | null;
+  rankingStale: boolean;
+  rankingStaleReason: string | null;
   promotion: PendingRow[];
   elimination: PendingRow[];
 }
@@ -463,7 +465,9 @@ export function StageResultsPanel() {
                     swap.
                   </p>
                   <p className="mt-3 text-xs font-medium text-foreground">
-                    {pending
+                    {pending?.rankingStale
+                      ? "This ranking used an outdated cohort and must be recalculated before finalization."
+                      : pending
                       ? unrankedReviewCount > 0
                         ? `${unrankedReviewCount} newly graded report${unrankedReviewCount === 1 ? "" : "s"} must be reviewed before ranking is recalculated. QA verified: ${qaVerifiedCount} of ${resultReviewRows.length}.`
                         : "Ranking is calculated. Review the advance and elimination decisions before finalizing."
@@ -560,6 +564,13 @@ export function StageResultsPanel() {
           {/* Pending review: two persisted buckets + swap + finalize + CSV. */}
           {pending && (
             <>
+              {pending.rankingStale && (
+                <div className="mb-4 border border-rose-300 bg-rose-50 p-4 text-sm text-rose-900">
+                  <strong>Finalization blocked.</strong>{" "}
+                  {pending.rankingStaleReason ??
+                    "Recalculate percentile ranking against the current cohort before finalizing."}
+                </div>
+              )}
               <section className="bg-white border border-border rounded-xl p-5">
                 <div className="flex flex-wrap items-end gap-3 justify-between">
                   <div>
@@ -612,7 +623,12 @@ export function StageResultsPanel() {
                     </a>
                     <button
                       onClick={finalize}
-                      disabled={busy != null}
+                      disabled={busy != null || pending.rankingStale}
+                      title={
+                        pending.rankingStale
+                          ? "Recalculate percentile ranking before finalizing"
+                          : undefined
+                      }
                       className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-blue text-white hover:opacity-90 disabled:opacity-50"
                     >
                       {busy === "finalize" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}

@@ -109,7 +109,13 @@ export async function GET(request: NextRequest) {
 
     // Persisted pending buckets (post-cutoff) — drives the two-tab review UI.
     const pendingReports = await prisma.stageReport.findMany({
-      where: { stage, status: { in: ["PENDING_PROMOTION", "PENDING_ELIMINATION"] } },
+      where: {
+        stage,
+        status: { in: ["PENDING_PROMOTION", "PENDING_ELIMINATION"] },
+        ...(isAdvancedRankingStage(stage)
+          ? { intern: { isActive: true, currentStage: stage } }
+          : {}),
+      },
       select: {
         id: true,
         status: true,
@@ -142,6 +148,8 @@ export async function GET(request: NextRequest) {
       cutoff: number | null;
       selectionMode: "CUTOFF" | "PERCENTILE";
       policyLabel: string | null;
+      rankingStale: boolean;
+      rankingStaleReason: string | null;
       promotion: PendingRow[];
       elimination: PendingRow[];
     } | null = null;
@@ -177,12 +185,16 @@ export async function GET(request: NextRequest) {
       });
       const percentileMode = isAdvancedRankingStage(stage);
       let nonSubmitterRows: PendingRow[] = [];
+      let rankingStale = false;
+      let rankingStaleReason: string | null = null;
       if (percentileMode) {
         const cohortGrants = await prisma.advancedArtifactGrant.findMany({
           where: {
             stage,
             revokedAt: null,
             intern: {
+              isActive: true,
+              currentStage: stage,
               user: { email: { not: { endsWith: "@netforge.invalid" } } },
             },
           },
@@ -227,7 +239,7 @@ export async function GET(request: NextRequest) {
             terminalScore: null,
             finalScore: 0,
             feedback:
-              "No Stage 5 report was submitted before the deadline. A saved draft does not count as a submission.",
+              `No ${stage.replace("_", " ")} report was submitted before the deadline. A saved draft does not count as a submission.`,
             reportUrl: null,
             qaVerified: true,
             qaVerifiedAt: null,
@@ -242,11 +254,34 @@ export async function GET(request: NextRequest) {
             advancedSelectionRule:
               "No submission: removed before any remaining attrition shortfall is filled from graded reports.",
           }));
+
+        const liveCohortByTrack = new Map<string, number>();
+        for (const grant of cohortGrants) {
+          liveCohortByTrack.set(
+            grant.track,
+            (liveCohortByTrack.get(grant.track) ?? 0) + 1
+          );
+        }
+        const staleTracks = new Set(
+          pendingReports
+            .filter(
+              (report) =>
+                report.advancedCohortSize !==
+                (liveCohortByTrack.get(report.intern.track) ?? 0)
+            )
+            .map((report) => report.intern.track)
+        );
+        rankingStale = staleTracks.size > 0;
+        rankingStaleReason = rankingStale
+          ? `The saved ranking used an outdated cohort for ${[...staleTracks].join(", ")}. Recalculate percentile ranking before finalizing.`
+          : null;
       }
       pending = {
         cutoff: percentileMode ? null : win?.passingScore ?? null,
         selectionMode: percentileMode ? "PERCENTILE" : "CUTOFF",
         policyLabel: percentileMode ? advancedSelectionPolicy(stage).label : null,
+        rankingStale,
+        rankingStaleReason,
         promotion: pendingReports.filter((r) => r.status === "PENDING_PROMOTION").map(toRow),
         elimination: [
           ...pendingReports
@@ -260,7 +295,11 @@ export async function GET(request: NextRequest) {
     let preRankingReview: { rows: PendingRow[] } | null = null;
     if (isAdvancedRankingStage(stage)) {
       const gradedReports = await prisma.stageReport.findMany({
-        where: { stage, status: "GRADED" },
+        where: {
+          stage,
+          status: "GRADED",
+          intern: { isActive: true, currentStage: stage },
+        },
         select: {
           id: true,
           score: true,
@@ -641,6 +680,8 @@ async function handleApplyPercentile(
       stage,
       revokedAt: null,
       intern: {
+        isActive: true,
+        currentStage: stage,
         user: { email: { not: { endsWith: "@netforge.invalid" } } },
       },
     },
@@ -1326,7 +1367,13 @@ async function handleFinalize(
   }
 
   const pending = await prisma.stageReport.findMany({
-    where: { stage, status: { in: ["PENDING_PROMOTION", "PENDING_ELIMINATION"] } },
+    where: {
+      stage,
+      status: { in: ["PENDING_PROMOTION", "PENDING_ELIMINATION"] },
+      ...(isAdvancedRankingStage(stage)
+        ? { intern: { isActive: true, currentStage: stage } }
+        : {}),
+    },
     include: { intern: { include: { user: true } } },
   });
   if (pending.length === 0) {
@@ -1344,6 +1391,42 @@ async function handleFinalize(
     ? advancedSelectionPolicy(stage)
     : null;
   if (advancedPolicy) {
+    const liveGrants = await prisma.advancedArtifactGrant.findMany({
+      where: {
+        stage,
+        revokedAt: null,
+        intern: {
+          isActive: true,
+          currentStage: stage,
+          user: { email: { not: { endsWith: "@netforge.invalid" } } },
+        },
+      },
+      select: { track: true },
+    });
+    const liveCohortByTrack = new Map<string, number>();
+    for (const grant of liveGrants) {
+      liveCohortByTrack.set(
+        grant.track,
+        (liveCohortByTrack.get(grant.track) ?? 0) + 1
+      );
+    }
+    const staleTracks = new Set(
+      pending
+        .filter(
+          (report) =>
+            report.advancedCohortSize !==
+            (liveCohortByTrack.get(report.intern.track) ?? 0)
+        )
+        .map((report) => report.intern.track)
+    );
+    if (staleTracks.size > 0) {
+      return Response.json(
+        {
+          error: `Finalization blocked: the saved ranking used an outdated cohort for ${[...staleTracks].join(", ")}. Recalculate percentile ranking first.`,
+        },
+        { status: 409 }
+      );
+    }
     const unverified = pending.filter((report) => report.qaVerified !== true);
     if (unverified.length > 0) {
       return Response.json(
