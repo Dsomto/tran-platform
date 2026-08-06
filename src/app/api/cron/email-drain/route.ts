@@ -44,11 +44,34 @@ async function handleDrain(request: NextRequest): Promise<Response> {
     const requested = Math.max(1, parseInt(url.searchParams.get("limit") || "200") || 200);
     const batch = Math.min(requested, fitsInBudget);
 
+    const leaseAt = new Date();
+    const staleCutoff = new Date(Date.now() - STALE_LEASE_MS);
+
+    // Single-flight guard.
+    //
+    // The per-row lease below stops two drains sending the SAME row, but it
+    // does nothing about the aggregate send rate: two overlapping drains each
+    // pacing at 1/sec still hit the provider at 2/sec, and three at 3/sec —
+    // past the 2/sec cap, which is what triggers an IP block. A paced run now
+    // lasts minutes, so overlap is the normal case unless we forbid it.
+    //
+    // If any row is currently leased, another drain is mid-flight; leave it to
+    // finish. A crashed run frees itself once its lease goes stale.
+    const inFlight = await prisma.emailQueueItem.count({
+      where: { status: "PENDING", lockedAt: { gte: staleCutoff } },
+    });
+    if (inFlight > 0) {
+      const remaining = await prisma.emailQueueItem.count({ where: { status: "PENDING" } });
+      return Response.json({
+        drained: 0,
+        remaining,
+        note: `Another drain is in flight (${inFlight} row${inFlight === 1 ? "" : "s"} leased). Skipping to keep the send rate under the provider cap.`,
+      });
+    }
+
     // Lease step. A row is claimable if it is PENDING and either unlocked or
     // lock-stale. We re-assert that exact condition inside the updateMany so
     // a row another drain already grabbed is never stolen.
-    const leaseAt = new Date();
-    const staleCutoff = new Date(Date.now() - STALE_LEASE_MS);
     const candidates = await prisma.emailQueueItem.findMany({
       where: {
         status: "PENDING",
