@@ -18,6 +18,17 @@ const ISSUED = new Date("2026-08-07");
 const POOL = 5500;
 const AT_STAGE = 167;
 
+// What the reference letter lists as the candidate's body of work: only
+// stages actually passed, mirroring what the route queries.
+const COMPLETED_WORK = [
+  { label: "Stage 0 — Foundations" },
+  { label: "Stage 1 — Applied Cryptography" },
+  { label: "Stage 2 — Web Application Security" },
+  { label: "Stage 3 — Incident Response" },
+  { label: "Stage 4 — Governance & Risk" },
+  { label: "Advanced Stage 5 — Signal", project: "Build a Production Hunt Engine" },
+];
+
 const STAGES = [
   { label: "Stage 0 — Foundations", score: 82, passingScore: 70, status: "PASSED",
     feedback: "Clean separation of the real intrusion from the noise. The executive brief was written for the reader rather than for the marker, which is rarer than it should be." },
@@ -63,7 +74,7 @@ async function main() {
   write("4-reference-letter", await generateReferenceLetter({
     fullName: NAME, stage: "STAGE_6", track: "SOC_ANALYSIS",
     issuedAt: ISSUED, letterId: "REF-A1B2C3D4", completed: false,
-    applicantPool: POOL, cohortAtStage: AT_STAGE,
+    completedWork: COMPLETED_WORK, applicantPool: POOL, cohortAtStage: AT_STAGE,
   }));
   write("5-performance-record", await generatePerformanceRecord({
     fullName: NAME, internCode: "UBI-2025-0412", track: "SOC_ANALYSIS",
@@ -80,7 +91,7 @@ async function main() {
     write(`track-${t}-reference`, await generateReferenceLetter({
       fullName: NAME, stage: "STAGE_6", track: t,
       issuedAt: ISSUED, letterId: "REF-A1B2C3D4", completed: false,
-      applicantPool: POOL, cohortAtStage: AT_STAGE,
+      completedWork: COMPLETED_WORK, applicantPool: POOL, cohortAtStage: AT_STAGE,
     }));
   }
 }

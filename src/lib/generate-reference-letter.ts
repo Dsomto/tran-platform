@@ -12,15 +12,31 @@ import {
 } from "./advanced-credential";
 import { ADVANCED_TRACK_OUTCOMES, type AdvancedTrack } from "./advanced-stage";
 
+/** One completed piece of work, for the body-of-work list. */
+export type CompletedWork = {
+  /** e.g. "Stage 3 — Incident Response" */
+  label: string;
+  /** Advanced brief title, when the stage had one. */
+  project?: string | null;
+};
+
 /**
  * Employer-facing reference letter — "To whom it may concern".
  *
  * Written in the third person so it can be forwarded verbatim to a recruiter.
- * Issued to advanced-programme interns whether or not they advanced past the
- * project they reached: the attestation describes work that was actually
- * performed and assessed, which is true either way. `completed` only changes
- * whether we can also state that the work met the advancement standard — we
- * never imply a credential that was not earned.
+ *
+ * What this letter deliberately does NOT do: it never states that the holder
+ * was cut, and never explains a ranking decision. A reference exists to open a
+ * door. Whether someone advanced to the next project of a capped cohort is a
+ * fact about our capacity, not about their ability, and putting it in front of
+ * a hiring manager reads as a mark against them however carefully it is
+ * phrased.
+ *
+ * It stays honest by omission rather than by disclaimer: every sentence
+ * describes work that was genuinely performed and assessed, the body-of-work
+ * list contains only stages actually passed, and the conferred standing is
+ * named only when it was actually earned (`completed`). Nothing here implies a
+ * credential the holder does not hold.
  */
 export function generateReferenceLetter(opts: {
   fullName: string;
@@ -28,14 +44,16 @@ export function generateReferenceLetter(opts: {
   track: AdvancedTrack;
   issuedAt: Date;
   letterId: string;
-  /** True when the intern passed this project; false when they reached it only. */
+  /** True when the intern passed this project — controls the standing line only. */
   completed: boolean;
+  /** Everything they passed on the way here, earliest first. */
+  completedWork?: CompletedWork[];
   applicantPool?: number | null;
   cohortAtStage?: number | null;
 }): Promise<Buffer> {
   const {
     fullName, stage, track, issuedAt, letterId, completed,
-    applicantPool, cohortAtStage,
+    completedWork = [], applicantPool, cohortAtStage,
   } = opts;
   const cred = ADVANCED_CREDENTIALS[stage];
   const tc = credentialFor(stage, track);
@@ -43,11 +61,17 @@ export function generateReferenceLetter(opts: {
   const profile = TRACK_PROFILE[track];
   const outcome = ADVANCED_TRACK_OUTCOMES[track];
   const surname = lastName(fullName);
+  const first = fullName.trim().split(/\s+/)[0] || fullName;
 
   return new Promise((resolve, reject) => {
     const doc: Doc = new PDFDocument({
       size: "A4", layout: "portrait",
-      margins: { top: 56, bottom: 56, left: 62, right: 62 },
+      // Bottom margin clears the footer rule (drawn at pageH-96) so a long
+      // body-of-work list breaks to a new page instead of running text
+      // through the footer. The footer pass below lowers it per page so its
+      // own writes don't trigger another break.
+      margins: { top: 56, bottom: 112, left: 62, right: 62 },
+      bufferPages: true,
     });
     const chunks: Buffer[] = [];
     doc.on("data", (c: Buffer) => chunks.push(c));
@@ -75,37 +99,68 @@ export function generateReferenceLetter(opts: {
     const p = paragrapher(doc, x, w, y + 38);
 
     p.para(
-      `I am writing in support of ${fullName}, who participated in Cohort 1 of the Ubuntu Bridge ` +
-        `Initiative Cybersecurity Internship, specialising in ${TRACK_LABEL[track]} — the ` +
-        `programme's ${profile.discipline} track. I led that programme and reviewed ` +
-        `${surname}'s work personally.`
+      `I am glad to write in support of ${fullName}. I run the Ubuntu Bridge Initiative ` +
+        `Cybersecurity Internship and read ${first}'s work myself, so this is not a form letter.`
     );
 
     if (applicantPool) {
       p.para(
-        `On selectivity: the cohort drew ${applicantPool.toLocaleString("en-GB")} applications. ` +
-          `${surname} was selected, completed the five core stages, and entered the Advanced ` +
-          `Programme` +
+        `We opened Cohort 1 to ${applicantPool.toLocaleString("en-GB")} applicants and took a ` +
+          `small fraction. ${surname} came through that, then through five core stages, and ` +
+          `earned a place in our Advanced Programme in ${TRACK_LABEL[track]}` +
           (cohortAtStage
-            ? `, where only ${cohortAtStage.toLocaleString("en-GB")} candidates remained.`
-            : `, which most participants do not reach.`)
+            ? `, a room that by then held ${cohortAtStage.toLocaleString("en-GB")} people.`
+            : `, which most participants never reach.`)
       );
     }
 
     p.para(
-      `The Advanced Programme is assessed on submitted evidence, not attendance: candidates ` +
-        `trace every material claim to a raw artefact they produced, reproduce builds from a ` +
-        `clean state, and defend findings under questioning. The ${TRACK_LABEL[track]} track ` +
-        `covers ${profile.summary}. On the ${cred.title} brief “${tc.project}”, ` +
-        `${surname} ${tc.attestation}.`
+      `Nothing here is awarded for attendance: every claim must trace back to a raw artefact the ` +
+        `candidate produced, and findings are defended out loud while a reviewer hunts for the ` +
+        `weak point.`
     );
 
-    // ── Capabilities, as a scannable block ────────────────
+    // ── Body of work — the substance of the endorsement ───
+    if (completedWork.length) {
+      const boxY = p.y + 2;
+      doc.fontSize(7).font("Helvetica-Bold").fillColor(P.metal)
+        .text(`COMPLETED AND ASSESSED — ${completedWork.length} PROJECT${completedWork.length === 1 ? "" : "S"}`,
+          x, boxY, { width: w, characterSpacing: 2.2 });
+      // Two columns — a single-file list of nine stages would cost most of a
+      // page on its own. Items keep their brief subtitle where they have one.
+      const listColW = (w - 18) / 2;
+      const perCol = Math.ceil(completedWork.length / 2);
+      let tallest = 0;
+      completedWork.forEach((item, i) => {
+        const col = Math.floor(i / perCol);
+        const idx = i % perCol;
+        // Rows are uniform height so the two columns stay aligned.
+        const rowH = completedWork.some((c) => c.project) ? 22 : 15;
+        const row = boxY + 15 + idx * rowH;
+        const cx = x + col * (listColW + 18);
+        doc.circle(cx + 3, row + 4.5, 1.8).fill(P.metal);
+        doc.fontSize(9).font("Times-Bold").fillColor(A.ink)
+          .text(item.label, cx + 13, row, { width: listColW - 13, lineBreak: false });
+        if (item.project) {
+          doc.fontSize(8).font("Times-Italic").fillColor(A.muted)
+            .text(`“${item.project}”`, cx + 13, row + 10.5, {
+              width: listColW - 13, lineBreak: false, ellipsis: true,
+            });
+        }
+        tallest = Math.max(tallest, row + rowH);
+      });
+      p.y = tallest + 4;
+    }
+
+    p.para(
+      `The most demanding of those was ${cred.title}, on the ${TRACK_LABEL[track]} brief ` +
+        `“${tc.project}”. There, ${surname} ${tc.attestation}. That is the job, not coursework.`
+    );
+
+    // ── Capabilities, two columns ─────────────────────────
     const capY = p.y + 2;
     doc.fontSize(7).font("Helvetica-Bold").fillColor(P.metal)
       .text("ASSESSED CAPABILITIES", x, capY, { width: w, characterSpacing: 2.2 });
-    // Two columns: six capabilities stacked single-file cost more vertical
-    // room than the letter can spare and still hold its signature on page one.
     const colW = (w - 18) / 2;
     const rows = Math.ceil(tc.competencies.length / 2);
     tc.competencies.forEach((c, i) => {
@@ -120,40 +175,44 @@ export function generateReferenceLetter(opts: {
       .text(`Working toolkit: ${outcome.toolkit}`, x, capY + 18 + rows * 13.5, {
         width: w, lineGap: 1.5,
       });
-    p.y = doc.y + 16;
+    p.y = doc.y + 10;
 
     if (completed) {
       p.para(
-        `${surname}'s work at this project met the programme's advancement standard, and the ` +
-          `standing of ${standingFor(stage, track)} was conferred. A separate certificate ` +
-          `records this and can be verified independently.`
-      );
-    } else {
-      p.para(
-        `${surname} did not advance beyond this project. I want to be plain about why, because ` +
-          `it is relevant to anyone reading this: advancement is capped by cohort capacity and ` +
-          `decided by within-track ranking, so competent work is turned away at every project. ` +
-          `The assessment above describes work that was performed and reviewed, and it stands ` +
-          `on its own.`
+        `On the strength of that work the programme conferred the standing of ` +
+          `${standingFor(stage, track)}. A separate certificate records it and can be verified ` +
+          `independently.`
       );
     }
 
+    // The endorsement. This is the paragraph a hiring manager actually reads.
     p.para(
-      `I would encourage any employer to weigh what ${surname} produced under these conditions: ` +
-        `live briefs, enforced evidence rules, fixed deadlines, and findings defended out loud. ` +
-        `That is closer to the job than most junior credentials get. I am glad to answer ` +
-        `questions about this reference; it can be verified at the address below.`
+      `What I would say to any employer is this. ${surname} took the hardest route available ` +
+        `through a programme built around ${profile.discipline}, and the work held up under ` +
+        `someone whose job was to find its faults. People who can do that are not common, and ` +
+        `they tend to be worth more than their years suggest. I recommend ${first} without ` +
+        `reservation, and I am glad to answer any question about this reference.`
     );
 
     let closeY = ensureRoom(doc, p.y, CLOSING_BLOCK_HEIGHT, pageH);
     doc.fontSize(10.5).font("Times-Italic").fillColor(P.head)
-      .text("Yours faithfully,", x, closeY, { width: w });
+      .text("Yours sincerely,", x, closeY, { width: w });
     closeY = doc.y + 42;
     // Co-signed by the founder. A reference carrying two signatures from the
     // issuing organisation is harder for a recruiter to discount than one.
     signatures(doc, x, w, closeY, [OKOMA, QUADRI], P);
 
-    letterFooter(doc, x, w, pageH, letterId);
+    // Footer on every page — the body-of-work list can push to a second sheet.
+    const range = doc.bufferedPageRange();
+    for (let i = 0; i < range.count; i++) {
+      doc.switchToPage(range.start + i);
+      // The footer sits below the content margin by design; drop the margin
+      // for this write so pdfkit does not treat it as overflow and append a
+      // blank page.
+      doc.page.margins.bottom = 20;
+      letterFooter(doc, x, w, pageH, letterId);
+    }
+    doc.flushPages();
 
     doc.end();
   });

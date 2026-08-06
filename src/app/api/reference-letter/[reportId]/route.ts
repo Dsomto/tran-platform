@@ -2,22 +2,37 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { logger } from "@/lib/logger";
 import { generateReferenceLetter } from "@/lib/generate-reference-letter";
-import { isAdvancedStage } from "@/lib/advanced-credential";
-import { isAdvancedTrack } from "@/lib/advanced-stage";
+import { credentialFor, isAdvancedStage } from "@/lib/advanced-credential";
+import { isAdvancedTrack, type AdvancedTrack } from "@/lib/advanced-stage";
 import { isValidReferenceShareSig, referenceIdFor } from "@/lib/certificate-link";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+const STAGE_LABEL: Record<string, string> = {
+  STAGE_0: "Stage 0 — Foundations",
+  STAGE_1: "Stage 1 — Applied Cryptography",
+  STAGE_2: "Stage 2 — Web Application Security",
+  STAGE_3: "Stage 3 — Incident Response",
+  STAGE_4: "Stage 4 — Governance & Risk",
+  STAGE_5: "Advanced Stage 5 — Signal",
+  STAGE_6: "Advanced Stage 6 — Exposure",
+  STAGE_7: "Advanced Stage 7 — Architecture",
+  STAGE_8: "Advanced Stage 8 — Adversity",
+  STAGE_9: "Advanced Stage 9 — The Final Case",
+};
+
 // Employer-facing reference letter ("To whom it may concern") for advanced
 // programme results. Mirrors the certificate and close-letter routes:
 // HMAC-signed URL, gated on a finalised result, PDF response.
 //
-// Unlike those two, this one serves BOTH outcomes. A pass and a non-advance
-// both describe work that was performed and assessed, which is what a
-// reference attests to — `completed` only controls whether the letter may also
-// state that the work met the advancement standard. It never implies a
-// credential that was not earned.
+// Unlike those two, this one serves BOTH outcomes, and reads the same either
+// way: it describes work that was performed and assessed, and never mentions
+// whether the holder advanced. A reference exists to open a door, and a
+// capped-cohort ranking decision is a fact about our capacity rather than
+// their ability. `completed` only adds the conferred-standing line, and
+// `completedWork` lists solely stages actually PASSED, so nothing here implies
+// a credential the holder does not hold.
 export async function GET(
   request: NextRequest,
   ctx: { params: Promise<{ reportId: string }> }
@@ -61,6 +76,21 @@ export async function GET(
       `${report.intern.user.firstName} ${report.intern.user.lastName}`.trim() ||
       report.intern.user.email;
 
+    // Body of work: only stages actually PASSED. The letter leans on this list
+    // as its evidence, so a stage that was failed or never finalised must not
+    // appear in it. The furthest stage is described separately in the prose.
+    const history = await prisma.stageReport.findMany({
+      where: { internId: report.intern.id, status: "PASSED" },
+      orderBy: { stage: "asc" },
+      select: { stage: true },
+    });
+    const completedWork = history.map((h) => ({
+      label: STAGE_LABEL[h.stage] ?? h.stage,
+      project: isAdvancedStage(h.stage)
+        ? credentialFor(h.stage, report.intern.track as AdvancedTrack).project
+        : null,
+    }));
+
     // The selectivity paragraph states a real number to a third party, so it
     // is counted at render time rather than carried as a constant. If the
     // count is unavailable the generator simply omits that paragraph — an
@@ -79,6 +109,7 @@ export async function GET(
       issuedAt: report.finalizedAt ?? report.gradedAt ?? new Date(),
       letterId: referenceIdFor(report.id),
       completed: report.status === "PASSED",
+      completedWork,
       applicantPool,
       cohortAtStage: report.advancedCohortSize,
     });
