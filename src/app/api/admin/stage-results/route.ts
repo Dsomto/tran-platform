@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { logger } from "@/lib/logger";
-import { certificateUrl, letterUrl, passLetterUrl, proofBadgeUrl, verifyUrl, certificateIdFor, cyberCorePieceUrl, referenceUrl, performanceRecordUrl } from "@/lib/certificate-link";
+import { certificateUrl, letterUrl, passLetterUrl, proofBadgeUrl, verifyUrl, certificateIdFor, cyberCorePieceUrl, referenceUrl, performanceRecordUrl, dossierUrl } from "@/lib/certificate-link";
 import { buildAddToProfileUrl } from "@/lib/linkedin";
 import { ELIMINATION_GRACE_MS } from "@/lib/elimination-grace";
 import { recordAudit, auditMetaFromRequest } from "@/lib/audit";
@@ -1541,6 +1541,9 @@ async function handleFinalize(
       // Stage windows open on Mondays. Finalising on a Sunday means the next
       // stage starts the very next morning, and the email must say so.
       const nextStageStartsAt = nextMondayAfter(new Date());
+      const dossierUrlValue = advancedPolicy
+        ? dossierUrl({ origin, reportId: r.id, internId: r.intern.id })
+        : null;
       const certUrlValue = certificateUrl({ origin, reportId: r.id, internId: r.intern.id });
       const passLetterUrlValue = passLetterUrl({ origin, reportId: r.id, internId: r.intern.id });
       // Reference letter is an advanced-programme document only; core stages
@@ -1590,6 +1593,7 @@ async function handleFinalize(
               certUrl: certUrlValue,
               letterPdfUrl: passLetterUrlValue,
               referenceLetterUrl: referenceUrlValue,
+              dossierPdfUrl: dossierUrlValue,
               nextStageStartsAt,
               proofBadgeUrl: proofBadgeUrlValue,
               feedbackUrl,
@@ -1695,6 +1699,9 @@ async function handleFinalize(
       const performanceRecordUrlValue = advancedPolicy
         ? performanceRecordUrl({ origin, reportId: r.id, internId: r.intern.id })
         : null;
+      const dossierUrlValue = advancedPolicy
+        ? dossierUrl({ origin, reportId: r.id, internId: r.intern.id })
+        : null;
       const feedbackUrl = `${origin.replace(/\/$/, "")}/dashboard/reports`;
       const issuedAt = new Date();
       // Credentials wind down 2 days after the result email. This matches the
@@ -1755,6 +1762,7 @@ async function handleFinalize(
               letterPdfUrl,
               referenceLetterUrl: referenceUrlValue,
               performanceRecordUrl: performanceRecordUrlValue,
+              dossierPdfUrl: dossierUrlValue,
               proofBadgeUrl: null,
               feedbackUrl,
               slackUrl,
@@ -1979,6 +1987,7 @@ function renderResultEmail(opts: {
   // about to end and the reviewer notes would otherwise be lost.
   referenceLetterUrl?: string | null;
   performanceRecordUrl?: string | null;
+  dossierPdfUrl?: string | null;
   // When the next stage opens. Stated explicitly in the advancement email so
   // the intern is told what STARTS, not what ends.
   nextStageStartsAt?: Date | null;
@@ -2007,6 +2016,7 @@ function renderResultEmail(opts: {
     returningCode,
     referenceLetterUrl,
     performanceRecordUrl,
+    dossierPdfUrl,
     nextStageStartsAt,
   } = opts;
   const nextStageNum = Number(stageNumber) + 1;
@@ -2141,6 +2151,7 @@ function renderResultEmail(opts: {
       <div style="margin:0 0 10px;">
         ${certUrl ? ctaButton(certUrl, "Download your certificate", "#047857") : ""}
         ${letterPdfUrl ? `&nbsp;${ctaButton(letterPdfUrl, "Download your letter", "#0A1F44")}` : ""}
+        ${dossierPdfUrl ? `&nbsp;${ctaButton(dossierPdfUrl, "Download portfolio dossier", "#0F766E")}` : ""}
       </div>
       ${
         startLabel
@@ -2272,10 +2283,12 @@ function renderResultEmail(opts: {
                 Yours to keep
               </div>
               <p style="font-size:13px;line-height:1.6;color:#475569;margin:0 0 12px;">
-                Two documents you can download now and use later. The reference is written
-                for an employer and can be forwarded exactly as it is.
+                Yours to download now and use for as long as you like. The dossier walks
+                an employer through every project you completed; the reference is written
+                for a hiring manager and can be forwarded exactly as it is.
               </p>
-              ${referenceLetterUrl ? ctaButton(referenceLetterUrl, "Download reference letter", "#1D4ED8") : ""}
+              ${dossierPdfUrl ? ctaButton(dossierPdfUrl, "Download portfolio dossier", "#0F766E") : ""}
+              ${referenceLetterUrl ? `&nbsp;${ctaButton(referenceLetterUrl, "Download reference letter", "#1D4ED8")}` : ""}
               ${performanceRecordUrl ? `&nbsp;${ctaButton(performanceRecordUrl, "Download performance record", "#334155")}` : ""}
             </div>`
           : ""

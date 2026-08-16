@@ -11,10 +11,11 @@ import { generateAchievementLetter } from "../src/lib/generate-achievement-lette
 import { generateHonourableCloseLetter } from "../src/lib/generate-honourable-close-letter";
 import { generateReferenceLetter } from "../src/lib/generate-reference-letter";
 import { generatePerformanceRecord } from "../src/lib/generate-performance-record";
+import { generatePortfolioDossier } from "../src/lib/generate-portfolio-dossier";
 
 const OUT = "/tmp/adv";
 const NAME = "Adaeze Elizabeth Adeteye";
-const ISSUED = new Date("2026-08-07");
+const ISSUED = new Date("2026-08-16");
 const POOL = 5500;
 const AT_STAGE = 167;
 
@@ -80,6 +81,28 @@ async function main() {
     fullName: NAME, internCode: "UBI-2025-0412", track: "SOC_ANALYSIS",
     issuedAt: ISSUED, recordId: "PR-A1B2C3D4", stages: STAGES,
   }));
+
+  write("6-portfolio-dossier", await generatePortfolioDossier({
+    fullName: NAME, internCode: "UBI-2025-0412", track: "SOC_ANALYSIS",
+    completed: [
+      { stage: "STAGE_0", label: "Stage 0 — Foundations" },
+      { stage: "STAGE_1", label: "Stage 1 — Applied Cryptography" },
+      { stage: "STAGE_2", label: "Stage 2 — Web Application Security" },
+      { stage: "STAGE_3", label: "Stage 3 — Incident Response" },
+      { stage: "STAGE_4", label: "Stage 4 — Governance & Risk" },
+      { stage: "STAGE_5", label: "Advanced Stage 5 — Signal" },
+      { stage: "STAGE_6", label: "Advanced Stage 6 — Exposure" },
+    ],
+    earnedStanding: "Exposure Operator — SOC Analysis",
+    issuedAt: ISSUED, dossierId: "PD-A1B2C3D4", applicantPool: POOL,
+  }));
+
+  console.log("STAGE 7 TIER — elevated certificate");
+  for (const t of ["SOC_ANALYSIS", "ETHICAL_HACKING", "GRC"] as const) {
+    write(`stage7-${t}-certificate`, await generateAdvancedCertificate({
+      fullName: NAME, stage: "STAGE_7", track: t, issuedAt: ISSUED, certId: "S7CERT001122",
+    }));
+  }
 
   console.log("TRACK SWEEP — certificate + achievement letter per track");
   const TRACKS = ["SOC_ANALYSIS", "ETHICAL_HACKING", "GRC"] as const;

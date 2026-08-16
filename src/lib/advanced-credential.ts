@@ -88,6 +88,8 @@ export type AdvancedCredential = {
   standing: string;
   /** What completing this stage means, track-independent. */
   premise: string;
+  /** Why this project matters to an employer. Printed in the dossier. */
+  matters: string;
   tracks: Record<AdvancedTrack, TrackCredential>;
 };
 
@@ -96,6 +98,8 @@ export const ADVANCED_CREDENTIALS: Record<AdvancedStageKey, AdvancedCredential> 
   STAGE_5: {
     number: 1, name: "Signal", title: "Advanced Stage 5 — Signal",
     standing: "Signal Practitioner",
+    matters:
+      "Most junior candidates can run a tool. Far fewer can build the pipeline that makes a tool's output trustworthy — handling malformed data, clock skew and duplicate identities without quietly corrupting the result. This project is where that separation happens.",
     premise: "establishing a defensible evidence baseline in their chosen discipline",
     tracks: {
       SOC_ANALYSIS: {
@@ -167,6 +171,8 @@ export const ADVANCED_CREDENTIALS: Record<AdvancedStageKey, AdvancedCredential> 
   STAGE_6: {
     number: 2, name: "Exposure", title: "Advanced Stage 6 — Exposure",
     standing: "Exposure Operator",
+    matters:
+      "Operating something real is a different skill from analysing something static. This project puts the candidate in charge of a live system, where the consequences of a wrong prioritisation call are theirs to carry rather than a marker's to note.",
     premise: "operating a real system and owning the consequences of their decisions",
     tracks: {
       SOC_ANALYSIS: {
@@ -239,6 +245,8 @@ export const ADVANCED_CREDENTIALS: Record<AdvancedStageKey, AdvancedCredential> 
   STAGE_7: {
     number: 3, name: "Architecture", title: "Advanced Stage 7 — Architecture",
     standing: "Security Architect",
+    matters:
+      "Design is where security work either scales or collapses. This project asks for a whole system built under real constraints, with the trade-offs written down and the controls tested rather than assumed — the difference between an architect and someone drawing boxes.",
     premise: "designing, testing and defending a complete security design",
     tracks: {
       SOC_ANALYSIS: {
@@ -314,6 +322,8 @@ export const ADVANCED_CREDENTIALS: Record<AdvancedStageKey, AdvancedCredential> 
   STAGE_8: {
     number: 4, name: "Adversity", title: "Advanced Stage 8 — Adversity",
     standing: "Adversarial Assessor",
+    matters:
+      "One attempt, no revision, and a reviewer actively looking for the weak point. This project measures composure and judgment under pressure, which is what separates a practitioner who holds up in an incident from one who only performs well with time to spare.",
     premise: "delivering without revision and defending the work under challenge",
     tracks: {
       SOC_ANALYSIS: {
@@ -390,6 +400,8 @@ export const ADVANCED_CREDENTIALS: Record<AdvancedStageKey, AdvancedCredential> 
   STAGE_9: {
     number: 5, name: "The Final Case", title: "Advanced Stage 9 — The Final Case",
     standing: "Advanced Fellow",
+    matters:
+      "The terminal project is deliberately ambiguous, the way real cases are. It measures whether the candidate can carry a problem from raw evidence all the way to a decision an executive can act on, and then defend that decision out loud.",
     premise: "leading an ambiguous terminal case and standing behind the result",
     tracks: {
       SOC_ANALYSIS: {

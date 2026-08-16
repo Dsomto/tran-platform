@@ -191,6 +191,30 @@ export function performanceRecordUrl(opts: {
   return `${opts.origin.replace(/\/$/, "")}/api/performance-record/${opts.reportId}?sig=${sig}`;
 }
 
+// Portfolio dossier — the fullest account of the holder's work. Meant to be
+// forwarded alongside the reference, so it keeps its own scope and cannot be
+// opened with a certificate, close-letter or performance-record signature.
+export function dossierShareSig(reportId: string, internId: string): string {
+  return shortHmac(documentSigningSecret(), `dossier:${reportId}:${internId}`, 16);
+}
+
+export function isValidDossierShareSig(
+  reportId: string, internId: string, sig: string | null
+): boolean {
+  return validShareSig("dossier", reportId, internId, sig);
+}
+
+export function dossierIdFor(reportId: string): string {
+  return shortHmac(documentSigningSecret(), `dossier-id:${reportId}`, 12).toUpperCase();
+}
+
+export function dossierUrl(opts: {
+  origin: string; reportId: string; internId: string;
+}): string {
+  const sig = dossierShareSig(opts.reportId, opts.internId);
+  return `${opts.origin.replace(/\/$/, "")}/api/portfolio-dossier/${opts.reportId}?sig=${sig}`;
+}
+
 // Proof-of-work badge for Stage 3 passers. Kept on its own scope so a
 // certificate or letter URL cannot be replayed against the badge endpoint.
 export function proofBadgeShareSig(reportId: string, internId: string): string {
