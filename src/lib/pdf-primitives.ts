@@ -514,18 +514,24 @@ export function letterFooter(doc: Doc, x: number, w: number, pageH: number, ref:
 }
 
 /** Build a paragraph writer bound to a cursor. */
-export function paragrapher(doc: Doc, x: number, w: number, startY: number) {
+export function paragrapher(
+  doc: Doc,
+  x: number,
+  w: number,
+  startY: number,
+  defaults?: { gap?: number; size?: number; lineGap?: number }
+) {
   let y = startY;
   return {
     // Body copy is tuned to keep a full-length letter — salutation, five or
     // six paragraphs, a call-out block and a signature row — on one page.
     // Loosening these pushes the signatures onto a second sheet.
     para(text: string, opts?: { gap?: number; font?: string; size?: number; color?: string }) {
-      doc.fontSize(opts?.size ?? 10.2)
+      doc.fontSize(opts?.size ?? defaults?.size ?? 10.2)
         .font(opts?.font ?? "Times-Roman")
         .fillColor(opts?.color ?? A.ink)
-        .text(text, x, y, { width: w, align: "left", lineGap: 2.6 });
-      y = doc.y + (opts?.gap ?? 10);
+        .text(text, x, y, { width: w, align: "left", lineGap: defaults?.lineGap ?? 2.6 });
+      y = doc.y + (opts?.gap ?? defaults?.gap ?? 10);
     },
     get y() { return y; },
     set y(next: number) { y = next; },

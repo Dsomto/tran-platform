@@ -96,7 +96,10 @@ export function generateReferenceLetter(opts: {
       .text("TO WHOM IT MAY CONCERN", x, y, { width: w, characterSpacing: 1.4 });
     doc.moveTo(x, y + 20).lineTo(x + 96, y + 20).lineWidth(2).strokeColor(P.metal).stroke();
 
-    const p = paragrapher(doc, x, w, y + 38);
+    // A Stage 7 reference can carry eight completed projects. Keep the body
+    // compact enough that the two signatures stay with the endorsement rather
+    // than becoming an orphaned second page.
+    const p = paragrapher(doc, x, w, y + 38, { size: 9.2, lineGap: 1.5, gap: 6 });
 
     p.para(
       `I am glad to write in support of ${fullName}. I run the Ubuntu Bridge Initiative ` +
@@ -135,15 +138,15 @@ export function generateReferenceLetter(opts: {
         const col = Math.floor(i / perCol);
         const idx = i % perCol;
         // Rows are uniform height so the two columns stay aligned.
-        const rowH = completedWork.some((c) => c.project) ? 22 : 15;
+        const rowH = completedWork.some((c) => c.project) ? 18 : 13;
         const row = boxY + 15 + idx * rowH;
         const cx = x + col * (listColW + 18);
         doc.circle(cx + 3, row + 4.5, 1.8).fill(P.metal);
-        doc.fontSize(9).font("Times-Bold").fillColor(A.ink)
+        doc.fontSize(8.4).font("Times-Bold").fillColor(A.ink)
           .text(item.label, cx + 13, row, { width: listColW - 13, lineBreak: false });
         if (item.project) {
-          doc.fontSize(8).font("Times-Italic").fillColor(A.muted)
-            .text(`“${item.project}”`, cx + 13, row + 10.5, {
+          doc.fontSize(7.2).font("Times-Italic").fillColor(A.muted)
+            .text(`“${item.project}”`, cx + 13, row + 9.2, {
               width: listColW - 13, lineBreak: false, ellipsis: true,
             });
         }
@@ -165,17 +168,17 @@ export function generateReferenceLetter(opts: {
     const rows = Math.ceil(tc.competencies.length / 2);
     tc.competencies.forEach((c, i) => {
       const col = Math.floor(i / rows);
-      const cyRow = capY + 14 + (i % rows) * 13.5;
+      const cyRow = capY + 14 + (i % rows) * 11.5;
       const cxCol = x + col * (colW + 18);
       doc.circle(cxCol + 3, cyRow + 4, 1.7).fill(P.metal);
-      doc.fontSize(9).font("Times-Roman").fillColor(A.ink)
+      doc.fontSize(8.2).font("Times-Roman").fillColor(A.ink)
         .text(c, cxCol + 13, cyRow, { width: colW - 13, lineBreak: false });
     });
-    doc.fontSize(8.5).font("Helvetica").fillColor(A.muted)
-      .text(`Working toolkit: ${outcome.toolkit}`, x, capY + 18 + rows * 13.5, {
+    doc.fontSize(7.8).font("Helvetica").fillColor(A.muted)
+      .text(`Working toolkit: ${outcome.toolkit}`, x, capY + 18 + rows * 11.5, {
         width: w, lineGap: 1.5,
       });
-    p.y = doc.y + 10;
+    p.y = doc.y + 6;
 
     if (completed) {
       p.para(

@@ -1211,23 +1211,51 @@ async function handleToggleQaVerified(
 // Idempotent: re-running checks for an existing pending no-submission email
 // from this run (same kind + subject) and skips anyone already queued.
 async function activeNonSubmitters(stage: StageKey) {
-  const internsOnStage = await prisma.intern.findMany({
-    where: {
-      isActive: true,
-      currentStage: stage,
-      user: { email: { not: { endsWith: "@netforge.invalid" } } },
-    },
-    include: {
-      user: {
-        select: {
-          id: true,
-          firstName: true,
-          lastName: true,
-          email: true,
+  const internsOnStage = isAdvancedRankingStage(stage)
+    ? (
+        await prisma.advancedArtifactGrant.findMany({
+          where: {
+            stage,
+            revokedAt: null,
+            intern: {
+              isActive: true,
+              currentStage: stage,
+              user: { email: { not: { endsWith: "@netforge.invalid" } } },
+            },
+          },
+          include: {
+            intern: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    firstName: true,
+                    lastName: true,
+                    email: true,
+                  },
+                },
+              },
+            },
+          },
+        })
+      ).map((grant) => grant.intern)
+    : await prisma.intern.findMany({
+        where: {
+          isActive: true,
+          currentStage: stage,
+          user: { email: { not: { endsWith: "@netforge.invalid" } } },
         },
-      },
-    },
-  });
+        include: {
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+            },
+          },
+        },
+      });
   const internIdsWithSubmittedReport = new Set(
     (
       await prisma.stageReport.findMany({
@@ -1390,6 +1418,7 @@ async function handleFinalize(
   const advancedPolicy = isAdvancedRankingStage(stage)
     ? advancedSelectionPolicy(stage)
     : null;
+  let validatedAdvancedNonSubmitters: Awaited<ReturnType<typeof activeNonSubmitters>> | null = null;
   if (advancedPolicy) {
     const liveGrants = await prisma.advancedArtifactGrant.findMany({
       where: {
@@ -1401,8 +1430,44 @@ async function handleFinalize(
           user: { email: { not: { endsWith: "@netforge.invalid" } } },
         },
       },
-      select: { track: true },
+      select: { internId: true, track: true },
     });
+    const grantInternIds = new Set(liveGrants.map((grant) => grant.internId));
+    if (grantInternIds.size !== liveGrants.length) {
+      return Response.json(
+        { error: "Finalization blocked: the live advanced-stage grant list contains duplicate interns." },
+        { status: 409 }
+      );
+    }
+    validatedAdvancedNonSubmitters = await activeNonSubmitters(stage);
+    const recipients = [
+      ...pending.map((report) => ({ internId: report.internId, email: report.intern.user.email })),
+      ...validatedAdvancedNonSubmitters.map((intern) => ({ internId: intern.id, email: intern.user.email })),
+    ];
+    const recipientInternIds = new Set(recipients.map((recipient) => recipient.internId));
+    const recipientEmails = new Set(recipients.map((recipient) => recipient.email.trim().toLowerCase()));
+    const missingGrantInternIds = [...grantInternIds].filter((internId) => !recipientInternIds.has(internId));
+    const unauthorizedRecipientIds = [...recipientInternIds].filter((internId) => !grantInternIds.has(internId));
+    if (
+      recipients.length !== liveGrants.length ||
+      recipientInternIds.size !== recipients.length ||
+      recipientEmails.size !== recipients.length ||
+      missingGrantInternIds.length > 0 ||
+      unauthorizedRecipientIds.length > 0
+    ) {
+      return Response.json(
+        {
+          error: "Finalization blocked: the result recipient list does not exactly match the live advanced-stage cohort.",
+          expectedRecipients: liveGrants.length,
+          actualRecipients: recipients.length,
+          uniqueInterns: recipientInternIds.size,
+          uniqueEmails: recipientEmails.size,
+          missingGrantInternIds,
+          unauthorizedRecipientIds,
+        },
+        { status: 409 }
+      );
+    }
     const liveCohortByTrack = new Map<string, number>();
     for (const grant of liveGrants) {
       liveCohortByTrack.set(
@@ -1481,7 +1546,7 @@ async function handleFinalize(
 
   let nonSubmittersEliminated = 0;
   if (advancedPolicy) {
-    const nonSubmitters = await activeNonSubmitters(stage);
+    const nonSubmitters = validatedAdvancedNonSubmitters ?? await activeNonSubmitters(stage);
     const subject = `Stage ${stageNum} — A note on your submission`;
     for (const intern of nonSubmitters) {
       // Reaching an advanced stage at all counts — non-submitters here get a
