@@ -19,6 +19,12 @@ import {
 import { Prisma } from "@/generated/prisma";
 import { requireApiSuperAdmin } from "@/lib/api-auth";
 import { generateUniqueReturningCode } from "@/lib/returning-code";
+import {
+  renderStage7AdvancementEmail,
+  renderStage7DepartureEmail,
+  renderStage7NoSubmissionEmail,
+  stage7ResultSubject,
+} from "@/lib/stage7-result-email";
 import type { SessionUser } from "@/lib/auth";
 
 const STAGE_KEYS = [
@@ -1279,9 +1285,17 @@ async function handleFinalizeNonSubmitters(
     return Response.json({ error: "Invalid stage" }, { status: 400 });
   }
   const stageNum = stage.replace("STAGE_", "");
-  const subject = `Stage ${stageNum} — A note on your submission`;
 
   const nonSubmitters = await activeNonSubmitters(stage);
+  const [stage7CohortReached, stage7AdvancingCount] = stage === "STAGE_7"
+    ? await Promise.all([
+        prisma.intern.count({ where: { currentStage: stage, isActive: true } }),
+        prisma.stageReport.count({ where: { stage, status: "PENDING_PROMOTION" } }),
+      ])
+    : [null, null];
+  const subject = stage === "STAGE_7"
+    ? stage7ResultSubject("NO_SUBMISSION", stage7AdvancingCount ?? 0)
+    : `Stage ${stageNum} — A note on your submission`;
 
   // Skip anyone already queued the same subject (idempotent re-run).
   const alreadyQueuedUserIds = new Set(
@@ -1344,6 +1358,8 @@ async function handleFinalizeNonSubmitters(
               firstName: intern.user.firstName,
               stageNumber: stageNum,
               returningCode: nsReturningCode,
+              cohortReached: stage7CohortReached,
+              advancingCount: stage7AdvancingCount,
             }),
             context: { stage, reason: "non-submission-deactivation" },
           },
@@ -1541,13 +1557,24 @@ async function handleFinalize(
   const threshold = window?.passingScore ?? 0;
   const stageNum = stage.replace("STAGE_", "");
   const nextStage = `STAGE_${Number(stageNum) + 1}` as StageKey;
+  const nextStageWindow = isStageKey(nextStage)
+    ? await prisma.stageWindow.findUnique({ where: { stage: nextStage } })
+    : null;
   const origin = process.env.PUBLIC_APP_URL || "https://ubuntubridgeinitiatives.org";
   const slackUrl = process.env.SLACK_CHANNEL_URL || "";
 
   let nonSubmittersEliminated = 0;
+  const advancedCohortReached = advancedPolicy
+    ? pending.length + (validatedAdvancedNonSubmitters?.length ?? 0)
+    : 0;
+  const advancedAdvancingCount = advancedPolicy
+    ? pending.filter((report) => report.status === "PENDING_PROMOTION").length
+    : 0;
   if (advancedPolicy) {
     const nonSubmitters = validatedAdvancedNonSubmitters ?? await activeNonSubmitters(stage);
-    const subject = `Stage ${stageNum} — A note on your submission`;
+    const subject = stage === "STAGE_7"
+      ? stage7ResultSubject("NO_SUBMISSION", advancedAdvancingCount)
+      : `Stage ${stageNum} — A note on your submission`;
     for (const intern of nonSubmitters) {
       // Reaching an advanced stage at all counts — non-submitters here get a
       // returning-candidate code too. Idempotent, same as the submitter path.
@@ -1585,6 +1612,8 @@ async function handleFinalize(
               firstName: intern.user.firstName,
               stageNumber: stageNum,
               returningCode: nsReturningCode,
+              cohortReached: advancedCohortReached,
+              advancingCount: advancedAdvancingCount,
             }),
             context: {
               stage,
@@ -1605,7 +1634,8 @@ async function handleFinalize(
     if (r.status === "PENDING_PROMOTION") {
       // Stage windows open on Mondays. Finalising on a Sunday means the next
       // stage starts the very next morning, and the email must say so.
-      const nextStageStartsAt = nextMondayAfter(new Date());
+      const nextStageStartsAt = nextStageWindow?.activeFrom ?? nextMondayAfter(new Date());
+      const nextStageClosesAt = nextStageWindow?.submitUntil ?? null;
       const dossierUrlValue = advancedPolicy
         ? dossierUrl({ origin, reportId: r.id, internId: r.intern.id })
         : null;
@@ -1648,9 +1678,12 @@ async function handleFinalize(
               ? `Congratulations, ${r.intern.user.firstName}. You are now a Cyber Core Associate.`
               : isAdvancedFinal
                 ? `Advanced Stage complete, ${r.intern.user.firstName}. Your final case is closed.`
+              : stage === "STAGE_7"
+                ? stage7ResultSubject("ADVANCE", advancedAdvancingCount)
               : `You're in. Your Stage ${Number(stageNum) + 1} timing is on your dashboard.`,
             body: renderResultEmail({
               firstName: r.intern.user.firstName,
+              track: r.intern.track,
               stageNumber: stageNum,
               passed: true,
               score,
@@ -1660,6 +1693,9 @@ async function handleFinalize(
               referenceLetterUrl: referenceUrlValue,
               dossierPdfUrl: dossierUrlValue,
               nextStageStartsAt,
+              nextStageClosesAt,
+              cohortReached: advancedCohortReached,
+              advancingCount: advancedAdvancingCount,
               proofBadgeUrl: proofBadgeUrlValue,
               feedbackUrl,
               slackUrl,
@@ -1816,9 +1852,12 @@ async function handleFinalize(
             userId: r.intern.user.id,
             toEmail: r.intern.user.email,
             kind: "STAGE_FAILED",
-            subject: `Stage ${stageNum} — your result`,
+            subject: stage === "STAGE_7"
+              ? stage7ResultSubject("DEPART", advancedAdvancingCount)
+              : `Stage ${stageNum} — your result`,
             body: renderResultEmail({
               firstName: r.intern.user.firstName,
+              track: r.intern.track,
               stageNumber: stageNum,
               passed: false,
               score,
@@ -1833,6 +1872,8 @@ async function handleFinalize(
               slackUrl,
               effectiveDate,
               returningCode,
+              cohortReached: advancedCohortReached,
+              advancingCount: advancedAdvancingCount,
               advancedSelection: advancedPolicy
                 ? {
                     label: advancedPolicy.label,
@@ -2020,6 +2061,7 @@ function nextMondayAfter(from: Date): Date {
 
 function renderResultEmail(opts: {
   firstName: string;
+  track?: string;
   stageNumber: string;
   passed: boolean;
   score: number;
@@ -2056,9 +2098,13 @@ function renderResultEmail(opts: {
   // When the next stage opens. Stated explicitly in the advancement email so
   // the intern is told what STARTS, not what ends.
   nextStageStartsAt?: Date | null;
+  nextStageClosesAt?: Date | null;
+  cohortReached?: number;
+  advancingCount?: number;
 }): string {
   const {
     firstName,
+    track,
     stageNumber,
     passed,
     score,
@@ -2083,6 +2129,9 @@ function renderResultEmail(opts: {
     performanceRecordUrl,
     dossierPdfUrl,
     nextStageStartsAt,
+    nextStageClosesAt,
+    cohortReached,
+    advancingCount,
   } = opts;
   const nextStageNum = Number(stageNumber) + 1;
   const startLabel = nextStageStartsAt ? longDayLabel(nextStageStartsAt) : null;
@@ -2091,6 +2140,46 @@ function renderResultEmail(opts: {
   // it. Rendered only when a code was minted (submitters only). See
   // src/lib/returning-code.ts.
   const returningCodeBlock = returningCode ? returningCodeVoucher(returningCode) : "";
+
+  // Stage 7 is the last broad advanced-stage sieve. Its result notice carries
+  // the complete audited record and document package instead of the shorter
+  // generic stage email used elsewhere.
+  if (stageNumber === "7" && advancedSelection) {
+    const shared = {
+      firstName,
+      track: track ?? "Specialist track",
+      cohortReached: cohortReached ?? advancedSelection.cohortSize ?? 0,
+      advancingCount: advancingCount ?? 0,
+    };
+    if (passed && nextStageStartsAt && nextStageClosesAt) {
+      return renderStage7AdvancementEmail({
+        ...shared,
+        score,
+        selection: advancedSelection,
+        stage8OpensAt: nextStageStartsAt,
+        stage8ClosesAt: nextStageClosesAt,
+        certificateUrl: certUrl,
+        achievementLetterUrl: letterPdfUrl,
+        referenceLetterUrl: referenceLetterUrl ?? null,
+        dossierUrl: dossierPdfUrl ?? null,
+        feedbackUrl,
+      });
+    }
+    if (!passed) {
+      return renderStage7DepartureEmail({
+        ...shared,
+        score,
+        selection: advancedSelection,
+        effectiveDate: effectiveDate ?? null,
+        discontinuationLetterUrl: letterPdfUrl,
+        referenceLetterUrl: referenceLetterUrl ?? null,
+        performanceRecordUrl: performanceRecordUrl ?? null,
+        dossierUrl: dossierPdfUrl ?? null,
+        feedbackUrl,
+        returningCode: returningCode ?? null,
+      });
+    }
+  }
 
   // Stage 4 is graduation to Cyber Core Associate, so there is no next stage.
   if (passed && isGraduation) {
@@ -2443,8 +2532,19 @@ function renderNoSubmissionEmail(opts: {
   firstName: string;
   stageNumber: string;
   returningCode?: string | null;
+  cohortReached?: number | null;
+  advancingCount?: number | null;
 }): string {
-  const { firstName, stageNumber, returningCode } = opts;
+  const { firstName, stageNumber, returningCode, cohortReached, advancingCount } = opts;
+  if (stageNumber === "7") {
+    return renderStage7NoSubmissionEmail({
+      firstName,
+      track: "Specialist track",
+      cohortReached: cohortReached ?? 99,
+      advancingCount: advancingCount ?? 66,
+      returningCode: returningCode ?? null,
+    });
+  }
   const returningCodeBlock = returningCode ? returningCodeVoucher(returningCode) : "";
   const body = `
     <h1 style="font-size:24px;font-weight:700;line-height:1.3;margin:18px 0 6px;color:#0F172A;">
