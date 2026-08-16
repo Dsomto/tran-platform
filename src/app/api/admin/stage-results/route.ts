@@ -1538,6 +1538,9 @@ async function handleFinalize(
   for (const r of pending) {
     const score = r.finalScore ?? r.score ?? 0;
     if (r.status === "PENDING_PROMOTION") {
+      // Stage windows open on Mondays. Finalising on a Sunday means the next
+      // stage starts the very next morning, and the email must say so.
+      const nextStageStartsAt = nextMondayAfter(new Date());
       const certUrlValue = certificateUrl({ origin, reportId: r.id, internId: r.intern.id });
       const passLetterUrlValue = passLetterUrl({ origin, reportId: r.id, internId: r.intern.id });
       // Reference letter is an advanced-programme document only; core stages
@@ -1577,7 +1580,7 @@ async function handleFinalize(
               ? `Congratulations, ${r.intern.user.firstName}. You are now a Cyber Core Associate.`
               : isAdvancedFinal
                 ? `Advanced Stage complete, ${r.intern.user.firstName}. Your final case is closed.`
-              : `You're in. Stage ${Number(stageNum) + 1} opens Monday.`,
+              : `You're in. Your Stage ${Number(stageNum) + 1} timing is on your dashboard.`,
             body: renderResultEmail({
               firstName: r.intern.user.firstName,
               stageNumber: stageNum,
@@ -1587,10 +1590,10 @@ async function handleFinalize(
               certUrl: certUrlValue,
               letterPdfUrl: passLetterUrlValue,
               referenceLetterUrl: referenceUrlValue,
+              nextStageStartsAt,
               proofBadgeUrl: proofBadgeUrlValue,
               feedbackUrl,
               slackUrl,
-              issuedAt,
               isGraduation: isStage4,
               isAdvancedFinal,
               verifyPageUrl,
@@ -1755,7 +1758,6 @@ async function handleFinalize(
               proofBadgeUrl: null,
               feedbackUrl,
               slackUrl,
-              issuedAt,
               effectiveDate,
               returningCode,
               advancedSelection: advancedPolicy
@@ -1831,18 +1833,6 @@ function bucketHistogram(scores: number[]): { bucket: string; count: number }[] 
     counts[idx]++;
   }
   return buckets.map((bucket, i) => ({ bucket, count: counts[i] }));
-}
-
-// Compute the next Monday from a reference date. Used to say "Stage N opens
-// Monday" in result emails — keeps the line correct without hardcoding.
-function nextMondayLabel(from: Date): string {
-  const d = new Date(from);
-  const dow = d.getUTCDay();
-  // 1 = Monday. If today is Monday, push to next Monday (7 days) so we don't
-  // claim something opens today.
-  const delta = dow === 1 ? 7 : (1 - dow + 7) % 7 || 7;
-  d.setUTCDate(d.getUTCDate() + delta);
-  return d.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" });
 }
 
 // Shared chrome: a clean letterhead with a 6px coloured accent strip,
@@ -1936,9 +1926,25 @@ function emailEscape(value: string): string {
 }
 
 // Result email. Feedback is NOT embedded — interns get a link to view it on
-// their dashboard. Pass version mentions the Stage N+1 Monday opening, points
-// at the cert + Slack. Fail version offers the discontinuation letter and is
-// honest about the call.
+// their dashboard. Pass emails point to the dashboard for authoritative next-
+// stage timing. Fail emails offer the discontinuation letter and explain the call.
+/** "Monday 17 August" — the day a stage opens, written the way a person says it. */
+function longDayLabel(d: Date): string {
+  return d.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" });
+}
+
+/**
+ * The next Monday strictly after `from`. Stage windows open on Mondays, so a
+ * result finalised on the Sunday advertises the very next day rather than a
+ * date a week out.
+ */
+function nextMondayAfter(from: Date): Date {
+  const d = new Date(from);
+  d.setHours(9, 0, 0, 0);
+  do { d.setDate(d.getDate() + 1); } while (d.getDay() !== 1);
+  return d;
+}
+
 function renderResultEmail(opts: {
   firstName: string;
   stageNumber: string;
@@ -1950,7 +1956,6 @@ function renderResultEmail(opts: {
   proofBadgeUrl?: string | null;
   feedbackUrl: string;
   slackUrl: string;
-  issuedAt?: Date;
   effectiveDate?: Date;
   isGraduation?: boolean;
   isAdvancedFinal?: boolean;
@@ -1974,6 +1979,9 @@ function renderResultEmail(opts: {
   // about to end and the reviewer notes would otherwise be lost.
   referenceLetterUrl?: string | null;
   performanceRecordUrl?: string | null;
+  // When the next stage opens. Stated explicitly in the advancement email so
+  // the intern is told what STARTS, not what ends.
+  nextStageStartsAt?: Date | null;
 }): string {
   const {
     firstName,
@@ -1986,7 +1994,6 @@ function renderResultEmail(opts: {
     proofBadgeUrl,
     feedbackUrl,
     slackUrl,
-    issuedAt = new Date(),
     effectiveDate,
     isGraduation = false,
     isAdvancedFinal = false,
@@ -2000,17 +2007,17 @@ function renderResultEmail(opts: {
     returningCode,
     referenceLetterUrl,
     performanceRecordUrl,
+    nextStageStartsAt,
   } = opts;
   const nextStageNum = Number(stageNumber) + 1;
-  const mondayLabel = nextMondayLabel(issuedAt);
+  const startLabel = nextStageStartsAt ? longDayLabel(nextStageStartsAt) : null;
 
   // Shared block shown on elimination emails: the come-back code + how to use
   // it. Rendered only when a code was minted (submitters only). See
   // src/lib/returning-code.ts.
   const returningCodeBlock = returningCode ? returningCodeVoucher(returningCode) : "";
 
-  // Stage 4 is graduation to Cyber Core Associate — there is no "next stage",
-  // so it gets its own email rather than the generic "Stage N+1 opens Monday".
+  // Stage 4 is graduation to Cyber Core Associate, so there is no next stage.
   if (passed && isGraduation) {
     const body = `
       <div style="font-size:11px;letter-spacing:0.24em;text-transform:uppercase;color:#C9A227;font-weight:700;">
@@ -2118,7 +2125,7 @@ function renderResultEmail(opts: {
         Ubuntu Bridge Initiative &nbsp;&middot;&nbsp; Advanced Stage
       </div>
       <h1 style="font-size:26px;font-weight:700;line-height:1.25;margin:18px 0 6px;color:#0F172A;">
-        You advanced, ${firstName}. Stage ${nextStageNum} opens ${mondayLabel}.
+        You advanced, ${firstName}. Stage ${nextStageNum} is next.
       </h1>
       <p style="font-size:15px;line-height:1.65;color:#334155;margin:0 0 22px;">
         Your Stage ${stageNumber} work was scored, converted to a percentile inside your track,
@@ -2135,7 +2142,20 @@ function renderResultEmail(opts: {
         ${certUrl ? ctaButton(certUrl, "Download your certificate", "#047857") : ""}
         ${letterPdfUrl ? `&nbsp;${ctaButton(letterPdfUrl, "Download your letter", "#0A1F44")}` : ""}
       </div>
-      <p style="font-size:13px;line-height:1.6;color:#64748B;margin:22px 0 0;">
+      ${
+        startLabel
+          ? `<div style="margin:22px 0 0;padding:16px 18px;background:#ECFDF5;border:1px solid #A7F3D0;border-radius:10px;">
+              <div style="font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:#047857;font-weight:700;margin:0 0 6px;">
+                Stage ${nextStageNum} starts
+              </div>
+              <div style="font-size:19px;font-weight:700;color:#065F46;line-height:1.3;">${startLabel}</div>
+              <p style="font-size:13px;line-height:1.6;color:#065F46;margin:8px 0 0;">
+                The brief and your first exercise open on your dashboard that morning. Be ready.
+              </p>
+            </div>`
+          : ""
+      }
+      <p style="font-size:13px;line-height:1.6;color:#64748B;margin:18px 0 0;">
         Your full review notes are on your dashboard,
         <a href="${feedbackUrl}" style="color:#047857;text-decoration:none;font-weight:600;">open them here</a>.
       </p>`;
@@ -2146,13 +2166,14 @@ function renderResultEmail(opts: {
     const body = `
       <h1 style="font-size:26px;font-weight:700;line-height:1.25;margin:18px 0 6px;color:#0F172A;">
         You're in, ${firstName}. <br/>
-        Stage ${nextStageNum} opens ${mondayLabel}.
+        Stage ${nextStageNum} is next.
       </h1>
       <p style="font-size:15px;line-height:1.65;color:#334155;margin:0 0 22px;">
         Your Stage ${stageNumber} capstone is graded and you made the cohort cutoff.
-        The Stage ${nextStageNum} brief drops in your inbox on Sunday evening with the
-        reading list and your first exercise. Block out time on Monday afternoon to
-        read it properly — Stage ${nextStageNum} moves quicker than Stage ${stageNumber} did.
+        ${startLabel
+          ? `<strong>Stage ${nextStageNum} starts ${startLabel}.</strong> The brief, reading list and first exercise open on your dashboard that morning.`
+          : `Open your dashboard for the Stage ${nextStageNum} opening time, brief, reading list, and first exercise.`}
+        Stage ${nextStageNum} moves quicker than Stage ${stageNumber} did, so read the room carefully when it opens.
       </p>
 
       <div style="display:flex;gap:14px;align-items:baseline;margin:0 0 28px;padding:16px 18px;background:#ECFDF5;border:1px solid #A7F3D0;border-radius:10px;">
