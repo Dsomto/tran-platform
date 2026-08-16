@@ -10,7 +10,7 @@ import {
   ADVANCED_CREDENTIALS, TRACK_LABEL, TRACK_PROFILE, credentialFor, isAdvancedStage,
   standingFor, type AdvancedStageKey,
 } from "./advanced-credential";
-import { ADVANCED_TRACK_OUTCOMES, type AdvancedTrack } from "./advanced-stage";
+import { ADVANCED_TRACK_OUTCOMES, getAdvancedProject, type AdvancedTrack } from "./advanced-stage";
 import { UBI_LOGO_BUFFER } from "./ubi-logo-data";
 
 /**
@@ -259,42 +259,65 @@ export function generatePortfolioDossier(opts: {
       n++;
       const advanced = isAdvancedStage(entry.stage);
       const tc = advanced ? credentialFor(entry.stage as AdvancedStageKey, track) : null;
-      const cred = advanced ? ADVANCED_CREDENTIALS[entry.stage as AdvancedStageKey] : null;
-
-      // Measure before committing, so a project never splits across a break.
+      const brief = advanced ? getAdvancedProject(entry.stage, track) : null;
       const core = CORE_STAGE_DETAIL[entry.stage];
-      const bodyText = tc ? `${capitalise(tc.attestation)}.` : core?.what ?? "";
-      const whyText = tc ? ADVANCED_CREDENTIALS[entry.stage as AdvancedStageKey].matters : core?.why ?? "";
-      const measure = (t: string) =>
-        t ? doc.fontSize(9.5).font("Times-Roman").heightOfString(t, { width: w - 30, lineGap: 2.2 }) : 0;
-      const compH = tc ? Math.ceil(tc.competencies.length / 2) * 12.5 + 16 : 0;
-      const blockH = 30 + (tc ? 14 : 0) + measure(bodyText) + measure(whyText) + 24 + compH + 18;
-      if (y + blockH > bottomLimit) { doc.addPage(); y = 62; }
 
-      // Header row: number, stage, and the brief where there is one.
-      doc.rect(x, y, w, tc ? 32 : 24).fill(P.wash);
-      doc.moveTo(x, y).lineTo(x, y + (tc ? 32 : 24)).lineWidth(2.6).strokeColor(P.metal).stroke();
-      doc.fontSize(7).font("Helvetica-Bold").fillColor(P.metal)
-        .text(String(n).padStart(2, "0"), x + 11, y + (tc ? 12 : 8), { width: 18, lineBreak: false });
-      doc.fontSize(10.5).font("Times-Bold").fillColor(P.head)
-        .text(entry.label, x + 32, y + (tc ? 7 : 6), { width: w - 44, lineBreak: false });
+      // Advanced projects carry a full technical breakdown and are given a
+      // fresh page each; core stages are compact and flow.
+      if (advanced && y + 300 > bottomLimit) { doc.addPage(); y = 62; }
+      else if (y + 110 > bottomLimit) { doc.addPage(); y = 62; }
+
+      // ── Header ────────────────────────────────────────
+      const headH = tc ? 40 : 28;
+      doc.rect(x, y, w, headH).fill(advanced ? P.deep : P.structure);
+      doc.rect(x, y, 3.5, headH).fill(P.metal);
+      doc.circle(x + 26, y + headH / 2, 11).fill(P.metal);
+      doc.fontSize(9).font("Times-Bold").fillColor(P.deep)
+        .text(String(n).padStart(2, "0"), x + 15, y + headH / 2 - 4.5, {
+          width: 22, align: "center", lineBreak: false,
+        });
+      doc.fontSize(tc ? 11.5 : 10.5).font("Times-Bold").fillColor("#FFFFFF")
+        .text(entry.label, x + 46, y + (tc ? 9 : 8), { width: w - 58, lineBreak: false });
       if (tc) {
-        doc.fontSize(8.5).font("Times-Italic").fillColor(A.muted)
-          .text(`Brief — “${tc.project}”`, x + 32, y + 19, { width: w - 44, lineBreak: false });
+        doc.fontSize(8.5).font("Times-Italic").fillColor(P.metalPale)
+          .text(`Brief — “${tc.project}”`, x + 46, y + 24, { width: w - 58, lineBreak: false });
       }
-      y += (tc ? 32 : 24) + 8;
+      y += headH + 10;
 
-      if (bodyText) {
-        doc.fontSize(6.5).font("Helvetica-Bold").fillColor(A.muted)
-          .text("WHAT THEY BUILT", x + 14, y, { width: w - 30, characterSpacing: 1.4 });
-        doc.fontSize(9.5).font("Times-Roman").fillColor(A.inkSoft)
-          .text(bodyText, x + 14, y + 11, { width: w - 30, lineGap: 2.2 });
-        y = doc.y + 9;
+      // ── Assessment metadata chips ─────────────────────
+      if (brief) {
+        const chips = [
+          `Difficulty ${brief.difficulty}/5`,
+          brief.revision,
+          brief.defense,
+        ];
+        let chipX = x + 14;
+        for (const c of chips) {
+          const cw = doc.fontSize(7).font("Helvetica-Bold").widthOfString(c) + 14;
+          if (chipX + cw > x + w - 14) break;
+          doc.roundedRect(chipX, y, cw, 15, 2.5).fill(P.metalPale);
+          doc.fontSize(7).font("Helvetica-Bold").fillColor(P.metalDeep)
+            .text(c, chipX + 7, y + 4.5, { width: cw - 14, lineBreak: false });
+          chipX += cw + 6;
+        }
+        y += 22;
       }
 
+      y = block(doc, x, w, y, P, "WHAT THEY BUILT",
+        tc ? `${capitalise(tc.attestation)}.` : core?.what ?? "", bottomLimit);
+
+      if (brief) {
+        y = block(doc, x, w, y, P, "THE OBJECTIVE SET", brief.objective, bottomLimit);
+        y = bullets(doc, x, w, y, P, "THE TECHNICAL PROBLEM", brief.technicalChallenges, bottomLimit);
+        y = bullets(doc, x, w, y, P, "HOW IT WAS PROVEN", brief.verificationTests, bottomLimit);
+        y = wrapList(doc, x, w, y, P, "WHAT THEY SHIPPED", brief.deliverables, bottomLimit);
+      }
+
+      const whyText = tc
+        ? ADVANCED_CREDENTIALS[entry.stage as AdvancedStageKey].matters
+        : core?.why ?? "";
       if (whyText) {
-        // Why it matters, set against a tinted rule so it reads as commentary
-        // rather than more description.
+        if (y + 60 > bottomLimit) { doc.addPage(); y = 62; }
         const wy = y;
         doc.fontSize(6.5).font("Helvetica-Bold").fillColor(P.metal)
           .text("WHY IT MATTERS", x + 20, wy, { width: w - 36, characterSpacing: 1.4 });
@@ -306,8 +329,9 @@ export function generatePortfolioDossier(opts: {
       }
 
       if (tc) {
+        if (y + 60 > bottomLimit) { doc.addPage(); y = 62; }
         doc.fontSize(6.5).font("Helvetica-Bold").fillColor(A.muted)
-          .text("DEMONSTRATED", x + 14, y, { width: w - 30, characterSpacing: 1.4 });
+          .text("CAPABILITIES DEMONSTRATED", x + 14, y, { width: w - 30, characterSpacing: 1.4 });
         const colW = (w - 44) / 2;
         const perCol = Math.ceil(tc.competencies.length / 2);
         tc.competencies.forEach((c, i) => {
@@ -320,8 +344,7 @@ export function generatePortfolioDossier(opts: {
         });
         y += 12 + perCol * 12.5 + 6;
       }
-      if (cred) y += 2;
-      y += 8;
+      y += 10;
     }
 
     // ══ TOOLKIT + CLOSE ═══════════════════════════════════
@@ -351,6 +374,14 @@ export function generatePortfolioDossier(opts: {
     for (let i = 0; i < range.count; i++) {
       doc.switchToPage(range.start + i);
       if (i === 0) continue;
+      doc.rect(0, 0, pageW, 26).fill(P.wash);
+      doc.rect(0, 26, pageW, 1.6).fill(P.metal);
+      doc.fontSize(7.5).font("Helvetica-Bold").fillColor(P.head)
+        .text(fullName.toUpperCase(), x, 9, { width: w / 2, characterSpacing: 1.2, lineBreak: false });
+      doc.fontSize(7.5).font("Helvetica").fillColor(A.muted)
+        .text(`${TRACK_LABEL[track]}  ·  Portfolio Dossier`, x + w / 2, 9, {
+          width: w / 2, align: "right", lineBreak: false,
+        });
       letterFooter(doc, x, w, pageH, dossierId);
       doc.fontSize(7).font("Helvetica").fillColor(A.faint)
         .text(`Page ${i + 1} of ${range.count}`, x, pageH - 60, {
@@ -361,6 +392,65 @@ export function generatePortfolioDossier(opts: {
 
     doc.end();
   });
+}
+
+/** Small-caps section label with a metal tick, used throughout the dossier. */
+function sectionLabel(
+  doc: Doc, x: number, w: number, y: number, P: Palette, label: string
+): void {
+  doc.rect(x + 14, y + 2, 8, 2).fill(P.metal);
+  doc.fontSize(6.5).font("Helvetica-Bold").fillColor(P.metalDeep)
+    .text(label, x + 27, y, { width: w - 43, characterSpacing: 1.5 });
+}
+
+/** A labelled prose block that starts a new page rather than overflowing. */
+function block(
+  doc: Doc, x: number, w: number, y: number, P: Palette,
+  label: string, body: string, bottomLimit: number
+): number {
+  if (!body) return y;
+  const h = doc.fontSize(9.5).font("Times-Roman").heightOfString(body, { width: w - 30, lineGap: 2.2 });
+  if (y + h + 22 > bottomLimit) { doc.addPage(); y = 62; }
+  sectionLabel(doc, x, w, y, P, label);
+  doc.fontSize(9.5).font("Times-Roman").fillColor(A.inkSoft)
+    .text(body, x + 14, y + 14, { width: w - 30, lineGap: 2.2 });
+  return doc.y + 11;
+}
+
+/** A labelled bullet list, breaking pages between items rather than inside one. */
+function bullets(
+  doc: Doc, x: number, w: number, y: number, P: Palette,
+  label: string, items: string[], bottomLimit: number
+): number {
+  if (!items?.length) return y;
+  if (y + 44 > bottomLimit) { doc.addPage(); y = 62; }
+  sectionLabel(doc, x, w, y, P, label);
+  y += 14;
+  for (const item of items) {
+    const h = doc.fontSize(9).font("Times-Roman").heightOfString(item, { width: w - 52, lineGap: 2 });
+    if (y + h + 10 > bottomLimit) { doc.addPage(); y = 62; }
+    doc.rect(x + 14, y - 4, w - 28, h + 9).fill(P.wash);
+    doc.rect(x + 14, y - 4, 2, h + 9).fill(P.metalLight);
+    doc.fontSize(9).font("Times-Roman").fillColor(A.inkSoft)
+      .text(item, x + 25, y, { width: w - 52, lineGap: 2 });
+    y = doc.y + 10;
+  }
+  return y + 4;
+}
+
+/** Deliverables as a dense wrapped run of monospaced filenames. */
+function wrapList(
+  doc: Doc, x: number, w: number, y: number, P: Palette,
+  label: string, items: string[], bottomLimit: number
+): number {
+  if (!items?.length) return y;
+  const text = items.join("   ·   ");
+  const h = doc.fontSize(8).font("Courier").heightOfString(text, { width: w - 30, lineGap: 2.5 });
+  if (y + h + 20 > bottomLimit) { doc.addPage(); y = 62; }
+  sectionLabel(doc, x, w, y, P, label);
+  doc.fontSize(8).font("Courier").fillColor(P.metalDeep)
+    .text(text, x + 14, y + 14, { width: w - 30, lineGap: 2.5 });
+  return doc.y + 11;
 }
 
 /** Numbered section heading with a metal rule. Returns the y below it. */
