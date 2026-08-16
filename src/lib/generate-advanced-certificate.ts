@@ -6,8 +6,9 @@ const pdfkitMod: any = require("pdfkit");
 const PDFDocument = pdfkitMod.default || pdfkitMod;
 
 import {
-  A, advancedSeal, cornerWedges, diamond, formatDate, guillocheRun, layoutName,
-  logoLockup, ornateFrame, paletteFor, ribbonBanner, rosette, type Doc,
+  A, advancedSeal, cornerWedges, diamond, formatDate, guillocheField, guillocheRun,
+  laurelWreath, layoutName, logoLockup, ornateFrame, paletteFor, ribbonBanner,
+  rosette, type Doc,
 } from "./pdf-primitives";
 import {
   ADVANCED_CREDENTIALS, TRACK_LABEL, TRACK_SHORT, credentialFor, standingFor,
@@ -40,6 +41,11 @@ export function generateAdvancedCertificate(opts: {
   const cred = ADVANCED_CREDENTIALS[stage];
   const tc = credentialFor(stage, track);
   const P = paletteFor(track);
+  // Projects 3-5 (Architecture, Adversity, The Final Case) are the deep end of
+  // the programme — two advanced cuts already survived. They earn a visibly
+  // heavier certificate than projects 1-2: a full guilloche ground, a laurelled
+  // seal, and a distinction line naming the standing in the cohort.
+  const elevated = cred.number >= 3;
 
   return new Promise((resolve, reject) => {
     const doc: Doc = new PDFDocument({
@@ -59,9 +65,12 @@ export function generateAdvancedCertificate(opts: {
 
     // ── Paper, wedges, ornate frame, rosette ──────────────
     doc.rect(0, 0, pageW, pageH).fill(A.paper);
+    if (elevated) {
+      guillocheField(doc, 58, 58, pageW - 116, pageH - 116, P.structure, 0.05);
+    }
     cornerWedges(doc, pageW, pageH, P);
     ornateFrame(doc, pageW, pageH, P);
-    rosette(doc, cx, 300, 128, P.structure, 0.05);
+    rosette(doc, cx, 300, 128, P.structure, elevated ? 0.038 : 0.05);
 
     // ── Masthead ──────────────────────────────────────────
     const logoBottom = logoLockup(doc, cx, 68, 84);
@@ -140,7 +149,10 @@ export function generateAdvancedCertificate(opts: {
     });
 
     // ── Seal, clear of the name row ───────────────────────
-    advancedSeal(doc, pageW - 104, 108, 33, P, {
+    if (elevated) {
+      laurelWreath(doc, pageW - 104, 106, 46, P.metal);
+    }
+    advancedSeal(doc, pageW - 104, 106, elevated ? 35 : 33, P, {
       numeral: String(cred.number),
       ring: TRACK_SHORT[track],
     });

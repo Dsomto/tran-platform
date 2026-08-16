@@ -216,6 +216,53 @@ export function rosette(
 }
 
 /**
+ * A field of fine guilloche covering a whole area, drawn as interleaved
+ * horizontal runs. Used at very low opacity behind the whole certificate face
+ * on the elevated tier — the same device a banknote uses to make its ground
+ * impossible to reproduce flatly.
+ */
+export function guillocheField(
+  doc: Doc, x: number, y: number, w: number, h: number,
+  color: string, opacity = 0.055, spacing = 15
+): void {
+  doc.save().opacity(opacity);
+  for (let row = 0; y + row * spacing < y + h; row++) {
+    const ry = y + row * spacing;
+    if (ry > y + h) break;
+    // Alternate the beat frequency per row so the field never tiles visibly.
+    guillocheRun(doc, x, ry, w, spacing * 0.42, row % 2 === 0 ? 30 : 34, color);
+  }
+  doc.restore();
+}
+
+/**
+ * A laurel wreath — two mirrored arcs of leaves. Rings the seal on the
+ * elevated tier, where the credential is worth the extra ceremony.
+ */
+export function laurelWreath(
+  doc: Doc, cx: number, cy: number, r: number, color: string
+): void {
+  for (const side of [-1, 1] as const) {
+    for (let i = 0; i < 9; i++) {
+      // Sweep from the bottom of the circle up around to the top.
+      const t = i / 8;
+      const a = Math.PI / 2 + side * (0.28 + t * 2.05);
+      const lx = cx + r * Math.cos(a);
+      const ly = cy + r * Math.sin(a);
+      const len = r * (0.3 - t * 0.12);
+      const tilt = a + side * 1.15;
+      doc.save().translate(lx, ly).rotate((tilt * 180) / Math.PI, { origin: [0, 0] });
+      // One leaf: two opposed arcs meeting at a point.
+      doc.moveTo(0, 0)
+        .bezierCurveTo(len * 0.5, -len * 0.42, len * 1.1, -len * 0.2, len * 1.5, 0)
+        .bezierCurveTo(len * 1.1, len * 0.2, len * 0.5, len * 0.42, 0, 0)
+        .closePath().fill(color);
+      doc.restore();
+    }
+  }
+}
+
+/**
  * A ribbon banner carrying a single line of text — swallow-tailed ends, a
  * folded return behind each side, and a darker underside so it reads as
  * folded cloth rather than a rectangle.
