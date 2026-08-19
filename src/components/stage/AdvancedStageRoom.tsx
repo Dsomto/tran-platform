@@ -61,6 +61,25 @@ function difficultyLabel(value: number) {
   return Array.from({ length: 5 }, (_, index) => (index < value ? "●" : "○")).join("");
 }
 
+const WAT_WINDOW_FORMATTER = new Intl.DateTimeFormat("en-NG", {
+  timeZone: "Africa/Lagos",
+  weekday: "short",
+  day: "2-digit",
+  month: "short",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false,
+});
+
+function exactWindowLabel(activeFrom: string | null, submitUntil: string | null, fallback: string) {
+  if (!activeFrom || !submitUntil) return fallback;
+  const opens = new Date(activeFrom);
+  const closes = new Date(submitUntil);
+  if (Number.isNaN(opens.getTime()) || Number.isNaN(closes.getTime())) return fallback;
+  return `${WAT_WINDOW_FORMATTER.format(opens)} to ${WAT_WINDOW_FORMATTER.format(closes)} WAT`;
+}
+
 function protectedResourceHref(stage: string, resourcePath: string) {
   const query = new URLSearchParams({ stage, path: resourcePath });
   return `/api/advanced-stage/resource?${query.toString()}`;
@@ -104,9 +123,13 @@ export function AdvancedStageRoom({
   const resources = orderedResources(project.resources);
   const rankingStage = `STAGE_${project.number + 4}` as AdvancedRankingStage;
   const selectionPolicy = advancedSelectionPolicy(rankingStage);
-  const selectionBadge = selectionPolicy.fixedAdvancePerTrack !== null
-    ? `Top ${selectionPolicy.fixedAdvancePerTrack}`
-    : `Top ${Math.round((1 - selectionPolicy.eliminationRate!) * 100)}%`;
+  const trackTarget = selectionPolicy.fixedAdvanceByTrack?.[track];
+  const selectionBadge = trackTarget !== undefined
+    ? `Top ${trackTarget}`
+    : selectionPolicy.fixedAdvancePerTrack !== null
+      ? `Top ${selectionPolicy.fixedAdvancePerTrack}`
+      : `Top ${Math.round((1 - selectionPolicy.eliminationRate!) * 100)}%`;
+  const displayedWindow = exactWindowLabel(activeFrom, submitUntil, project.duration);
   const roomStyle = {
     "--advanced-accent": visual.accent,
     "--advanced-accent-strong": visual.accentStrong,
@@ -145,7 +168,7 @@ export function AdvancedStageRoom({
           <p className="advanced-objective">{project.objective}</p>
 
           <dl className="advanced-facts">
-            <div><dt><Clock3 aria-hidden="true" /> Window</dt><dd>{project.duration}</dd></div>
+            <div><dt><Clock3 aria-hidden="true" /> Window</dt><dd>{displayedWindow}</dd></div>
             <div><dt><FileCheck2 aria-hidden="true" /> Revision</dt><dd>{project.revision}</dd></div>
             <div><dt><ShieldCheck aria-hidden="true" /> Defense</dt><dd>{project.defense}</dd></div>
             <div><dt><LockKeyhole aria-hidden="true" /> Assignment</dt><dd>{preview ? "Preview variant" : `${variant.variant} / ${internCode}`}</dd></div>
@@ -176,6 +199,21 @@ export function AdvancedStageRoom({
           submitUntil={submitUntil}
           tone="dark"
         />
+      )}
+
+      {project.number === 4 && (
+        <section className="advanced-simple" aria-labelledby="stage-eight-release-title">
+          <div className="advanced-simple__icon"><AlertTriangle aria-hidden="true" /></div>
+          <div>
+            <div className="advanced-eyebrow">Controlling Stage 8 release</div>
+            <h2 id="stage-eight-release-title">Use the B2 portable pack. No heavy lab is mandatory.</h2>
+            <p>
+              Download the new shared archive and follow its portable route. Work already completed on the earlier
+              environment remains admissible through the documented compatibility adapter, so do not restart. The
+              same technical rubric applies to everyone and stronger hardware earns no extra marks.
+            </p>
+          </div>
+        </section>
       )}
 
       <section className="advanced-simple" aria-labelledby="simple-terms-title">
@@ -399,7 +437,13 @@ export function AdvancedStageRoom({
         </div>
       </section>
 
-      <AdvancedProjectFaq project={project} track={track} trackLabel={trackLabel} />
+      <AdvancedProjectFaq
+        project={project}
+        track={track}
+        trackLabel={trackLabel}
+        activeFrom={activeFrom}
+        submitUntil={submitUntil}
+      />
 
       <section aria-labelledby="deliverables-title">
         <div className="advanced-section-heading">

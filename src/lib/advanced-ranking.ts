@@ -22,6 +22,7 @@ export type AdvancedSelectionPolicy = {
   basis: "CURRENT_STAGE_PERCENTILE" | "CUMULATIVE_WEIGHTED_PERCENTILE";
   eliminationRate: number | null;
   fixedAdvancePerTrack: number | null;
+  fixedAdvanceByTrack: Partial<Record<AdvancedRankingTrack, number>> | null;
   label: string;
 };
 
@@ -34,6 +35,7 @@ export const ADVANCED_SELECTION_POLICIES: Record<
     basis: "CURRENT_STAGE_PERCENTILE",
     eliminationRate: 0.2,
     fixedAdvancePerTrack: null,
+    fixedAdvanceByTrack: null,
     label: "Remove 20% of the full track cohort, counting non-submitters first",
   },
   STAGE_6: {
@@ -41,6 +43,7 @@ export const ADVANCED_SELECTION_POLICIES: Record<
     basis: "CURRENT_STAGE_PERCENTILE",
     eliminationRate: 0.25,
     fixedAdvancePerTrack: null,
+    fixedAdvanceByTrack: null,
     label: "Remove 25% of the full track cohort, counting non-submitters first",
   },
   STAGE_7: {
@@ -48,21 +51,24 @@ export const ADVANCED_SELECTION_POLICIES: Record<
     basis: "CURRENT_STAGE_PERCENTILE",
     eliminationRate: 0.33,
     fixedAdvancePerTrack: null,
+    fixedAdvanceByTrack: null,
     label: "Remove 33% of the full track cohort, counting non-submitters first",
   },
   STAGE_8: {
     stage: "STAGE_8",
     basis: "CUMULATIVE_WEIGHTED_PERCENTILE",
     eliminationRate: null,
-    fixedAdvancePerTrack: 6,
-    label: "Advance the top 6 in each track by cumulative weighted percentile",
+    fixedAdvancePerTrack: null,
+    fixedAdvanceByTrack: { SOC_ANALYSIS: 18, ETHICAL_HACKING: 11, GRC: 5 },
+    label: "Advance 18 SOC, 11 Ethical Hacking, and 5 GRC associates by cumulative weighted percentile, counting non-submitters first",
   },
   STAGE_9: {
     stage: "STAGE_9",
     basis: "CUMULATIVE_WEIGHTED_PERCENTILE",
     eliminationRate: null,
-    fixedAdvancePerTrack: 3,
-    label: "Select the top 3 in each track by cumulative weighted percentile",
+    fixedAdvancePerTrack: 10,
+    fixedAdvanceByTrack: null,
+    label: "Select the top 10 in each track by cumulative weighted percentile",
   },
 };
 
@@ -119,9 +125,14 @@ export function advancedSelectionPolicy(stage: AdvancedRankingStage): AdvancedSe
 export function advancedAdvanceTarget(
   stage: AdvancedRankingStage,
   eligibleCount: number,
-  cohortCount = eligibleCount
+  cohortCount = eligibleCount,
+  track?: AdvancedRankingTrack
 ): number {
   const policy = advancedSelectionPolicy(stage);
+  const trackTarget = track ? policy.fixedAdvanceByTrack?.[track] : undefined;
+  if (trackTarget !== undefined) {
+    return Math.min(trackTarget, eligibleCount);
+  }
   if (policy.fixedAdvancePerTrack !== null) {
     return Math.min(policy.fixedAdvancePerTrack, eligibleCount);
   }
@@ -201,7 +212,7 @@ export function rankAdvancedStage(
   const percentiles = percentileMap(scoreRecords, stage, cohortSizes);
   const includedStages = ADVANCED_RANKING_STAGES.slice(0, stageIndex(stage) + 1);
 
-  return TRACKS.map((track) => {
+  const rankings = TRACKS.map((track) => {
     const trackCandidates = candidates.filter((candidate) => candidate.track === track);
     const rows: AdvancedRankedCandidate[] = trackCandidates.map((candidate) => {
       const stagePercentiles = includedStages.map((includedStage) => ({
@@ -272,14 +283,13 @@ export function rankAdvancedStage(
     const advanceTarget = advancedAdvanceTarget(
       stage,
       eligibleRows.length,
-      cohortSize
+      cohortSize,
+      track
     );
 
-    // Keep-both-on-tie: if the advance boundary falls in the middle of a group
-    // of candidates with the same ranking key, we do NOT split equal scores
-    // arbitrarily. Everyone tied at the boundary score is kept (advanced), which
-    // removes FEWER than the nominal target rather than dropping one of two
-    // identical results. Determined before selection so the tie group is kept.
+    // Boundary ties are surfaced for QA. Selection remains at the exact target;
+    // assessors must re-read tied work and record the defensible one-point
+    // distinction before finalisation rather than silently adding another seat.
     const lastSelected = advanceTarget > 0 ? eligibleRows[advanceTarget - 1] : null;
     const firstReserve = advanceTarget < eligibleRows.length ? eligibleRows[advanceTarget] : null;
     const boundaryTie = Boolean(
@@ -291,13 +301,10 @@ export function rankAdvancedStage(
       : [];
 
     eligibleRows.forEach((row, index) => {
-      const keptByTie = boundaryKey !== null && rankingKey(row) === boundaryKey;
-      row.selected = index < advanceTarget || keptByTie;
+      row.selected = index < advanceTarget;
       row.selectionReason = !row.selected
-        ? `${policy.label}; provisional rank ${row.rank} of ${cohortSize} falls below the advance boundary`
-        : keptByTie && index >= advanceTarget
-          ? `${policy.label}; tied at the advance boundary (rank ${row.rank} of ${cohortSize}) — kept under keep-both-on-tie`
-          : `${policy.label}; provisional rank ${row.rank} of ${cohortSize}`;
+        ? `${policy.label}; provisional rank ${row.rank} of ${cohortSize} falls below the advance boundary${boundaryKey !== null && rankingKey(row) === boundaryKey ? "; boundary tie requires QA" : ""}`
+        : `${policy.label}; provisional rank ${row.rank} of ${cohortSize}${boundaryKey !== null && rankingKey(row) === boundaryKey ? "; boundary tie requires QA" : ""}`;
     });
 
     return {
@@ -316,4 +323,6 @@ export function rankAdvancedStage(
       }),
     };
   });
+
+  return rankings;
 }

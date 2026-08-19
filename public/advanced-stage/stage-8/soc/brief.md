@@ -2,48 +2,72 @@
 
 ## Window and scoring
 
-Monday 09:00 WAT to Friday 18:10 WAT. No revision. Recorded defense. 100 points: lab reliability 15,
-telemetry validation 15, detection logic 25, adversary/benign testing 25,
-coverage and blind spots 10, defense 10.
+Use the exact opening and deadline shown in the authenticated stage room. No
+revision. Recorded defense. 100 points: release integrity and source accounting
+10, normalization and provenance 15, detection logic 25, adversarial and benign
+testing 25, deterministic automation 15, defense 10.
 
-## Supported lab
+## Controlling execution route
 
-- Wazuh single-node Docker release `v4.14.6` or the release pinned by the
-  programme team if this file is superseded.
-- Windows 11 evaluation VM with a documented Sysmon configuration and Wazuh agent.
-- Atomic Red Team on a host-only lab. Never run Atomic tests on a personal,
-  employer, or production machine.
+The signed Windows replay in the issued archive is the complete scored source.
+The mandatory route requires Python 3.11 or newer, 4 GB RAM, 2 GB free disk, and
+no VM, Docker, cloud account, live endpoint, or internet connection after setup.
+Process the replay as immutable evidence and preserve its manifest and hashes.
 
-Follow the official Wazuh Docker instructions, including prerequisites and
-certificate generation for the pinned tag. Record `docker compose ps`, image
-digests, agent status, clock source, and one known event end to end before any
-attack simulation.
+A candidate who already built Wazuh, Sysmon, Windows, or Atomic Red Team may
+retain that work as a compatibility adapter and additional provenance. It does
+not replace the replay results and earns no hardware bonus. Nobody is required
+to rebuild or discard valid work already completed.
 
 ## Detection contract
 
-Complete all twelve rows in `technique-matrix.csv`. Select and record a specific
-Atomic test GUID for each assigned technique. For every test preserve:
+Complete all twelve rows in `technique-matrix.csv`. Build a versioned event
+adapter, semantic detection rules, and a command-line regression runner. For
+every technique preserve:
 
-1. preflight and dependency output;
-2. exact execution and cleanup transcript;
-3. raw Windows/Sysmon event;
-4. normalized Wazuh event;
-5. custom rule and resulting alert;
-6. a benign lookalike and its expected/actual result;
-7. tuning history and blind spot.
+1. source event locator and immutable hash;
+2. normalized event or event sequence;
+3. matching fields, window, threshold, and rule version;
+4. alert or no-alert verdict with reason code;
+5. a benign near-match and its expected/actual result;
+6. one field-loss, rename, encoding, parent-process, or timing mutation;
+7. tuning history and the remaining blind spot.
 
-A rule that matches only the Atomic command string is capped. At least six rules
-must correlate multiple events or enforce a sequence/time window. Submit a test
-harness that classifies `no_telemetry`, `decoder_failure`, `rule_miss`,
-`suppressed`, and `alerted`; runs 12 canonical attacks and 24 benign fixtures;
-and exits non-zero on a verdict mismatch. Staff add eight semantic attack
-mutations and twelve benign holdouts. At least six mutations must alert and no
-benign holdout may alert. The clean deployment and full suite must run
-unattended. The panel assigns one safe reproduction from the suite.
+At least six detections must correlate multiple events or enforce a sequence or
+time window. Exact command strings, case IDs, fixture IDs, expected event IDs,
+private markers, and answer lookups are prohibited detection constants.
+
+The harness must run twelve canonical attacks, twenty-four benign controls,
+eight semantic attack mutations, and twelve benign holdouts. It must classify
+`no_telemetry`, `parse_failure`, `rule_miss`, `suppressed`, `alerted`, and
+`unexpected_alert`; emit machine-readable results; and exit non-zero on any
+verdict mismatch. At least six mutations must alert and no benign holdout may
+alert. Two clean runs must produce identical result hashes.
+
+## Required proof
+
+- Immutable source manifest and complete source-accounting totals.
+- Raw-to-normalized-to-decision provenance for every case.
+- Detection source, tests, mutation generator, and deterministic CLI runner.
+- JUnit or equivalent regression output and stable result hashes.
+- Coverage matrix showing tested fields, missing-field behavior, false-positive
+  decisions, and blind spots.
+- Recorded defense from a clean checkout against one staff-selected mutation.
+
+## Compatibility rule
+
+Existing Wazuh XML, Sigma, Sysmon, Atomic, OVA, or Docker evidence remains
+admissible when an adapter maps it to the same portable event and verdict
+contract. Scoring is based on correctness, generalization, evidence, and
+reproducibility, not the size of the machine used.
 
 ## Mission interface and handoff
 
-- **You receive:** a signed Windows replay, public behavior fixtures, technique matrix, candidate marker, and access to the isolated Wazuh/Windows lab.
-- **You build:** clean deployment overlays, semantic rules/decoders, raw-normalized-alert provenance, and classified telemetry-failure output using prior-stage behaviors.
-- **You prove:** sparse attacks and benign near-misses are distinguished without command literals, case IDs, expected event IDs, or private marker branches.
-- **You hand forward:** portable detections, parser adapters, coverage gaps, false-positive decisions, and source-to-alert locators for Stage 9.
+- **You receive:** signed replay, public behavior fixtures, technique matrix,
+  private marker, and exact input/output contracts.
+- **You build:** portable normalization, semantic detections, mutation tests,
+  source-to-alert provenance, and classified failure output.
+- **You prove:** sparse attacks and benign near-misses are distinguished without
+  answer constants or infrastructure-dependent screenshots.
+- **You hand forward:** tested detections, parser adapters, coverage gaps,
+  false-positive decisions, and reproducible evidence for Stage 9.

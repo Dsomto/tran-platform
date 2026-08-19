@@ -32,14 +32,17 @@ PROJECT_NAMES = {
     (7, "ethical_hacking"): "IAM Attack Path and Remediation",
     (7, "grc"): "Evidence-Driven ISO Audit",
     (8, "soc_analysis"): "Detection Engineering as Code",
-    (8, "ethical_hacking"): "Directory Attack Paths and Remediation",
-    (8, "grc"): "Hardening as Code and Quantified Risk",
+    (8, "ethical_hacking"): "Break and Repair the Directory Control Plane",
+    (8, "grc"): "Hardening Compiler and Quantified Risk",
     (9, "soc_analysis"): "Full Incident Response",
     (9, "ethical_hacking"): "Bounded Full-Stack Assessment",
     (9, "grc"): "Breach Governance Engine",
 }
 REVISIONS = {
     (6, "ethical_hacking"): "B2",
+    (8, "soc_analysis"): "B2",
+    (8, "ethical_hacking"): "B2",
+    (8, "grc"): "B2",
 }
 REQUIREMENTS = {
     (6, "soc_analysis"): "The sealed replay is complete and scored. A live candidate-owned T-Pot sensor is an additional implementation path, never a programme dependency.",
@@ -48,9 +51,9 @@ REQUIREMENTS = {
     (7, "soc_analysis"): "Build the supplied topology on your own Linux host. The source, policy, telemetry configuration, and test matrix are included.",
     (7, "ethical_hacking"): "Deploy the supplied Terraform only in a dedicated account you control, with the published budget and teardown controls. No programme cloud account is used.",
     (7, "grc"): "No external service is required; populations, criteria, evidence, severity rules, and fixtures are included.",
-    (8, "soc_analysis"): "The sealed Windows replay is complete and scored. A candidate-owned Wazuh/Windows lab may be used for the live implementation proof.",
-    (8, "ethical_hacking"): "Apply the supplied overlay only to a candidate-owned isolated GOAD-Light range. No programme directory or VPN is used.",
-    (8, "grc"): "The scan and risk fixtures are complete. The supplied candidate-owned Vagrant baseline is used for hardening, rollback, and service tests.",
+    (8, "soc_analysis"): "The signed Windows replay is the complete scored source. Wazuh, Windows, Sysmon, Atomic, OVA, and Docker evidence are optional compatibility work only.",
+    (8, "ethical_hacking"): "The supplied Python directory control plane and authenticated candidate JSON are the complete scored range. GOAD evidence already completed remains admissible through the portable contract.",
+    (8, "grc"): "The supplied unprivileged Python configuration sandbox is the complete scored host. VM, Vagrant, Ansible, Lynis, and OpenSCAP work already completed remains admissible through the portable contract.",
     (9, "soc_analysis"): "The offline synthetic case contains host logs, email, a real PCAP, and a reconstructable exfiltrated archive. No programme forensic workstation is required.",
     (9, "ethical_hacking"): "Run the vulnerable and patched estate from the supplied source on your own isolated Docker host; only loopback front doors are published.",
     (9, "grc"): "No external service is required; incident facts, inventory, jurisdiction fixtures, and deadline interfaces are included.",
@@ -106,19 +109,18 @@ def copy_tree(source: Path, destination: Path) -> None:
         shutil.copytree(source, destination, dirs_exist_ok=True)
 
 
-def write_start_here(root: Path, stage: int, track: str) -> None:
+def write_start_here(root: Path, stage: int, track: str, revision: str) -> None:
     title = PROJECT_NAMES[(stage, track)]
     text = f"""# Stage {stage}: {title}
 
-This is the shared B1 base archive for your track. Your signed-in stage room
+This is the shared {revision} base archive for your track. Your signed-in stage room
 provides the private assignment set and evidence marker; those values do not
 change these archive bytes.
 
 ## Assessment window
 
-Every advanced stage runs from Monday 09:00 WAT to Friday 18:10 WAT. The
-authenticated stage room shows the exact dates and live deadline countdown.
-Access and submission close at the Friday deadline.
+The authenticated stage room shows the exact opening, deadline, status, and live
+countdown. Those values control over cadence text or an older email.
 
 ## Start
 
@@ -142,9 +144,8 @@ fallback or adapter behavior, not by scanning a public target.
     (root / "START-HERE.md").write_text(text, encoding="utf-8")
     (root / "SCHEDULE.md").write_text(
         "# Advanced-stage assessment window\n\n"
-        "Every advanced stage runs from Monday 09:00 WAT to Friday 18:10 WAT. "
-        "The authenticated stage room shows the exact dates and live deadline "
-        "countdown. Access and submission close at the Friday deadline.\n",
+        "The authenticated stage room shows the exact opening, deadline, status, "
+        "and live countdown. Those values control over cadence text or an older email.\n",
         encoding="utf-8",
     )
 
@@ -187,19 +188,37 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--evidence-root", type=Path, default=DEFAULT_EVIDENCE)
     parser.add_argument("--out", type=Path, default=DEFAULT_OUTPUT)
+    parser.add_argument(
+        "--stage",
+        type=int,
+        action="append",
+        choices=range(6, 10),
+        help="Build only this stage. Repeat to build more than one stage.",
+    )
     args = parser.parse_args()
     output = args.out.resolve()
     evidence_root = args.evidence_root.resolve()
+    selected_stages = set(args.stage or range(6, 10))
     artifacts = []
+
+    manifest_path = output / "manifest.json"
+    if args.stage and manifest_path.is_file():
+        existing = json.loads(manifest_path.read_text(encoding="utf-8"))
+        artifacts.extend(
+            item
+            for item in existing.get("artifacts", [])
+            if int(item["stage"].split("_")[1]) not in selected_stages
+        )
 
     with tempfile.TemporaryDirectory(prefix="advanced-release-") as temp:
         temporary = Path(temp)
-        for stage in range(6, 10):
+        for stage in sorted(selected_stages):
             for track, slug in TRACKS.items():
                 validate_source_contract(stage, track)
                 participant = temporary / f"stage-{stage}" / track
                 participant.mkdir(parents=True)
-                write_start_here(participant, stage, track)
+                revision = REVISIONS.get((stage, track), "B1")
+                write_start_here(participant, stage, track, revision)
                 copy_tree(PUBLIC / "common", participant / "common")
                 copy_tree(PUBLIC / f"stage-{stage}" / slug, participant / "brief")
                 integrity = PUBLIC / f"stage-{stage}" / "integrity-attestation.md"
@@ -210,7 +229,6 @@ def main() -> int:
                 if track == "soc_analysis":
                     add_soc_evidence(participant, evidence_root, stage)
 
-                revision = REVISIONS.get((stage, track), "B1")
                 key = f"{track}/stage-{stage}/shared-stage{stage}-{revision.lower()}.tar.gz"
                 destination = output / key
                 details = archive(participant, destination)
@@ -221,6 +239,8 @@ def main() -> int:
                     "artifact_key": key,
                     **details,
                 })
+
+    artifacts.sort(key=lambda item: (int(item["stage"].split("_")[1]), item["track"]))
 
     manifest = {
         "schema_version": "1.0",

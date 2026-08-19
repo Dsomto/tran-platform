@@ -4,14 +4,6 @@
   "maximum_artifact_bytes": 104857600,
   "artifacts": [
     {
-      "track": "soc_analysis",
-      "stage": "STAGE_6",
-      "revision": "B1",
-      "artifact_key": "soc_analysis/stage-6/shared-stage6-b1.tar.gz",
-      "size_bytes": 7335839,
-      "sha256": "2942ddec7918684e80a3d3e7bdb579a814228f6c95bb089b16a33866bae740e8"
-    },
-    {
       "track": "ethical_hacking",
       "stage": "STAGE_6",
       "revision": "B2",
@@ -29,11 +21,11 @@
     },
     {
       "track": "soc_analysis",
-      "stage": "STAGE_7",
+      "stage": "STAGE_6",
       "revision": "B1",
-      "artifact_key": "soc_analysis/stage-7/shared-stage7-b1.tar.gz",
-      "size_bytes": 10616,
-      "sha256": "33281c8381cf7a7744f76e016d7b3cb3957f491422a8987dd7d483890009e1fd"
+      "artifact_key": "soc_analysis/stage-6/shared-stage6-b1.tar.gz",
+      "size_bytes": 7335839,
+      "sha256": "2942ddec7918684e80a3d3e7bdb579a814228f6c95bb089b16a33866bae740e8"
     },
     {
       "track": "ethical_hacking",
@@ -53,35 +45,35 @@
     },
     {
       "track": "soc_analysis",
-      "stage": "STAGE_8",
+      "stage": "STAGE_7",
       "revision": "B1",
-      "artifact_key": "soc_analysis/stage-8/shared-stage8-b1.tar.gz",
-      "size_bytes": 5696063,
-      "sha256": "12f48d2d800a107855e6fe8384e7c6b34b5481d94042d21eab174fb64b2c16a9"
+      "artifact_key": "soc_analysis/stage-7/shared-stage7-b1.tar.gz",
+      "size_bytes": 10616,
+      "sha256": "33281c8381cf7a7744f76e016d7b3cb3957f491422a8987dd7d483890009e1fd"
     },
     {
       "track": "ethical_hacking",
       "stage": "STAGE_8",
-      "revision": "B1",
-      "artifact_key": "ethical_hacking/stage-8/shared-stage8-b1.tar.gz",
-      "size_bytes": 10030,
-      "sha256": "3535ba56359dc27e883523b651e2f94ff3b05eea6b808e7902e06304b680ee56"
+      "revision": "B2",
+      "artifact_key": "ethical_hacking/stage-8/shared-stage8-b2.tar.gz",
+      "size_bytes": 18741,
+      "sha256": "4ac1ab88fe48f8c7fed84ebda5f78a96986b3f1366b824d2b84d3ad706bc0011"
     },
     {
       "track": "grc",
       "stage": "STAGE_8",
-      "revision": "B1",
-      "artifact_key": "grc/stage-8/shared-stage8-b1.tar.gz",
-      "size_bytes": 11977,
-      "sha256": "9be5e36adc4d906f0fdac3b2a893da3bfb4b994e7423c0ee3cc320ca265e283b"
+      "revision": "B2",
+      "artifact_key": "grc/stage-8/shared-stage8-b2.tar.gz",
+      "size_bytes": 18289,
+      "sha256": "d2d2e982b6a442a50ff989edab5e343b173eebd80414ca38e40b8b4864ffd332"
     },
     {
       "track": "soc_analysis",
-      "stage": "STAGE_9",
-      "revision": "B1",
-      "artifact_key": "soc_analysis/stage-9/shared-stage9-b1.tar.gz",
-      "size_bytes": 2723254,
-      "sha256": "df8fb093a6a69ca885a0f22518f842cf6a470232a6df821fb759a507389f2022"
+      "stage": "STAGE_8",
+      "revision": "B2",
+      "artifact_key": "soc_analysis/stage-8/shared-stage8-b2.tar.gz",
+      "size_bytes": 5696567,
+      "sha256": "75c476baac8b1c123522006e53053f766bd36baad4e3238223da67e12a53843c"
     },
     {
       "track": "ethical_hacking",
@@ -98,6 +90,14 @@
       "artifact_key": "grc/stage-9/shared-stage9-b1.tar.gz",
       "size_bytes": 10160,
       "sha256": "1aba047e715886721bb377fa059c76fa4b554da4eb8c784f7b61b02520b8b9a6"
+    },
+    {
+      "track": "soc_analysis",
+      "stage": "STAGE_9",
+      "revision": "B1",
+      "artifact_key": "soc_analysis/stage-9/shared-stage9-b1.tar.gz",
+      "size_bytes": 2723254,
+      "sha256": "df8fb093a6a69ca885a0f22518f842cf6a470232a6df821fb759a507389f2022"
     }
   ]
 }

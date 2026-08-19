@@ -37,6 +37,8 @@ function overlayFor(stage: string, track: string, pool: number): string[] {
     "STAGE_8:GRC": [
       `The treatment budget is USD ${[45, 55, 65, 75, 85, 95][pool - 1]},000.`,
       `Use annual-loss ranges with a ${[10, 15, 20, 25, 30, 35][pool - 1]}% uncertainty sensitivity test.`,
+      `Your primary defense control family is ${["authentication", "privilege", "service exposure", "logging", "file permissions", "kernel and network policy"][pool - 1]}; staff may select any control you actually submitted within that family.`,
+      "The portable Linux sandbox is the controlling scored host. There is no private OpenSCAP profile to locate or guess.",
     ],
     "STAGE_9:GRC": [
       `Replace the baseline awareness time with 13 July 2026 ${["07:35", "08:05", "08:35", "09:05", "09:35", "10:05"][pool - 1]} WAT.`,
@@ -46,9 +48,9 @@ function overlayFor(stage: string, track: string, pool: number): string[] {
       `Use the address-plan second octet ${[51, 61, 71, 81, 91, 101][pool - 1]}.`,
       "The management VLAN may initiate administration; no other zone may initiate management sessions.",
       [
-        "D1 condition: make the finance-zone return path asymmetric through the core and prove the stateful failure before repairing it.",
-        "D2 condition: remove DMZ-to-server traffic from the sensor mirror and prove the visibility gap before repairing it.",
-        "D3 condition: broaden the management source by one CIDR boundary, catch the unauthorized path in tests, then repair it.",
+        "D1 condition: create an MTU black hole on the finance-to-core transit path while small packets still pass; prove the size-dependent failure with packet evidence before repairing it.",
+        "D2 condition: misroute the sensor telemetry-export path to the guest gateway while packet mirroring remains intact; prove packets are captured locally but do not reach the collector, then repair the route and restore collector ingestion.",
+        "D3 condition: move guest-zone destination NAT ahead of source-zone and anti-spoof classification; prove a spoofed guest source is misclassified, then repair the rule ordering and restore the deny result.",
         "D4 condition: break only UDP DNS return-state handling, preserve TCP DNS, and diagnose the policy defect from packets and counters.",
         "D5 condition: move source NAT ahead of telemetry attribution, prove the identity loss, then restore correct ordering.",
         "D6 condition: inject a more-specific engineering route toward the wrong gateway, prove the path selection, then repair it.",
@@ -61,7 +63,8 @@ function overlayFor(stage: string, track: string, pool: number): string[] {
       `Use AWS region ${["us-east-1", "us-east-2", "us-west-2", "eu-west-1", "eu-central-1", "af-south-1"][pool - 1]} unless CloudGoat reports scenario incompatibility; document any approved change.`,
     ],
     "STAGE_8:ETHICAL_HACKING": [
-      "GOAD-Light is your scored baseline. Full GOAD is not required unless separately issued as a pressure task.",
+      "The portable offline directory range is your scored baseline. Download your candidate JSON from `/api/advanced-stage/variant?stage=STAGE_8` while signed in.",
+      "GOAD-Light evidence already completed remains admissible through the portable graph and test contract, but GOAD is not required and earns no hardware bonus.",
     ],
   };
 

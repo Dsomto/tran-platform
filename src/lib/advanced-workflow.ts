@@ -223,12 +223,12 @@ const WORKFLOWS: Record<
       steps: [
         step(
           "Monday morning",
-          "Pin and isolate the laboratory",
+          "Verify and isolate the signed replay",
           [
-            "Record Wazuh, Windows, Sysmon, Atomic content, agent, and fixture versions; verify the host-only boundary and machine capacity.",
-            "Create the repository layout and a deployment script that can rebuild manager, agent, decoder, and rule state.",
+            "Verify the B2 archive and every sealed replay item against the published manifests; keep the source read-only.",
+            "Create separate source, normalized, decision, test, and evidence directories plus one unattended replay command.",
           ],
-          "The clean lab health check proves event ingestion and records all component versions and hashes.",
+          "The health check accounts for every source item and records Python, fixture, schema, and content hashes.",
         ),
         step(
           "Monday afternoon",
@@ -527,23 +527,23 @@ const WORKFLOWS: Record<
     },
     4: {
       intro:
-        "Provision a healthy GOAD-Light baseline, validate graph edges directly, automate one bounded path, then add detection and remediation. Graph visualization alone is not proof.",
+        "Build the issued candidate-bound directory control plane, validate graph edges directly, automate one bounded path, then add detection and remediation. Graph visualization alone is not proof.",
       steps: [
         step(
           "Monday morning",
-          "Provision and checkpoint the forest",
+          "Build and checkpoint the portable range",
           [
-            "Run the provider-specific preflight, provision GOAD-Light, verify domain, DNS, time, Kerberos, SMB, and host health, and record range hashes.",
-            "Create a clean checkpoint before enumeration and keep the lab isolated from real networks and credentials.",
+            "Download your authenticated candidate JSON, verify its binding, build the portable range, and run the health command.",
+            "Preserve the untouched assignment and clean range hash before enumeration; use no real directory, network, or credentials.",
           ],
-          "The health suite is green and the clean checkpoint can be restored predictably.",
+          "The health suite is green and a forced rebuild restores the exact clean-state hash.",
         ),
         step(
           "Monday afternoon",
           "Collect and challenge the identity graph",
           [
-            "Enumerate directory, Kerberos, SMB, ACL, session, group, and delegation facts using more than default SharpHound collection.",
-            "For each candidate edge, record the graph claim and the direct LDAP, SMB, or Kerberos evidence needed to validate it.",
+            "Parse the supplied object, relation, ACL, session, group, and delegation records into one effective-rights graph.",
+            "For each candidate edge, record the graph claim and the exact raw record plus independent effective-rights check needed to validate it.",
           ],
           "At least eight edges have direct evidence and the planted stale edge is identified as unsupported.",
         ),
@@ -552,7 +552,7 @@ const WORKFLOWS: Record<
           "Prove two bounded control paths",
           [
             "Build two independent paths from validated edges, recording preconditions, commands, resulting privileges, cleanup, and stop conditions.",
-            "Execute only in the assigned range, capture both private path flags, stop at domain control, and do not establish persistence.",
+            "Execute only in the offline range, capture both candidate-bound proofs, stop at the stated proof, and do not add persistence.",
             "Implement one path as candidate-authored automation with runtime discovery and safe failure.",
           ],
           "Both paths are evidence-backed and the automated path succeeds from a restored clean checkpoint.",
@@ -561,7 +561,7 @@ const WORKFLOWS: Record<
           "Thursday",
           "Add detection, cleanup, and remediation",
           [
-            "Enable and export the required Windows events, then create two detections for decisive path edges with benign controls.",
+            "Export the range event ledger, then create two detections for decisive path edges with benign controls.",
             "Remediate the responsible permissions or configuration, rerun the negative path tests, and verify range health remains green.",
             "Repeat the automated path three times from clean checkpoints with cleanup after each run.",
           ],
@@ -841,12 +841,12 @@ const WORKFLOWS: Record<
       steps: [
         step(
           "Monday morning",
-          "Snapshot and baseline the assigned host",
+          "Build and baseline the portable host",
           [
-            "Verify the assigned OS and scanner profiles, take a clean VM snapshot, inventory services, and pin package, profile, and configuration versions.",
-            "Run service acceptance, Lynis, OpenSCAP, vulnerability-import, and configuration-hash baselines without changing the host.",
+            "Verify the B2 archive, build the unprivileged configuration sandbox, inventory its service contract, and preserve the clean-state hash.",
+            "Run baseline security, service, vulnerability-import, and configuration checks without changing the sandbox.",
           ],
-          "The before directory contains raw scans, service results, hashes, and an inventory tied to the clean snapshot.",
+          "The before directory contains raw checks, service results, hashes, and an inventory tied to the reproducible clean state.",
         ),
         step(
           "Monday afternoon",
@@ -859,13 +859,13 @@ const WORKFLOWS: Record<
         ),
         step(
           "Tuesday to Wednesday",
-          "Implement and test the Ansible role",
+          "Implement and test the control compiler",
           [
-            "Build tasks, handlers, variables, prechecks, and rollback entirely as code; do not repair the VM manually.",
+            "Build schema validation, planning, prechecks, apply, verification, and rollback entirely as code; do not repair generated state manually.",
             "Run apply, service tests, second-run idempotence, rollback, baseline verification, reapply, and service tests.",
             "Parameterize the conflicting control so the declared service remains available and document why the false positive is not remediated.",
           ],
-          "The role applies cleanly, reports zero changes on the second run, rolls back, reapplies, and keeps all service tests green.",
+          "The compiler applies cleanly, reports zero changes on the second run, rolls back, reapplies, and keeps all service tests green.",
         ),
         step(
           "Thursday",
@@ -881,8 +881,8 @@ const WORKFLOWS: Record<
           "Friday morning",
           "Run the unattended lifecycle and defense change",
           [
-            "Restore the clean snapshot and run baseline, apply, idempotence, services, rollback, and reapply without intervention.",
-            "Run a changed budget or asset fixture and rehearse implementing one staff-selected role modification with its test.",
+            "Rebuild the clean sandbox and run baseline, apply, idempotence, services, rollback, and reapply without intervention.",
+            "Run a changed budget or asset fixture and rehearse implementing one staff-selected submitted control with its test.",
           ],
           "The full lifecycle is green and the risk model adapts to input changes without source edits.",
         ),
@@ -890,7 +890,7 @@ const WORKFLOWS: Record<
           "Friday before 18:10 WAT",
           "Freeze technical and investment evidence",
           [
-            "Align role, tests, rollback, before/after scans, idempotence log, risk model, register, memo, video URL, and manifest.",
+            "Align compiler, tests, rollback, before/after checks, idempotence result, risk model, register, memo, video URL, and manifest.",
             "Test the Drive root anonymously and submit once; this stage has no revision.",
           ],
           "A reviewer can reproduce both the host-state delta and the exact three-treatment decision from submitted inputs.",
@@ -1017,19 +1017,19 @@ const FIRST_HOUR: Record<
     },
     4: {
       actions: [
-        "Download the brief, technique matrix, replay fixtures, overlay, contracts, and all pinned version information.",
-        "Create an isolated host-only network. Do not execute Atomic procedures on a personal, employer, or production Windows machine.",
-        "Bring up Wazuh and the Windows agent, then send one harmless known event through raw Windows/Sysmon collection, Wazuh decoding, and alert inspection.",
-        "Complete one attack fixture and one benign lookalike as a full automated test before attempting the remaining matrix rows.",
+        "Download the brief, signed replay, source manifest, technique matrix, public fixtures, overlay, and contracts.",
+        "Verify the replay and preserve it read-only. Create separate source, normalized, decisions, mutations, tests, and evidence directories.",
+        "Parse one source record into a versioned schema while retaining its exact source locator and original fields.",
+        "Complete one attack fixture and one benign lookalike as a full automated test before expanding the remaining matrix rows.",
       ],
       commands: [
         "mkdir -p soc-stage8/{rules,decoders,tests,fixtures,raw-events,alerts,evidence}",
-        "docker compose ps",
-        "git rev-parse HEAD > evidence/source-commit.txt",
-        "pytest -q",
+        "python3 --version",
+        "shasum -a 256 <issued-stage8-archive>",
+        "python3 -m unittest discover -v",
       ],
       readyWhen:
-        "The agent is healthy, clocks agree, one known event is visible end to end, and one attack/benign pair has an automated expected verdict.",
+        "The replay is verified and immutable, one record has traceable normalization, and one attack/benign pair has an automated expected verdict.",
     },
     5: {
       actions: [
@@ -1099,19 +1099,19 @@ const FIRST_HOUR: Record<
     },
     4: {
       actions: [
-        "Download the brief, GOAD-Light overlay/source, foothold contract, edge fixtures, cleanup interface, and contracts.",
-        "Run the provider-specific preflight from the supplied pack. Do not use an obsolete generic GOAD command or continue after a capacity failure.",
-        "Provision GOAD-Light, verify DNS, time, Kerberos, SMB, domain, and host health, then save a clean checkpoint.",
-        "From the supplied foothold, collect a graph and choose one candidate edge; validate it directly with LDAP, SMB, or Kerberos evidence before using it.",
+        "Download the brief, shared B2 archive, private candidate JSON, public edge fixtures, cleanup interface, and contracts.",
+        "Generate only your assigned portable range and record the initial manifest and health output.",
+        "Parse source-records.json into your own versioned graph without embedding names, SIDs, proof values, or expected paths.",
+        "Choose one candidate edge and validate it directly against its primary object, ACL, membership, SPN, or event record.",
       ],
       commands: [
         "mkdir -p eh-stage8/{ad-range,enumeration,automation,tests,windows-events,detections,remediation,evidence}",
-        "git rev-parse HEAD > evidence/goad-source-commit.txt",
-        "<run the provider preflight command supplied in the issued pack>",
-        "<run the provider-specific GOAD-Light install command from the issued pack>",
+        "python3 portable_range.py build --assignment candidate.json --out ad-range",
+        "python3 portable_range.py health --root ad-range",
+        "shasum -a 256 candidate.json ad-range/manifest.json",
       ],
       readyWhen:
-        "The range health suite is green, the clean checkpoint restores, the foothold works, and one graph edge has direct supporting evidence.",
+        "The candidate binding is correct, portable range health is green, a clean rebuild works, and one graph edge has direct source evidence.",
     },
     5: {
       actions: [
@@ -1181,19 +1181,20 @@ const FIRST_HOUR: Record<
     },
     4: {
       actions: [
-        "Download the assigned OS/profile overlay, vulnerability export, service contract, risk fixtures, brief, and contracts.",
-        "Create a fresh VM snapshot before any change. Record OS, packages, ports, services, config hashes, Lynis release, OpenSCAP data stream, and exact profile ID.",
-        "Run the service suite and both scanners once as the before baseline; save raw outputs without manually fixing anything.",
-        "Select one candidate remediation and write its precheck, exact change, service risk, rollback, and expected test before adding it to Ansible.",
+        "Download the portable host sandbox, vulnerability export, service contract, risk fixtures, brief, and private budget overlay.",
+        "Generate a clean sandbox and record its baseline manifest, configuration inventory, security failures, and green service assertions.",
+        "Define a versioned control schema containing preconditions, ordered changes, validation, rollback, dependencies, and reason codes.",
+        "Select one control and write its exact change, service risk, rollback, and expected test before implementing the compiler.",
       ],
       commands: [
         "mkdir -p grc-stage8/{hardening-role,tests,rollback,before,after,risk-model,evidence}",
-        "ansible --version && lynis show version && oscap --version",
-        "oscap info <assigned-scap-datastream.xml>",
-        "pytest -q",
+        "python3 portable_host.py build --out portable-host",
+        "python3 portable_host.py check --root portable-host",
+        "shasum -a 256 portable-host/baseline-manifest.json",
+        "python3 -m unittest discover -v",
       ],
       readyWhen:
-        "The clean snapshot exists, service tests pass, exact scanner versions/profile are recorded, and one remediation has a written rollback and acceptance test.",
+        "The immutable baseline exists, service tests pass, all initial security failures are recorded, and one control has a written rollback and acceptance test.",
     },
     5: {
       actions: [

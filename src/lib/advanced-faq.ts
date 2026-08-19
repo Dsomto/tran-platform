@@ -133,23 +133,27 @@ const FAQ_SEEDS: Record<AdvancedTrack, Record<ProjectNumber, FaqSeed>> = {
           "What does the fault-recovery evidence need to show?",
           "For every published fault, preserve the injected change, failing test, packet or log diagnosis, corrective commit, and green retest. The Git history and fault-recovery-log.md must agree with test-results.xml and the submitted topology hash.",
         ),
+        build(
+          "Does my private D-set condition repeat one of the three baseline faults?",
+          "The corrected overlay does not. Complete the three baseline faults and one separate private D-set fault, each with its own failing test, diagnosis, corrective commit, and green retest. If you preserved an earlier D1, D2, or D3 overlay whose condition overlaps a baseline fault, submit that exact legacy condition, label it LEGACY_D_SET in fault-recovery-log.md, and include the preserved wording and download date. You will not be required to invent a fifth condition or lose marks because of the earlier programme-issued wording.",
+        ),
       ],
     },
     4: {
       intro:
-        "No-revision guidance for a reproducible Wazuh detection lab, semantic attack coverage, benign controls, and recorded clean-state defense.",
+        "No-revision guidance for portable replay detection engineering, semantic attack coverage, benign controls, and recorded clean-state defense.",
       items: [
         setup(
-          "Which versions and lab boundary should I use?",
-          "Pin Wazuh 4.14.6, the Windows 11 evaluation VM, Sysmon configuration, agent configuration, and Atomic Red Team content in the repository. Keep the Windows host on an isolated host-only lab and record hashes or versions for every fixture used.",
+          "What is the controlling scored environment?",
+          "Use the signed Windows replay in the B2 archive with Python 3.11 or newer. Verify its source manifest, keep it read-only, and write all normalized events, decisions, mutations, and results elsewhere. Wazuh, Windows, Sysmon, Atomic, Docker, and an OVA are optional compatibility routes only.",
         ),
         setup(
-          "What hardware should I plan for before the stage opens?",
-          "Provide at least 16 GB RAM, with 24 GB recommended, and enough disk for the VM, Wazuh data, and raw events. Run a clean deployment and one complete regression pass early; inability to provision the supported lab is not a reason to replace the required evidence with screenshots.",
+          "What hardware is required, and does earlier Wazuh work still count?",
+          "The mandatory route is designed for 4 GB RAM and 2 GB free disk and needs no VM or Docker. Keep any valid Wazuh, Sysmon, Windows, Atomic, OVA, or Docker work already completed; export it through the same source-normalized-decision and regression interfaces. It receives no hardware bonus and you do not restart.",
         ),
         build(
           "What is a source-normalized-alert triple?",
-          "For each canonical attack and benign control, preserve the original event, Wazuh-decoded or normalized representation, and resulting alert or explicit no-alert verdict. Tie all three to the same fixture ID in coverage-matrix.csv.",
+          "For each canonical attack and benign control, preserve the original replay record, your normalized representation, and the resulting alert or explicit no-alert verdict. Tie all three to the same source locator and fixture ID in coverage-matrix.csv.",
         ),
         build(
           "How do I avoid a rule that only matches the Atomic command?",
@@ -161,7 +165,7 @@ const FAQ_SEEDS: Record<AdvancedTrack, Record<ProjectNumber, FaqSeed>> = {
         ),
         submit(
           "What must the recorded defense contain?",
-          "Start from the submitted clean commit, deploy the pinned lab, run the staff-selected mutation, show the raw event and normalized fields, identify the matching rule logic, and finish with machine-readable regression output. This stage has no revision.",
+          "Start from the submitted clean commit and untouched replay, run the staff-selected mutation, show the source event and normalized fields, identify the matching rule logic, and finish with machine-readable regression output and its stable hash. This stage has no revision.",
         ),
       ],
     },
@@ -289,19 +293,19 @@ const FAQ_SEEDS: Record<AdvancedTrack, Record<ProjectNumber, FaqSeed>> = {
     },
     4: {
       intro:
-        "No-revision guidance for provisioning the supported AD forest, directly validating graph edges, reproducing two paths, and proving detection plus remediation.",
+        "No-revision guidance for the portable directory range, direct graph-edge validation, two proof paths, reliable automation, detection, and remediation.",
       items: [
         setup(
-          "Which AD range is supported and what hardware is realistic?",
-          "Use GOAD-Light through an official supported provider path. Plan for approximately 32 GB RAM and 110 GB free disk. Full GOAD is pressure work, not a replacement for a healthy supported baseline.",
+          "Which directory range controls, and what hardware is required?",
+          "Use the portable offline range and your authenticated candidate JSON from the B2 release. It requires Python 3.11+, 4 GB RAM, and 2 GB free disk; GOAD, Windows VMs, a hypervisor, Docker, and cloud infrastructure are not mandatory.",
         ),
         setup(
-          "What should be captured after provisioning?",
-          "Run the range health checks, record provider and image versions, preserve range hashes, and create a clean checkpoint before enumeration. Do not proceed to path testing while DNS, time synchronization, Kerberos, or required services are unhealthy.",
+          "I already started GOAD. Do I lose that work?",
+          "No. Preserve valid GOAD health, enumeration, path, event, detection, and remediation evidence. Export it through the portable graph and test interfaces and complete any missing portable assertions. Stronger hardware earns no extra points and you do not rebuild work merely for presentation.",
         ),
         build(
           "Is a BloodHound path screenshot enough to prove an edge?",
-          "No. Directly validate at least eight LDAP, SMB, Kerberos, ACL, SPN, or delegation edges with protocol evidence. Identify and reject the planted stale edge rather than treating the graph as ground truth.",
+          "No. Directly validate at least eight object, membership, ACL, SPN, authentication, session, or delegation edges against the primary range records. Identify and reject the planted stale edge rather than treating your generated graph as ground truth.",
         ),
         build(
           "What makes the two domain-control paths independent?",
@@ -309,11 +313,11 @@ const FAQ_SEEDS: Record<AdvancedTrack, Record<ProjectNumber, FaqSeed>> = {
         ),
         build(
           "What must the automated path discover?",
-          "Start from the supplied foothold and discover changed users, groups, SPNs, ACL holders, and runtime identifiers. Run three times from the clean checkpoint, clean temporary artifacts, and leave the range health suite green.",
+          "Start from the supplied foothold and discover changed users, groups, SPNs, ACL holders, and runtime identifiers. Run three times from a clean generated state, clean temporary artifacts, and leave range health green. Names, proof values, SIDs, and path IDs may not be embedded in source.",
         ),
         submit(
           "What belongs in the recorded defense?",
-          "Reproduce the selected decisive edge from a clean checkpoint, show direct protocol evidence, replay the corresponding Windows telemetry into the submitted detection, apply remediation, and show the negative path test. This stage has no revision.",
+          "Reproduce the selected decisive edge from a clean generated state, show its primary record, replay the corresponding event sequence into the submitted detection, apply remediation, and show the negative path plus legitimate-access tests. This stage has no revision.",
         ),
       ],
     },
@@ -441,19 +445,19 @@ const FAQ_SEEDS: Record<AdvancedTrack, Record<ProjectNumber, FaqSeed>> = {
     },
     4: {
       intro:
-        "No-revision guidance for repeatable OS hardening, zero-change idempotence, rollback, service safety, scanner interpretation, and the quantified treatment model.",
+        "No-revision guidance for a portable hardening compiler, zero-change idempotence, rollback, service safety, evidence interpretation, and quantified treatment selection.",
       items: [
         setup(
-          "Which host path should I choose?",
-          "Use a fresh Debian 12 or Rocky Linux 9 VM with the appropriate pinned OpenSCAP or SCAP Security Guide profile, current Lynis, and the supplied known-good scan export. Record the exact OS image and tool or profile versions.",
+          "Which host and profile should I use?",
+          "The B2 portable Linux configuration sandbox is the controlling scored host; it requires Python 3.11+, 4 GB RAM, and 1 GB free disk. There is no private OpenSCAP profile to guess and no VM, Vagrant, Ansible, Lynis, OpenSCAP, Docker, or privileged host change is mandatory.",
         ),
         setup(
-          "What must be captured before Ansible changes the host?",
-          "Run machine-readable service acceptance tests, collect raw scanner output, hash controlled configuration, and save the baseline state. A before screenshot without raw results and hashes is not an adequate baseline.",
+          "I already started the VM or Ansible route. Do I lose that work?",
+          "No. Keep valid baseline, Ansible, scanner, idempotence, rollback, and service evidence. Add a compatibility adapter that exports the same declarative plan, state, security-delta, rollback, and test records required by the portable contract. You do not restart and stronger hardware earns no bonus.",
         ),
         build(
           "What does idempotent mean here?",
-          "After the first successful apply, a second Ansible run must report zero changes. Handlers, templates, package state, and conditional tasks must settle; hiding changed output or using changed_when false without a real invariant does not count.",
+          "After the first successful apply, a second compiler/apply run must report zero changes. Preconditions, templates, generated state, and conditional controls must settle; suppressing change output without a real invariant does not count.",
         ),
         build(
           "How do I handle the scanner false positive and service conflict?",
@@ -461,11 +465,11 @@ const FAQ_SEEDS: Record<AdvancedTrack, Record<ProjectNumber, FaqSeed>> = {
         ),
         build(
           "What must rollback prove?",
-          "The rollback play must restore baseline service behavior and controlled configuration hashes, then permit a clean reapply. Reverting the VM snapshot does not prove the submitted rollback automation.",
+          "The rollback engine must restore baseline service behavior and controlled configuration hashes, then permit a clean reapply. Deleting and regenerating the sandbox does not prove the submitted rollback automation.",
         ),
         submit(
           "What is required in the recorded defense?",
-          "From a clean VM, implement or adjust one staff-selected role control, run apply and zero-change second run, show service tests, then run the affected risk-model fixture. Exactly three treatments must remain selected under the variant budget. No revision is available.",
+          "Staff selects one control from the controls you submitted during the defense; there is no separate control file to download. From a clean sandbox, implement or adjust it, run apply and zero-change second run, show security and service tests, then run the affected risk fixture. Exactly three treatments must remain selected. No revision is available.",
         ),
       ],
     },
@@ -502,15 +506,43 @@ const FAQ_SEEDS: Record<AdvancedTrack, Record<ProjectNumber, FaqSeed>> = {
   },
 };
 
-function sharedQuestions(project: AdvancedProject): AdvancedFaqItem[] {
+type AdvancedFaqWindow = {
+  activeFrom?: string | null;
+  submitUntil?: string | null;
+};
+
+const WAT_WINDOW_FORMATTER = new Intl.DateTimeFormat("en-NG", {
+  timeZone: "Africa/Lagos",
+  weekday: "long",
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false,
+});
+
+function timingAnswer(window: AdvancedFaqWindow): string {
+  const opens = window.activeFrom ? new Date(window.activeFrom) : null;
+  const closes = window.submitUntil ? new Date(window.submitUntil) : null;
+  if (opens && closes && !Number.isNaN(opens.getTime()) && !Number.isNaN(closes.getTime())) {
+    return `This project opened ${WAT_WINDOW_FORMATTER.format(opens)} WAT and closes ${WAT_WINDOW_FORMATTER.format(closes)} WAT. These exact timestamps and the countdown in this room control; weekday cadence text or an older email does not override them. Submit early enough to test the Drive link.`;
+  }
+  return "Use the exact opening and submission-deadline timestamps displayed in your authenticated project room. The room countdown controls; weekday cadence text or an older email does not override it. Submit early enough to test the Drive link.";
+}
+
+function sharedQuestions(track: AdvancedTrack, project: AdvancedProject, window: AdvancedFaqWindow): AdvancedFaqItem[] {
   const deliverables = requiredAdvancedDeliverables(project);
   const firstFiles = deliverables.slice(0, 4).join(", ");
   const stage = `STAGE_${project.number + 4}` as AdvancedRankingStage;
   const policy = advancedSelectionPolicy(stage);
+  const trackTarget = policy.fixedAdvanceByTrack?.[track];
   const decisionDetail = policy.basis === "CUMULATIVE_WEIGHTED_PERCENTILE"
     ? "The cumulative percentile uses completed advanced-stage percentiles with weights of 1, 1, 1.5, 2, and 2.5 for Stages 5 through 9."
     : "This decision uses the percentile from the current project only.";
-  const cohortDetail = policy.eliminationRate !== null
+  const cohortDetail = trackTarget !== undefined
+    ? `This stage advances the top ${trackTarget} scored associates in your track. Non-submitters cannot advance and occupy the bottom of the full track cohort before scored reports are ranked.`
+    : policy.eliminationRate !== null
     ? `The denominator is the full cohort that entered this stage in your track, including people who did not submit. Non-submitters are removed first and count toward the ${Math.round(policy.eliminationRate * 100)}% attrition target. If that does not reach the target, only the remaining shortfall is taken from the lowest-ranked graded reports.`
     : "The denominator is the full cohort assigned to this stage in your track; a non-submitter cannot advance.";
 
@@ -526,7 +558,7 @@ function sharedQuestions(project: AdvancedProject): AdvancedFaqItem[] {
   return [
     setup(
       "When is this project open, and may I submit after the deadline?",
-      "The project opens Monday at 09:00 WAT and closes Friday at 18:10 WAT. The countdown in this room is the controlling deadline. Submit early enough to test the Drive link; a file that exists only on your computer at 18:10 WAT is not submitted.",
+      timingAnswer(window),
     ),
     build(
       "How does my score become an advancement or elimination decision?",
@@ -551,10 +583,11 @@ function sharedQuestions(project: AdvancedProject): AdvancedFaqItem[] {
 export function advancedProjectFaq(
   track: AdvancedTrack,
   project: AdvancedProject,
+  window: AdvancedFaqWindow = {},
 ): AdvancedProjectFaq {
   const seed = FAQ_SEEDS[track][project.number];
   return {
     intro: seed.intro,
-    items: [...seed.items, ...sharedQuestions(project)],
+    items: [...seed.items, ...sharedQuestions(track, project, window)],
   };
 }
