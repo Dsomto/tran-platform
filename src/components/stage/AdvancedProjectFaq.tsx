@@ -16,6 +16,8 @@ type Props = {
   project: AdvancedProject;
   track: AdvancedTrack;
   trackLabel: string;
+  activeFrom?: string | null;
+  submitUntil?: string | null;
 };
 
 const CATEGORIES: Array<{
@@ -41,8 +43,14 @@ const CATEGORIES: Array<{
   },
 ];
 
-export function AdvancedProjectFaq({ project, track, trackLabel }: Props) {
-  const faq = advancedProjectFaq(track, project);
+export function AdvancedProjectFaq({
+  project,
+  track,
+  trackLabel,
+  activeFrom = null,
+  submitUntil = null,
+}: Props) {
+  const faq = advancedProjectFaq(track, project, { activeFrom, submitUntil });
 
   return (
     <section
