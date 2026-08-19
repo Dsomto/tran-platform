@@ -81,6 +81,7 @@ function exactWindowLabel(activeFrom: string | null, submitUntil: string | null,
 }
 
 function protectedResourceHref(stage: string, resourcePath: string) {
+  if (resourcePath.startsWith("/api/advanced-stage/")) return resourcePath;
   const query = new URLSearchParams({ stage, path: resourcePath });
   return `/api/advanced-stage/resource?${query.toString()}`;
 }

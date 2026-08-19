@@ -128,10 +128,12 @@ export default async function ReportEditorPage({
   const evidencePack = advancedProject
     ? advancedProject.resources.map((resource) => ({
         filename: resource.label,
-        url: `/api/advanced-stage/resource?${new URLSearchParams({
-          stage,
-          path: resource.href,
-        }).toString()}`,
+        url: resource.href.startsWith("/api/advanced-stage/")
+          ? resource.href
+          : `/api/advanced-stage/resource?${new URLSearchParams({
+              stage,
+              path: resource.href,
+            }).toString()}`,
         description: resource.description,
       }))
     : EVIDENCE_PACK[stage as FoundationStageKey];
