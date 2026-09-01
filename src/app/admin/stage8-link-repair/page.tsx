@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { CheckCircle2, ShieldCheck, XCircle } from "lucide-react";
 import { requireSuperAdmin } from "@/lib/auth";
+import { Stage8LinkRepairSendButton } from "./send-button";
 
 export const dynamic = "force-dynamic";
 
@@ -93,6 +94,7 @@ export default async function Stage8LinkRepairPage() {
               </div>
             ))}
           </div>
+          <Stage8LinkRepairSendButton ready={ready} />
         </>
       )}
     </main>
