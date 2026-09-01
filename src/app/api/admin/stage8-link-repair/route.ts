@@ -65,7 +65,7 @@ function replaceUrl(body: string, path: string, reportId: string, replacement: s
     "gi"
   );
   const encoded = new RegExp(
-    `https%3A%2F%2Fubuntubridgeinitiatives\\.org%2F${encodeURIComponent(path)}%2F${escapedReport}%3Fsig%3D[a-f0-9]{16}`,
+    `(?:https%3A%2F%2Fubuntubridgeinitiatives\\.org|http%3A%2F%2Flocalhost%3A3000)%2F${encodeURIComponent(path)}%2F${escapedReport}%3Fsig%3D[a-f0-9]{16}`,
     "gi"
   );
   return body.replace(normal, replacement).replace(encoded, encodeURIComponent(replacement));
