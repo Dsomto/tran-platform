@@ -172,8 +172,20 @@ async function buildRepair() {
         correction: "production-signed-document-links",
       },
       testUrls: report.status === "PASSED"
-        ? [links.certificate, links.achievement, links.reference, links.performance, links.dossier]
-        : [links.close, links.reference, links.performance, links.dossier],
+        ? [
+            { label: "pass-certificate", url: links.certificate, contentType: "application/pdf" },
+            { label: "pass-verification", url: links.verify, contentType: "text/html" },
+            { label: "pass-achievement", url: links.achievement, contentType: "application/pdf" },
+            { label: "pass-reference", url: links.reference, contentType: "application/pdf" },
+            { label: "pass-performance", url: links.performance, contentType: "application/pdf" },
+            { label: "pass-dossier", url: links.dossier, contentType: "application/pdf" },
+          ]
+        : [
+            { label: "departure-close", url: links.close, contentType: "application/pdf" },
+            { label: "departure-reference", url: links.reference, contentType: "application/pdf" },
+            { label: "departure-performance", url: links.performance, contentType: "application/pdf" },
+            { label: "departure-dossier", url: links.dossier, contentType: "application/pdf" },
+          ],
     };
   });
 
@@ -188,13 +200,33 @@ export async function GET() {
   if (auth.response) return auth.response;
   try {
     const repaired = await buildRepair();
-    const passer = repaired.find((row) => row.testUrls.length === 5);
+    const passer = repaired.find((row) => row.testUrls.length === 6);
     const departure = repaired.find((row) => row.testUrls.length === 4);
+    const testUrls = [...(passer?.testUrls ?? []), ...(departure?.testUrls ?? [])];
+    const checks = await Promise.all(
+      testUrls.map(async (test) => {
+        try {
+          const response = await fetch(test.url, {
+            cache: "no-store",
+            redirect: "manual",
+            signal: AbortSignal.timeout(45_000),
+          });
+          const contentType = response.headers.get("content-type") ?? "";
+          return {
+            label: test.label,
+            status: response.status,
+            contentType,
+            valid: response.status === 200 && contentType.startsWith(test.contentType),
+          };
+        } catch {
+          return { label: test.label, status: 0, contentType: "", valid: false };
+        }
+      })
+    );
     return Response.json({
-      ready: true,
+      ready: checks.length === 10 && checks.every((check) => check.valid),
       recipients: repaired.length,
-      testUrls: [...(passer?.testUrls ?? []), ...(departure?.testUrls ?? [])],
-      confirmation: CONFIRMATION,
+      checks,
     });
   } catch (error) {
     return Response.json(
