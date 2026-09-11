@@ -2,7 +2,7 @@
 
 import { Suspense, useState } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AtSign, Lock, ShieldCheck } from "lucide-react";
@@ -27,7 +27,6 @@ export default function LoginPage() {
 }
 
 function LoginPageInner() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const nextPath = safeNext(searchParams.get("next"));
   const [error, setError] = useState("");
@@ -36,19 +35,21 @@ function LoginPageInner() {
   const [code, setCode] = useState("");
 
   function postLoginRedirect(role: string) {
-    if (nextPath) {
-      router.push(nextPath);
-      return;
-    }
-    if (role === "ADMIN" || role === "SUPER_ADMIN") {
-      router.push("/admin");
-    } else if (role === "GRADER") {
-      router.push("/admin/reports");
-    } else if (role === "ANALYST") {
-      router.push("/admin/analytics");
-    } else {
-      router.push("/dashboard");
-    }
+    const destination = nextPath
+      ? nextPath
+      : role === "ADMIN" || role === "SUPER_ADMIN"
+        ? "/admin"
+        : role === "GRADER"
+          ? "/admin/reports"
+          : role === "ANALYST"
+            ? "/admin/analytics"
+            : "/dashboard";
+
+    // Authentication is a deployment boundary. A full navigation prevents a
+    // login tab opened on an older deployment from sending stale RSC requests
+    // to the newly deployed server, and guarantees the new session cookie is
+    // applied to the first dashboard render.
+    window.location.assign(destination);
   }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
