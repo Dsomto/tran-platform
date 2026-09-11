@@ -8,7 +8,18 @@ import { stageRank } from "@/lib/stage-login";
 import { resolvedInternCode } from "@/lib/intern-code";
 import { stageWindowAcceptsSubmissions } from "@/lib/stage-window";
 
-function overlayFor(stage: string, track: string, pool: number): string[] {
+function overlayFor(
+  stage: string,
+  track: string,
+  pool: number,
+  marker: string,
+  activeFrom?: Date | null,
+  submitUntil?: Date | null,
+): string[] {
+  const markerSuffix = marker.replace(/[^a-z0-9]/gi, "").slice(-8).toUpperCase();
+  const assessmentWindow = activeFrom && submitUntil
+    ? `${activeFrom.toISOString()} through ${submitUntil.toISOString()}`
+    : "the exact UTC opening and closing timestamps shown in your signed-in stage room";
   const common = [
     "Use the shared Stage base artifact issued to your track.",
     `Your private assignment set is D${pool}; this label does not change the shared artifact bytes.`,
@@ -65,6 +76,14 @@ function overlayFor(stage: string, track: string, pool: number): string[] {
     "STAGE_8:ETHICAL_HACKING": [
       "The portable offline directory range is your scored baseline. Download your candidate JSON from `/api/advanced-stage/variant?stage=STAGE_8` while signed in.",
       "GOAD-Light evidence already completed remains admissible through the portable graph and test contract, but GOAD is not required and earns no hardware bonus.",
+    ],
+    "STAGE_9:ETHICAL_HACKING": [
+      `Your assigned synthetic crown-jewel record ID is \`UBI-A9-D${pool}-${markerSuffix}\`; set \`CROWN_JEWEL_ID\` to that exact value.`,
+      `Set \`CROWN_JEWEL_FLAG\` to \`UBI-A9-PROOF-${markerSuffix}\`, set \`EVIDENCE_MARKER\` to \`${marker}\`, and generate \`ESTATE_TOKEN\` locally as a random value of at least 32 bytes. Keep \`runtime.env\` out of source control.`,
+      "Scope is limited to the supplied local Docker Compose project: the vulnerable front door on `127.0.0.1:19090`, the patched front door on `127.0.0.1:19091`, and the Compose-internal `frontdoor`, `records`, and `admin` services. Every other address, host service, programme system, and third party is out of scope.",
+      `The authorized assessment window is ${assessmentWindow}. Stop testing when that window closes.`,
+      "Build the vulnerable and patched images locally and record the resulting image IDs or digests in the Rules of Engagement; no prebuilt image hash is missing from the pack.",
+      "If you started before this clarification and used your own non-empty synthetic record ID, proof value, and random token, that work remains admissible when it is consistently documented, tied to your evidence marker, and stays within the same local scope. Do not restart solely to replace those values.",
     ],
   };
 
@@ -160,7 +179,14 @@ export async function GET(request: NextRequest) {
     "",
     "## Controlling assignment facts",
     "",
-    ...overlayFor(stage, intern.track, pool).map((line) => `- ${line}`),
+    ...overlayFor(
+      stage,
+      intern.track,
+      pool,
+      variant.marker,
+      window?.activeFrom,
+      window?.submitUntil,
+    ).map((line) => `- ${line}`),
     ...(stage === "STAGE_5" && intern.track === "SOC_ANALYSIS"
       ? [
           "",

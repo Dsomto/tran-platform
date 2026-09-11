@@ -60,15 +60,15 @@ export const ADVANCED_SELECTION_POLICIES: Record<
     eliminationRate: null,
     fixedAdvancePerTrack: null,
     fixedAdvanceByTrack: { SOC_ANALYSIS: 18, ETHICAL_HACKING: 11, GRC: 5 },
-    label: "Advance 18 SOC, 11 Ethical Hacking, and 5 GRC associates by cumulative weighted percentile, counting non-submitters first",
+    label: "Advance 18 SOC, 11 Ethical Hacking, and 5 GRC associates by cumulative within-track percentile (Stage 5: 1x, Stage 6: 1x, Stage 7: 1.5x, Stage 8: 2x), counting non-submitters first",
   },
   STAGE_9: {
     stage: "STAGE_9",
     basis: "CUMULATIVE_WEIGHTED_PERCENTILE",
     eliminationRate: null,
-    fixedAdvancePerTrack: 10,
-    fixedAdvanceByTrack: null,
-    label: "Select the top 10 in each track by cumulative weighted percentile",
+    fixedAdvancePerTrack: null,
+    fixedAdvanceByTrack: { SOC_ANALYSIS: 4, ETHICAL_HACKING: 3, GRC: 3 },
+    label: "Select 4 SOC, 3 Ethical Hacking, and 3 GRC associates for Stage 9B by cumulative within-track percentile (Stage 5: 1x, Stage 6: 1x, Stage 7: 1.5x, Stage 8: 2x, Stage 9A: 2.5x)",
   },
 };
 
@@ -99,6 +99,7 @@ export type AdvancedRankedCandidate = AdvancedRankingCandidate & {
   incomplete: boolean;
   selectionMetric: number | null;
   selectionReason: string;
+  stagePercentiles: Partial<Record<AdvancedRankingStage, number>>;
 };
 
 export type AdvancedTrackRanking = {
@@ -219,6 +220,11 @@ export function rankAdvancedStage(
         stage: includedStage,
         value: percentiles.get(`${includedStage}:${candidate.internId}`),
       }));
+      const stagePercentileRecord = Object.fromEntries(
+        stagePercentiles.flatMap((entry) =>
+          entry.value === undefined ? [] : [[entry.stage, entry.value]]
+        )
+      ) as Partial<Record<AdvancedRankingStage, number>>;
       const incomplete = stagePercentiles.some((entry) => entry.value === undefined);
       const currentPercentile = percentiles.get(`${stage}:${candidate.internId}`) ?? null;
       const cumulativePercentile = incomplete
@@ -247,6 +253,7 @@ export function rankAdvancedStage(
         selected: false,
         incomplete,
         selectionMetric,
+        stagePercentiles: stagePercentileRecord,
         selectionReason: incomplete
           ? "Held: one or more required advanced-stage scores are missing"
           : policy.label,

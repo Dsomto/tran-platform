@@ -80,8 +80,9 @@ Five projects per track. **41 calendar days.** Difficulty ramps every project; t
 | Stage 5 | Project 1 | Mon 09:00–Fri 18:10 WAT | Controlled, evidence-heavy, one clear objective | 1 allowed | Remove 20% of full track cohort, non-submitters first |
 | Stage 6 | Project 2 | Mon 09:00–Fri 18:10 WAT | More artifacts, less guidance, real tooling | 1 allowed | Remove 25% of full track cohort, non-submitters first |
 | Stage 7 | Project 3 | Mon 09:00–Fri 18:10 WAT | Ambiguous, noisy, multi-source, planted false lead | 1 allowed | Remove 33% of full track cohort, non-submitters first |
-| Stage 8 | Project 4 | Mon 09:00–Fri 18:10 WAT | Professional-grade, **no revision**, written defense | None | Top 6 per track by cumulative percentile |
-| Stage 9 | Project 5 | Mon 09:00–Fri 18:10 WAT | Capstone, **no revision**, written + oral defense | None | Top 3 per track by cumulative percentile |
+| Stage 8 | Project 4 | Mon 09:00–Fri 18:10 WAT | Professional-grade, **no revision**, written defense | None | 18 SOC, 11 Ethical Hacking, and 5 GRC associates by cumulative percentile |
+| Stage 9A | Project 5 | Mon 09:00–Fri 18:10 WAT | Capstone, **no revision**, written + oral defense | None | 4 SOC, 3 Ethical Hacking, and 3 GRC advance by cumulative percentile |
+| Stage 9B | Final project | Two weeks | Unique project and panel presentation for the final ten | Programme rules | Individually assessed final placement |
 
 Weekly rhythm per project:
 - **Monday 09:00 WAT:** brief opens and the assigned evidence pack is released.
@@ -96,7 +97,7 @@ Advanced stages have no fixed point pass threshold. The 100-point rubric produce
 
 For a track with more than one cohort member, percentile is `100 × (cohort size − competition rank) ÷ (cohort size − 1)`. Equal scores receive the same competition rank. The cohort denominator includes everyone assigned to that stage in the track, whether or not they submitted. A non-submitter cannot advance and counts first toward the published attrition target. If non-submitters do not reach that target, only the remaining shortfall is taken from the lowest-ranked graded reports. The total elimination target is `ceil(full track cohort × elimination rate)`, and the advance count is capped by the number of valid graded submissions. Stage 5 removes 20%, Stage 6 removes 25%, and Stage 7 removes 33% of their respective full track cohorts.
 
-**The final cuts.** Stage 8 retains the top 6 per track and Stage 9 retains the top 3 per track by cumulative weighted percentile. Completed advanced-stage percentiles are weighted toward the later projects (P1:1× · P2:1× · P3:1.5× · P4:2× · P5:2.5×). An exact boundary tie is resolved by an audited defense or blinded review; the system enforces the exact per-track count before finalization.
+**The final cuts.** Stage 8 advances 18 SOC, 11 Ethical Hacking, and 5 GRC associates. Stage 9A selects the final ten: 4 SOC, 3 Ethical Hacking, and 3 GRC associates. Both decisions use cumulative weighted percentile. Completed advanced-stage percentiles are weighted toward the later projects (P1:1× · P2:1× · P3:1.5× · P4:2× · P5/Stage 9A:2.5×). An exact boundary tie is resolved by an audited defense or blinded review; the system enforces the exact per-track count before finalization. Stage 9B gives those ten finalists two weeks for a unique project and panel presentation; its individual assessment determines final placement.
 
 ---
 

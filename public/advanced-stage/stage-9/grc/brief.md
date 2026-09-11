@@ -53,6 +53,10 @@ row through rule ID to the generated deadline/notice work item, then recompute
 after the supplied input change. A spreadsheet-only or prose-only result cannot
 pass the technical criterion.
 
+A prerecorded walkthrough and `video-url.txt` are optional and unscored. They
+do not replace the mandatory real-time panel defense. Scheduling and joining
+instructions for that defense will be communicated separately.
+
 ## Mission interface and final proof
 
 - **You receive:** signed incident facts, data inventory, jurisdiction snapshots, deadline rules, evidence-quality records, and residual risks from prior stages.

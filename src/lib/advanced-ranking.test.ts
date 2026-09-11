@@ -69,8 +69,9 @@ test("published elimination rates produce exact deterministic targets", () => {
   assert.equal(advancedAdvanceTarget("STAGE_8", 36, 36, "SOC_ANALYSIS"), 18);
   assert.equal(advancedAdvanceTarget("STAGE_8", 22, 22, "ETHICAL_HACKING"), 11);
   assert.equal(advancedAdvanceTarget("STAGE_8", 8, 8, "GRC"), 5);
-  assert.equal(advancedAdvanceTarget("STAGE_9", 18, 18, "SOC_ANALYSIS"), 10);
-  assert.equal(advancedAdvanceTarget("STAGE_9", 5, 5, "GRC"), 5);
+  assert.equal(advancedAdvanceTarget("STAGE_9", 18, 18, "SOC_ANALYSIS"), 4);
+  assert.equal(advancedAdvanceTarget("STAGE_9", 11, 11, "ETHICAL_HACKING"), 3);
+  assert.equal(advancedAdvanceTarget("STAGE_9", 5, 5, "GRC"), 3);
 });
 
 test("later percentage stages also count non-submitters before graded attrition", () => {
@@ -124,29 +125,29 @@ test("Stage 8 advances the exact SOC target using cumulative weighted percentile
   assert.equal(result.rows[0].cumulativePercentile, 100);
 });
 
-test("Stage 9 advances ten and surfaces an exact boundary tie", () => {
+test("Stage 9 advances the track-specific Stage 9B target and surfaces an exact boundary tie", () => {
   const rows = candidates(12);
-  rows[9].currentFinalScore = 80;
-  rows[9].currentReportScore = 80;
-  rows[10].currentFinalScore = 80;
-  rows[10].currentReportScore = 80;
+  rows[3].currentFinalScore = 80;
+  rows[3].currentReportScore = 80;
+  rows[4].currentFinalScore = 80;
+  rows[4].currentReportScore = 80;
   rows[11].currentFinalScore = 70;
   rows[11].currentReportScore = 70;
   const history = (["STAGE_5", "STAGE_6", "STAGE_7", "STAGE_8", "STAGE_9"] as const).flatMap((stage) =>
     records(stage, rows)
   );
   const result = rankAdvancedStage("STAGE_9", rows, history)[0];
-  assert.equal(result.advanceTarget, 10);
+  assert.equal(result.advanceTarget, 4);
   assert.equal(result.boundaryTie, true);
-  assert.deepEqual(result.boundaryReportIds.sort(), ["report-10", "report-11"]);
+  assert.deepEqual(result.boundaryReportIds.sort(), ["report-4", "report-5"]);
 });
 
 test("boundary ties keep the exact target and require a recorded QA distinction", () => {
   const rows = candidates(12);
-  rows[9].currentFinalScore = 80;
-  rows[9].currentReportScore = 80;
-  rows[10].currentFinalScore = 80;
-  rows[10].currentReportScore = 80;
+  rows[3].currentFinalScore = 80;
+  rows[3].currentReportScore = 80;
+  rows[4].currentFinalScore = 80;
+  rows[4].currentReportScore = 80;
   rows[11].currentFinalScore = 70;
   rows[11].currentReportScore = 70;
   const history = (["STAGE_5", "STAGE_6", "STAGE_7", "STAGE_8", "STAGE_9"] as const).flatMap((stage) =>
@@ -154,10 +155,10 @@ test("boundary ties keep the exact target and require a recorded QA distinction"
   );
   const result = rankAdvancedStage("STAGE_9", rows, history)[0];
   const selected = result.rows.filter((row) => row.selected);
-  assert.equal(selected.length, 10);
-  assert.equal(result.rows.find((row) => row.reportId === "report-11")?.selected, false);
+  assert.equal(selected.length, 4);
+  assert.equal(result.rows.find((row) => row.reportId === "report-5")?.selected, false);
   assert.match(
-    result.rows.find((row) => row.reportId === "report-10")?.selectionReason ?? "",
+    result.rows.find((row) => row.reportId === "report-4")?.selectionReason ?? "",
     /boundary tie requires QA/
   );
 });

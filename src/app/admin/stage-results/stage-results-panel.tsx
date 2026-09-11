@@ -459,10 +459,10 @@ export function StageResultsPanel() {
                     Each percentage is measured against the full cohort that entered that stage in
                     that track. Non-submitters are removed first and count toward the target; only
                     a remaining shortfall is filled from the lowest-ranked graded reports. Stage 5
-                    removes 20%, Stage 6 removes 25%, and Stage 7 removes 33%. Stage 8 advances six
-                    per track and Stage 9 selects three per track using cumulative weighted
-                    percentiles. Exact boundary ties require an audited defense or blinded-review
-                    swap.
+                    removes 20%, Stage 6 removes 25%, and Stage 7 removes 33%. Stage 8 advances
+                    18 SOC, 11 Ethical Hacking, and 5 GRC associates. Stage 9A selects 4 SOC, 3
+                    Ethical Hacking, and 3 GRC associates for Stage 9B using cumulative weighted
+                    percentiles. Exact boundary ties require an audited defense or blinded-review swap.
                   </p>
                   <p className="mt-3 text-xs font-medium text-foreground">
                     {pending?.rankingStale

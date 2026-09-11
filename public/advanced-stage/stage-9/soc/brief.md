@@ -50,6 +50,10 @@ The panel will select an artifact, ask for one fresh query, and inject one late
 fact. Update the timeline or state why the fact does not change it. Concealing a
 changed conclusion is worse than correcting it.
 
+A prerecorded walkthrough and `video-url.txt` are optional and unscored. They
+do not replace the mandatory real-time panel defense. Scheduling and joining
+instructions for that defense will be communicated separately.
+
 ## Mission interface and final proof
 
 - **You receive:** a signed sealed case containing host logs, email, a real PCAP, manifest, reconstructable archive, and candidate-marker evidence.

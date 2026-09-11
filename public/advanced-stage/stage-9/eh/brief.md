@@ -43,6 +43,10 @@ Reproduce one selected finding and one selected full-chain edge from clean
 snapshots using submitted code. The panel then applies one documented control
 variant and reruns the affected tests.
 
+A prerecorded walkthrough and `video-url.txt` are optional and unscored. They
+do not replace the mandatory real-time panel defense. Scheduling and joining
+instructions for that defense will be communicated separately.
+
 ## Mission interface and final proof
 
 - **You receive:** a signed synthetic estate, vulnerable/patched releases, explicit scope, proof limit, crown-jewel identifier, and prior path/remediation interfaces.

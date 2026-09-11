@@ -555,6 +555,15 @@ function sharedQuestions(track: AdvancedTrack, project: AdvancedProject, window:
       ]
     : [];
 
+  const stageNineDefense = project.number === 5
+    ? [
+        submit(
+          "Is video-url.txt required, and is the live defense a recorded video?",
+          "No. video-url.txt and a prerecorded walkthrough are optional and unscored for Stage 9. Omitting them does not reduce the technical score. The live defense is a separate, mandatory real-time panel assessment worth 10 points. Staff will send scheduling and joining instructions separately; the panel will ask you to reproduce and explain selected parts of your submitted work. A recording does not replace that session.",
+        ),
+      ]
+    : [];
+
   return [
     setup(
       "When is this project open, and may I submit after the deadline?",
@@ -577,6 +586,7 @@ function sharedQuestions(track: AdvancedTrack, project: AdvancedProject, window:
       `Open the submitted folder URL in a private or incognito browser where you are not signed in. Confirm the root opens without a permission request, every file is downloadable, manifest.sha256 verifies, and the clean build or test command in README.md is exact. ${project.revision === "No revision" ? "This project has no revision, so complete this check before submitting." : "One revision may be offered under the published rule, but inaccessible or missing evidence can still prevent assessment."}`,
     ),
     ...stageSixVideo,
+    ...stageNineDefense,
   ];
 }
 

@@ -334,7 +334,7 @@ const WORKFLOWS: Record<
           "Freeze the case record",
           [
             "Ensure incident and executive reports use only claims present in the evidence index and frozen timeline result.",
-            "Verify recovered files, tests, queries, video URL, and manifest; test the Drive link anonymously before the one-shot submission.",
+            "Verify recovered files, tests, queries, live-defense commands, and manifest; test the Drive link anonymously before the one-shot submission.",
           ],
           "A reviewer can move from each report claim back to raw evidence and reproduce the decisive extraction.",
         ),
@@ -642,7 +642,7 @@ const WORKFLOWS: Record<
           "Friday before 18:10 WAT",
           "Submit one internally consistent engagement record",
           [
-            "Package the RoE, reports, evidence, tests, chain runner, vulnerable and patched XML, retest matrix, cleanup logs, video URL, and manifest.",
+            "Package the RoE, reports, evidence, tests, chain runner, vulnerable and patched XML, retest matrix, cleanup logs, and manifest.",
             "Remove credentials, verify the folder anonymously, and submit the single root before the no-revision deadline.",
           ],
           "A reviewer can reproduce two selected tests and verify that exactly one synthetic record was retrieved.",
@@ -952,7 +952,7 @@ const WORKFLOWS: Record<
           "Friday before 18:10 WAT",
           "Freeze the defensible breach record",
           [
-            "Package engine, rules, schemas, tests, snapshots, ledger, population calculation, work items, notices, board memo, roadmap, video URL, and manifest.",
+            "Package engine, rules, schemas, tests, snapshots, ledger, population calculation, work items, notices, board memo, roadmap, and manifest.",
             "Verify citations and source versions, test the Drive root anonymously, and submit once before the no-revision deadline.",
           ],
           "A reviewer can reproduce each obligation, deadline, count, and notice from the submitted evidence and rules.",
