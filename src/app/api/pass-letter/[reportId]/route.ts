@@ -79,6 +79,7 @@ export async function GET(
         rank: report.advancedRank,
         cohortSize: report.advancedCohortSize,
         nextStageLabel,
+        recognition: report.stage === "STAGE_9" ? "stage9-finalist" : "achievement",
       });
     } else {
       const win = await prisma.stageWindow.findUnique({
@@ -98,7 +99,9 @@ export async function GET(
     }
 
     const safeName = fullName.replace(/[^A-Za-z0-9\s-]/g, "").replace(/\s+/g, "-");
-    const filename = `UBI-Achievement-Letter-${safeName}-${report.stage}-${report.intern.track}.pdf`;
+    const filename = report.stage === "STAGE_9"
+      ? `UBI-Stage-9B-Finalist-Letter-${safeName}-${report.intern.track}.pdf`
+      : `UBI-Achievement-Letter-${safeName}-${report.stage}-${report.intern.track}.pdf`;
 
     return new Response(pdf as unknown as BodyInit, {
       status: 200,

@@ -13,7 +13,12 @@ export type StageRow = {
   label: string;
   /** Final combined score, 0-100. Null when the stage was never graded. */
   score: number | null;
-  passingScore: number;
+  /** Fixed threshold for core stages. Advanced stages use within-track ranking. */
+  passingScore?: number | null;
+  /** The audited progression rule for a ranked advanced stage. */
+  selectionBasis?: string | null;
+  rank?: number | null;
+  cohortSize?: number | null;
   /** PASSED / FAILED / anything else renders as "Not assessed". */
   status: string;
   /** Reviewer feedback, printed verbatim under the row when present. */
@@ -135,10 +140,14 @@ export function generatePerformanceRecord(opts: {
       // Measure the block before committing to a page, so a stage and its
       // reviewer note never split across the page break.
       const noteText = (s.feedback ?? "").trim();
+      const basisText = (s.selectionBasis ?? "").trim();
+      const basisH = basisText
+        ? doc.fontSize(8).font("Times-Roman").heightOfString(basisText, { width: w - 26, lineGap: 1.6 }) + 16
+        : 0;
       const noteH = noteText
         ? doc.fontSize(8.5).font("Times-Roman").heightOfString(noteText, { width: w - 26, lineGap: 1.8 }) + 16
         : 0;
-      const blockH = 30 + noteH + 10;
+      const blockH = 30 + basisH + noteH + 10;
       if (y + blockH > bottomLimit) newPage();
 
       const verdict = verdictOf(s);
@@ -146,21 +155,36 @@ export function generatePerformanceRecord(opts: {
       doc.moveTo(x, y).lineTo(x, y + 26).lineWidth(2.4).strokeColor(verdict.color).stroke();
 
       doc.fontSize(10).font("Times-Bold").fillColor(P.head)
-        .text(s.label, x + 12, y + 8, { width: w - 190, lineBreak: false });
+        .text(s.label, x + 12, y + 8, { width: w - 230, lineBreak: false });
 
       doc.fontSize(7).font("Helvetica-Bold").fillColor(verdict.color)
-        .text(verdict.label.toUpperCase(), x + w - 178, y + 10, {
+        .text(verdict.label.toUpperCase(), x + w - 218, y + 10, {
           width: 92, align: "right", characterSpacing: 1.1, lineBreak: false,
         });
       doc.fontSize(11).font("Times-Bold").fillColor(P.head)
-        .text(s.score === null ? "—" : `${s.score}%`, x + w - 78, y + 7, {
+        .text(s.score === null ? "—" : `${s.score}%`, x + w - 118, y + 7, {
           width: 42, align: "right", lineBreak: false,
         });
+      const measure = s.selectionBasis
+        ? s.rank && s.cohortSize
+          ? `rank ${s.rank}/${s.cohortSize}`
+          : "track ranked"
+        : s.passingScore == null
+          ? ""
+          : `/ ${s.passingScore}`;
       doc.fontSize(7).font("Helvetica").fillColor(A.faint)
-        .text(`/ ${s.passingScore}`, x + w - 32, y + 11, {
-          width: 32, align: "right", lineBreak: false,
+        .text(measure, x + w - 70, y + 11, {
+          width: 70, align: "right", lineBreak: false,
         });
       y += 30;
+
+      if (basisText) {
+        doc.fontSize(6.5).font("Helvetica-Bold").fillColor(P.metal)
+          .text("PROGRESSION BASIS", x + 12, y, { width: w - 24, characterSpacing: 1.2 });
+        doc.fontSize(8).font("Times-Roman").fillColor(A.inkSoft)
+          .text(basisText, x + 12, y + 11, { width: w - 26, lineGap: 1.6 });
+        y = doc.y + 10;
+      }
 
       if (noteText) {
         doc.fontSize(6.5).font("Helvetica-Bold").fillColor(A.muted)
@@ -179,8 +203,9 @@ export function generatePerformanceRecord(opts: {
     doc.fontSize(9).font("Times-Italic").fillColor(A.inkSoft)
       .text(
         "This record is issued so that the substance of your assessment stays with you after " +
-          "your dashboard access ends. The scores are the ones the programme's decisions were " +
-          "made on, and the reviewer's notes are reproduced exactly as they were written.",
+          "your dashboard access ends. Technical scores are preserved exactly. Core stages show " +
+          "their fixed threshold; advanced stages show the separate within-track progression basis. " +
+          "The reviewer's notes are reproduced exactly as they were written.",
         x, y + 12, { width: w, lineGap: 2 }
       );
 
@@ -210,6 +235,6 @@ function verdictOf(s: StageRow): { label: string; color: string } {
 
 /** "Stage 6 — Advanced Exposure" -> "Stage 6", for the summary tile. */
 function shortLabel(label: string): string {
-  const m = label.match(/^(Stage\s+\d+)/i);
+  const m = label.match(/(Stage\s+\d+)/i);
   return m ? m[1] : label.slice(0, 12);
 }

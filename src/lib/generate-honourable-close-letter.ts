@@ -11,6 +11,19 @@ import {
 } from "./advanced-credential";
 import type { AdvancedTrack } from "./advanced-stage";
 
+export type PersonalAssessmentHighlight = {
+  label: string;
+  score: number;
+  maximum: number;
+  reason: string;
+};
+
+const STAGE9_FINALIST_PLACES: Record<AdvancedTrack, number> = {
+  SOC_ANALYSIS: 4,
+  ETHICAL_HACKING: 3,
+  GRC: 3,
+};
+
 /**
  * The letter sent to an intern whose cohort ends at an advanced project.
  *
@@ -33,10 +46,15 @@ export function generateHonourableCloseLetter(opts: {
   /** Total applicants to the cohort, for the selectivity sentence. */
   applicantPool?: number | null;
   cohortAtStage?: number | null;
+  technicalScore90?: number | null;
+  trackRank?: number | null;
+  strongest?: PersonalAssessmentHighlight | null;
+  priority?: PersonalAssessmentHighlight | null;
 }): Promise<Buffer> {
   const {
     fullName, stage, track, issuedAt, effectiveDate, letterId,
-    returningCode, applicantPool, cohortAtStage,
+    returningCode, applicantPool, cohortAtStage, technicalScore90, trackRank,
+    strongest, priority,
   } = opts;
   const cred = ADVANCED_CREDENTIALS[stage];
   const tc = credentialFor(stage, track);
@@ -66,7 +84,12 @@ export function generateHonourableCloseLetter(opts: {
     doc.fontSize(8).font("Helvetica").fillColor(A.faint)
       .text(`Ref ${letterId}`, x, top, { width: w, align: "right" });
 
-    const p = paragrapher(doc, x, w, top + 30);
+    const isStage9 = stage === "STAGE_9";
+    const p = paragrapher(doc, x, w, top + 30, {
+      gap: isStage9 ? 6.5 : 8,
+      size: isStage9 ? 9.25 : 9.9,
+      lineGap: isStage9 ? 1.7 : 2.1,
+    });
 
     doc.fontSize(11).font("Times-Bold").fillColor(P.deep)
       .text(`Dear ${firstName},`, x, p.y, { width: w });
@@ -90,26 +113,56 @@ export function generateHonourableCloseLetter(opts: {
       );
     }
 
+    if (isStage9 && technicalScore90 !== null && technicalScore90 !== undefined) {
+      p.para(
+        `Your frozen Stage 9A submission earned ${technicalScore90}/90. That number came from six ` +
+          `evidence-based rubric decisions; prerecorded video was optional and contributed no points.`
+      );
+    }
+
+    if (isStage9 && strongest) {
+      p.para(
+        `What stood out in your own work was ${strongest.label.toLowerCase()} ` +
+          `(${strongest.score}/${strongest.maximum}). ${strongest.reason}`
+      );
+    }
+
     // The decision, plainly, once.
-    p.para(
-      `After the full review and within-track ranking for ${cred.title}, your result did not fall ` +
+    p.para(isStage9
+      ? `After the full review and cumulative within-track ranking, your record did not fall inside ` +
+        `the ${STAGE9_FINALIST_PLACES[track]} available ${TRACK_LABEL[track]} finalist places` +
+        (trackRank ? `; your audited track position was ${trackRank}.` : `.`) +
+        ` Your active Cohort 1 assessment concludes here, and your dashboard credentials will be ` +
+        `discontinued on ${formatDate(effectiveDate)} after you have had time to download your records.`
+      : `After the full review and within-track ranking for ${cred.title}, your result did not fall ` +
         `inside this project's advance boundary. Your place in Cohort 1 concludes here, and your ` +
         `dashboard credentials will be discontinued on ${formatDate(effectiveDate)}. You keep ` +
         `access until that date to download your documents and your reviewer's notes.`
     );
 
-    p.para(
-      `Please be clear about what that decision is not. The advance boundary is a capacity limit, ` +
+    p.para(isStage9
+      ? `This was an exceptionally hard boundary: ten places across a 34-person room whose members ` +
+        `had already survived eight stages. Strong scores still missed the final because selection ` +
+        `considered the complete weighted record from Stages 5 through 9A. This is not a polite way ` +
+        `of calling your work weak. It is the honest description of a very narrow competition.`
+      : `Please be clear about what that decision is not. The advance boundary is a capacity limit, ` +
         `not a verdict on your ability — the Advanced Programme runs small cohorts so that every ` +
         `submission gets read properly, and that ceiling is why strong work is turned away at ` +
         `every project. Read your reviewer's notes. They were written by someone who wanted you ` +
         `to pass.`
     );
 
+    if (isStage9 && priority && priority.label !== strongest?.label) {
+      p.para(
+        `The most valuable next investment is ${priority.label.toLowerCase()} ` +
+          `(${priority.score}/${priority.maximum}). ${priority.reason}`
+      );
+    }
+
     // ── Returning code — the concrete way back ────────────
     if (returningCode) {
       const boxY = p.y + 2;
-      const boxH = 76;
+      const boxH = 72;
       doc.rect(x, boxY, w, boxH).fill(P.wash);
       doc.moveTo(x, boxY).lineTo(x, boxY + boxH).lineWidth(2.6).strokeColor(P.metal).stroke();
       doc.fontSize(7).font("Helvetica-Bold").fillColor(P.metal)
@@ -125,7 +178,7 @@ export function generateHonourableCloseLetter(opts: {
             `address and can be used once.`,
           x + 16, boxY + 50, { width: w - 32, lineGap: 1.5 }
         );
-      p.y = boxY + boxH + 16;
+      p.y = boxY + boxH + 13;
 
       p.para(
         `That code is not a courtesy — it is issued only to people who submitted work at an ` +

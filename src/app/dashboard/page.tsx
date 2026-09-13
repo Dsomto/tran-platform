@@ -226,6 +226,17 @@ export default async function DashboardPage() {
 
   const reportStatusLabel = (() => {
     if (!report) return { text: "Not started", tone: "muted" as const };
+    if (stageEnum === "STAGE_9" && report.status === "PASSED") {
+      return { text: "Stage 9B finalist", tone: "emerald" as const };
+    }
+    if (
+      stageEnum === "STAGE_9"
+      && report.status === "FAILED"
+      && report.submittedAt
+      && report.score !== null
+    ) {
+      return { text: "Stage 9A completed", tone: "amber" as const };
+    }
     if (report.status === "PASSED") return { text: "Passed", tone: "emerald" as const };
     if (report.status === "FAILED") return { text: "Did not pass", tone: "rose" as const };
     if (
@@ -487,8 +498,12 @@ export default async function DashboardPage() {
                   {reportStatusLabel.text}
                 </span>
                 <p className="mb-4 mt-3 text-xs leading-relaxed text-muted">
-                  {report?.status === "PASSED"
-                    ? "You've cleared this stage — grab your certificate on the Reports page."
+                  {stageEnum === "STAGE_9" && report?.status === "PASSED"
+                    ? "You are a Stage 9B finalist. No certificate is issued at this point; your finalist instructions will be released separately."
+                    : stageEnum === "STAGE_9" && report?.status === "FAILED" && report.submittedAt && report.score !== null
+                      ? "Your Stage 9A work was completed and assessed. Your Stage 9 certificate and full record are available on the Reports page."
+                      : report?.status === "PASSED"
+                        ? "You've cleared this stage — grab your certificate on the Reports page."
                     : report?.status === "SUBMITTED" || report?.status === "UNDER_REVIEW"
                       ? "Your report is with the graders. We'll email you when the result is released."
                       : report?.status === "DRAFT"

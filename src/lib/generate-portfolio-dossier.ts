@@ -18,14 +18,15 @@ import { UBI_LOGO_BUFFER } from "./ubi-logo-data";
  *
  * The certificate is a credential and the reference is an endorsement; this is
  * the evidence behind both. It walks an employer through every project the
- * holder completed and assessed, in their own track's terms: the brief they
+ * holder completed or submitted for assessment, in their own track's terms: the brief they
  * were given, what they built against it, and the specific capabilities that
  * work demonstrated.
  *
  * It is issued on the same terms as the reference letter — to anyone who
- * reached an advanced project, whether or not they advanced past it — and it
- * never mentions advancement status. Every entry is a stage genuinely PASSED,
- * so the document is honest without needing a disclaimer.
+ * reached an advanced project, whether or not they advanced past it. Completed
+ * entries are stages genuinely passed. A final assessed entry may also record
+ * the project that was submitted and reviewed at the cohort boundary, without
+ * implying that the next standing was conferred.
  */
 
 /**
@@ -92,6 +93,8 @@ export type DossierEntry = {
   stage: string;
   /** Display label, e.g. "Advanced Stage 6 — Exposure". */
   label: string;
+  /** Passed work is completed; reviewed boundary work is assessed. */
+  outcome?: "completed" | "assessed";
 };
 
 export function generatePortfolioDossier(opts: {
@@ -170,10 +173,10 @@ export function generatePortfolioDossier(opts: {
 
     // Summary tiles.
     y = doc.y + 22;
-    const advancedDone = completed.filter((c) => isAdvancedStage(c.stage)).length;
+    const completedCount = completed.filter((c) => (c.outcome ?? "completed") === "completed").length;
     const tiles: Array<[string, string]> = [
-      ["PROJECTS COMPLETED", String(completed.length)],
-      ["ADVANCED PROJECTS", String(advancedDone)],
+      ["PROJECTS COMPLETED", String(completedCount)],
+      ["PROJECTS ASSESSED", String(completed.length)],
       ["DISCIPLINE", TRACK_LABEL[track].split(",")[0]],
     ];
     const tw = (w - 2 * 10) / 3;
@@ -203,7 +206,8 @@ export function generatePortfolioDossier(opts: {
         `This dossier records the work ${firstNameOf(fullName)} completed in the ` +
           `${TRACK_LABEL[track]} track of the Ubuntu Bridge Initiative Cybersecurity ` +
           `Internship. The track is assessed on ${profile.summary}. Every project listed here ` +
-          `was submitted, reviewed against the programme's evidence rules, and scored.`,
+          `was submitted and reviewed against the programme's evidence rules. Completed entries ` +
+          `were passed; an assessed entry records reviewed work without claiming advancement.`,
         x, y, { width: w, lineGap: 3, align: "left" }
       );
 
@@ -252,11 +256,13 @@ export function generatePortfolioDossier(opts: {
     // ══ THE WORK ══════════════════════════════════════════
     doc.addPage();
     y = sectionHead(doc, x, w, 62, P, "02", "The work",
-      "Each project below was completed, submitted and assessed.");
+      "Completed work and the furthest project submitted for assessment.");
 
     let n = 0;
     for (const entry of completed) {
       n++;
+      const entryOutcome = entry.outcome ?? "completed";
+      const isCompleted = entryOutcome === "completed";
       const advanced = isAdvancedStage(entry.stage);
       const tc = advanced ? credentialFor(entry.stage as AdvancedStageKey, track) : null;
       const brief = advanced ? getAdvancedProject(entry.stage, track) : null;
@@ -284,6 +290,22 @@ export function generatePortfolioDossier(opts: {
       }
       y += headH + 10;
 
+      if (!isCompleted) {
+        doc.rect(x + 14, y, w - 28, 35).fill("#FFF7ED");
+        doc.moveTo(x + 14, y).lineTo(x + 14, y + 35)
+          .lineWidth(2.4).strokeColor("#B45309").stroke();
+        doc.fontSize(6.5).font("Helvetica-Bold").fillColor("#9A3412")
+          .text("SUBMITTED AND ASSESSED", x + 27, y + 7, {
+            width: w - 52, characterSpacing: 1.4,
+          });
+        doc.fontSize(8.5).font("Times-Roman").fillColor("#7C2D12")
+          .text(
+            "This project was reviewed and scored. It is included as assessed work, not as a passed stage or conferred standing.",
+            x + 27, y + 17, { width: w - 52, lineBreak: false }
+          );
+        y += 45;
+      }
+
       // ── Assessment metadata chips ─────────────────────
       if (brief) {
         const chips = [
@@ -303,8 +325,12 @@ export function generatePortfolioDossier(opts: {
         y += 22;
       }
 
-      y = block(doc, x, w, y, P, "WHAT THEY BUILT",
-        tc ? `${capitalise(tc.attestation)}.` : core?.what ?? "", bottomLimit);
+      y = block(doc, x, w, y, P, isCompleted ? "WHAT THEY BUILT" : "WHAT THE PROJECT ASSESSED",
+        tc
+          ? isCompleted
+            ? `${capitalise(tc.attestation)}.`
+            : `The submitted evidence was assessed across the brief's full scope: ${capitalise(tc.attestation)}.`
+          : core?.what ?? "", bottomLimit);
 
       if (brief) {
         y = block(doc, x, w, y, P, "THE OBJECTIVE SET", brief.objective, bottomLimit);
@@ -331,7 +357,9 @@ export function generatePortfolioDossier(opts: {
       if (tc) {
         if (y + 60 > bottomLimit) { doc.addPage(); y = 62; }
         doc.fontSize(6.5).font("Helvetica-Bold").fillColor(A.muted)
-          .text("CAPABILITIES DEMONSTRATED", x + 14, y, { width: w - 30, characterSpacing: 1.4 });
+          .text(isCompleted ? "CAPABILITIES DEMONSTRATED" : "CAPABILITIES ASSESSED", x + 14, y, {
+            width: w - 30, characterSpacing: 1.4,
+          });
         const colW = (w - 44) / 2;
         const perCol = Math.ceil(tc.competencies.length / 2);
         tc.competencies.forEach((c, i) => {

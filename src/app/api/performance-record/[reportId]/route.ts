@@ -3,6 +3,11 @@ import { prisma } from "@/lib/db";
 import { logger } from "@/lib/logger";
 import { generatePerformanceRecord, type StageRow } from "@/lib/generate-performance-record";
 import { isAdvancedTrack } from "@/lib/advanced-stage";
+import { isAdvancedStage } from "@/lib/advanced-credential";
+import {
+  advancedSelectionPolicy,
+  isAdvancedRankingStage,
+} from "@/lib/advanced-ranking";
 import { isReportResultReleased } from "@/lib/report-visibility";
 import {
   isValidPerformanceRecordShareSig,
@@ -72,7 +77,14 @@ export async function GET(
         where: { internId: anchor.intern.id },
         orderBy: { stage: "asc" },
         select: {
-          stage: true, status: true, score: true, finalScore: true, feedback: true,
+          stage: true,
+          status: true,
+          score: true,
+          finalScore: true,
+          feedback: true,
+          advancedSelectionRule: true,
+          advancedRank: true,
+          advancedCohortSize: true,
         },
       }),
       prisma.stageWindow.findMany({ select: { stage: true, passingScore: true } }),
@@ -85,7 +97,14 @@ export async function GET(
       .map((r) => ({
         label: STAGE_LABEL[r.stage] ?? r.stage,
         score: r.finalScore ?? r.score ?? null,
-        passingScore: passingByStage.get(r.stage) ?? 70,
+        passingScore: isAdvancedStage(r.stage) ? null : (passingByStage.get(r.stage) ?? 70),
+        selectionBasis: isAdvancedStage(r.stage)
+          ? isAdvancedRankingStage(r.stage)
+            ? advancedSelectionPolicy(r.stage).label
+            : r.advancedSelectionRule ?? "Progression was determined by reviewed technical ranking within the specialist track."
+          : null,
+        rank: isAdvancedStage(r.stage) ? r.advancedRank : null,
+        cohortSize: isAdvancedStage(r.stage) ? r.advancedCohortSize : null,
         status: r.status,
         feedback: r.feedback,
       }));

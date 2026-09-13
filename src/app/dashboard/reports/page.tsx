@@ -6,6 +6,7 @@ import { LinkedInIcon } from "@/components/icons/linkedin";
 import { certificateShareSig, letterShareSig, passLetterShareSig } from "@/lib/certificate-link";
 import { isReportResultReleased } from "@/lib/report-visibility";
 import { stageWindowAcceptsSubmissions, stageWindowHasStarted } from "@/lib/stage-window";
+import { isStage9AssessedDeparture, isStage9BFinalist } from "@/lib/stage9-credential-policy";
 
 // Always re-fetch — the score field switched from `score` to `finalScore`
 // and any cached render of this route would still show the old value.
@@ -99,7 +100,12 @@ export default async function ReportsPage() {
                     <span className="text-muted-foreground font-normal"> — {meta.subtitle}</span>
                   </h2>
                   <div className="mt-2 flex items-center gap-2 text-sm flex-wrap">
-                    <StatusPill status={r?.status ?? "NONE"} divergent={r?.divergent ?? false} />
+                    <StatusPill
+                      stage={stage}
+                      status={r?.status ?? "NONE"}
+                      divergent={r?.divergent ?? false}
+                      stage9Assessed={r ? isStage9AssessedDeparture(r) : false}
+                    />
                     {resultReleased && !r?.divergent && (r?.finalScore ?? r?.score) != null && (
                       <span className="text-muted-foreground">
                         Score: <strong className="text-foreground">{r?.finalScore ?? r?.score}</strong>
@@ -124,7 +130,7 @@ export default async function ReportsPage() {
                   )}
                 </div>
                 <div className="flex gap-2 shrink-0 flex-wrap">
-                  {r?.status === "PASSED" && (
+                  {r?.status === "PASSED" && !isStage9BFinalist(r) && (
                     <>
                       <a
                         href={`/api/certificate/${r.id}?sig=${certificateShareSig(r.id, intern.id)}`}
@@ -143,6 +149,39 @@ export default async function ReportsPage() {
                       >
                         <FileSignature className="h-4 w-4" />
                         Achievement letter
+                      </a>
+                      <a
+                        href={`/verify/${r.id}?sig=${certificateShareSig(r.id, intern.id)}`}
+                        target="_blank"
+                        rel="noreferrer noopener"
+                        className="inline-flex items-center gap-1.5 justify-center px-3 py-2 text-sm font-medium rounded-lg border border-[#0A66C2]/30 bg-[#0A66C2]/5 text-[#0A66C2] hover:bg-[#0A66C2]/10 dark:text-[#70b5f9]"
+                      >
+                        <LinkedInIcon className="h-4 w-4" />
+                        Add to LinkedIn
+                      </a>
+                    </>
+                  )}
+                  {r && isStage9BFinalist(r) && (
+                    <a
+                      href={`/api/pass-letter/${r.id}?sig=${passLetterShareSig(r.id, intern.id)}`}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      className="inline-flex items-center gap-1.5 justify-center px-3 py-2 text-sm font-medium rounded-lg border border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 dark:border-emerald-500/30 dark:bg-emerald-500/15 dark:text-emerald-300 dark:hover:bg-emerald-500/25"
+                    >
+                      <FileSignature className="h-4 w-4" />
+                      Finalist letter
+                    </a>
+                  )}
+                  {r && isStage9AssessedDeparture(r) && (
+                    <>
+                      <a
+                        href={`/api/certificate/${r.id}?sig=${certificateShareSig(r.id, intern.id)}`}
+                        target="_blank"
+                        rel="noreferrer noopener"
+                        className="inline-flex items-center gap-1.5 justify-center px-3 py-2 text-sm font-medium rounded-lg border border-blue/30 bg-blue/5 text-blue hover:bg-blue/10"
+                      >
+                        <Award className="h-4 w-4" />
+                        Stage 9 certificate
                       </a>
                       <a
                         href={`/verify/${r.id}?sig=${certificateShareSig(r.id, intern.id)}`}
@@ -202,7 +241,17 @@ export default async function ReportsPage() {
   );
 }
 
-function StatusPill({ status, divergent }: { status: string; divergent: boolean }) {
+function StatusPill({
+  stage,
+  status,
+  divergent,
+  stage9Assessed,
+}: {
+  stage: string;
+  status: string;
+  divergent: boolean;
+  stage9Assessed: boolean;
+}) {
   // Divergent reports stay in UNDER_REVIEW until a super admin tiebreaks. The
   // intern needs a distinct label so they don't read it as silent inactivity.
   if (divergent) {
@@ -225,7 +274,11 @@ function StatusPill({ status, divergent }: { status: string; divergent: boolean 
     FAILED: { label: "Not passed", color: "bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-500/15 dark:text-rose-300 dark:border-rose-500/30", icon: XCircle },
     LATE: { label: "Late", color: "bg-surface-hover text-muted border border-border", icon: AlertTriangle },
   };
-  const c = config[status] ?? config.NONE;
+  const c = stage === "STAGE_9" && status === "PASSED"
+    ? { label: "Stage 9B finalist", color: config.PASSED.color, icon: CheckCircle2 }
+    : stage === "STAGE_9" && status === "FAILED" && stage9Assessed
+      ? { label: "Stage 9A completed", color: "bg-amber-50 text-amber-800 border border-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/30", icon: Award }
+      : config[status] ?? config.NONE;
   const Icon = c.icon;
   return (
     <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium ${c.color}`}>

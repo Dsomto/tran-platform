@@ -156,8 +156,12 @@ export function generateReferenceLetter(opts: {
     }
 
     p.para(
-      `The most demanding of those was ${cred.title}, on the ${TRACK_LABEL[track]} brief ` +
-        `“${tc.project}”. There, ${surname} ${tc.attestation}. That is the job, not coursework.`
+      completed
+        ? `The most demanding of those was ${cred.title}, on the ${TRACK_LABEL[track]} brief ` +
+          `“${tc.project}”. There, ${surname} ${tc.attestation}. That is the job, not coursework.`
+        : `The furthest project ${surname} submitted for assessment was ${cred.title}, on the ` +
+          `${TRACK_LABEL[track]} brief “${tc.project}”. The submitted evidence was reviewed ` +
+          `against the brief's full scope: ${capitalise(tc.attestation)}.`
     );
 
     // ── Capabilities, two columns ─────────────────────────
@@ -224,4 +228,8 @@ export function generateReferenceLetter(opts: {
 function lastName(fullName: string): string {
   const parts = fullName.trim().split(/\s+/).filter(Boolean);
   return parts.length > 1 ? parts[parts.length - 1] : (parts[0] ?? "The candidate");
+}
+
+function capitalise(value: string): string {
+  return value.charAt(0).toUpperCase() + value.slice(1);
 }

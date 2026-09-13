@@ -321,7 +321,7 @@ export const ADVANCED_CREDENTIALS: Record<AdvancedStageKey, AdvancedCredential> 
   // ── Project 4 — Adversity ─────────────────────────────
   STAGE_8: {
     number: 4, name: "Adversity", title: "Advanced Stage 8 — Adversity",
-    standing: "Adversarial Assessor",
+    standing: "Semifinalist, UBI Cohort 1",
     matters:
       "One attempt, no revision, and a reviewer actively looking for the weak point. This project measures composure and judgment under pressure, which is what separates a practitioner who holds up in an incident from one who only performs well with time to spare.",
     premise: "delivering without revision and defending the work under challenge",

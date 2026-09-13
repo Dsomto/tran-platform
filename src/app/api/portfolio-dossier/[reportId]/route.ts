@@ -24,8 +24,9 @@ const STAGE_LABEL: Record<string, string> = {
 
 // Portfolio dossier. Issued on the same terms as the reference letter — to
 // anyone who reached an advanced project, whichever way the result went — and
-// it never states advancement status. Only stages actually PASSED are listed,
-// so the document needs no disclaimer to stay honest.
+// it never states advancement status. Passed stages are listed as completed;
+// when the anchor result is FAILED, that final submitted project is included
+// once as assessed work so the dossier does not erase a real reviewed build.
 export async function GET(
   request: NextRequest,
   ctx: { params: Promise<{ reportId: string }> }
@@ -70,7 +71,15 @@ export async function GET(
     const completed: DossierEntry[] = passedReports.map((r) => ({
       stage: r.stage,
       label: STAGE_LABEL[r.stage] ?? r.stage,
+      outcome: "completed",
     }));
+    if (report.status === "FAILED" && !completed.some((entry) => entry.stage === report.stage)) {
+      completed.push({
+        stage: report.stage,
+        label: STAGE_LABEL[report.stage] ?? report.stage,
+        outcome: "assessed",
+      });
+    }
     if (completed.length === 0) {
       return Response.json({ error: "No completed work to report yet." }, { status: 404 });
     }

@@ -6,6 +6,7 @@ import { generateAdvancedCertificate } from "@/lib/generate-advanced-certificate
 import { isAdvancedStage } from "@/lib/advanced-credential";
 import { isAdvancedTrack } from "@/lib/advanced-stage";
 import { certificateIdFor, isValidCertificateShareSig } from "@/lib/certificate-link";
+import { isStage9AssessedDeparture, isStage9BFinalist } from "@/lib/stage9-credential-policy";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -41,9 +42,16 @@ export async function GET(
     if (!report) {
       return Response.json({ error: "Certificate not found" }, { status: 404 });
     }
-    if (report.status !== "PASSED") {
+    if (isStage9BFinalist(report)) {
       return Response.json(
-        { error: "Certificate is only available for passed reports" },
+        { error: "Stage 9B finalists do not receive a certificate at this point." },
+        { status: 403 }
+      );
+    }
+    const stage9AssessedDeparture = isStage9AssessedDeparture(report);
+    if (report.status !== "PASSED" && !stage9AssessedDeparture) {
+      return Response.json(
+        { error: "Certificate is not available for this report." },
         { status: 403 }
       );
     }
@@ -74,6 +82,7 @@ export async function GET(
         track: report.intern.track,
         issuedAt,
         certId,
+        recognition: stage9AssessedDeparture ? "stage9-assessed" : "achievement",
       });
     } else {
       const win = await prisma.stageWindow.findUnique({
@@ -92,7 +101,9 @@ export async function GET(
     }
 
     const safeName = fullName.replace(/[^A-Za-z0-9\s-]/g, "").replace(/\s+/g, "-");
-    const filename = `UBI-Certificate-${safeName}-${report.stage}-${report.intern.track}.pdf`;
+    const filename = stage9AssessedDeparture
+      ? `UBI-Stage-9A-Completion-${safeName}-${report.intern.track}.pdf`
+      : `UBI-Certificate-${safeName}-${report.stage}-${report.intern.track}.pdf`;
     // inline=1 lets the verify page (the LinkedIn "credential URL" target) embed
     // the actual certificate rather than force a download.
     const disposition = url.searchParams.get("inline") === "1" ? "inline" : "attachment";

@@ -17,7 +17,7 @@ const STAGE_LABEL: Record<string, string> = {
   STAGE_6: "Advanced 2 — Exposure",
   STAGE_7: "Advanced 3 — Architecture",
   STAGE_8: "Advanced 4 — Adversity",
-  STAGE_9: "Advanced 5 — Final Case",
+  STAGE_9: "Advanced 5 — Stage 9B Finalists",
 };
 
 const STAGE_ORDER = [
@@ -101,7 +101,9 @@ export default async function ResultsPage() {
                         </h2>
                       </div>
                       <span className="text-sm text-muted-foreground">
-                        {officialCount} official pass{officialCount === 1 ? "" : "es"}
+                        {stage === "STAGE_9"
+                          ? `${officialCount} finalist${officialCount === 1 ? "" : "s"}`
+                          : `${officialCount} official pass${officialCount === 1 ? "" : "es"}`}
                       </span>
                     </div>
                     {missingRecordCount > 0 && (

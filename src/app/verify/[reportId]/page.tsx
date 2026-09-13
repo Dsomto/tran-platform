@@ -13,6 +13,7 @@ import { isAdvancedTrack } from "@/lib/advanced-stage";
 import { LogoMark } from "@/components/logo";
 import { VerifyActions } from "./verify-actions";
 import { CheckCircle2 } from "lucide-react";
+import { isStage9AssessedDeparture, isStage9BFinalist } from "@/lib/stage9-credential-policy";
 
 export const dynamic = "force-dynamic";
 
@@ -55,7 +56,11 @@ export default async function VerifyPage({
     include: { intern: { include: { user: true } } },
   });
 
-  if (!report || report.status !== "PASSED") {
+  if (!report) {
+    return <Invalid msg="This credential is not valid, or the certificate has not been issued yet." />;
+  }
+  const stage9AssessedDeparture = isStage9AssessedDeparture(report);
+  if (isStage9BFinalist(report) || (report.status !== "PASSED" && !stage9AssessedDeparture)) {
     return <Invalid msg="This credential is not valid, or the certificate has not been issued yet." />;
   }
   if (!isValidCertificateShareSig(report.id, report.intern.id, sig ?? null)) {
@@ -71,7 +76,7 @@ export default async function VerifyPage({
   const stageLabel = STAGE_LABEL[report.stage] ?? report.stage;
   const advancedContext = isAdvancedStage(report.stage) && isAdvancedTrack(report.intern.track)
     ? {
-        standing: standingFor(report.stage, report.intern.track),
+        standing: stage9AssessedDeparture ? null : standingFor(report.stage, report.intern.track),
         project: credentialFor(report.stage, report.intern.track).project,
         title: ADVANCED_CREDENTIALS[report.stage].title,
       }
@@ -87,7 +92,10 @@ export default async function VerifyPage({
     issuedAt,
     certId,
     certUrl: thisUrl,
-    credentialName: advancedContext?.standing,
+    credentialName: advancedContext?.standing ?? undefined,
+    ...(stage9AssessedDeparture
+      ? { credentialName: "Advanced Stage 9A: The Final Case — Completed and Assessed" }
+      : {}),
   });
 
   const issuedStr = issuedAt.toLocaleDateString("en-GB", { year: "numeric", month: "long", day: "numeric" });
@@ -117,7 +125,10 @@ export default async function VerifyPage({
               <p className="text-xs uppercase tracking-wide text-muted">This certifies that</p>
               <h1 className="text-2xl sm:text-3xl font-bold text-foreground mt-1">{fullName}</h1>
               <p className="text-muted mt-2">
-                {advancedContext ? (
+                {stage9AssessedDeparture && advancedContext ? (
+                  <>completed and submitted <span className="font-semibold text-foreground">Advanced Stage 9A — The Final Case</span>,
+                  and had the <span className="font-semibold text-foreground">{advancedContext.project}</span> brief formally assessed.</>
+                ) : advancedContext ? (
                   <>was conferred the standing of <span className="font-semibold text-foreground">{advancedContext.standing}</span> after
                   completing the <span className="font-semibold text-foreground">{advancedContext.project}</span> brief.</>
                 ) : report.stage === "STAGE_4" ? (

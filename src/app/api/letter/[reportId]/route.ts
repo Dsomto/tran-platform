@@ -6,6 +6,7 @@ import { generateHonourableCloseLetter } from "@/lib/generate-honourable-close-l
 import { isAdvancedStage } from "@/lib/advanced-credential";
 import { isAdvancedTrack } from "@/lib/advanced-stage";
 import { isValidLetterShareSig, letterIdFor } from "@/lib/certificate-link";
+import type { PersonalAssessmentHighlight } from "@/lib/generate-honourable-close-letter";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -22,6 +23,35 @@ const STAGE_LABEL: Record<string, string> = {
   STAGE_8: "Stage 8 — Adversarial Assessment",
   STAGE_9: "Stage 9 — Advanced Final Case",
 };
+
+function assessmentHighlights(feedback: string | null): {
+  strongest: PersonalAssessmentHighlight | null;
+  priority: PersonalAssessmentHighlight | null;
+} {
+  if (!feedback) return { strongest: null, priority: null };
+  const rows: PersonalAssessmentHighlight[] = feedback.split(/\n\s*\n/).flatMap((paragraph) => {
+    const match = paragraph.trim().match(/^([^\n:]+):\s*(\d+)\/(\d+)\.\s*([\s\S]*)$/);
+    if (!match) return [];
+    const score = Number(match[2]);
+    const maximum = Number(match[3]);
+    if (!Number.isFinite(score) || !Number.isFinite(maximum) || maximum <= 0) return [];
+    const firstSentence = match[4]
+      .trim()
+      .replace(/^\d+\/\d+\.\s*/, "")
+      .split(/(?<=[.!?])\s+/)[0];
+    return [{
+      label: match[1].trim(),
+      score,
+      maximum,
+      reason: firstSentence.length > 320 ? `${firstSentence.slice(0, 317)}...` : firstSentence,
+    }];
+  });
+  if (!rows.length) return { strongest: null, priority: null };
+  return {
+    strongest: [...rows].sort((a, b) => b.score / b.maximum - a.score / a.maximum)[0],
+    priority: [...rows].sort((a, b) => a.score / a.maximum - b.score / b.maximum)[0],
+  };
+}
 
 // Discontinuation letter download. Mirrors the certificate route exactly —
 // HMAC-signed URL, gated on report.status === "FAILED", PDF response.
@@ -74,10 +104,19 @@ export async function GET(
         });
         return Response.json({ error: "Invalid advanced-programme track" }, { status: 500 });
       }
-      const application = await prisma.publicApplication.findFirst({
-        where: { email: report.intern.user.email.toLowerCase() },
-        select: { returningCode: true },
-      });
+      const [application, applicantPool, stageCohort] = await Promise.all([
+        prisma.publicApplication.findFirst({
+          where: { email: report.intern.user.email.toLowerCase() },
+          select: { returningCode: true },
+        }),
+        prisma.publicApplication.count().catch(() => null),
+        report.stage === "STAGE_9"
+          ? prisma.advancedArtifactGrant.count({ where: { stage: "STAGE_9" } }).catch(() => null)
+          : Promise.resolve(report.advancedCohortSize),
+      ]);
+      const highlights = report.stage === "STAGE_9"
+        ? assessmentHighlights(report.feedback)
+        : { strongest: null, priority: null };
       pdf = await generateHonourableCloseLetter({
         fullName,
         stage: report.stage,
@@ -86,7 +125,12 @@ export async function GET(
         effectiveDate,
         letterId,
         returningCode: application?.returningCode ?? null,
-        cohortAtStage: report.advancedCohortSize,
+        applicantPool,
+        cohortAtStage: stageCohort,
+        technicalScore90: report.stage === "STAGE_9" ? report.score : null,
+        trackRank: report.stage === "STAGE_9" ? report.advancedRank : null,
+        strongest: highlights.strongest,
+        priority: highlights.priority,
       });
     } else {
       // Core-stage letters retain the score-threshold wording used before the

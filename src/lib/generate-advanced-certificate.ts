@@ -16,6 +16,33 @@ import {
 } from "./advanced-credential";
 import type { AdvancedTrack } from "./advanced-stage";
 
+const STAGE9_ASSESSED_SCOPE: Record<AdvancedTrack, string[]> = {
+  SOC_ANALYSIS: [
+    "Multi-source evidence acquisition",
+    "Parser-driven timeline engineering",
+    "Archive reconstruction and hashing",
+    "Clock and provenance analysis",
+    "Detection and response engineering",
+    "Executive incident reporting",
+  ],
+  ETHICAL_HACKING: [
+    "Rules of engagement and scope control",
+    "Enumeration and exploit validation",
+    "Repeatable chain construction",
+    "Root-cause remediation",
+    "Patched-estate regression testing",
+    "Professional technical reporting",
+  ],
+  GRC: [
+    "Fact and role analysis",
+    "Regulatory trigger decisions",
+    "Exact deadline computation",
+    "Affected-population modelling",
+    "Notification package development",
+    "Board remediation roadmap",
+  ],
+};
+
 /**
  * The advanced-programme certificate (Stages 5-9).
  *
@@ -36,11 +63,17 @@ export function generateAdvancedCertificate(opts: {
   track: AdvancedTrack;
   issuedAt: Date;
   certId: string;
+  recognition?: "achievement" | "stage9-assessed";
 }): Promise<Buffer> {
-  const { fullName, stage, track, issuedAt, certId } = opts;
+  const { fullName, stage, track, issuedAt, certId, recognition = "achievement" } = opts;
   const cred = ADVANCED_CREDENTIALS[stage];
   const tc = credentialFor(stage, track);
   const P = paletteFor(track);
+  const isStage9Assessed = recognition === "stage9-assessed";
+
+  if (isStage9Assessed && stage !== "STAGE_9") {
+    throw new Error("Stage 9 assessed recognition can only be issued for STAGE_9");
+  }
 
   return new Promise((resolve, reject) => {
     const doc: Doc = new PDFDocument({
@@ -77,8 +110,12 @@ export function generateAdvancedCertificate(opts: {
     // ── Title ─────────────────────────────────────────────
     doc.fontSize(40).font("Times-Bold").fillColor(P.head)
       .text("CERTIFICATE", 0, 143, { align: "center", width: pageW, characterSpacing: 9 });
-    doc.fontSize(11).font("Helvetica").fillColor(P.metal)
-      .text("OF ACHIEVEMENT", 0, 190, { align: "center", width: pageW, characterSpacing: 7.5 });
+    doc.fontSize(isStage9Assessed ? 9.5 : 11).font("Helvetica").fillColor(P.metal)
+      .text(isStage9Assessed ? "OF ADVANCED PROJECT COMPLETION" : "OF ACHIEVEMENT", 0, 190, {
+        align: "center",
+        width: pageW,
+        characterSpacing: isStage9Assessed ? 4.1 : 7.5,
+      });
 
     // guilloche flourish beneath the subtitle, terminated with lozenges
     guillocheRun(doc, cx - 148, 210, 296, 2.8, 9, P.metalLight);
@@ -110,31 +147,38 @@ export function generateAdvancedCertificate(opts: {
     const citeY = ruleY + 13;
     doc.fontSize(10).font("Times-Roman").fillColor(A.inkSoft)
       .text(
-        `for completing ${cred.name}, project ${cred.number} of 5 of the Advanced Programme, ` +
-          `and for ${cred.premise} on the brief “${tc.project}”, in the ` +
-          `${TRACK_LABEL[track]} track of the Ubuntu Bridge Cybersecurity Internship.`,
+        isStage9Assessed
+          ? `for completing and submitting Advanced Stage 9A — ${cred.name}, and having the ` +
+            `brief “${tc.project}” formally assessed in the ${TRACK_LABEL[track]} track of the ` +
+            `Ubuntu Bridge Cybersecurity Internship.`
+          : `for completing ${cred.name}, project ${cred.number} of 5 of the Advanced Programme, ` +
+            `and for ${cred.premise} on the brief “${tc.project}”, in the ` +
+            `${TRACK_LABEL[track]} track of the Ubuntu Bridge Cybersecurity Internship.`,
         cx - 265, citeY,
         { align: "center", width: 530, lineGap: 2.2 }
       );
 
     // ── Standing conferred, carried on a ribbon ───────────
-    const standing = standingFor(stage, track);
+    const standing = isStage9Assessed
+      ? "STAGE 9A COMPLETED AND ASSESSED"
+      : standingFor(stage, track);
     const ribbonY = doc.y + 42;
     const standingW = doc.fontSize(13.5).font("Times-Bold").widthOfString(standing);
     doc.fontSize(6.5).font("Helvetica-Bold").fillColor(P.metal)
-      .text("CONFERRING THE STANDING OF", 0, ribbonY - 27, {
+      .text(isStage9Assessed ? "ADVANCED PROGRAMME RECOGNITION" : "CONFERRING THE STANDING OF", 0, ribbonY - 27, {
         align: "center", width: pageW, characterSpacing: 3,
       });
     ribbonBanner(doc, cx, ribbonY, standingW + 46, 27, P, standing, 13.5);
 
     // ── Competencies, two balanced rows ───────────────────
     const compY = ribbonY + 32;
+    const competencies = isStage9Assessed ? STAGE9_ASSESSED_SCOPE[track] : tc.competencies;
     doc.fontSize(6.5).font("Helvetica-Bold").fillColor(A.muted)
-      .text("ASSESSED COMPETENCIES", 0, compY, {
+      .text(isStage9Assessed ? "ASSESSMENT SCOPE" : "ASSESSED COMPETENCIES", 0, compY, {
         align: "center", width: pageW, characterSpacing: 2.6,
       });
-    const half = Math.ceil(tc.competencies.length / 2);
-    [tc.competencies.slice(0, half), tc.competencies.slice(half)].forEach((row, i) => {
+    const half = Math.ceil(competencies.length / 2);
+    [competencies.slice(0, half), competencies.slice(half)].forEach((row, i) => {
       doc.fontSize(8.4).font("Times-Italic").fillColor(A.inkSoft)
         .text(row.join("   ·   "), cx - 350, compY + 12 + i * 13, {
           align: "center", width: 700, characterSpacing: 0.2, lineBreak: false,
@@ -144,7 +188,7 @@ export function generateAdvancedCertificate(opts: {
     // ── Seal, clear of the name row ───────────────────────
     laurelWreath(doc, pageW - 104, 106, 46, P.metal);
     advancedSeal(doc, pageW - 104, 106, 35, P, {
-      numeral: String(cred.number),
+      numeral: isStage9Assessed ? "9A" : String(cred.number),
       ring: TRACK_SHORT[track],
     });
 
