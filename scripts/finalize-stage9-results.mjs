@@ -353,7 +353,10 @@ async function main() {
         context: { releaseId: RELEASE_ID, stage: STAGE, outcome: "NO_SUBMISSION" },
       },
     });
-    await tx.stageWindow.update({ where: { stage: STAGE }, data: { status: "CLOSED", isLocked: true, closedAt: now, closedById: actor.id, cutoffAppliedAt: now, cutoffById: actor.id } });
+    await tx.stageWindow.update({
+      where: { stage: STAGE },
+      data: { status: "CLOSED", isLocked: true, cutoffAppliedAt: now, cutoffById: actor.id },
+    });
     await tx.auditLog.create({
       data: {
         actorId: actor.id,
