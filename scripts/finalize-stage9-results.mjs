@@ -1,21 +1,11 @@
 import { config } from "dotenv";
-import { randomBytes } from "node:crypto";
+import { createHmac, randomBytes } from "node:crypto";
 import { PrismaClient } from "../src/generated/prisma/index.js";
 import {
   ADVANCED_RANKING_STAGES,
   advancedSelectionPolicy,
   rankAdvancedStage,
 } from "../src/lib/advanced-ranking.ts";
-import {
-  certificateIdFor,
-  certificateUrl,
-  dossierUrl,
-  letterUrl,
-  passLetterUrl,
-  performanceRecordUrl,
-  referenceUrl,
-  verifyUrl,
-} from "../src/lib/certificate-link.ts";
 import { buildAddToProfileUrl } from "../src/lib/linkedin.ts";
 import {
   renderStage9DepartureEmail,
@@ -61,6 +51,31 @@ const EXPECTED_FINALISTS = new Set([
 ]);
 const REVIEWABLE = new Set(["GRADED", "PENDING_PROMOTION", "PENDING_ELIMINATION", "PASSED", "FAILED"]);
 const ALPHABET = "ABCDEFGHJKMNPQRSTVWXYZ23456789";
+
+function signingSecret() {
+  const value = process.env.NEXTAUTH_SECRET;
+  if (!value || value.length < 32) throw new Error("A strong NEXTAUTH_SECRET is required to sign release links");
+  return value;
+}
+
+function signature(scope, reportId, internId) {
+  return createHmac("sha256", signingSecret()).update(`${scope}:${reportId}:${internId}`).digest("hex").slice(0, 16);
+}
+
+function signedDocumentUrl(path, scope, { reportId, internId }) {
+  return `${ORIGIN}${path}/${reportId}?sig=${signature(scope, reportId, internId)}`;
+}
+
+function certificateUrl(base) { return signedDocumentUrl("/api/certificate", "share", base); }
+function verifyUrl(base) { return signedDocumentUrl("/verify", "share", base); }
+function letterUrl(base) { return signedDocumentUrl("/api/letter", "letter", base); }
+function passLetterUrl(base) { return signedDocumentUrl("/api/pass-letter", "pass-letter", base); }
+function referenceUrl(base) { return signedDocumentUrl("/api/reference-letter", "reference", base); }
+function performanceRecordUrl(base) { return signedDocumentUrl("/api/performance-record", "performance-record", base); }
+function dossierUrl(base) { return signedDocumentUrl("/api/portfolio-dossier", "dossier", base); }
+function certificateIdFor(reportId) {
+  return createHmac("sha256", signingSecret()).update(`cert:${reportId}`).digest("hex").slice(0, 12).toUpperCase();
+}
 
 function fullName(user) {
   return `${user.firstName ?? ""} ${user.lastName ?? ""}`.replace(/\s+/g, " ").trim();
