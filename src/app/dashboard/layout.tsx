@@ -53,7 +53,7 @@ export default async function DashboardLayout({
 
   const dashboardIntern = await prisma.intern.findUnique({
     where: { userId: session.id },
-    select: { ndaSignedAt: true, currentStage: true },
+    select: { ndaSignedAt: true, currentStage: true, finalist: true, isActive: true },
   });
 
   // One-time NDA gate: any unsigned intern is routed to onboarding before
@@ -90,6 +90,9 @@ export default async function DashboardLayout({
           userName={`${session.firstName} ${session.lastName}`}
           showAdvancedTrack={Boolean(
             dashboardIntern && stageRank(dashboardIntern.currentStage) >= stageRank("STAGE_5")
+          )}
+          showFinalistProject={Boolean(
+            dashboardIntern?.finalist && dashboardIntern.isActive
           )}
         />
         <main className="flex-1 flex flex-col min-w-0">

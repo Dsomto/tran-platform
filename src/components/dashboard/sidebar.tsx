@@ -27,11 +27,10 @@ import {
   TrendingUp,
   ClipboardList,
   Hourglass,
-  Hash,
   UserPlus,
   Eye,
-  FileQuestion,
   Layers3,
+  Rocket,
 } from "lucide-react";
 import { LogoMark } from "@/components/logo";
 import { useState } from "react";
@@ -40,6 +39,7 @@ interface SidebarProps {
   role: "INTERN" | "GRADER" | "ANALYST" | "ADMIN" | "SUPER_ADMIN";
   userName: string;
   showAdvancedTrack?: boolean;
+  showFinalistProject?: boolean;
 }
 
 type NavLink = {
@@ -47,6 +47,7 @@ type NavLink = {
   label: string;
   icon: typeof LayoutDashboard;
   advancedOnly?: boolean;
+  finalistOnly?: boolean;
 };
 
 const graderLinks = [
@@ -61,6 +62,7 @@ const internLinks: NavLink[] = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
   { href: "/dashboard/assignments", label: "Assignments", icon: BookOpen },
   { href: "/dashboard/advanced", label: "Advanced Track", icon: Layers3, advancedOnly: true },
+  { href: "/dashboard/finalist-project", label: "Final Project", icon: Rocket, finalistOnly: true },
   { href: "/dashboard/reports", label: "Reports", icon: FileText },
   { href: "/dashboard/announcements", label: "Announcements", icon: Megaphone },
   { href: "/dashboard/leaderboard", label: "Leaderboard", icon: Trophy },
@@ -91,10 +93,16 @@ const adminLinks = [
   { href: "/admin/insights", label: "Insights", icon: TrendingUp },
   { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/admin/feedback-invites", label: "Feedback Invites", icon: MessageSquare },
+  { href: "/admin/finalist-projects", label: "Finalist Projects", icon: Rocket },
   { href: "/admin/emails", label: "Email Queue", icon: Mail },
 ];
 
-export function Sidebar({ role, userName, showAdvancedTrack = false }: SidebarProps) {
+export function Sidebar({
+  role,
+  userName,
+  showAdvancedTrack = false,
+  showFinalistProject = false,
+}: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -119,7 +127,11 @@ export function Sidebar({ role, userName, showAdvancedTrack = false }: SidebarPr
   // The Newsletter tab is super-admin only — a core admin never sees it.
   const links =
     role === "INTERN"
-      ? internLinks.filter((link) => !link.advancedOnly || showAdvancedTrack)
+      ? internLinks.filter(
+          (link) =>
+            (!link.advancedOnly || showAdvancedTrack) &&
+            (!link.finalistOnly || showFinalistProject)
+        )
       : role === "GRADER"
       ? graderLinks
       : role === "ANALYST"

@@ -231,6 +231,7 @@ model Intern {
   stageHistory    StageHistory[]
   reports         StageReport[]
   advancedArtifacts AdvancedArtifactGrant[]
+  finalistProject FinalistProjectSubmission?
 
   joinedAt        DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
@@ -623,6 +624,28 @@ model StageReport {
   @@index([stage, status])
   @@index([graderId, status])
   @@index([status, submittedAt])                // claim queue: oldest SUBMITTED first
+}
+
+// ─── STAGE 9B FINALIST PROJECT ───────────────────────────
+// One submission per finalist. This is deliberately separate from the
+// already-finalised Stage 9A report so collecting presentation links cannot
+// alter the score, rank, or evidence used to select the final ten.
+model FinalistProjectSubmission {
+  id                 String   @id @default(auto()) @map("_id") @db.ObjectId
+  internId           String   @unique @db.ObjectId
+  intern             Intern   @relation(fields: [internId], references: [id], onDelete: Cascade)
+
+  projectTitle       String
+  projectSummary     String
+  projectUrl         String
+  videoUrl           String
+  publicationConsent Boolean
+
+  submittedAt        DateTime @default(now())
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@index([submittedAt(sort: Desc)])
 }
 
 // ─── REPORT GRADE (one row per grader per report; max 2) ────
