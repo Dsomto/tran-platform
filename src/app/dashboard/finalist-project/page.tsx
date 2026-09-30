@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { FINALIST_PROJECT_DEADLINE_ISO } from "@/lib/finalist-project-deadline";
 import { FinalistProjectForm } from "./finalist-project-form";
 
 export const dynamic = "force-dynamic";
@@ -36,6 +37,7 @@ export default async function FinalistProjectPage() {
       lastName={session.lastName}
       avatarUrl={session.avatarUrl}
       track={intern.track}
+      deadline={FINALIST_PROJECT_DEADLINE_ISO}
       initial={intern.finalistProject ? {
         ...intern.finalistProject,
         submittedAt: intern.finalistProject.submittedAt.toISOString(),

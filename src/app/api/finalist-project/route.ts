@@ -4,6 +4,10 @@ import { prisma } from "@/lib/db";
 import { auditMetaFromRequest, recordAudit } from "@/lib/audit";
 import { getClientKey, rateLimit, rateLimitResponse, RATE_LIMITS } from "@/lib/rate-limit";
 import { logger } from "@/lib/logger";
+import {
+  FINALIST_PROJECT_DEADLINE_ISO,
+  finalistProjectSubmissionsClosed,
+} from "@/lib/finalist-project-deadline";
 
 function finalistUrlError(value: unknown, kind: "project" | "video"): string | null {
   if (typeof value !== "string" || !value.trim()) {
@@ -72,7 +76,12 @@ export async function GET() {
     },
   });
 
-  return Response.json({ submission, track: intern.track });
+  return Response.json({
+    submission,
+    track: intern.track,
+    deadline: FINALIST_PROJECT_DEADLINE_ISO,
+    submissionsClosed: finalistProjectSubmissionsClosed(),
+  });
 }
 
 export async function POST(request: NextRequest) {
@@ -86,6 +95,12 @@ export async function POST(request: NextRequest) {
     const intern = await finalistFor(session.id);
     if (!intern?.isActive || !intern.finalist) {
       return Response.json({ error: "This form is available only to Stage 9B finalists." }, { status: 403 });
+    }
+    if (finalistProjectSubmissionsClosed()) {
+      return Response.json(
+        { error: "The finalist project submission window closed on Tuesday, 6 October 2026 at 11:00 PM WAT." },
+        { status: 409 },
+      );
     }
 
     const payload = await request.json().catch(() => null);
