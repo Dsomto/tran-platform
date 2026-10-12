@@ -748,3 +748,65 @@ body {
   .animate-ping, .animate-pulse { animation: none !important; }
   body { background: white !important; color: #0f172a !important; }
 }
+
+/* ── Cohort One finalist showcase ─────────────────────────────
+   Navy structure, teal actions, restrained gold for finalist recognition.
+   Track accents are always paired with a text label and icon, never colour
+   alone. Pairs verified AA: --sc-teal on --sc-surface ≥4.5:1 both themes. */
+.showcase-page {
+  --sc-navy: #0B1F33;
+  --sc-navy-ink: #F4F7FA;
+  --sc-bg: #F6F7F9;
+  --sc-surface: #FFFFFF;
+  --sc-border: #D5DBE3;
+  --sc-text: #0B1F33;
+  --sc-muted: #4A5869;
+  --sc-teal: #0F766E;
+  --sc-teal-strong: #115E59;
+  --sc-teal-ink: #FFFFFF;
+  --sc-teal-soft: #E6F4F2;
+  --sc-gold: #8A5A00;
+  --sc-gold-line: #C89B3C;
+  --sc-soc: #1D4ED8;
+  --sc-eh: #B42318;
+  --sc-grc: #6D28D9;
+  background: var(--sc-bg);
+  color: var(--sc-text);
+}
+
+.dark .showcase-page {
+  --sc-navy: #07131F;
+  --sc-bg: #0C1824;
+  --sc-surface: #132233;
+  --sc-border: #2B3D51;
+  --sc-text: #EEF2F6;
+  --sc-muted: #A9B6C4;
+  --sc-teal: #2DD4BF;
+  --sc-teal-strong: #5EEAD4;
+  --sc-teal-ink: #062925;
+  --sc-teal-soft: #0F3532;
+  --sc-gold: #E9B949;
+  --sc-gold-line: #B98B2C;
+  --sc-soc: #93C5FD;
+  --sc-eh: #FCA5A5;
+  --sc-grc: #C4B5FD;
+}
+
+.showcase-page :focus-visible {
+  outline: 3px solid var(--sc-teal);
+  outline-offset: 2px;
+}
+
+.showcase-page dialog::backdrop {
+  background: rgba(7, 19, 31, 0.78);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .showcase-page *,
+  .showcase-page *::before,
+  .showcase-page *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -645,7 +645,107 @@ model FinalistProjectSubmission {
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 
+  showcaseEntry      FinalistShowcaseEntry?
+
   @@index([submittedAt(sort: Desc)])
+}
+
+// ─── COHORT ONE FINALIST SHOWCASE + PRIVATE VOTING ──────────
+// Publication and voting live beside FinalistProjectSubmission, never inside
+// it, so the finalist's submitted evidence stays immutable. Vote rows are
+// admin-only: no public route, prop or response may read them.
+
+enum ShowcaseVotingState {
+  DRAFT
+  OPEN
+  PAUSED
+  CLOSED
+}
+
+model FinalistShowcaseEntry {
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  submissionId     String   @unique @db.ObjectId
+  submission       FinalistProjectSubmission @relation(fields: [submissionId], references: [id])
+  slug             String   @unique
+  track            Track
+  published        Boolean  @default(true)
+  publishedAt      DateTime?
+  // Admin-reviewed replacement links. Null = use the finalist's submission.
+  reviewedVideoUrl   String?
+  reviewedProjectUrl String?
+  // Admin's documented disposition after the pre-launch link check.
+  linkNote         String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  votes            FinalistShowcaseVote[]
+
+  @@index([track, published])
+}
+
+model FinalistShowcaseSettings {
+  id          String              @id @default(auto()) @map("_id") @db.ObjectId
+  key         String              @unique // always "cohort-one"
+  published   Boolean             @default(false)
+  votingState ShowcaseVotingState @default(DRAFT)
+  opensAt     DateTime?
+  closesAt    DateTime?
+  updatedById String?             @db.ObjectId
+  updatedAt   DateTime            @updatedAt
+}
+
+// Frozen roll. No relation to PublicApplication on purpose: purging or
+// editing an application must neither cascade here nor widen eligibility.
+model FinalistShowcaseEligibleVoter {
+  id                  String   @id @default(auto()) @map("_id") @db.ObjectId
+  publicApplicationId String   @unique @db.ObjectId
+  emailHash           String   @unique
+  seededAt            DateTime @default(now())
+
+  verifications       FinalistShowcaseVerification[]
+  ballot              FinalistShowcaseBallot?
+}
+
+model FinalistShowcaseVerification {
+  id             String    @id @default(auto()) @map("_id") @db.ObjectId
+  voterId        String    @db.ObjectId
+  voter          FinalistShowcaseEligibleVoter @relation(fields: [voterId], references: [id])
+  codeHash       String
+  expiresAt      DateTime
+  failedAttempts Int       @default(0)
+  consumedAt     DateTime? // set on success, lockout, or when a newer code supersedes it
+  verifiedAt     DateTime? // set only on a successful verification
+  signalHash     String?   // HMAC of the requesting network, never the raw IP
+  createdAt      DateTime  @default(now())
+
+  @@index([voterId, createdAt(sort: Desc)])
+  @@index([signalHash])
+}
+
+model FinalistShowcaseBallot {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  voterId     String   @unique @db.ObjectId
+  voter       FinalistShowcaseEligibleVoter @relation(fields: [voterId], references: [id])
+  sessionHash String
+  signalHash  String?
+  submittedAt DateTime @default(now())
+
+  votes       FinalistShowcaseVote[]
+
+  @@index([signalHash])
+}
+
+model FinalistShowcaseVote {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  ballotId  String   @db.ObjectId
+  ballot    FinalistShowcaseBallot @relation(fields: [ballotId], references: [id], onDelete: Cascade)
+  entryId   String   @db.ObjectId
+  entry     FinalistShowcaseEntry  @relation(fields: [entryId], references: [id])
+  track     Track
+  createdAt DateTime @default(now())
+
+  @@unique([ballotId, track])
+  @@index([entryId])
 }
 
 // ─── REPORT GRADE (one row per grader per report; max 2) ────

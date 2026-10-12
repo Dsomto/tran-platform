@@ -27,25 +27,29 @@ const securityHeaders = [
   //  - 'unsafe-eval' only in development (Next dev uses it for HMR).
   {
     key: "Content-Security-Policy",
-    value: [
-      "default-src 'self'",
-      "base-uri 'self'",
-      "object-src 'none'",
-      "frame-ancestors 'none'",
-      `script-src 'self' 'unsafe-inline'${
-        process.env.NODE_ENV !== "production" ? " 'unsafe-eval'" : ""
-      } https://vercel.live https://va.vercel-scripts.com`,
-      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-      "font-src 'self' data: https://fonts.gstatic.com",
-      "img-src 'self' data: blob: https://images.unsplash.com",
-      "connect-src 'self' https://vercel.live wss://ws-us3.pusher.com https://*.ingest.sentry.io https://*.sentry.io",
-      "form-action 'self'",
-      "frame-src 'none'",
-      "worker-src 'self' blob:",
-      "manifest-src 'self'",
-    ].join("; "),
+    value: contentSecurityPolicy("'none'"),
   },
 ];
+
+function contentSecurityPolicy(frameSrc: string): string {
+  return [
+    "default-src 'self'",
+    "base-uri 'self'",
+    "object-src 'none'",
+    "frame-ancestors 'none'",
+    `script-src 'self' 'unsafe-inline'${
+      process.env.NODE_ENV !== "production" ? " 'unsafe-eval'" : ""
+    } https://vercel.live https://va.vercel-scripts.com`,
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "font-src 'self' data: https://fonts.gstatic.com",
+    "img-src 'self' data: blob: https://images.unsplash.com",
+    "connect-src 'self' https://vercel.live wss://ws-us3.pusher.com https://*.ingest.sentry.io https://*.sentry.io",
+    "form-action 'self'",
+    `frame-src ${frameSrc}`,
+    "worker-src 'self' blob:",
+    "manifest-src 'self'",
+  ].join("; ");
+}
 
 const nextConfig: NextConfig = {
   serverExternalPackages: ["pdfkit"],
@@ -111,6 +115,14 @@ const nextConfig: NextConfig = {
       {
         source: "/:path*",
         headers: securityHeaders,
+      },
+      // The finalist showcase embeds Google Drive video previews. This is the
+      // only route allowed to frame anything, and only drive.google.com.
+      {
+        source: "/showcase/:path*",
+        headers: [
+          { key: "Content-Security-Policy", value: contentSecurityPolicy("https://drive.google.com") },
+        ],
       },
     ];
   },

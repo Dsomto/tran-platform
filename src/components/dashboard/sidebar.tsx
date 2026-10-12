@@ -94,6 +94,7 @@ const adminLinks = [
   { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/admin/feedback-invites", label: "Feedback Invites", icon: MessageSquare },
   { href: "/admin/finalist-projects", label: "Finalist Projects", icon: Rocket },
+  { href: "/admin/finalist-showcase", label: "Finalist Showcase", icon: Rocket },
   { href: "/admin/emails", label: "Email Queue", icon: Mail },
 ];
 
