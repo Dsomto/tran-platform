@@ -10,6 +10,7 @@ import {
   safePublicUrl,
   SHOWCASE_TRACKS,
   TRACK_LABEL,
+  VOTING_AUDIENCE,
   type ShowcaseTrack,
 } from "./showcase-public";
 import { FINALIST_WHERE } from "./showcase-entries";
@@ -38,9 +39,10 @@ export type AdminEntryRow = {
 export type ShowcaseResults = {
   entries: AdminEntryRow[];
   rollSize: number;
+  publicVoters: number;
   verifiedVoters: number;
   completedBallots: number;
-  remainingEligible: number;
+  remainingEligible: number | null;
   votesByTrack: Record<ShowcaseTrack, number>;
   reconciled: boolean;
   reconcileNotes: string[];
@@ -51,7 +53,7 @@ function pct(n: number, d: number): number {
 }
 
 export async function getShowcaseResults(): Promise<ShowcaseResults> {
-  const [entries, rollSize, verified, ballots, voteGroups, ballotsWithVotes] = await Promise.all([
+  const [entries, allVoters, publicVoters, verified, ballots, voteGroups, ballotsWithVotes] = await Promise.all([
     prisma.finalistShowcaseEntry.findMany({
       select: {
         id: true,
@@ -73,6 +75,7 @@ export async function getShowcaseResults(): Promise<ShowcaseResults> {
       },
     }),
     prisma.finalistShowcaseEligibleVoter.count(),
+    prisma.finalistShowcaseEligibleVoter.count({ where: { origin: "PUBLIC" } }),
     prisma.finalistShowcaseVerification.findMany({
       where: { verifiedAt: { not: null } },
       distinct: ["voterId"],
@@ -127,12 +130,16 @@ export async function getShowcaseResults(): Promise<ShowcaseResults> {
     if (votesByTrack[track] > ballots) reconcileNotes.push(`${TRACK_LABEL[track]} has more votes than ballots`);
   }
 
+  // Cohort One roll rows carry no origin; count them as the remainder so a
+  // missing field (which a `null` filter would not match on Mongo) is counted.
+  const rollSize = allVoters - publicVoters;
   return {
     entries: rows,
     rollSize,
+    publicVoters,
     verifiedVoters: verified.length,
     completedBallots: ballots,
-    remainingEligible: Math.max(0, rollSize - ballots),
+    remainingEligible: VOTING_AUDIENCE === "COHORT_ONE_ROLL" ? Math.max(0, rollSize - ballots) : null,
     votesByTrack,
     reconciled: reconcileNotes.length === 0,
     reconcileNotes,
@@ -152,7 +159,8 @@ export function resultsCsv(results: ShowcaseResults): string {
   }
   lines.push("");
   lines.push([cell("Completed ballots"), cell(results.completedBallots)].join(","));
-  lines.push([cell("Eligible roll"), cell(results.rollSize)].join(","));
+  lines.push([cell("Cohort One roll"), cell(results.rollSize)].join(","));
+  lines.push([cell("Public voters registered"), cell(results.publicVoters)].join(","));
   return lines.join("\r\n") + "\r\n";
 }
 
@@ -305,9 +313,10 @@ export async function missingUniqueIndexes(): Promise<string[]> {
 
 export async function launchBlockers(): Promise<string[]> {
   const blockers: string[] = [];
-  const rollSize = await prisma.finalistShowcaseEligibleVoter.count();
-  if (rollSize !== EXPECTED_ROLL_SIZE) blockers.push(`Voter roll holds ${rollSize}; expected exactly ${EXPECTED_ROLL_SIZE}.`);
-  const { entries } = await getShowcaseResults();
+  const { entries, rollSize } = await getShowcaseResults();
+  if (VOTING_AUDIENCE === "COHORT_ONE_ROLL" && rollSize !== EXPECTED_ROLL_SIZE) {
+    blockers.push(`Voter roll holds ${rollSize}; expected exactly ${EXPECTED_ROLL_SIZE}.`);
+  }
   for (const track of SHOWCASE_TRACKS) {
     const live = entries.filter((e) => e.track === track && e.published && e.consent && e.stillFinalist).length;
     if (live !== EXPECTED_ENTRY_COUNT[track]) blockers.push(`${TRACK_LABEL[track]} has ${live} published entries; expected ${EXPECTED_ENTRY_COUNT[track]}.`);

@@ -22,6 +22,10 @@ export const BALLOT_RULE = {
   requireEveryTrack: true,
 } as const;
 
+// Who may vote. "PUBLIC": anyone who verifies an email, one ballot per email.
+// "COHORT_ONE_ROLL": only the frozen 506-person Cohort One roll.
+export const VOTING_AUDIENCE: "PUBLIC" | "COHORT_ONE_ROLL" = "PUBLIC";
+
 // Launch invariants. Publication and roll seeding fail closed on any mismatch.
 export const EXPECTED_ENTRY_COUNT: Record<ShowcaseTrack, number> = {
   SOC_ANALYSIS: 4,

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ExternalLink, ShieldAlert } from "lucide-react";
 import { requireAdmin } from "@/lib/auth";
 import { getShowcaseResults, getSuspiciousActivity, launchBlockers } from "@/lib/showcase-admin";
-import { EXPECTED_ROLL_SIZE, SHOWCASE_PATH, SHOWCASE_TRACKS, TRACK_LABEL } from "@/lib/showcase-public";
+import { EXPECTED_ROLL_SIZE, SHOWCASE_PATH, SHOWCASE_TRACKS, TRACK_LABEL, VOTING_AUDIENCE } from "@/lib/showcase-public";
 import { getShowcaseSettings, MAX_CODE_ATTEMPTS, votingPhase } from "@/lib/showcase-vote";
 import { ShowcaseControls, EntryControls, BallotResetForm, LinkCheckPanel } from "./showcase-controls";
 
@@ -48,7 +48,7 @@ export default async function FinalistShowcaseAdminPage() {
           {[
             ["Voting state", phase],
             ["Published", settings.published ? "Yes" : "No"],
-            ["Eligible roll", `${results.rollSize} / ${EXPECTED_ROLL_SIZE}`],
+            ["Who can vote", VOTING_AUDIENCE === "PUBLIC" ? "Anyone" : "Cohort One"],
             ["Verified voters", results.verifiedVoters],
             ["Completed ballots", results.completedBallots],
           ].map(([label, value]) => (
@@ -58,12 +58,15 @@ export default async function FinalistShowcaseAdminPage() {
             </div>
           ))}
         </section>
-        <p className="-mt-5 text-sm text-muted">Remaining eligible (no ballot yet): {results.remainingEligible}</p>
+        <p className="-mt-5 text-sm text-muted">
+          Cohort One roll: {results.rollSize} / {EXPECTED_ROLL_SIZE} · Public voters registered: {results.publicVoters}
+          {results.remainingEligible !== null && ` · Remaining eligible (no ballot yet): ${results.remainingEligible}`}
+        </p>
 
         <section className="border border-border bg-surface p-5">
           <h2 className="text-lg font-bold text-foreground">Launch readiness</h2>
           {blockers.length === 0 ? (
-            <p className="mt-2 text-sm text-emerald">All launch checks pass: roll of {EXPECTED_ROLL_SIZE}, 4 / 3 / 3 published entries, unique indexes enforced.</p>
+            <p className="mt-2 text-sm text-emerald">All launch checks pass: 4 / 3 / 3 published entries and unique indexes enforced{VOTING_AUDIENCE === "COHORT_ONE_ROLL" ? `, roll of ${EXPECTED_ROLL_SIZE}` : ""}.</p>
           ) : (
             <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-danger">
               {blockers.map((b) => <li key={b}>{b}</li>)}

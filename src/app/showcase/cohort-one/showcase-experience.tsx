@@ -27,6 +27,7 @@ import { ThemeToggle } from "@/components/dashboard/theme-toggle";
 import {
   SHOWCASE_TRACKS,
   TRACK_LABEL,
+  VOTING_AUDIENCE,
   type BALLOT_RULE,
   type BallotSelections,
   type PublicShowcaseEntry,
@@ -58,6 +59,8 @@ const TABS: { id: Tab; label: string }[] = [
   { id: "ALL", label: "All finalists" },
   ...SHOWCASE_TRACKS.map((t) => ({ id: t as Tab, label: TRACK_LABEL[t] })),
 ];
+
+const PUBLIC_VOTE = VOTING_AUDIENCE === "PUBLIC";
 
 const PHASE_NOTICE: Record<Exclude<Phase, "OPEN">, string> = {
   DRAFT: "Voting opens soon. You can watch every project now.",
@@ -215,7 +218,7 @@ export function ShowcaseExperience({
     phase === "OPEN"
       ? voterState === "voted"
         ? "Your ballot has been recorded. Thank you."
-        : `Voting is open to the original Cohort One audience${deadline ? ` until ${deadline} (WAT)` : ""}.`
+        : `Voting is open${PUBLIC_VOTE ? " to everyone" : " to the original Cohort One audience"}${deadline ? ` until ${deadline} (WAT)` : ""}. One ballot per email.`
       : PHASE_NOTICE[phase];
 
   return (
@@ -436,7 +439,7 @@ export function ShowcaseExperience({
             <ol className="mt-8 grid gap-4 md:grid-cols-3">
               {[
                 { icon: MousePointerClick, title: "Choose one per track", body: "Watch the videos, then press “Choose this project” on one finalist in SOC Analysis, Ethical Hacking and GRC." },
-                { icon: Mail, title: "Confirm your email", body: "Enter the email UBI used for your Cohort One credentials. We send a six-digit code that works once." },
+                { icon: Mail, title: "Confirm your email", body: PUBLIC_VOTE ? "Enter your email address. We send a six-digit code that works once, so each email gets one ballot." : "Enter the email UBI used for your Cohort One credentials. We send a six-digit code that works once." },
                 { icon: Send, title: "Submit your ballot", body: "Check your three choices and submit. One ballot per person, and it cannot be changed afterwards." },
               ].map((step, i) => (
                 <li key={step.title} className="sc-glass-strong relative overflow-hidden rounded-3xl p-6">
@@ -552,8 +555,8 @@ export function ShowcaseExperience({
               Public choice is one part of the final showcase.
             </h2>
             <p className="mt-4 max-w-2xl leading-relaxed text-white/80">
-              Every finalist reached this point through the programme&rsquo;s own assessed stages. The Cohort One ballot lets the community that
-              started this journey together recognise the work it found most compelling. Individual ballots stay private, and no live tallies are
+              Every finalist reached this point through the programme&rsquo;s own assessed stages. The public ballot lets everyone who watches
+              recognise the work they found most compelling. Individual ballots stay private, and no live tallies are
               published.
             </p>
             <Link
@@ -947,7 +950,7 @@ function BallotDialog({
 
   const titles: Record<Step, string> = {
     review: "Review your ballot",
-    email: "Confirm you are on the Cohort One roll",
+    email: PUBLIC_VOTE ? "Confirm your email" : "Confirm you are on the Cohort One roll",
     code: "Enter your code",
     confirm: "Submit your final ballot",
     done: "Your ballot has been recorded.",
@@ -1041,8 +1044,9 @@ function BallotDialog({
             }}
           >
             <p className="text-sm leading-relaxed text-[var(--sc-muted)]">
-              Voting is limited to the original Cohort One admitted audience. Enter the email address UBI used to send your programme credentials and we
-              will email you a one-time code.
+              {PUBLIC_VOTE
+                ? "Enter your email address and we will send you a one-time code. Each email can submit one ballot."
+                : "Voting is limited to the original Cohort One admitted audience. Enter the email address UBI used to send your programme credentials and we will email you a one-time code."}
             </p>
             <label htmlFor="voter-email" className="mt-5 block text-sm font-semibold">
               Email address
@@ -1129,7 +1133,7 @@ function BallotDialog({
               <Check className="h-8 w-8" aria-hidden="true" />
             </span>
             <p role="status" className="mt-4 text-sm leading-relaxed text-[var(--sc-muted)]">
-              {step === "done" ? "Thank you for taking part in the Cohort One Finalist Showcase." : "Each eligible person may submit one ballot. Thank you for taking part."}
+              {step === "done" ? "Thank you for taking part in the Cohort One Finalist Showcase." : "Each email may submit one ballot. Thank you for taking part."}
             </p>
             <div className="mt-6 flex justify-center">
               <button type="button" className={primary} onClick={() => ref.current?.close()} autoFocus>

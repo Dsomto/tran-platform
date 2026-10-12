@@ -162,25 +162,49 @@ test("exactly ten consented entries render publicly, with no vote-shaped data", 
 test("closed-for-voting states reject code requests and ballots with 409", { skip }, async () => {
   const draft = await m.vote.requestVotingCode(voterEmail(1), null);
   assert.equal(draft.status, 409);
+  assert.equal((await m.vote.requestVotingCode("early@example.test", null)).status, 409);
+  assert.equal(await m.db.prisma.finalistShowcaseEligibleVoter.count({ where: { origin: "PUBLIC" } }), 0);
   assert.equal(draft.deliver, undefined);
   const ballot = await m.vote.submitBallot({ voterId: "f".repeat(24), sid: "x" }, fullBallot(), null);
   assert.equal(ballot.status, 409);
 });
 
-test("an ineligible email gets exactly the same outward response as an eligible one", { skip }, async () => {
+test("any email can request a code, and the response never reveals voting status", { skip }, async () => {
   await setState("OPEN");
-  const eligible = await m.vote.requestVotingCode(voterEmail(2), null);
-  const ineligible = await m.vote.requestVotingCode("stranger@example.test", null);
+  const rollMember = await m.vote.requestVotingCode(voterEmail(2), null);
+  const stranger = await m.vote.requestVotingCode("stranger@example.test", null);
   const previewRow = await m.vote.requestVotingCode("preview@example.test", null);
-  assert.equal(eligible.status, ineligible.status);
-  assert.deepEqual(eligible.body, ineligible.body);
-  assert.deepEqual(eligible.body, previewRow.body);
-  assert.ok(eligible.deliver);
-  assert.equal(ineligible.deliver, undefined);
-  assert.equal(previewRow.deliver, undefined);
-  // Case and whitespace do not change identity.
-  const shouty = await m.vote.requestVotingCode(`  ${voterEmail(2).toUpperCase()} `, null);
+  assert.equal(rollMember.status, 200);
+  assert.deepEqual(rollMember.body, stranger.body);
+  assert.deepEqual(rollMember.body, previewRow.body);
+  assert.ok(rollMember.deliver && stranger.deliver && previewRow.deliver);
+  const registered = await m.db.prisma.finalistShowcaseEligibleVoter.findUnique({ where: { emailHash: m.vote.emailHash("stranger@example.test") } });
+  assert.equal(registered?.origin, "PUBLIC");
+  // Case and whitespace do not create a second identity.
+  const shouty = await m.vote.requestVotingCode("  STRANGER@example.TEST ", null);
   assert.ok(shouty.deliver);
+  assert.equal(await m.db.prisma.finalistShowcaseEligibleVoter.count({ where: { origin: "PUBLIC", emailHash: m.vote.emailHash("stranger@example.test") } }), 1);
+  assert.equal((await m.vote.requestVotingCode("not-an-email", null)).status, 400);
+});
+
+test("simultaneous first requests for a new email register exactly one voter", { skip }, async () => {
+  const email = "racer@example.test";
+  const results = await Promise.all(Array.from({ length: 8 }, () => m.vote.requestVotingCode(email, null)));
+  assert.ok(results.every((r) => r.status === 200));
+  assert.equal(await m.db.prisma.finalistShowcaseEligibleVoter.count({ where: { emailHash: m.vote.emailHash(email) } }), 1);
+});
+
+test("a brand-new public email votes once and is then refused", { skip }, async () => {
+  const email = "member-of-public@example.test";
+  const req = await m.vote.requestVotingCode(email, null);
+  const ver = await m.vote.verifyVotingCode(email, req.deliver!.code);
+  assert.equal(ver.status, 200);
+  const session = m.vote.readVoterSession(ver.token)!;
+  assert.equal((await m.vote.submitBallot(session, fullBallot(2), null)).status, 200);
+  assert.equal((await m.vote.submitBallot(session, fullBallot(1), null)).status, 409);
+  const again = await m.vote.requestVotingCode(email, null);
+  assert.equal(again.deliver, undefined);
+  assert.deepEqual(again.body, req.body);
 });
 
 test("codes are single-use, expire, are superseded, and lock after five wrong guesses", { skip }, async () => {
@@ -298,7 +322,8 @@ test("admin totals reconcile exactly with stored ballots and votes", { skip }, a
   assert.equal(results.reconciled, true, results.reconcileNotes.join("; "));
   assert.equal(results.completedBallots, await m.db.prisma.finalistShowcaseBallot.count());
   assert.equal(results.rollSize, 506);
-  assert.equal(results.remainingEligible, 506 - results.completedBallots);
+  assert.equal(results.remainingEligible, null);
+  assert.ok(results.publicVoters >= 3);
   for (const row of results.entries) assert.equal(row.votes, expected.get(row.id) ?? 0, row.finalistName);
   for (const t of m.pub.SHOWCASE_TRACKS) {
     assert.equal(results.votesByTrack[t], results.completedBallots, `${t} should have one vote per ballot`);

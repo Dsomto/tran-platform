@@ -694,12 +694,17 @@ model FinalistShowcaseSettings {
   updatedAt   DateTime            @updatedAt
 }
 
-// Frozen roll. No relation to PublicApplication on purpose: purging or
-// editing an application must neither cascade here nor widen eligibility.
+// Voters. The frozen Cohort One roll (origin unset) links to its
+// PublicApplication by id, deliberately without a relation so purging an
+// application can neither cascade here nor widen the roll. When the audience
+// is PUBLIC, anyone who verifies an email gets a row with origin "PUBLIC" and
+// a freshly generated publicApplicationId (it links to nothing; the field is
+// kept unique so the existing index needs no change).
 model FinalistShowcaseEligibleVoter {
   id                  String   @id @default(auto()) @map("_id") @db.ObjectId
   publicApplicationId String   @unique @db.ObjectId
   emailHash           String   @unique
+  origin              String?  // null = Cohort One roll, "PUBLIC" = open public voter
   seededAt            DateTime @default(now())
 
   verifications       FinalistShowcaseVerification[]

@@ -7,6 +7,7 @@ import {
   ballotShapeError,
   isShowcaseTrack,
   SHOWCASE_KEY,
+  VOTING_AUDIENCE,
   type BallotSelections,
   type ShowcaseTrack,
 } from "./showcase-public";
@@ -23,7 +24,9 @@ export const VOTER_SESSION_SECONDS = 60 * 60;
 const VOTER_AUDIENCE = "ubi-showcase-voter";
 
 export const NEUTRAL_CODE_MESSAGE =
-  "If that email is on the Cohort One roll and has not voted yet, a six-digit code is on its way. It expires in 10 minutes.";
+  VOTING_AUDIENCE === "PUBLIC"
+    ? "If that email has not voted yet, a six-digit code is on its way. It expires in 10 minutes."
+    : "If that email is on the Cohort One roll and has not voted yet, a six-digit code is on its way. It expires in 10 minutes.";
 export const INVALID_CODE_MESSAGE = "That code is not valid or has expired. Request a new code and try again.";
 export const BALLOT_RECORDED_MESSAGE = "Your ballot has been recorded.";
 export const ALREADY_VOTED_MESSAGE = "A ballot has already been recorded for this email.";
@@ -111,6 +114,24 @@ async function closedResult(): Promise<ServiceResult | null> {
 
 // ── Step 1: request a code ─────────────────────────────────────────────────
 
+// Roll voters are looked up; with a PUBLIC audience an unknown email is
+// registered here. The unique emailHash index settles concurrent first
+// requests for the same address.
+async function findOrRegisterVoter(email: string) {
+  const hash = emailHash(email);
+  const select = { id: true, ballot: { select: { id: true } } } as const;
+  const existing = await prisma.finalistShowcaseEligibleVoter.findUnique({ where: { emailHash: hash }, select });
+  if (existing || VOTING_AUDIENCE !== "PUBLIC") return existing;
+  try {
+    return await prisma.finalistShowcaseEligibleVoter.create({
+      data: { emailHash: hash, origin: "PUBLIC", publicApplicationId: randomBytes(12).toString("hex") },
+      select,
+    });
+  } catch {
+    return prisma.finalistShowcaseEligibleVoter.findUnique({ where: { emailHash: hash }, select });
+  }
+}
+
 export type CodeRequestOutcome = ServiceResult & {
   // Present only when a code was actually issued. The route sends it after
   // the response so eligible and ineligible requests take the same time.
@@ -126,10 +147,7 @@ export async function requestVotingCode(rawEmail: unknown, ip: string | null): P
 
   const neutral: CodeRequestOutcome = { status: 200, body: { ok: true, message: NEUTRAL_CODE_MESSAGE } };
 
-  const voter = await prisma.finalistShowcaseEligibleVoter.findUnique({
-    where: { emailHash: emailHash(email) },
-    select: { id: true, ballot: { select: { id: true } } },
-  });
+  const voter = await findOrRegisterVoter(email);
   if (!voter || voter.ballot) return neutral;
 
   const now = new Date();
