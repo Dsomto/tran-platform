@@ -5,6 +5,7 @@ import {
   displayName,
   driveEmbedUrl,
   driveOpenUrl,
+  driveThumbnailUrl,
   orderForViewer,
   PUBLIC_ENTRY_KEYS,
   safePublicUrl,
@@ -29,6 +30,7 @@ test("Drive links convert to /preview for every sharing variant the finalists us
   for (const v of variants) {
     assert.equal(driveEmbedUrl(v), "https://drive.google.com/file/d/1AXJcyCiDJ9BtQ9WTXpZu-Z8tRyRbJdlc/preview", v);
     assert.equal(driveOpenUrl(v), "https://drive.google.com/file/d/1AXJcyCiDJ9BtQ9WTXpZu-Z8tRyRbJdlc/view", v);
+    assert.equal(driveThumbnailUrl(v), "https://lh3.googleusercontent.com/d/1AXJcyCiDJ9BtQ9WTXpZu-Z8tRyRbJdlc=w1280", v);
   }
 });
 
@@ -104,7 +106,7 @@ test("display order is stable for one viewer and differs across viewers", () => 
 
 test("order groups by track and never reads vote data", () => {
   const entry = (id: string, track: PublicShowcaseEntry["track"]): PublicShowcaseEntry => ({
-    id, slug: id, track, finalistName: "x", projectTitle: "x", projectSummary: "x", projectUrl: null, videoEmbedUrl: null, videoOpenUrl: null,
+    id, slug: id, track, finalistName: "x", projectTitle: "x", projectSummary: "x", projectUrl: null, videoEmbedUrl: null, videoOpenUrl: null, thumbnailUrl: null,
   });
   const ordered = orderForViewer([entry(ID_C, "GRC"), entry(ID_A, "SOC_ANALYSIS"), entry(ID_B, "ETHICAL_HACKING")], "seed");
   assert.deepEqual(ordered.map((e) => e.track), ["SOC_ANALYSIS", "ETHICAL_HACKING", "GRC"]);
@@ -114,7 +116,7 @@ test("the public entry shape has no count, rank, percentage or popularity field"
   const forbidden = /vote|count|percent|rank|total|turnout|lead|trend|popular|score/i;
   for (const key of PUBLIC_ENTRY_KEYS) assert.doesNotMatch(key, forbidden, key);
   assert.deepEqual([...PUBLIC_ENTRY_KEYS].sort(), [
-    "finalistName", "id", "projectSummary", "projectTitle", "projectUrl", "slug", "track", "videoEmbedUrl", "videoOpenUrl",
+    "finalistName", "id", "projectSummary", "projectTitle", "projectUrl", "slug", "thumbnailUrl", "track", "videoEmbedUrl", "videoOpenUrl",
   ]);
 });
 

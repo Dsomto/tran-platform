@@ -4,6 +4,7 @@ import {
   displayName,
   driveEmbedUrl,
   driveOpenUrl,
+  driveThumbnailUrl,
   EXPECTED_ENTRY_COUNT,
   EXPECTED_ROLL_SIZE,
   isShowcaseTrack,
@@ -62,6 +63,7 @@ export async function loadPublicEntries(): Promise<PublicShowcaseEntry[]> {
         projectUrl: safePublicUrl(row.reviewedProjectUrl ?? s.projectUrl),
         videoEmbedUrl: driveEmbedUrl(video),
         videoOpenUrl: driveOpenUrl(video),
+        thumbnailUrl: driveThumbnailUrl(video),
       },
     ];
   });

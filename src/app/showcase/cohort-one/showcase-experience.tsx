@@ -4,18 +4,22 @@ import { useCallback, useEffect, useId, useRef, useState, type KeyboardEvent } f
 import Image from "next/image";
 import Link from "next/link";
 import {
-  ArrowDown,
+  ArrowRight,
   Bug,
   Check,
+  ChevronLeft,
+  ChevronRight,
   CircleCheck,
   ExternalLink,
-  Info,
   KeyRound,
   LoaderCircle,
   Mail,
+  MousePointerClick,
   Play,
   Radar,
   Scale,
+  Send,
+  ShieldCheck,
   X,
 } from "lucide-react";
 import { LogoMark } from "@/components/logo";
@@ -39,14 +43,25 @@ const TRACK_COLOR: Record<ShowcaseTrack, string> = {
   ETHICAL_HACKING: "var(--sc-eh)",
   GRC: "var(--sc-grc)",
 };
+// Fallback poster art when a video frame cannot load.
+const TRACK_GRADIENT: Record<ShowcaseTrack, string> = {
+  SOC_ANALYSIS: "linear-gradient(135deg,#0B1B2E 0%,#1D4ED8 100%)",
+  ETHICAL_HACKING: "linear-gradient(135deg,#0B1B2E 0%,#BE123C 100%)",
+  GRC: "linear-gradient(135deg,#0B1B2E 0%,#6D28D9 100%)",
+};
+const TRACK_BLURB: Record<ShowcaseTrack, string> = {
+  SOC_ANALYSIS: "Detection, investigation and evidence you can defend.",
+  ETHICAL_HACKING: "Finding the weaknesses before someone else does.",
+  GRC: "Turning risk and compliance into decisions people can act on.",
+};
 const TABS: { id: Tab; label: string }[] = [
-  { id: "ALL", label: "All" },
+  { id: "ALL", label: "All finalists" },
   ...SHOWCASE_TRACKS.map((t) => ({ id: t as Tab, label: TRACK_LABEL[t] })),
 ];
 
 const PHASE_NOTICE: Record<Exclude<Phase, "OPEN">, string> = {
-  DRAFT: "Voting has not opened yet. You can watch every project now.",
-  SCHEDULED: "Voting has not opened yet. You can watch every project now.",
+  DRAFT: "Voting opens soon. You can watch every project now.",
+  SCHEDULED: "Voting opens soon. You can watch every project now.",
   PAUSED: "Voting is paused. Please check back shortly.",
   CLOSED: "Voting has closed. Thank you to everyone who took part.",
 };
@@ -66,12 +81,38 @@ async function postJson(url: string, body: unknown): Promise<{ ok: boolean; stat
   }
 }
 
-function TrackTag({ track }: { track: ShowcaseTrack }) {
+function TrackTag({ track, onDark = false }: { track: ShowcaseTrack; onDark?: boolean }) {
   const Icon = TRACK_ICON[track];
   return (
-    <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.08em]" style={{ color: TRACK_COLOR[track] }}>
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.1em] ${
+        onDark ? "bg-white/15 text-white backdrop-blur-md" : "bg-[var(--sc-glass-strong)]"
+      }`}
+      style={onDark ? undefined : { color: TRACK_COLOR[track] }}
+    >
       <Icon className="h-3.5 w-3.5" aria-hidden="true" />
       {TRACK_LABEL[track]}
+    </span>
+  );
+}
+
+// The video's own poster frame from Drive, with a track-coloured fallback.
+function Poster({ entry }: { entry: PublicShowcaseEntry }) {
+  const [failed, setFailed] = useState(false);
+  return (
+    <span className="absolute inset-0" style={{ background: TRACK_GRADIENT[entry.track] }} aria-hidden="true">
+      {entry.thumbnailUrl && !failed && (
+        // eslint-disable-next-line @next/next/no-img-element -- remote Drive frame, CSP-scoped to this route
+        <img
+          src={entry.thumbnailUrl}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          referrerPolicy="no-referrer"
+          onError={() => setFailed(true)}
+          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+        />
+      )}
     </span>
   );
 }
@@ -101,17 +142,17 @@ export function ShowcaseExperience({
   const [playing, setPlaying] = useState<PublicShowcaseEntry | null>(null);
   const [ballotOpen, setBallotOpen] = useState(false);
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const railRef = useRef<HTMLUListElement>(null);
   const storageKey = `ubi-showcase-ballot:${seed}`;
 
   const votingOpen = phase === "OPEN" && voterState !== "voted";
 
-  // Keep the viewer's order stable for the whole browser session.
   useEffect(() => {
     if (persistSeed) document.cookie = `ubi_showcase_seed=${seed}; path=/showcase; SameSite=Lax${location.protocol === "https:" ? "; Secure" : ""}`;
   }, [persistSeed, seed]);
 
-  // Draft choices survive a reload in this tab only. They are the viewer's
-  // own picks and never leave the device until the ballot is submitted.
+  // Draft choices survive a reload in this tab only and never leave the
+  // device until the ballot is submitted.
   useEffect(() => {
     let restored: BallotSelections = {};
     try {
@@ -158,17 +199,33 @@ export function ShowcaseExperience({
     tabRefs.current[nextIndex]?.focus();
   }
 
+  function scrollRail(direction: 1 | -1) {
+    const rail = railRef.current;
+    if (!rail) return;
+    rail.scrollBy({ left: direction * Math.max(280, rail.clientWidth * 0.8), behavior: "smooth" });
+  }
+
   const visibleTracks = tab === "ALL" ? SHOWCASE_TRACKS : [tab];
   const chosenCount = SHOWCASE_TRACKS.filter((t) => selections[t]).length;
   const tracksWithEntries = SHOWCASE_TRACKS.filter((t) => entries.some((e) => e.track === t));
   const deadline = closesAt
     ? new Intl.DateTimeFormat("en-GB", { dateStyle: "full", timeStyle: "short", timeZone: "Africa/Lagos" }).format(new Date(closesAt))
     : null;
+  const statusLine =
+    phase === "OPEN"
+      ? voterState === "voted"
+        ? "Your ballot has been recorded. Thank you."
+        : `Voting is open to the original Cohort One audience${deadline ? ` until ${deadline} (WAT)` : ""}.`
+      : PHASE_NOTICE[phase];
 
   return (
-    <div className="showcase-page min-h-screen">
-      <a href="#projects" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:bg-[var(--sc-surface)] focus:px-4 focus:py-2 focus:text-[var(--sc-text)]">
-        Skip to the projects
+    <div className="showcase-page min-h-screen overflow-x-clip">
+      <div className="sc-mesh" aria-hidden="true" />
+      <a
+        href="#finalists"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-white focus:px-4 focus:py-2 focus:text-[#0B1B2E]"
+      >
+        Skip to the finalists
       </a>
 
       {adminPreview && (
@@ -177,80 +234,243 @@ export function ShowcaseExperience({
         </p>
       )}
 
-      <header className="border-b border-white/10 bg-[var(--sc-navy)] text-[var(--sc-navy-ink)]">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-8">
-          <Link href="/" className="flex items-center gap-2.5 text-sm font-semibold" aria-label="Ubuntu Bridge Initiative home">
+      {/* Floating glass navigation */}
+      <header className="sticky top-3 z-40 px-3 sm:px-6">
+        <nav className="sc-glass mx-auto flex max-w-6xl items-center justify-between gap-3 rounded-full py-2 pl-4 pr-2" aria-label="Showcase">
+          <Link href="/" className="flex min-w-0 items-center gap-2 text-sm font-semibold" aria-label="Ubuntu Bridge Initiative home">
             <LogoMark size={22} />
-            <span>Ubuntu Bridge Initiative</span>
+            <span className="truncate">
+              <span className="hidden sm:inline">Ubuntu Bridge Initiative</span>
+              <span className="sm:hidden">UBI</span>
+            </span>
           </Link>
-          <ThemeToggle />
-        </div>
+          <div className="flex items-center gap-1 sm:gap-2">
+            <a href="#finalists" className="hidden rounded-full px-3 py-2 text-sm font-medium text-[var(--sc-muted)] hover:text-[var(--sc-text)] md:inline-flex">
+              Finalists
+            </a>
+            <a href="#how-to-vote" className="hidden rounded-full px-3 py-2 text-sm font-medium text-[var(--sc-muted)] hover:text-[var(--sc-text)] md:inline-flex">
+              How to vote
+            </a>
+            <ThemeToggle />
+            {votingOpen && (
+              <a
+                href="#finalists"
+                className="inline-flex min-h-10 items-center gap-1.5 rounded-full bg-[var(--sc-teal)] px-4 text-sm font-bold text-[var(--sc-teal-ink)] shadow-lg shadow-teal-700/20 hover:bg-[var(--sc-teal-strong)]"
+              >
+                Vote now
+              </a>
+            )}
+          </div>
+        </nav>
       </header>
 
       <main>
-        {/* Hero band: a real UBI community workshop, held under a navy scrim so
-            the type stays AA-legible over any part of the photograph. */}
-        <section className="relative isolate overflow-hidden bg-[var(--sc-navy)] text-white" aria-labelledby="showcase-title">
-          <Image
-            src="/images/programs/workshops.jpg"
-            alt="A UBI community cybersecurity workshop: a facilitator presents to a seated audience"
-            fill
-            priority
-            sizes="100vw"
-            className="-z-10 object-cover object-[70%_40%]"
-          />
-          <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(7,19,31,0.94)_0%,rgba(7,19,31,0.86)_48%,rgba(7,19,31,0.55)_100%)]" aria-hidden="true" />
-          <div className="mx-auto max-w-6xl px-4 pb-20 pt-16 sm:px-8 sm:pb-28 sm:pt-24">
-            <p className="flex items-center gap-3 text-xs font-bold uppercase tracking-[0.18em] text-[#E9B949]">
-              <span className="h-px w-8 bg-[#E9B949]" aria-hidden="true" />
-              Ubuntu Bridge Initiative · Cohort One
+        {/* ── Hero: headline beside a collage of real UBI programme photos ── */}
+        <section aria-labelledby="showcase-title" className="mx-auto grid max-w-6xl items-center gap-12 px-4 pb-16 pt-12 sm:px-6 lg:grid-cols-[1.05fr_1fr] lg:pb-24 lg:pt-20">
+          <div>
+            <p className="inline-flex max-w-full items-center gap-2 rounded-lg bg-[var(--sc-navy)] px-3 py-1.5 font-mono text-xs text-white/90 shadow-lg shadow-slate-900/15 dark:bg-white/10">
+              <span className="text-[#5EEAD4]" aria-hidden="true">ubi@cohort-one:~$</span>
+              <span className="truncate">./finalists --showcase</span>
+              <span className="inline-block h-3.5 w-1.5 animate-pulse bg-[#5EEAD4]" aria-hidden="true" />
+              <span className="sr-only">Ubuntu Bridge Initiative · Cohort One</span>
             </p>
-            <h1 id="showcase-title" className="mt-5 max-w-3xl text-4xl font-bold leading-[1.05] tracking-tight sm:text-6xl">
-              Cohort One Finalist Showcase
+            <h1 id="showcase-title" className="mt-6 text-[2.6rem] font-extrabold leading-[1.02] tracking-[-0.035em] sm:text-6xl lg:text-7xl">
+              Cohort One <span className="sc-mark">Finalist Showcase</span>
             </h1>
-            <p className="mt-5 max-w-xl text-lg leading-relaxed text-white/85 sm:text-xl">
-              Built under pressure. Explained in two minutes.
+            <p className="mt-6 max-w-lg text-lg leading-relaxed text-[var(--sc-muted)] sm:text-xl">
+              Built under pressure. Explained in two minutes. Ten people, three tracks, one final showcase.
             </p>
-            <p className="mt-6 text-sm font-semibold tracking-wide text-white/90">
-              {entries.length} finalists <span aria-hidden="true" className="px-2 text-white/40">|</span> {tracksWithEntries.length} tracks{" "}
-              <span aria-hidden="true" className="px-2 text-white/40">|</span> 1 final showcase
-            </p>
-            <a
-              href="#projects"
-              className="mt-9 inline-flex min-h-11 items-center gap-2 rounded-[6px] bg-[#2DD4BF] px-6 py-3 text-sm font-bold text-[#062925] transition-colors hover:bg-[#5EEAD4] focus-visible:outline-[#E9B949]"
-            >
-              Watch the projects
-              <ArrowDown className="h-4 w-4" aria-hidden="true" />
-            </a>
-          </div>
-        </section>
 
-        <section className="border-b border-[var(--sc-border)] bg-[var(--sc-surface)]">
-          <div className="mx-auto grid max-w-6xl gap-6 px-4 py-10 sm:px-8 md:grid-cols-[1.4fr_1fr] md:items-start">
-            <p className="max-w-2xl text-base leading-relaxed text-[var(--sc-muted)]">
-              These ten people came through every stage of the Cohort One programme. Each was then asked to build something
-              of their own and explain it, in plain English, in about two minutes. Watch the videos, open the projects, and
-              judge the work on its own terms.
+            <dl className="mt-8 grid max-w-md grid-cols-3 gap-3">
+              {[
+                [String(entries.length), "finalists"],
+                [String(tracksWithEntries.length), "tracks"],
+                ["1", "final showcase"],
+              ].map(([value, label]) => (
+                <div key={label} className="sc-glass rounded-2xl px-4 py-3">
+                  <dt className="sr-only">{label}</dt>
+                  <dd>
+                    <span className="block text-3xl font-extrabold tracking-tight">{value}</span>
+                    <span className="text-xs font-medium text-[var(--sc-muted)]">{label}</span>
+                  </dd>
+                </div>
+              ))}
+            </dl>
+
+            <div className="mt-9 flex flex-wrap gap-3">
+              <a
+                href="#finalists"
+                className="inline-flex min-h-12 items-center gap-2 rounded-full bg-[var(--sc-navy)] px-6 text-sm font-bold text-white shadow-xl shadow-slate-900/20 transition-transform hover:-translate-y-0.5 dark:bg-white dark:text-[#0B1B2E]"
+              >
+                <Play className="h-4 w-4" aria-hidden="true" />
+                Watch the projects
+              </a>
+              {votingOpen ? (
+                <a
+                  href="#how-to-vote"
+                  className="inline-flex min-h-12 items-center gap-2 rounded-full bg-[var(--sc-teal)] px-6 text-sm font-bold text-[var(--sc-teal-ink)] shadow-xl shadow-teal-700/25 transition-transform hover:-translate-y-0.5"
+                >
+                  Cast your vote
+                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                </a>
+              ) : (
+                <a href="#how-to-vote" className="sc-glass inline-flex min-h-12 items-center gap-2 rounded-full px-6 text-sm font-bold">
+                  How voting works
+                </a>
+              )}
+            </div>
+            <p role="status" className="mt-5 text-sm text-[var(--sc-muted)]">
+              {statusLine}
             </p>
-            <div role="status" className="flex gap-3 border-l-[3px] border-[var(--sc-gold-line)] pl-4 text-sm leading-relaxed text-[var(--sc-text)]">
-              <Info className="mt-0.5 h-4 w-4 shrink-0 text-[var(--sc-gold)]" aria-hidden="true" />
-              <p>
-                {phase === "OPEN"
-                  ? voterState === "voted"
-                    ? "Your ballot has been recorded. Thank you."
-                    : `Voting is open to the original Cohort One audience: choose one project in each track${deadline ? ` before ${deadline} (WAT)` : ""}.`
-                  : PHASE_NOTICE[phase]}
-              </p>
+          </div>
+
+          {/* Collage */}
+          <div className="relative order-first mx-auto aspect-[5/4] w-full max-w-[560px] lg:order-none">
+            <figure className="absolute left-0 top-0 h-[78%] w-[78%] overflow-hidden rounded-[28px] shadow-2xl shadow-slate-900/25 ring-1 ring-white/60">
+              <Image
+                src="/images/programs/workshops.jpg"
+                alt="A UBI community cybersecurity workshop: a facilitator presents to a seated audience"
+                fill
+                priority
+                sizes="(min-width: 1024px) 440px, 78vw"
+                className="object-cover object-[70%_40%]"
+              />
+            </figure>
+            <figure className="absolute bottom-0 right-0 h-[52%] w-[52%] overflow-hidden rounded-[24px] shadow-2xl shadow-slate-900/30 ring-4 ring-[var(--sc-bg)]">
+              <Image
+                src="/images/programs/mentorship.jpg"
+                alt="A UBI cybersecurity mentorship session"
+                fill
+                sizes="(min-width: 1024px) 290px, 52vw"
+                className="object-cover"
+              />
+            </figure>
+            <div className="sc-glass-strong absolute bottom-[8%] left-[4%] flex items-center gap-3 rounded-2xl px-4 py-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--sc-navy)] text-[#5EEAD4] dark:bg-white/10">
+                <ShieldCheck className="h-5 w-5" aria-hidden="true" />
+              </span>
+              <span>
+                <span className="block text-sm font-bold">Nine stages survived</span>
+                <span className="block text-xs text-[var(--sc-muted)]">One project each to show for it</span>
+              </span>
+            </div>
+            <div className="sc-glass-strong absolute right-[2%] top-[6%] rounded-2xl px-4 py-3 text-right">
+              <span className="block text-xs font-semibold uppercase tracking-[0.12em] text-[var(--sc-muted)]">Tracks</span>
+              <span className="mt-1 flex gap-1.5">
+                {SHOWCASE_TRACKS.map((t) => {
+                  const Icon = TRACK_ICON[t];
+                  return (
+                    <span key={t} title={TRACK_LABEL[t]} className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--sc-glass-strong)]" style={{ color: TRACK_COLOR[t] }}>
+                      <Icon className="h-4 w-4" aria-hidden="true" />
+                      <span className="sr-only">{TRACK_LABEL[t]}</span>
+                    </span>
+                  );
+                })}
+              </span>
             </div>
           </div>
         </section>
 
-        <section id="projects" aria-labelledby="projects-heading" className="mx-auto max-w-6xl scroll-mt-4 px-4 pb-32 pt-12 sm:px-8">
-          <h2 id="projects-heading" className="text-2xl font-bold tracking-tight sm:text-3xl">
-            The finalists
-          </h2>
+        {/* ── All ten at a glance: one swipeable rail ── */}
+        {entries.length > 0 && (
+          <section aria-labelledby="glance-heading" className="pb-16">
+            <div className="mx-auto flex max-w-6xl items-end justify-between gap-4 px-4 sm:px-6">
+              <div>
+                <h2 id="glance-heading" className="text-2xl font-extrabold tracking-tight sm:text-3xl">
+                  All ten finalists, one scroll
+                </h2>
+                <p className="mt-1 text-sm text-[var(--sc-muted)]">Swipe or scroll sideways. Tap any project to watch it.</p>
+              </div>
+              <div className="hidden gap-2 sm:flex">
+                <button type="button" onClick={() => scrollRail(-1)} className="sc-glass flex h-11 w-11 items-center justify-center rounded-full" aria-label="Scroll finalists left">
+                  <ChevronLeft className="h-5 w-5" aria-hidden="true" />
+                </button>
+                <button type="button" onClick={() => scrollRail(1)} className="sc-glass flex h-11 w-11 items-center justify-center rounded-full" aria-label="Scroll finalists right">
+                  <ChevronRight className="h-5 w-5" aria-hidden="true" />
+                </button>
+              </div>
+            </div>
+            <ul
+              ref={railRef}
+              className="sc-rail mt-6 flex gap-4 overflow-x-auto pb-4"
+              aria-label="All finalists"
+            >
+              {entries.map((entry) => (
+                <li key={entry.id} className="w-[78vw] max-w-[300px] shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => (entry.videoEmbedUrl ? setPlaying(entry) : document.getElementById(entry.slug)?.scrollIntoView({ behavior: "smooth" }))}
+                    className="group sc-glass block w-full overflow-hidden rounded-3xl text-left"
+                    aria-label={`Watch ${entry.projectTitle}, by ${entry.finalistName}`}
+                  >
+                    <span className="relative block aspect-video overflow-hidden">
+                      <Poster entry={entry} />
+                      <span className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0" aria-hidden="true" />
+                      <span className="absolute left-3 top-3">
+                        <TrackTag track={entry.track} onDark />
+                      </span>
+                      <span className="absolute bottom-3 right-3 flex h-10 w-10 items-center justify-center rounded-full bg-white/25 text-white ring-1 ring-white/50 backdrop-blur-md transition-transform group-hover:scale-110">
+                        <Play className="ml-0.5 h-4 w-4" aria-hidden="true" />
+                      </span>
+                    </span>
+                    <span className="block p-4">
+                      <span className="line-clamp-2 block min-h-[2.75rem] font-bold leading-snug">{entry.projectTitle}</span>
+                      <span className="mt-1 block text-sm text-[var(--sc-muted)]">{entry.finalistName}</span>
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
-          <div role="tablist" aria-label="Filter by track" className="mt-6 flex w-full overflow-x-auto border-b border-[var(--sc-border)]">
+        {/* ── How to vote ── */}
+        <section id="how-to-vote" aria-labelledby="how-heading" className="mx-auto max-w-6xl scroll-mt-24 px-4 pb-16 sm:px-6">
+          <div className="sc-glass rounded-[32px] p-6 sm:p-10">
+            <div className="flex flex-wrap items-end justify-between gap-4">
+              <h2 id="how-heading" className="text-2xl font-extrabold tracking-tight sm:text-3xl">
+                How voting works
+              </h2>
+              <p className="text-sm font-medium text-[var(--sc-muted)]">{statusLine}</p>
+            </div>
+            <ol className="mt-8 grid gap-4 md:grid-cols-3">
+              {[
+                { icon: MousePointerClick, title: "Choose one per track", body: "Watch the videos, then press “Choose this project” on one finalist in SOC Analysis, Ethical Hacking and GRC." },
+                { icon: Mail, title: "Confirm your email", body: "Enter the email UBI used for your Cohort One credentials. We send a six-digit code that works once." },
+                { icon: Send, title: "Submit your ballot", body: "Check your three choices and submit. One ballot per person, and it cannot be changed afterwards." },
+              ].map((step, i) => (
+                <li key={step.title} className="sc-glass-strong relative overflow-hidden rounded-3xl p-6">
+                  <span className="absolute -right-2 -top-6 text-[7rem] font-black leading-none text-[var(--sc-teal)] opacity-[0.08]" aria-hidden="true">
+                    {i + 1}
+                  </span>
+                  <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--sc-navy)] text-[#5EEAD4] dark:bg-white/10 shadow-lg shadow-teal-700/20">
+                    <step.icon className="h-5 w-5" aria-hidden="true" />
+                  </span>
+                  <h3 className="mt-4 text-lg font-bold">
+                    <span className="sr-only">Step {i + 1}: </span>
+                    {step.title}
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-[var(--sc-muted)]">{step.body}</p>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </section>
+
+        {/* ── Finalists by track ── */}
+        <section id="finalists" aria-labelledby="finalists-heading" className="mx-auto max-w-6xl scroll-mt-24 px-4 pb-36 sm:px-6">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <h2 id="finalists-heading" className="text-3xl font-extrabold tracking-tight sm:text-4xl">
+                Meet the finalists
+              </h2>
+              <p className="mt-2 max-w-xl text-[var(--sc-muted)]">
+                Each finalist built something of their own and explained it in plain English. Judge the work on its own terms.
+              </p>
+            </div>
+          </div>
+
+          <div role="tablist" aria-label="Filter by track" className="sc-glass mt-8 inline-flex max-w-full gap-1 overflow-x-auto rounded-full p-1.5">
             {TABS.map((t, i) => {
               const selected = tab === t.id;
               return (
@@ -266,10 +486,10 @@ export function ShowcaseExperience({
                   tabIndex={selected ? 0 : -1}
                   onClick={() => setTab(t.id)}
                   onKeyDown={(e) => onTabKey(e, i)}
-                  className={`-mb-px min-h-11 shrink-0 whitespace-nowrap border-b-[3px] px-4 py-2.5 text-sm font-semibold transition-colors ${
+                  className={`min-h-10 shrink-0 whitespace-nowrap rounded-full px-4 text-sm font-semibold transition-colors ${
                     selected
-                      ? "border-[var(--sc-teal)] text-[var(--sc-text)]"
-                      : "border-transparent text-[var(--sc-muted)] hover:text-[var(--sc-text)]"
+                      ? "bg-[var(--sc-navy)] text-white shadow-md dark:bg-white dark:text-[#0B1B2E]"
+                      : "text-[var(--sc-muted)] hover:text-[var(--sc-text)]"
                   }`}
                 >
                   {t.label}
@@ -278,24 +498,30 @@ export function ShowcaseExperience({
             })}
           </div>
 
-          <div id="track-panel" role="tabpanel" aria-labelledby={`tab-${tab}`} className="mt-10 space-y-14">
+          <div id="track-panel" role="tabpanel" aria-labelledby={`tab-${tab}`} className="mt-10 space-y-16">
             {entries.length === 0 && (
-              <p className="border border-[var(--sc-border)] bg-[var(--sc-surface)] p-6 text-[var(--sc-muted)]">
-                The finalist projects are being prepared. Please check back soon.
-              </p>
+              <p className="sc-glass rounded-3xl p-6 text-[var(--sc-muted)]">The finalist projects are being prepared. Please check back soon.</p>
             )}
             {visibleTracks.map((track) => {
               const trackEntries = entries.filter((e) => e.track === track);
               if (trackEntries.length === 0) return null;
+              const Icon = TRACK_ICON[track];
               return (
                 <section key={track} aria-labelledby={`heading-${track}`}>
-                  <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-[var(--sc-border)] pb-3">
-                    <h3 id={`heading-${track}`} className="flex items-center gap-2 text-lg font-bold">
-                      <span className="h-4 w-1" style={{ background: TRACK_COLOR[track] }} aria-hidden="true" />
-                      {TRACK_LABEL[track]}
-                    </h3>
-                    <p className="text-sm text-[var(--sc-muted)]">
-                      {trackEntries.length} finalists{phase === "OPEN" && rule.selectionsPerTrack === 1 ? " · choose one" : ""}
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <span className="sc-glass-strong flex h-12 w-12 items-center justify-center rounded-2xl" style={{ color: TRACK_COLOR[track] }}>
+                        <Icon className="h-6 w-6" aria-hidden="true" />
+                      </span>
+                      <div>
+                        <h3 id={`heading-${track}`} className="text-xl font-extrabold tracking-tight">
+                          {TRACK_LABEL[track]}
+                        </h3>
+                        <p className="text-sm text-[var(--sc-muted)]">{TRACK_BLURB[track]}</p>
+                      </div>
+                    </div>
+                    <p className="sc-glass rounded-full px-3 py-1 text-xs font-semibold text-[var(--sc-muted)]">
+                      {trackEntries.length} finalists{votingOpen && rule.selectionsPerTrack === 1 ? " · choose one" : ""}
                     </p>
                   </div>
                   <ul className="mt-6 grid gap-6 md:grid-cols-2">
@@ -317,37 +543,65 @@ export function ShowcaseExperience({
           </div>
         </section>
 
-        <section className="bg-[var(--sc-navy)] text-[var(--sc-navy-ink)]" aria-labelledby="closing-heading">
-          <div className="mx-auto max-w-6xl px-4 py-16 sm:px-8">
-            <h2 id="closing-heading" className="max-w-2xl text-2xl font-bold tracking-tight sm:text-3xl">
+        {/* ── Closing ── */}
+        <section aria-labelledby="closing-heading" className="mx-auto max-w-6xl px-4 pb-16 sm:px-6">
+          <div className="relative isolate overflow-hidden rounded-[32px] bg-[#0B1B2E] px-6 py-14 text-white sm:px-12">
+            <Image src="/images/programs/tech-spotlight.jpg" alt="" fill sizes="(min-width: 1152px) 1152px, 100vw" className="-z-10 object-cover opacity-30" />
+            <div className="absolute inset-0 -z-10 bg-gradient-to-r from-[#0B1B2E] via-[#0B1B2E]/85 to-[#0B1B2E]/40" aria-hidden="true" />
+            <h2 id="closing-heading" className="max-w-2xl text-3xl font-extrabold tracking-tight sm:text-4xl">
               Public choice is one part of the final showcase.
             </h2>
             <p className="mt-4 max-w-2xl leading-relaxed text-white/80">
-              Every finalist reached this point through the programme&rsquo;s own assessed stages. The Cohort One ballot lets
-              the community that started this journey together recognise the work it found most compelling. Individual
-              ballots stay private, and no live tallies are published.
+              Every finalist reached this point through the programme&rsquo;s own assessed stages. The Cohort One ballot lets the community that
+              started this journey together recognise the work it found most compelling. Individual ballots stay private, and no live tallies are
+              published.
             </p>
-            <Link href="/" className="mt-8 inline-flex min-h-11 items-center gap-2 border-b-2 border-[#2DD4BF] pb-1 font-semibold text-white hover:text-[#5EEAD4]">
+            <Link
+              href="/"
+              className="mt-8 inline-flex min-h-12 items-center gap-2 rounded-full bg-white/15 px-6 font-semibold text-white ring-1 ring-white/30 backdrop-blur-md hover:bg-white/25"
+            >
               Visit the Ubuntu Bridge Initiative
-              <ExternalLink className="h-4 w-4" aria-hidden="true" />
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </Link>
           </div>
         </section>
       </main>
 
-      {phase === "OPEN" && voterState !== "voted" && entries.length > 0 && (
-        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-[var(--sc-border)] bg-[var(--sc-surface)]/95 backdrop-blur supports-[backdrop-filter]:bg-[var(--sc-surface)]/90">
-          <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-8">
-            <p className="text-sm text-[var(--sc-text)]" aria-live="polite">
-              <span className="font-semibold">Your ballot:</span> {chosenCount} of {SHOWCASE_TRACKS.length} tracks chosen
-            </p>
+      {/* Floating ballot dock */}
+      {votingOpen && entries.length > 0 && (
+        <div className="fixed inset-x-0 bottom-4 z-30 flex justify-center px-3">
+          <div className="sc-glass-strong flex w-full max-w-2xl items-center justify-between gap-3 rounded-full py-2 pl-4 pr-2 sm:pl-6">
+            <div className="flex min-w-0 items-center gap-3">
+              <span className="hidden text-sm font-bold sm:inline">Your ballot</span>
+              <ul className="flex gap-1.5" aria-label="Tracks chosen">
+                {SHOWCASE_TRACKS.map((t) => {
+                  const Icon = TRACK_ICON[t];
+                  const done = Boolean(selections[t]);
+                  return (
+                    <li
+                      key={t}
+                      className={`flex h-9 w-9 items-center justify-center rounded-full transition-colors ${done ? "text-white" : "bg-[var(--sc-teal-soft)] text-[var(--sc-muted)]"}`}
+                      style={done ? { background: TRACK_COLOR[t] } : undefined}
+                    >
+                      {done ? <Check className="h-4 w-4" aria-hidden="true" /> : <Icon className="h-4 w-4" aria-hidden="true" />}
+                      <span className="sr-only">
+                        {TRACK_LABEL[t]}: {done ? "chosen" : "not chosen"}
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+              <span className="text-sm text-[var(--sc-muted)]" aria-live="polite">
+                {chosenCount} of {SHOWCASE_TRACKS.length}
+              </span>
+            </div>
             <button
               type="button"
               onClick={() => setBallotOpen(true)}
               disabled={chosenCount === 0}
-              className="min-h-11 rounded-[6px] bg-[var(--sc-teal)] px-5 py-2.5 text-sm font-bold text-[var(--sc-teal-ink)] transition-colors hover:bg-[var(--sc-teal-strong)] disabled:cursor-not-allowed disabled:opacity-50"
+              className="min-h-11 rounded-full bg-[var(--sc-teal)] px-5 text-sm font-bold text-[var(--sc-teal-ink)] shadow-lg shadow-teal-700/25 transition-colors hover:bg-[var(--sc-teal-strong)] disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Review my ballot
+              Review &amp; vote
             </button>
           </div>
         </div>
@@ -390,49 +644,54 @@ function ProjectCard({
 }) {
   const [expanded, setExpanded] = useState(false);
   const summaryId = useId();
-  const long = entry.projectSummary.length > 320;
+  const long = entry.projectSummary.length > 300;
 
   return (
     <article
       id={entry.slug}
       aria-labelledby={`${summaryId}-title`}
-      className={`flex h-full flex-col rounded-[8px] border bg-[var(--sc-surface)] transition-colors ${
-        chosen ? "border-[var(--sc-teal)] ring-2 ring-[var(--sc-teal)]" : "border-[var(--sc-border)]"
+      className={`sc-glass flex h-full scroll-mt-28 flex-col overflow-hidden rounded-[28px] transition-shadow ${
+        chosen ? "ring-[3px] ring-[var(--sc-teal)]" : ""
       }`}
     >
       {entry.videoEmbedUrl ? (
         <button
           type="button"
           onClick={onPlay}
-          className="group relative flex aspect-video w-full items-center justify-center overflow-hidden rounded-t-[7px] bg-[var(--sc-navy)] text-white"
+          className="group relative block aspect-video w-full overflow-hidden"
           aria-label={`Play video: ${entry.projectTitle}, by ${entry.finalistName}`}
         >
-          <span className="absolute left-4 top-4 text-[11px] font-bold uppercase tracking-[0.16em] text-white/70">
-            {TRACK_LABEL[entry.track]} · Finalist
+          <Poster entry={entry} />
+          <span className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/10" aria-hidden="true" />
+          <span className="absolute left-4 top-4">
+            <TrackTag track={entry.track} onDark />
           </span>
-          <span className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-white/80 transition-transform group-hover:scale-105">
-            <Play className="ml-1 h-7 w-7" aria-hidden="true" />
+          {chosen && (
+            <span className="absolute right-4 top-4 inline-flex items-center gap-1 rounded-full bg-[var(--sc-teal)] px-2.5 py-1 text-xs font-bold text-[var(--sc-teal-ink)]">
+              <Check className="h-3.5 w-3.5" aria-hidden="true" /> Your pick
+            </span>
+          )}
+          <span className="absolute inset-0 flex items-center justify-center" aria-hidden="true">
+            <span className="flex h-16 w-16 items-center justify-center rounded-full bg-white/25 text-white ring-1 ring-white/60 backdrop-blur-md transition-transform group-hover:scale-110">
+              <Play className="ml-1 h-7 w-7" />
+            </span>
           </span>
-          <span className="absolute bottom-4 left-4 right-4 truncate text-left text-sm font-semibold text-white/90">
-            Watch the two-minute explainer
-          </span>
-          <span className="absolute inset-x-0 bottom-0 h-1" style={{ background: "var(--sc-gold-line)" }} aria-hidden="true" />
+          <span className="absolute bottom-3 left-4 text-xs font-semibold text-white/90">Watch the two-minute explainer</span>
         </button>
       ) : (
-        <div className="flex aspect-video w-full items-center justify-center rounded-t-[7px] bg-[var(--sc-navy)] px-6 text-center text-sm text-white/80">
+        <div className="relative flex aspect-video w-full items-center justify-center px-6 text-center text-sm text-white/85" style={{ background: TRACK_GRADIENT[entry.track] }}>
           This video is being checked and will be available shortly.
         </div>
       )}
 
-      <div className="flex flex-1 flex-col p-5 sm:p-6">
-        <TrackTag track={entry.track} />
-        <h4 id={`${summaryId}-title`} className="mt-3 text-xl font-bold leading-snug tracking-tight [overflow-wrap:anywhere]">
+      <div className="flex flex-1 flex-col p-6">
+        <h4 id={`${summaryId}-title`} className="text-xl font-extrabold leading-snug tracking-tight [overflow-wrap:anywhere]">
           {entry.projectTitle}
         </h4>
         <p className="mt-1.5 text-sm font-semibold text-[var(--sc-gold)]">{entry.finalistName}</p>
         <p
           id={summaryId}
-          className={`mt-4 whitespace-pre-line text-[15px] leading-relaxed text-[var(--sc-muted)] [overflow-wrap:anywhere] ${expanded || !long ? "" : "line-clamp-5"}`}
+          className={`mt-4 whitespace-pre-line text-[15px] leading-relaxed text-[var(--sc-muted)] [overflow-wrap:anywhere] ${expanded || !long ? "" : "line-clamp-4"}`}
         >
           {entry.projectSummary}
         </p>
@@ -449,12 +708,28 @@ function ProjectCard({
         )}
 
         <div className="mt-auto flex flex-wrap items-center gap-3 pt-6">
+          {canChoose && (
+            <button
+              type="button"
+              onClick={onChoose}
+              aria-pressed={chosen}
+              className={`inline-flex min-h-11 items-center gap-1.5 rounded-full px-5 text-sm font-bold transition-all ${
+                chosen
+                  ? "bg-[var(--sc-teal)] text-[var(--sc-teal-ink)] shadow-lg shadow-teal-700/25 hover:bg-[var(--sc-teal-strong)]"
+                  : "bg-[var(--sc-navy)] text-white hover:-translate-y-0.5 dark:bg-white dark:text-[#0B1B2E]"
+              }`}
+            >
+              {chosen ? <CircleCheck className="h-4 w-4" aria-hidden="true" /> : null}
+              {chosen ? "Chosen" : "Choose this project"}
+              <span className="sr-only"> in {TRACK_LABEL[entry.track]}</span>
+            </button>
+          )}
           {entry.projectUrl ? (
             <a
               href={entry.projectUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex min-h-11 items-center gap-1.5 rounded-[6px] border border-[var(--sc-border)] px-4 py-2 text-sm font-semibold text-[var(--sc-text)] hover:border-[var(--sc-teal)]"
+              className="sc-glass-strong inline-flex min-h-11 items-center gap-1.5 rounded-full px-5 text-sm font-semibold hover:text-[var(--sc-teal)]"
             >
               Open project
               <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
@@ -462,22 +737,6 @@ function ProjectCard({
             </a>
           ) : (
             <span className="text-sm text-[var(--sc-muted)]">Project link under review</span>
-          )}
-          {canChoose && (
-            <button
-              type="button"
-              onClick={onChoose}
-              aria-pressed={chosen}
-              className={`inline-flex min-h-11 items-center gap-1.5 rounded-[6px] px-4 py-2 text-sm font-bold transition-colors ${
-                chosen
-                  ? "bg-[var(--sc-teal)] text-[var(--sc-teal-ink)] hover:bg-[var(--sc-teal-strong)]"
-                  : "border-2 border-[var(--sc-teal)] text-[var(--sc-teal)] hover:bg-[var(--sc-teal-soft)]"
-              }`}
-            >
-              {chosen ? <Check className="h-4 w-4" aria-hidden="true" /> : null}
-              {chosen ? "Chosen" : "Choose this project"}
-              <span className="sr-only"> in {TRACK_LABEL[entry.track]}</span>
-            </button>
           )}
         </div>
       </div>
@@ -515,14 +774,16 @@ function VideoDialog({ entry, onClose }: { entry: PublicShowcaseEntry | null; on
         if (e.target === ref.current) ref.current?.close();
       }}
       aria-labelledby="video-dialog-title"
-      className="m-auto w-[min(100vw-2rem,64rem)] max-w-none rounded-[8px] border border-[var(--sc-border)] bg-[var(--sc-surface)] p-0 text-[var(--sc-text)]"
+      className="sc-glass-strong m-auto w-[min(100vw-1.5rem,64rem)] max-w-none rounded-[28px] p-0 text-[var(--sc-text)]"
     >
       {entry && (
         <div className="p-4 sm:p-6">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
-              <TrackTag track={entry.track} />
-              <h2 id="video-dialog-title" className="mt-1.5 text-lg font-bold leading-snug [overflow-wrap:anywhere] sm:text-xl">
+              <span className="text-xs font-bold uppercase tracking-[0.1em]" style={{ color: TRACK_COLOR[entry.track] }}>
+                {TRACK_LABEL[entry.track]}
+              </span>
+              <h2 id="video-dialog-title" className="mt-1 text-lg font-extrabold leading-snug [overflow-wrap:anywhere] sm:text-xl">
                 {entry.projectTitle}
               </h2>
               <p className="text-sm text-[var(--sc-muted)]">{entry.finalistName}</p>
@@ -530,14 +791,14 @@ function VideoDialog({ entry, onClose }: { entry: PublicShowcaseEntry | null; on
             <button
               type="button"
               onClick={() => ref.current?.close()}
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[6px] border border-[var(--sc-border)] hover:bg-[var(--sc-teal-soft)]"
+              className="sc-glass flex h-11 w-11 shrink-0 items-center justify-center rounded-full"
               aria-label="Close video"
               autoFocus
             >
               <X className="h-5 w-5" aria-hidden="true" />
             </button>
           </div>
-          <div className="mt-4 aspect-video w-full overflow-hidden rounded-[6px] bg-black">
+          <div className="mt-4 aspect-video w-full overflow-hidden rounded-2xl bg-black">
             {entry.videoEmbedUrl && (
               <iframe
                 key={entry.id}
@@ -692,26 +953,26 @@ function BallotDialog({
     done: "Your ballot has been recorded.",
     already: "Your ballot has already been recorded.",
   };
+  const stepIndex = { review: 0, email: 1, code: 1, confirm: 2, done: 3, already: 3 }[step];
 
   const primary =
-    "inline-flex min-h-11 items-center justify-center gap-2 rounded-[6px] bg-[var(--sc-teal)] px-5 py-2.5 text-sm font-bold text-[var(--sc-teal-ink)] hover:bg-[var(--sc-teal-strong)] disabled:cursor-not-allowed disabled:opacity-50";
-  const secondary =
-    "inline-flex min-h-11 items-center justify-center rounded-[6px] border border-[var(--sc-border)] px-5 py-2.5 text-sm font-semibold hover:border-[var(--sc-teal)]";
+    "inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[var(--sc-teal)] px-5 text-sm font-bold text-[var(--sc-teal-ink)] shadow-lg shadow-teal-700/25 hover:bg-[var(--sc-teal-strong)] disabled:cursor-not-allowed disabled:opacity-50";
+  const secondary = "sc-glass inline-flex min-h-11 items-center justify-center rounded-full px-5 text-sm font-semibold";
   const field =
-    "mt-1.5 block min-h-11 w-full rounded-[6px] border border-[var(--sc-border)] bg-[var(--sc-bg)] px-3 py-2 text-base text-[var(--sc-text)] placeholder:text-[var(--sc-muted)]";
+    "mt-1.5 block min-h-12 w-full rounded-2xl border border-[var(--sc-line)] bg-[var(--sc-glass-strong)] px-4 py-2 text-base text-[var(--sc-text)] placeholder:text-[var(--sc-muted)]";
 
   const SelectionList = (
-    <ul className="mt-4 divide-y divide-[var(--sc-border)] border-y border-[var(--sc-border)]">
+    <ul className="mt-5 space-y-2">
       {chosen.map(({ track, entry }) => (
-        <li key={track} className="flex items-start gap-3 py-3">
-          {entry ? (
-            <CircleCheck className="mt-0.5 h-5 w-5 shrink-0 text-[var(--sc-teal)]" aria-hidden="true" />
-          ) : (
-            <span className="mt-0.5 h-5 w-5 shrink-0 rounded-full border-2 border-dashed border-[var(--sc-muted)]" aria-hidden="true" />
-          )}
+        <li key={track} className="sc-glass flex items-start gap-3 rounded-2xl p-3">
+          <span className="relative h-12 w-20 shrink-0 overflow-hidden rounded-xl" style={{ background: TRACK_GRADIENT[track] }}>
+            {entry && <Poster entry={entry} />}
+          </span>
           <div className="min-w-0">
-            <TrackTag track={track} />
-            <p className="mt-0.5 font-semibold [overflow-wrap:anywhere]">
+            <span className="text-[11px] font-bold uppercase tracking-[0.1em]" style={{ color: TRACK_COLOR[track] }}>
+              {TRACK_LABEL[track]}
+            </span>
+            <p className="font-semibold leading-snug [overflow-wrap:anywhere]">
               {entry ? entry.projectTitle : <span className="font-normal text-[var(--sc-muted)]">Not chosen yet</span>}
             </p>
             {entry && <p className="text-sm text-[var(--sc-muted)]">{entry.finalistName}</p>}
@@ -726,17 +987,22 @@ function BallotDialog({
       ref={ref}
       onClose={handleClose}
       aria-labelledby="ballot-dialog-title"
-      className="m-auto w-[min(100vw-2rem,34rem)] max-w-none rounded-[8px] border border-[var(--sc-border)] bg-[var(--sc-surface)] p-0 text-[var(--sc-text)]"
+      className="sc-glass-strong m-auto w-[min(100vw-1.5rem,34rem)] max-w-none rounded-[28px] p-0 text-[var(--sc-text)]"
     >
       <div className="p-5 sm:p-7">
-        <div className="flex items-start justify-between gap-4">
-          <h2 id="ballot-dialog-title" className="text-xl font-bold leading-snug">
+        <div className="flex gap-1.5" aria-hidden="true">
+          {[0, 1, 2].map((i) => (
+            <span key={i} className={`h-1.5 flex-1 rounded-full ${i <= Math.min(stepIndex, 2) ? "bg-[var(--sc-teal)]" : "bg-[var(--sc-teal-soft)]"}`} />
+          ))}
+        </div>
+        <div className="mt-5 flex items-start justify-between gap-4">
+          <h2 id="ballot-dialog-title" className="text-xl font-extrabold leading-snug tracking-tight">
             {titles[step]}
           </h2>
           <button
             type="button"
             onClick={() => ref.current?.close()}
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[6px] border border-[var(--sc-border)] hover:bg-[var(--sc-teal-soft)]"
+            className="sc-glass flex h-11 w-11 shrink-0 items-center justify-center rounded-full"
             aria-label="Close ballot"
           >
             <X className="h-5 w-5" aria-hidden="true" />
@@ -744,32 +1010,23 @@ function BallotDialog({
         </div>
 
         {error && (
-          <p role="alert" className="mt-4 border-l-[3px] border-[var(--sc-eh)] bg-[var(--sc-bg)] px-3 py-2 text-sm">
+          <p role="alert" className="mt-4 rounded-2xl border border-rose-300/60 bg-rose-500/10 px-4 py-3 text-sm">
             {error}
           </p>
         )}
 
         {step === "review" && (
           <>
-            <p className="mt-2 text-sm leading-relaxed text-[var(--sc-muted)]">
-              One project per track. Once submitted, a ballot cannot be changed.
-            </p>
+            <p className="mt-2 text-sm leading-relaxed text-[var(--sc-muted)]">One project per track. Once submitted, a ballot cannot be changed.</p>
             {SelectionList}
-            {!complete && (
-              <p className="mt-3 text-sm text-[var(--sc-text)]">Choose a project in {missing.join(", ")} to continue.</p>
-            )}
+            {!complete && <p className="mt-3 text-sm">Choose a project in {missing.join(", ")} to continue.</p>}
             <div className="mt-6 flex flex-wrap justify-end gap-3">
               <button type="button" className={secondary} onClick={() => ref.current?.close()}>
                 Keep browsing
               </button>
-              <button
-                type="button"
-                className={primary}
-                disabled={!complete}
-                onClick={() => setStep(voterState === "verified" ? "confirm" : "email")}
-                autoFocus
-              >
+              <button type="button" className={primary} disabled={!complete} onClick={() => setStep(voterState === "verified" ? "confirm" : "email")} autoFocus>
                 Continue
+                <ArrowRight className="h-4 w-4" aria-hidden="true" />
               </button>
             </div>
           </>
@@ -784,22 +1041,13 @@ function BallotDialog({
             }}
           >
             <p className="text-sm leading-relaxed text-[var(--sc-muted)]">
-              Voting is limited to the original Cohort One admitted audience. Enter the email address UBI used to send your
-              programme credentials and we will email you a one-time code.
+              Voting is limited to the original Cohort One admitted audience. Enter the email address UBI used to send your programme credentials and we
+              will email you a one-time code.
             </p>
             <label htmlFor="voter-email" className="mt-5 block text-sm font-semibold">
               Email address
             </label>
-            <input
-              id="voter-email"
-              type="email"
-              autoComplete="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className={field}
-              autoFocus
-            />
+            <input id="voter-email" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} className={field} autoFocus />
             <div className="mt-6 flex flex-wrap justify-end gap-3">
               <button type="button" className={secondary} onClick={() => setStep("review")}>
                 Back
@@ -837,7 +1085,7 @@ function BallotDialog({
               required
               value={code}
               onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-              className={`${field} font-mono tracking-[0.4em]`}
+              className={`${field} text-center font-mono text-2xl tracking-[0.5em]`}
               autoFocus
             />
             <div className="mt-6 flex flex-wrap justify-between gap-3">
@@ -861,9 +1109,7 @@ function BallotDialog({
 
         {step === "confirm" && (
           <>
-            <p className="mt-2 text-sm leading-relaxed text-[var(--sc-muted)]">
-              Check your choices. Submitting is final: your ballot cannot be edited afterwards.
-            </p>
+            <p className="mt-2 text-sm leading-relaxed text-[var(--sc-muted)]">Check your choices. Submitting is final: your ballot cannot be edited afterwards.</p>
             {SelectionList}
             <div className="mt-6 flex flex-wrap justify-end gap-3">
               <button type="button" className={secondary} onClick={() => ref.current?.close()}>
@@ -878,18 +1124,19 @@ function BallotDialog({
         )}
 
         {(step === "done" || step === "already") && (
-          <>
-            <p role="status" className="mt-3 text-sm leading-relaxed text-[var(--sc-muted)]">
-              {step === "done"
-                ? "Thank you for taking part in the Cohort One Finalist Showcase."
-                : "Each eligible person may submit one ballot. Thank you for taking part."}
+          <div className="mt-4 text-center">
+            <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[var(--sc-navy)] text-[#5EEAD4] dark:bg-white/10 shadow-xl shadow-teal-700/25">
+              <Check className="h-8 w-8" aria-hidden="true" />
+            </span>
+            <p role="status" className="mt-4 text-sm leading-relaxed text-[var(--sc-muted)]">
+              {step === "done" ? "Thank you for taking part in the Cohort One Finalist Showcase." : "Each eligible person may submit one ballot. Thank you for taking part."}
             </p>
-            <div className="mt-6 flex justify-end">
+            <div className="mt-6 flex justify-center">
               <button type="button" className={primary} onClick={() => ref.current?.close()} autoFocus>
                 Back to the showcase
               </button>
             </div>
-          </>
+          </div>
         )}
       </div>
     </dialog>

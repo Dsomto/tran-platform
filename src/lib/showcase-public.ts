@@ -40,6 +40,7 @@ export type PublicShowcaseEntry = {
   projectUrl: string | null;
   videoEmbedUrl: string | null;
   videoOpenUrl: string | null;
+  thumbnailUrl: string | null;
 };
 
 export const PUBLIC_ENTRY_KEYS: readonly (keyof PublicShowcaseEntry)[] = [
@@ -52,6 +53,7 @@ export const PUBLIC_ENTRY_KEYS: readonly (keyof PublicShowcaseEntry)[] = [
   "projectUrl",
   "videoEmbedUrl",
   "videoOpenUrl",
+  "thumbnailUrl",
 ];
 
 export function isShowcaseTrack(value: unknown): value is ShowcaseTrack {
@@ -106,6 +108,12 @@ export function driveFileId(raw: string | null | undefined): string | null {
 export function driveEmbedUrl(raw: string | null | undefined): string | null {
   const id = driveFileId(raw);
   return id ? `https://drive.google.com/file/d/${id}/preview` : null;
+}
+
+// Drive serves a public poster frame for any publicly shared video file.
+export function driveThumbnailUrl(raw: string | null | undefined): string | null {
+  const id = driveFileId(raw);
+  return id ? `https://lh3.googleusercontent.com/d/${id}=w1280` : null;
 }
 
 export function driveOpenUrl(raw: string | null | undefined): string | null {

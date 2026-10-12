@@ -31,7 +31,7 @@ const securityHeaders = [
   },
 ];
 
-function contentSecurityPolicy(frameSrc: string): string {
+function contentSecurityPolicy(frameSrc: string, extraImgSrc = ""): string {
   return [
     "default-src 'self'",
     "base-uri 'self'",
@@ -42,7 +42,7 @@ function contentSecurityPolicy(frameSrc: string): string {
     } https://vercel.live https://va.vercel-scripts.com`,
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' data: https://fonts.gstatic.com",
-    "img-src 'self' data: blob: https://images.unsplash.com",
+    `img-src 'self' data: blob: https://images.unsplash.com${extraImgSrc}`,
     "connect-src 'self' https://vercel.live wss://ws-us3.pusher.com https://*.ingest.sentry.io https://*.sentry.io",
     "form-action 'self'",
     `frame-src ${frameSrc}`,
@@ -116,12 +116,12 @@ const nextConfig: NextConfig = {
         source: "/:path*",
         headers: securityHeaders,
       },
-      // The finalist showcase embeds Google Drive video previews. This is the
-      // only route allowed to frame anything, and only drive.google.com.
+      // The finalist showcase embeds Google Drive video previews and their
+      // poster frames. This is the only route allowed to frame anything.
       {
         source: "/showcase/:path*",
         headers: [
-          { key: "Content-Security-Policy", value: contentSecurityPolicy("https://drive.google.com") },
+          { key: "Content-Security-Policy", value: contentSecurityPolicy("https://drive.google.com", " https://lh3.googleusercontent.com") },
         ],
       },
     ];

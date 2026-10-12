@@ -750,55 +750,118 @@ body {
 }
 
 /* ── Cohort One finalist showcase ─────────────────────────────
-   Navy structure, teal actions, restrained gold for finalist recognition.
-   Track accents are always paired with a text label and icon, never colour
-   alone. Pairs verified AA: --sc-teal on --sc-surface ≥4.5:1 both themes. */
+   Light-first glass design: a soft colour mesh behind frosted surfaces.
+   Track colour is always paired with a label and icon, never colour alone. */
 .showcase-page {
-  --sc-navy: #0B1F33;
-  --sc-navy-ink: #F4F7FA;
-  --sc-bg: #F6F7F9;
-  --sc-surface: #FFFFFF;
-  --sc-border: #D5DBE3;
-  --sc-text: #0B1F33;
-  --sc-muted: #4A5869;
-  --sc-teal: #0F766E;
-  --sc-teal-strong: #115E59;
+  --sc-bg: #F6F5F1;
+  --sc-text: #0B1B2E;
+  --sc-muted: #4A5A70;
+  --sc-line: rgba(15, 35, 70, 0.10);
+  --sc-teal: #0D9488;
+  --sc-teal-strong: #0F766E;
   --sc-teal-ink: #FFFFFF;
-  --sc-teal-soft: #E6F4F2;
-  --sc-gold: #8A5A00;
-  --sc-gold-line: #C89B3C;
-  --sc-soc: #1D4ED8;
-  --sc-eh: #B42318;
-  --sc-grc: #6D28D9;
+  --sc-teal-soft: rgba(13, 148, 136, 0.10);
+  --sc-gold: #A16207;
+  --sc-gold-line: #E2B450;
+  --sc-navy: #0B1B2E;
+  --sc-glass: rgba(255, 255, 255, 0.62);
+  --sc-glass-strong: rgba(255, 255, 255, 0.82);
+  --sc-glass-border: rgba(255, 255, 255, 0.85);
+  --sc-glass-shadow: 0 1px 0 rgba(255, 255, 255, 0.7) inset, 0 18px 48px -18px rgba(15, 35, 70, 0.28);
+  --sc-soc: #2563EB;
+  --sc-eh: #E11D48;
+  --sc-grc: #7C3AED;
+  --sc-surface: var(--sc-glass-strong);
+  --sc-border: var(--sc-line);
+  position: relative;
+  isolation: isolate;
   background: var(--sc-bg);
   color: var(--sc-text);
 }
 
 .dark .showcase-page {
-  --sc-navy: #07131F;
-  --sc-bg: #0C1824;
-  --sc-surface: #132233;
-  --sc-border: #2B3D51;
-  --sc-text: #EEF2F6;
-  --sc-muted: #A9B6C4;
+  --sc-bg: #070F1B;
+  --sc-text: #EEF3F8;
+  --sc-muted: #A6B4C6;
+  --sc-line: rgba(148, 163, 184, 0.16);
   --sc-teal: #2DD4BF;
   --sc-teal-strong: #5EEAD4;
-  --sc-teal-ink: #062925;
-  --sc-teal-soft: #0F3532;
-  --sc-gold: #E9B949;
-  --sc-gold-line: #B98B2C;
-  --sc-soc: #93C5FD;
-  --sc-eh: #FCA5A5;
-  --sc-grc: #C4B5FD;
+  --sc-teal-ink: #042F2B;
+  --sc-teal-soft: rgba(45, 212, 191, 0.12);
+  --sc-gold: #F2C14E;
+  --sc-gold-line: #C9962F;
+  --sc-glass: rgba(16, 29, 46, 0.55);
+  --sc-glass-strong: rgba(16, 29, 46, 0.80);
+  --sc-glass-border: rgba(148, 163, 184, 0.18);
+  --sc-glass-shadow: 0 1px 0 rgba(255, 255, 255, 0.05) inset, 0 18px 48px -18px rgba(0, 0, 0, 0.6);
+  --sc-soc: #7DB4FF;
+  --sc-eh: #FB8BA2;
+  --sc-grc: #C4A8FF;
 }
+
+/* Fine dot grid behind the whole page, like engineering paper. It fades
+   out toward the bottom so long content stays calm. */
+.showcase-page .sc-mesh {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: radial-gradient(rgba(11, 27, 46, 0.13) 1px, transparent 1.2px);
+  background-size: 22px 22px;
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, rgba(0, 0, 0, 0.55) 70%, rgba(0, 0, 0, 0.35) 100%);
+  mask-image: linear-gradient(to bottom, #000 0%, rgba(0, 0, 0, 0.55) 70%, rgba(0, 0, 0, 0.35) 100%);
+}
+.dark .showcase-page .sc-mesh {
+  background-image: radial-gradient(rgba(226, 232, 240, 0.10) 1px, transparent 1.2px);
+}
+
+.showcase-page .sc-glass {
+  background: var(--sc-glass);
+  border: 1px solid var(--sc-glass-border);
+  box-shadow: var(--sc-glass-shadow);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  backdrop-filter: blur(18px) saturate(160%);
+}
+.showcase-page .sc-glass-strong {
+  background: var(--sc-glass-strong);
+  border: 1px solid var(--sc-glass-border);
+  box-shadow: var(--sc-glass-shadow);
+  -webkit-backdrop-filter: blur(24px) saturate(170%);
+  backdrop-filter: blur(24px) saturate(170%);
+}
+
+/* One gold highlighter stroke under a phrase — single colour, hand-marked. */
+.showcase-page .sc-mark {
+  background-image: linear-gradient(transparent 64%, rgba(226, 180, 80, 0.55) 64%, rgba(226, 180, 80, 0.55) 92%, transparent 92%);
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  padding: 0 0.06em;
+}
+.dark .showcase-page .sc-mark {
+  background-image: linear-gradient(transparent 64%, rgba(201, 150, 47, 0.45) 64%, rgba(201, 150, 47, 0.45) 92%, transparent 92%);
+}
+
+/* Padding lines the first card up with the page column; scroll-padding must
+   match it or snapping pulls the first card back to the edge. */
+.showcase-page .sc-rail {
+  --rail-pad: max(1rem, calc((100vw - 72rem) / 2 + 1.5rem));
+  padding-inline: var(--rail-pad);
+  scroll-padding-inline: var(--rail-pad);
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+.showcase-page .sc-rail::-webkit-scrollbar { display: none; }
+.showcase-page .sc-rail > * { scroll-snap-align: start; }
 
 .showcase-page :focus-visible {
   outline: 3px solid var(--sc-teal);
-  outline-offset: 2px;
+  outline-offset: 3px;
 }
 
 .showcase-page dialog::backdrop {
-  background: rgba(7, 19, 31, 0.78);
+  background: rgba(7, 15, 27, 0.55);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
 }
 
 @media (prefers-reduced-motion: reduce) {
