@@ -522,6 +522,46 @@ model PublicApplication {
   @@index([internId])
 }
 
+// ─── COHORT VOLUNTEER APPLICATION ───────────────────────
+// Separate from intern admissions. Applicants may choose one primary team and
+// one backup team, but can only submit once per cohort with the same email.
+model VolunteerApplication {
+  id                   String   @id @default(auto()) @map("_id") @db.ObjectId
+  cohort               String   @default("COHORT_2")
+  fullName             String
+  email                String
+  phone                String
+  country              String
+  city                 String?
+  timeZone             String
+  currentRole          String
+  organisation         String?
+  ubiRelationship      String
+  primaryDepartment    String
+  secondaryDepartment  String?
+  weeklyAvailability   String
+  linkedinUrl          String?
+  portfolioUrl         String?
+  experienceSummary    String
+  motivation           String
+  contributionPlan     String
+  relevantExample      String
+  referralSource       String?
+  conflictDisclosure   String?
+
+  status               String   @default("PENDING")
+  reviewNotes          String?
+  reviewedAt           DateTime?
+  reviewedBy           String?
+
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@unique([email, cohort])
+  @@index([cohort, status, createdAt(sort: Desc)])
+  @@index([primaryDepartment, status])
+}
+
 // ─── COUNTER (atomic sequences, e.g. intern IDs) ──────────
 model Counter {
   id    String @id @map("_id")

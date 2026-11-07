@@ -88,6 +88,7 @@ const adminLinks = [
   { href: "/admin/stage-results/review", label: "Result Review", icon: ArrowLeftRight },
   { href: "/admin/stage2-resubmit", label: "Stage 2 Re-share", icon: Mail },
   { href: "/admin/scholarships", label: "Scholarships", icon: Heart },
+  { href: "/admin/volunteers", label: "Volunteers", icon: UserPlus },
   { href: "/admin/announcements", label: "Announcements", icon: Megaphone },
   { href: "/admin/leaderboard", label: "Leaderboard", icon: BarChart3 },
   { href: "/admin/insights", label: "Insights", icon: TrendingUp },

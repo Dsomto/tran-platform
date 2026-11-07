@@ -3,6 +3,7 @@ import { logger } from "./logger";
 import { publicAppUrl } from "./public-url";
 import { signLetter } from "./letter-sig";
 import { SLACK_INVITE_URL, SLACK_INVITE_PITCH } from "./slack";
+import { getVolunteerDepartment } from "./volunteer-departments";
 
 // Build a fresh SMTP transporter on every send. We previously kept a pooled
 // singleton at module level, but that pattern fails badly on Vercel:
@@ -161,6 +162,59 @@ export async function sendApplicationConfirmation(
         </div>
       </div>
     `,
+  });
+}
+
+export function renderVolunteerApplicationConfirmation(
+  fullName: string,
+  departmentId: string
+) {
+  const firstName = fullName.split(/\s+/)[0] || "there";
+  const department = getVolunteerDepartment(departmentId);
+  const departmentName = department?.name ?? "your selected department";
+
+  return {
+    subject: "We received your Cohort 2 volunteer application — UBI",
+    html: `
+      <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#F1F5F9;padding:36px 18px;color:#0F172A;">
+        <div style="max-width:600px;margin:0 auto;">
+          <div style="background:#0B1B33;padding:38px 32px;border-radius:16px 16px 0 0;color:#FFFFFF;">
+            <p style="margin:0 0 12px;color:#67E8F9;font-size:11px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;">Ubuntu Bridge Initiative</p>
+            <h1 style="margin:0;font-size:28px;line-height:1.2;letter-spacing:-0.4px;">Thank you for offering to build with us.</h1>
+          </div>
+          <div style="background:#FFFFFF;padding:36px 32px;border-radius:0 0 16px 16px;border:1px solid #E2E8F0;border-top:0;">
+            <p style="margin:0 0 18px;font-size:16px;line-height:1.7;">Hi <strong>${firstName}</strong>,</p>
+            <p style="margin:0 0 20px;color:#475569;font-size:15px;line-height:1.75;">
+              We have received your application to volunteer with <strong style="color:#0F172A;">${departmentName}</strong> for UBI Cohort 2.
+            </p>
+            <div style="margin:26px 0;padding:20px;border-left:4px solid #2563EB;background:#EFF6FF;border-radius:8px;">
+              <p style="margin:0 0 6px;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#1D4ED8;">What happens next</p>
+              <p style="margin:0;color:#334155;font-size:14px;line-height:1.7;">The programme team will review your evidence, department fit, and stated availability. Shortlisted applicants will receive an invitation to a brief team conversation before final placement and onboarding.</p>
+            </div>
+            <p style="margin:0 0 24px;color:#475569;font-size:14px;line-height:1.75;">
+              You do not need to submit the form again. Keep an eye on this inbox for the outcome and any next steps.
+            </p>
+            <p style="margin:0;color:#0F172A;font-size:14px;line-height:1.6;font-weight:600;">Somto Okoma</p>
+            <p style="margin:2px 0 0;color:#64748B;font-size:12px;line-height:1.6;">Programme Head, Ubuntu Bridge Initiative</p>
+          </div>
+          <p style="text-align:center;color:#94A3B8;font-size:11px;margin:20px 0 0;">Cohort 2 volunteer team · Ubuntu Bridge Initiative</p>
+        </div>
+      </div>
+    `,
+  };
+}
+
+export async function sendVolunteerApplicationConfirmation(
+  to: string,
+  fullName: string,
+  departmentId: string
+): Promise<void> {
+  const { subject, html } = renderVolunteerApplicationConfirmation(fullName, departmentId);
+  await sendOne("volunteer-application", {
+    from: FROM,
+    to,
+    subject,
+    html,
   });
 }
 

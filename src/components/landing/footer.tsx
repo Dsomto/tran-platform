@@ -7,6 +7,7 @@ import { LogoMark } from "@/components/logo";
 const links = {
   Program: [
     ["Apply", "/apply"],
+    ["Volunteer", "/volunteer"],
     ["Stages", "/#stages"],
     ["Tracks", "/#tracks"],
     ["FAQ", "/#faq"],

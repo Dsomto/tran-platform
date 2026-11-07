@@ -12,6 +12,7 @@ const navLinks = [
   ["For Employers", "/hire"],
   ["Play", "/play"],
   ["Results", "/results"],
+  ["Volunteer", "/volunteer"],
   ["Data Scholarship", "/apply/data-scholarship"],
 ] as const;
 
@@ -95,7 +96,7 @@ export function Navbar() {
     <header
       role="banner"
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled || isOpen ? "glass-strong" : "bg-transparent"
+        scrolled || isOpen || pathname === "/volunteer" ? "glass-strong" : "bg-transparent"
       }`}
     >
       <nav aria-label="Main navigation" className="max-w-6xl mx-auto px-5 sm:px-8">
@@ -123,7 +124,7 @@ export function Navbar() {
             </Link>
           </div>
 
-          <ul className="hidden md:flex items-center gap-8" role="list">
+          <ul className="hidden lg:flex items-center gap-7" role="list">
             {navLinks.map(([label, href]) => (
               <li key={href}>
                 <Link href={href} className="text-[13px] font-medium text-muted hover:text-foreground transition-colors">
@@ -133,7 +134,7 @@ export function Navbar() {
             ))}
           </ul>
 
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden lg:flex items-center gap-3">
             <ThemeToggle />
             {auth.status === "authed" ? (
               <>
@@ -166,7 +167,7 @@ export function Navbar() {
             )}
           </div>
 
-          <div className="flex items-center md:hidden">
+          <div className="flex items-center lg:hidden">
             <ThemeToggle />
             <button
               onClick={() => setIsOpen(!isOpen)}
@@ -181,7 +182,7 @@ export function Navbar() {
         </div>
 
         {isOpen && (
-          <div id="mobile-menu" className="md:hidden pb-6 border-t border-border/40 mt-1">
+          <div id="mobile-menu" className="lg:hidden pb-6 border-t border-border/40 mt-1">
             <ul className="space-y-1 pt-4" role="list">
               {navLinks.map(([label, href]) => (
                 <li key={href}>
