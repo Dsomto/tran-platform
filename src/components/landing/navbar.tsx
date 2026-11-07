@@ -7,15 +7,6 @@ import { LogoMark } from "@/components/logo";
 import { ThemeToggle } from "@/components/dashboard/theme-toggle";
 import { Menu, X, ArrowLeft, LogOut } from "lucide-react";
 
-const navLinks = [
-  ["Tracks", "/tracks"],
-  ["For Employers", "/hire"],
-  ["Play", "/play"],
-  ["Results", "/results"],
-  ["Volunteer", "/volunteer"],
-  ["Data Scholarship", "/apply/data-scholarship"],
-] as const;
-
 type AuthState =
   | { status: "loading" }
   | { status: "anon" }
@@ -124,16 +115,6 @@ export function Navbar() {
             </Link>
           </div>
 
-          <ul className="hidden lg:flex items-center gap-7" role="list">
-            {navLinks.map(([label, href]) => (
-              <li key={href}>
-                <Link href={href} className="text-[13px] font-medium text-muted hover:text-foreground transition-colors">
-                  {label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-
           <div className="hidden lg:flex items-center gap-3">
             <ThemeToggle />
             {auth.status === "authed" ? (
@@ -183,16 +164,7 @@ export function Navbar() {
 
         {isOpen && (
           <div id="mobile-menu" className="lg:hidden pb-6 border-t border-border/40 mt-1">
-            <ul className="space-y-1 pt-4" role="list">
-              {navLinks.map(([label, href]) => (
-                <li key={href}>
-                  <Link href={href} onClick={() => setIsOpen(false)} className="block text-sm text-muted hover:text-foreground py-2.5 px-1">
-                    {label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-            <div className="flex gap-3 mt-5">
+            <div className="flex gap-3 pt-5">
               {auth.status === "authed" ? (
                 <>
                   <Link
