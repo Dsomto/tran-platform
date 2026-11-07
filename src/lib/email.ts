@@ -169,36 +169,119 @@ export function renderVolunteerApplicationConfirmation(
   fullName: string,
   departmentId: string
 ) {
-  const firstName = fullName.split(/\s+/)[0] || "there";
+  const escapeHtml = (value: string) =>
+    value
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  const firstName = escapeHtml(fullName.split(/\s+/)[0] || "there");
   const department = getVolunteerDepartment(departmentId);
-  const departmentName = department?.name ?? "your selected department";
+  const departmentName = escapeHtml(department?.name ?? "your selected department");
 
   return {
-    subject: "We received your Cohort 2 volunteer application — UBI",
+    subject: "Your UBI Cohort 2 volunteer application is in",
     html: `
-      <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#F1F5F9;padding:36px 18px;color:#0F172A;">
-        <div style="max-width:600px;margin:0 auto;">
-          <div style="background:#0B1B33;padding:38px 32px;border-radius:16px 16px 0 0;color:#FFFFFF;">
-            <p style="margin:0 0 12px;color:#67E8F9;font-size:11px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;">Ubuntu Bridge Initiative</p>
-            <h1 style="margin:0;font-size:28px;line-height:1.2;letter-spacing:-0.4px;">Thank you for offering to build with us.</h1>
-          </div>
-          <div style="background:#FFFFFF;padding:36px 32px;border-radius:0 0 16px 16px;border:1px solid #E2E8F0;border-top:0;">
-            <p style="margin:0 0 18px;font-size:16px;line-height:1.7;">Hi <strong>${firstName}</strong>,</p>
-            <p style="margin:0 0 20px;color:#475569;font-size:15px;line-height:1.75;">
-              We have received your application to volunteer with <strong style="color:#0F172A;">${departmentName}</strong> for UBI Cohort 2.
-            </p>
-            <div style="margin:26px 0;padding:20px;border-left:4px solid #2563EB;background:#EFF6FF;border-radius:8px;">
-              <p style="margin:0 0 6px;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#1D4ED8;">What happens next</p>
-              <p style="margin:0;color:#334155;font-size:14px;line-height:1.7;">The programme team will review your evidence, department fit, and stated availability. Shortlisted applicants will receive an invitation to a brief team conversation before final placement and onboarding.</p>
-            </div>
-            <p style="margin:0 0 24px;color:#475569;font-size:14px;line-height:1.75;">
-              You do not need to submit the form again. Keep an eye on this inbox for the outcome and any next steps.
-            </p>
-            <p style="margin:0;color:#0F172A;font-size:14px;line-height:1.6;font-weight:600;">Somto Okoma</p>
-            <p style="margin:2px 0 0;color:#64748B;font-size:12px;line-height:1.6;">Programme Head, Ubuntu Bridge Initiative</p>
-          </div>
-          <p style="text-align:center;color:#94A3B8;font-size:11px;margin:20px 0 0;">Cohort 2 volunteer team · Ubuntu Bridge Initiative</p>
-        </div>
+      <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">Your application has been received. Here is what happens next.</div>
+      <div style="margin:0;background:#EAF0F5;padding:32px 12px;font-family:Arial,'Helvetica Neue',sans-serif;color:#122033;">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:640px;margin:0 auto;border-collapse:separate;">
+          <tr>
+            <td style="padding:0 4px 16px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                <tr>
+                  <td style="vertical-align:middle;">
+                    <div style="color:#0B2036;font-size:20px;line-height:1;font-weight:900;letter-spacing:-.4px;">UBI<span style="color:#1D63E9;">.</span></div>
+                  </td>
+                  <td align="right" style="vertical-align:middle;color:#526275;font-size:11px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;">
+                    Cohort 2 · Volunteer team
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="overflow:hidden;background:#FFFFFF;border:1px solid #D5DFE8;border-top:6px solid #1D63E9;border-radius:8px;box-shadow:0 16px 42px rgba(15,35,58,.08);">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                <tr>
+                  <td style="background:#0B2036;padding:38px 38px 34px;color:#FFFFFF;">
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                      <tr>
+                        <td style="vertical-align:top;padding-right:20px;">
+                          <p style="margin:0 0 12px;color:#8BE8F5;font-size:11px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;">Application received</p>
+                          <h1 style="margin:0;max-width:460px;font-size:30px;line-height:1.18;font-weight:800;letter-spacing:-.3px;">Your offer to build with us is safely in.</h1>
+                        </td>
+                        <td width="54" style="vertical-align:top;">
+                          <div style="width:50px;height:50px;border:1px solid #65DCEB;background:#12334F;color:#8BE8F5;text-align:center;line-height:50px;font-size:26px;font-weight:800;border-radius:50%;">&#10003;</div>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:36px 38px 10px;">
+                    <p style="margin:0 0 14px;font-size:16px;line-height:1.7;color:#122033;">Hi <strong>${firstName}</strong>,</p>
+                    <p style="margin:0;color:#425268;font-size:15px;line-height:1.75;">
+                      Thank you for offering your time and experience to UBI Cohort 2. We have received your volunteer application and recorded your first-choice team.
+                    </p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:22px 38px 8px;">
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border:1px solid #D9E3EC;border-collapse:separate;border-radius:6px;overflow:hidden;">
+                      <tr>
+                        <td width="36%" style="padding:13px 16px;background:#F4F7FA;color:#66768A;font-size:11px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;border-bottom:1px solid #D9E3EC;">Application</td>
+                        <td style="padding:13px 16px;background:#FFFFFF;color:#137A5A;font-size:13px;font-weight:800;border-bottom:1px solid #D9E3EC;">Received</td>
+                      </tr>
+                      <tr>
+                        <td width="36%" style="padding:13px 16px;background:#F4F7FA;color:#66768A;font-size:11px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;border-bottom:1px solid #D9E3EC;">Primary team</td>
+                        <td style="padding:13px 16px;background:#FFFFFF;color:#122033;font-size:13px;font-weight:800;border-bottom:1px solid #D9E3EC;">${departmentName}</td>
+                      </tr>
+                      <tr>
+                        <td width="36%" style="padding:13px 16px;background:#F4F7FA;color:#66768A;font-size:11px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;">Programme</td>
+                        <td style="padding:13px 16px;background:#FFFFFF;color:#122033;font-size:13px;font-weight:800;">UBI Cohort 2</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:30px 38px 10px;">
+                    <p style="margin:0 0 18px;color:#122033;font-size:13px;font-weight:800;letter-spacing:1px;text-transform:uppercase;">What happens from here</p>
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                      <tr>
+                        <td width="40" style="padding:0 12px 20px 0;vertical-align:top;"><div style="width:30px;height:30px;border-radius:50%;background:#1D63E9;color:#FFFFFF;text-align:center;line-height:30px;font-size:12px;font-weight:800;">1</div></td>
+                        <td style="padding:1px 0 20px;vertical-align:top;"><p style="margin:0 0 3px;color:#122033;font-size:14px;font-weight:800;">Your application is reviewed</p><p style="margin:0;color:#66768A;font-size:13px;line-height:1.65;">We assess your evidence, department fit, availability, and the needs of the team.</p></td>
+                      </tr>
+                      <tr>
+                        <td width="40" style="padding:0 12px 20px 0;vertical-align:top;"><div style="width:30px;height:30px;border-radius:50%;background:#DCE7F5;color:#1D4E89;text-align:center;line-height:30px;font-size:12px;font-weight:800;">2</div></td>
+                        <td style="padding:1px 0 20px;vertical-align:top;"><p style="margin:0 0 3px;color:#122033;font-size:14px;font-weight:800;">Shortlisted applicants meet the team</p><p style="margin:0;color:#66768A;font-size:13px;line-height:1.65;">If shortlisted, you will receive an invitation to a focused conversation about the role.</p></td>
+                      </tr>
+                      <tr>
+                        <td width="40" style="padding:0 12px 0 0;vertical-align:top;"><div style="width:30px;height:30px;border-radius:50%;background:#DCE7F5;color:#1D4E89;text-align:center;line-height:30px;font-size:12px;font-weight:800;">3</div></td>
+                        <td style="padding:1px 0 0;vertical-align:top;"><p style="margin:0 0 3px;color:#122033;font-size:14px;font-weight:800;">Placement and onboarding</p><p style="margin:0;color:#66768A;font-size:13px;line-height:1.65;">Selected volunteers receive a defined role, clear responsibilities, and onboarding details.</p></td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:30px 38px 36px;">
+                    <div style="background:#EFF8FA;border-left:4px solid #27B8CA;padding:16px 18px;">
+                      <p style="margin:0;color:#355166;font-size:13px;line-height:1.7;"><strong style="color:#122033;">No further action is required.</strong> Please do not submit another application. We will write to this email address when the review moves forward.</p>
+                    </div>
+                    <p style="margin:28px 0 3px;color:#122033;font-size:14px;line-height:1.6;font-weight:800;">Somto Okoma</p>
+                    <p style="margin:0;color:#6B7B8E;font-size:12px;line-height:1.6;">Programme Head, Ubuntu Bridge Initiative</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:18px 12px 0;text-align:center;color:#7C8A9B;font-size:11px;line-height:1.6;">
+              Ubuntu Bridge Initiative · Building access, skill, and opportunity<br />
+              This is an automatic confirmation of your volunteer application.
+            </td>
+          </tr>
+        </table>
       </div>
     `,
   };
