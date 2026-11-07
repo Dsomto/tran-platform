@@ -4,6 +4,7 @@ import { publicAppUrl } from "./public-url";
 import { signLetter } from "./letter-sig";
 import { SLACK_INVITE_URL, SLACK_INVITE_PITCH } from "./slack";
 import { getVolunteerDepartment } from "./volunteer-departments";
+import { renderVolunteerApplicationConfirmationEmail } from "./volunteer-email-templates";
 
 // Build a fresh SMTP transporter on every send. We previously kept a pooled
 // singleton at module level, but that pattern fails badly on Vercel:
@@ -169,6 +170,12 @@ export function renderVolunteerApplicationConfirmation(
   fullName: string,
   departmentId: string
 ) {
+  return renderVolunteerApplicationConfirmationEmail(
+    fullName,
+    getVolunteerDepartment(departmentId)?.name ?? "your selected team"
+  );
+
+  /* Legacy markup retained temporarily below for comparison during review. */
   const escapeHtml = (value: string) =>
     value
       .replace(/&/g, "&amp;")
