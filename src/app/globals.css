@@ -43,6 +43,161 @@
   --violet-light: #EDE9FE;
   --rose: #E11D48;
   --rose-light: #FFE4E6;
+  /* Public site: ink stays dark in both themes; signal is the lime accent
+     used only on ink surfaces. */
+  --ink: #070B12;
+  --ink-2: #0E1520;
+  --signal: #C6F24E;
+}
+
+/* ── Public site (home + volunteer) ─────────────────────────
+   Light by default, midnight blue in dark mode; lime and blue used as accents. Applies whatever the dashboard theme toggle says. */
+.landing-page.site {
+  --background: #F6F7FB;
+  --surface: #FFFFFF;
+  --surface-hover: #EEF1F7;
+  --border: #E1E6F0;
+  --border-light: #EDF0F6;
+  --foreground: #101828;
+  --muted: #5D6880;
+  --muted-foreground: #4A5568;
+  --foreground-muted: #344054;
+  --ink: #131C31;
+  --ink-2: #1A2540;
+  --signal: #C6F24E;
+  --lime: #4F7A00;
+  --sky: #2F5BEA;
+  --blue: #3B6CFF;
+  --blue-dark: #2F58E0;
+  --blue-light: #E4EBFF;
+  --emerald: #059669;
+  --danger: #DC2626;
+  --pattern: rgba(16, 24, 40, 0.11);
+  color: var(--foreground);
+  background-color: var(--background);
+}
+
+.dark .landing-page.site {
+  --background: #131C31;
+  --surface: #1A2540;
+  --surface-hover: #212E4D;
+  --border: #2A3858;
+  --border-light: #202C48;
+  --foreground: #F4F6FB;
+  --muted: #9AA7C2;
+  --muted-foreground: #B5C0D6;
+  --foreground-muted: #CDD5E4;
+  --lime: #C6F24E;
+  --sky: #8DB4FF;
+  --blue-light: #1C2D5A;
+  --emerald: #6EE7B7;
+  --danger: #F87171;
+  --pattern: rgba(198, 242, 78, 0.11);
+  color-scheme: dark;
+}
+
+/* Kente-inspired hairline pattern (zig-zag bands and diamonds), tinted by
+   --pattern and faded out behind the content (see <SiteBackground />). */
+.site-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-color: var(--pattern);
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64' fill='none' stroke='black' stroke-width='1'%3E%3Cpath d='M0 7 8 2l8 5 8-5 8 5 8-5 8 5 8-5 8 5'/%3E%3Cpath d='M0 57l8 5 8-5 8 5 8-5 8 5 8-5 8 5 8-5'/%3E%3Cpath d='M32 18 46 32 32 46 18 32Z'/%3E%3Cpath d='M32 26 38 32 32 38 26 32Z' fill='black'/%3E%3Cpath d='M0 32h12M52 32h12M32 12v2M32 50v2'/%3E%3C/svg%3E"), radial-gradient(ellipse 75% 70% at 50% 45%, transparent 45%, #000 100%);
+  -webkit-mask-composite: source-in;
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64' fill='none' stroke='black' stroke-width='1'%3E%3Cpath d='M0 7 8 2l8 5 8-5 8 5 8-5 8 5 8-5 8 5'/%3E%3Cpath d='M0 57l8 5 8-5 8 5 8-5 8 5 8-5 8 5 8-5'/%3E%3Cpath d='M32 18 46 32 32 46 18 32Z'/%3E%3Cpath d='M32 26 38 32 32 38 26 32Z' fill='black'/%3E%3Cpath d='M0 32h12M52 32h12M32 12v2M32 50v2'/%3E%3C/svg%3E"), radial-gradient(ellipse 75% 70% at 50% 45%, transparent 45%, #000 100%);
+  mask-size: 64px 64px, 100% 100%;
+  mask-composite: intersect;
+  -webkit-mask-size: 64px 64px, 100% 100%;
+}
+.site > main, .site > footer { position: relative; z-index: 1; }
+
+/* Film grain — keeps the dark from feeling flat and synthetic. */
+.site::after {
+  content: "";
+  position: fixed;
+  inset: -50%;
+  z-index: 60;
+  pointer-events: none;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: ubi-grain 1.2s steps(6) infinite;
+}
+@keyframes ubi-grain {
+  0% { transform: translate(0, 0); }
+  20% { transform: translate(-3%, 2%); }
+  40% { transform: translate(2%, -3%); }
+  60% { transform: translate(-2%, -1%); }
+  80% { transform: translate(3%, 3%); }
+  100% { transform: translate(0, 0); }
+}
+
+.site ::selection { background: #C6F24E; color: #131C31; }
+
+/* Serif italic accent words inside sans headlines. */
+.site .serif {
+  font-family: var(--font-instrument), Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+/* Small uppercase label. */
+.eyebrow {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+
+.site .rise { animation: ubi-rise 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.site .rise-1 { animation-delay: 0.1s; }
+.site .rise-2 { animation-delay: 0.2s; }
+.site .rise-3 { animation-delay: 0.3s; }
+@keyframes ubi-rise {
+  from { opacity: 0; transform: translateY(28px); filter: blur(6px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+
+/* Headline lines slide up from behind a mask. */
+.site .line-mask { display: block; overflow: hidden; padding-bottom: 0.08em; }
+.site .line-mask > span {
+  display: block;
+  animation: ubi-line 1.1s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@keyframes ubi-line { from { transform: translateY(105%); } to { transform: none; } }
+
+@keyframes ubi-progress { from { width: 0%; } to { width: 100%; } }
+
+/* Shapes pop in. */
+.site .pop { animation: ubi-pop 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.site .pop-2 { animation-delay: 0.15s; }
+.site .pop-3 { animation-delay: 0.3s; }
+@keyframes ubi-pop { from { opacity: 0; transform: scale(0.94); } to { opacity: 1; transform: none; } }
+
+
+/* Photo film strip */
+.site .film { animation: ubi-film 70s linear infinite; }
+.site .film:hover { animation-play-state: paused; }
+@keyframes ubi-film { to { transform: translateX(-50%); } }
+
+/* Scroll reveal — armed by <ScrollReveal /> so no-JS visitors see everything. */
+.reveal-on .site [data-reveal] {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.9s cubic-bezier(0.2, 0.7, 0.2, 1), transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1);
+  transition-delay: calc(var(--d, 0) * 90ms);
+}
+.reveal-on .site [data-reveal].is-in { opacity: 1; transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .site::after,
+  .site .rise,
+  .site .line-mask > span,
+  .site .film,
+  .site .pop { animation: none; }
 }
 
 /* ── Dark mode ──────────────────────────────────────────────
@@ -146,7 +301,7 @@
 
 .dark .landing-page .hex-grid { opacity: .7; }
 
-.dark .landing-page main > section:nth-of-type(even) {
+.dark .landing-page:not(.site) main > section:nth-of-type(even) {
   background-color: #151E26;
 }
 
@@ -216,6 +371,13 @@
   --color-rose-light: var(--rose-light);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-geist-sans);
+  --font-serif: var(--font-instrument);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-signal: var(--signal);
+  --color-sky: var(--sky);
+  --color-lime: var(--lime);
 }
 
 * { scroll-behavior: smooth; }

@@ -8,7 +8,6 @@ import {
   BarChart3,
   BookOpenCheck,
   BriefcaseBusiness,
-  Check,
   CheckCircle2,
   Clock3,
   Code2,
@@ -18,7 +17,7 @@ import {
   Loader2,
   Megaphone,
   Palette,
-  ShieldCheck,
+  Plus,
   Sparkles,
   UsersRound,
 } from "lucide-react";
@@ -40,14 +39,6 @@ const departmentIcons = {
   "research-quality-impact": BarChart3,
 } satisfies Record<VolunteerDepartmentId, typeof BriefcaseBusiness>;
 
-const accentClasses = {
-  blue: "border-blue/30 bg-blue-light/45 text-blue dark:bg-blue-light/55",
-  emerald: "border-emerald/30 bg-emerald-light/45 text-emerald dark:bg-emerald-light/55",
-  cyan: "border-cyan/30 bg-cyan-light/45 text-cyan-dark dark:bg-cyan-light/55",
-  amber: "border-amber/30 bg-amber-light/50 text-amber-dark dark:bg-amber-light/55",
-  violet: "border-violet/30 bg-violet-light/45 text-violet dark:bg-violet-light/55",
-  rose: "border-rose/30 bg-rose-light/50 text-rose dark:bg-rose-light/55",
-} as const;
 
 type FormState = {
   fullName: string;
@@ -107,6 +98,10 @@ export function VolunteerPage() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [activeId, setActiveId] = useState<VolunteerDepartmentId>(volunteerDepartments[0].id);
+  const activeDepartment =
+    volunteerDepartments.find((department) => department.id === activeId) ?? volunteerDepartments[0];
+  const ActiveIcon = departmentIcons[activeDepartment.id];
 
   const selectedDepartment = useMemo(
     () => volunteerDepartments.find((department) => department.id === form.primaryDepartment),
@@ -154,194 +149,271 @@ export function VolunteerPage() {
 
   return (
     <>
-      <section className="relative min-h-[76vh] overflow-hidden pt-16 flex items-end shadow-[inset_0_-1px_0_rgba(255,255,255,.18)]">
-        <Image
-          src="/images/programs/mentorship.jpg"
-          alt="Ubuntu Bridge Initiative community members collaborating"
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover object-[center_72%] sm:object-center"
-        />
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(7,18,33,.94)_0%,rgba(7,18,33,.74)_50%,rgba(7,18,33,.28)_100%)]" />
-        <div className="relative z-10 w-full max-w-6xl mx-auto px-5 sm:px-8 pb-14 md:pb-16 pt-28">
-          <div className="max-w-3xl text-white">
-            <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3.5 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-cyan-100 shadow-[inset_0_1px_0_rgba(255,255,255,.18),0_10px_30px_rgba(0,0,0,.12)] backdrop-blur-xl">
-              <span className="h-1.5 w-1.5 rounded-full bg-cyan-300 shadow-[0_0_12px_rgba(103,232,249,.8)]" />
-              Cohort 2 volunteer team
+      <section className="overflow-hidden">
+        <div className="max-w-[80rem] mx-auto grid items-center gap-10 px-5 pt-28 pb-12 sm:px-8 lg:grid-cols-2 lg:pt-32">
+          <div>
+            <p className="rise inline-flex items-center gap-2 rounded-full bg-surface px-4 py-2 text-sm text-foreground-muted">
+              <span className="h-2 w-2 rounded-full bg-signal" aria-hidden="true" />
+              Volunteer · Cohort 2
             </p>
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold leading-[1.04] tracking-normal max-w-3xl">
-              Help us build the programme people remember.
+            <h1 className="mt-6 text-[clamp(2.6rem,5.5vw,5.25rem)] font-semibold leading-[1] tracking-[-0.045em]">
+              <span className="line-mask"><span>Help us build</span></span>
+              <span className="line-mask">
+                <span style={{ animationDelay: ".08s" }}>
+                  <span className="rounded-2xl bg-signal px-3 text-ink">something</span>
+                </span>
+              </span>
+              <span className="line-mask">
+                <span style={{ animationDelay: ".16s" }}>
+                  people <span className="serif font-normal text-sky">remember.</span>
+                </span>
+              </span>
             </h1>
-            <p className="mt-6 max-w-2xl text-base sm:text-lg leading-8 text-slate-200">
-              UBI Cohort 2 needs people who will own real work: finding partners, mentoring talent,
-              running the community, grading fairly, building curriculum, designing, communicating,
-              improving the platform, and measuring impact.
+            <p className="rise rise-2 mt-6 max-w-sm text-lg text-foreground-muted">
+              Give a few hours a week. Help new talent break into cybersecurity.
             </p>
-            <div className="mt-8 flex flex-wrap gap-3">
+            <div className="rise rise-3 mt-8 flex flex-wrap items-center gap-3">
               <a
                 href="#departments"
-                className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-slate-950 shadow-[inset_0_1px_0_rgba(255,255,255,.9),0_14px_34px_rgba(0,0,0,.24)] transition hover:-translate-y-0.5 hover:bg-slate-100"
+                className="group inline-flex h-14 items-center gap-2 rounded-full bg-foreground px-8 text-[15px] font-semibold text-background transition-colors hover:bg-signal hover:text-ink"
               >
-                Find your department <ArrowDown className="h-4 w-4" />
+                Find your team
+                <ArrowDown className="h-4 w-4 transition-transform group-hover:translate-y-0.5" />
               </a>
               <a
                 href="#application"
-                className="hidden sm:inline-flex items-center gap-2 rounded-full border border-white/35 bg-white/10 px-5 py-3 text-sm font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,.2),0_12px_30px_rgba(0,0,0,.16)] backdrop-blur-xl transition hover:-translate-y-0.5 hover:bg-white/20"
+                className="inline-flex h-14 items-center rounded-full border border-border px-7 text-[15px] text-foreground transition-colors hover:bg-surface"
               >
-                Apply to volunteer <ArrowRight className="h-4 w-4" />
+                Apply
               </a>
             </div>
           </div>
+
+          <div className="grid grid-cols-2 grid-rows-[repeat(3,8rem)] gap-3 sm:grid-rows-[repeat(3,9.5rem)]">
+            <div className="pop group row-span-2 relative overflow-hidden rounded-t-[10rem] rounded-b-3xl">
+              <Image
+                src="/images/programs/mentorship.jpg"
+                alt="Ubuntu Bridge Initiative community members collaborating"
+                fill
+                priority
+                sizes="(min-width: 1024px) 320px, 50vw"
+                className="object-cover transition duration-700 group-hover:scale-105"
+              />
+            </div>
+            <div className="pop pop-2 flex flex-col items-center justify-center rounded-3xl bg-signal text-ink">
+              <span className="text-4xl font-semibold tracking-tight sm:text-5xl">{volunteerDepartments.length}</span>
+              <span className="text-sm">teams need you</span>
+            </div>
+            <div className="pop pop-3 group relative overflow-hidden rounded-3xl">
+              <Image
+                src="/images/programs/school-tour.jpg"
+                alt="Cybersecurity Educational School Tour in secondary schools"
+                fill
+                sizes="240px"
+                className="object-cover transition duration-700 group-hover:scale-105"
+              />
+            </div>
+            <div className="pop pop-2 flex flex-col items-center justify-center rounded-3xl bg-blue text-white">
+              <span className="text-4xl font-semibold tracking-tight sm:text-5xl">3–10</span>
+              <span className="text-sm text-white/80">hours a week</span>
+            </div>
+            <div className="pop pop-3 group relative overflow-hidden rounded-3xl">
+              <Image
+                src="/images/programs/workshops.jpg"
+                alt="Community Cybersafe Workshops — hands-on training"
+                fill
+                sizes="240px"
+                className="object-cover transition duration-700 group-hover:scale-105"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="border-y border-border/70 py-4 overflow-hidden" aria-hidden="true">
+          <div className="film flex w-max gap-8 whitespace-nowrap text-lg font-medium text-muted" style={{ animationDuration: "40s" }}>
+            {[0, 1].flatMap((k) =>
+              Array.from({ length: 3 }).flatMap((_, r) =>
+                ["Remote", "A few hours a week", "Real impact", "Grow your network"].map((w, i) => (
+                  <span key={`${k}-${r}-${i}`} className="inline-flex items-center gap-8">
+                    {w} <span className="h-1.5 w-1.5 rounded-full bg-signal" />
+                  </span>
+                ))
+              )
+            )}
+          </div>
         </div>
       </section>
 
-      <section className="relative z-10 border-b border-border bg-surface/90 shadow-[inset_0_1px_0_rgba(255,255,255,.7),0_18px_50px_rgba(15,23,42,.06)] backdrop-blur-xl" aria-label="Volunteer expectations">
-        <div className="max-w-6xl mx-auto grid grid-cols-2 lg:grid-cols-4 px-5 sm:px-8">
-          {[
-            ["Remote", "Serve from anywhere", UsersRound],
-            ["3-10 hrs", "Depends on your team", Clock3],
-            ["Accountable", "Own work and deadlines", ShieldCheck],
-            ["Unpaid", "Service, not employment", HeartHandshake],
-          ].map(([title, detail, Icon], index) => (
+      <section className="py-16 sm:py-20" aria-labelledby="process-heading">
+        <div className="max-w-[80rem] mx-auto px-5 sm:px-8">
+          <h2 id="process-heading" data-reveal className="text-[clamp(2.25rem,4.2vw,3.75rem)] font-semibold tracking-[-0.045em]">
+            Four <span className="serif font-normal text-sky">simple steps.</span>
+          </h2>
+          <ol className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4" role="list">
+            {[
+              ["Pick a team", "Choose where you can help most."],
+              ["Apply", "Fill in the short form below."],
+              ["Have a chat", "If shortlisted, we talk with you."],
+              ["Start", "Get set up and start helping."],
+            ].map(([title, body], index) => (
+              <li
+                key={title}
+                data-reveal
+                style={{ "--d": index } as React.CSSProperties}
+                className="flex min-h-48 flex-col justify-between rounded-3xl border border-border bg-surface/70 p-7 backdrop-blur"
+              >
+                <span className="text-5xl font-semibold leading-none tracking-[-0.06em] text-lime">{index + 1}</span>
+                <span>
+                  <h3 className="text-xl font-semibold tracking-tight">{title}</h3>
+                  <p className="mt-1 text-muted">{body}</p>
+                </span>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      <section id="departments" className="scroll-mt-16 py-16 sm:py-20" aria-labelledby="departments-heading">
+        <div className="max-w-[80rem] mx-auto px-5 sm:px-8">
+          <h2 id="departments-heading" data-reveal className="text-[clamp(2.25rem,4.2vw,3.75rem)] font-semibold tracking-[-0.045em]">
+            10 teams. <span className="serif font-normal text-sky">Find yours.</span>
+          </h2>
+
+          <div data-reveal className="mt-10 grid gap-6 lg:grid-cols-12">
             <div
-              key={String(title)}
-              className={`py-5 ${index % 2 ? "pl-5 border-l border-border" : "pr-5"} ${
-                index > 1 ? "border-t lg:border-t-0" : ""
-              } lg:border-l lg:first:border-l-0 lg:px-6 lg:first:pl-0`}
+              role="tablist"
+              aria-label="Volunteer departments"
+              aria-orientation="vertical"
+              className="lg:col-span-5 -mx-5 flex gap-2 overflow-x-auto px-5 pb-2 snap-x lg:mx-0 lg:flex-col lg:overflow-visible lg:px-0 lg:pb-0"
             >
-              <div className="mb-2 grid h-8 w-8 place-items-center rounded-lg border border-blue/15 bg-blue-light/65 shadow-[inset_0_1px_0_rgba(255,255,255,.8),0_8px_20px_rgba(37,99,235,.1)]">
-                <Icon className="h-4 w-4 text-blue" />
-              </div>
-              <p className="text-sm font-semibold text-foreground">{String(title)}</p>
-              <p className="text-xs text-muted mt-0.5">{String(detail)}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section id="departments" className="bg-scan scroll-mt-20 py-20 md:py-24">
-        <div className="max-w-6xl mx-auto px-5 sm:px-8">
-          <div className="grid lg:grid-cols-[0.8fr_1.2fr] gap-10 lg:gap-16 items-start mb-12">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-blue mb-3">
-                Where you can serve
-              </p>
-              <h2 className="text-3xl md:text-4xl font-bold tracking-normal text-foreground">
-                Ten departments. Clear ownership.
-              </h2>
-            </div>
-            <p className="text-base leading-7 text-muted max-w-2xl">
-              Choose the team where you can produce the strongest work, not the title that sounds most
-              impressive. Some roles are busiest before the cohort opens; others become intense during
-              active stages. Every department works from written responsibilities and visible deadlines.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-4">
-            {volunteerDepartments.map((department, index) => {
-              const Icon = departmentIcons[department.id];
-              return (
-                <article
-                  key={department.id}
-                  className="group relative overflow-hidden rounded-lg border border-border/80 bg-surface/85 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,.8),0_14px_38px_rgba(15,23,42,.07)] backdrop-blur-xl transition duration-300 before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/80 hover:-translate-y-1 hover:border-blue/35 hover:bg-surface hover:shadow-[inset_0_1px_0_rgba(255,255,255,.9),0_22px_56px_rgba(37,99,235,.12)] dark:before:bg-white/15 sm:p-6"
-                >
-                  <div className="flex items-start gap-4">
-                    <div
-                      className={`grid h-11 w-11 shrink-0 place-items-center rounded-lg border shadow-[inset_0_1px_0_rgba(255,255,255,.75),0_10px_24px_rgba(15,23,42,.08)] ${accentClasses[department.accent]}`}
+              {volunteerDepartments.map((department) => {
+                const Icon = departmentIcons[department.id];
+                const active = department.id === activeDepartment.id;
+                return (
+                  <button
+                    key={department.id}
+                    type="button"
+                    role="tab"
+                    id={`dept-tab-${department.id}`}
+                    aria-selected={active}
+                    aria-controls="dept-panel"
+                    onClick={() => setActiveId(department.id)}
+                    className={`group flex shrink-0 snap-start items-center gap-3.5 rounded-full py-2 pl-2 pr-5 text-left transition-all cursor-pointer lg:w-full ${
+                      active ? "bg-signal text-ink" : "bg-surface text-foreground hover:bg-surface-hover"
+                    }`}
+                  >
+                    <span
+                      className={`grid h-10 w-10 shrink-0 place-items-center rounded-full ${
+                        active ? "bg-background text-lime" : "bg-background text-muted"
+                      }`}
                     >
-                      <Icon className="h-5 w-5" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-start justify-between gap-4">
-                        <div>
-                          <p className="text-[11px] font-semibold text-muted mb-1">
-                            {String(index + 1).padStart(2, "0")}
-                          </p>
-                          <h3 className="text-lg font-semibold text-foreground tracking-normal">
-                            {department.name}
-                          </h3>
-                        </div>
-                        <span className="shrink-0 rounded-full border border-border/80 bg-background/60 px-2.5 py-1 text-[11px] font-medium text-muted shadow-[inset_0_1px_0_rgba(255,255,255,.7)] backdrop-blur">
-                          {department.commitment}
-                        </span>
-                      </div>
-                      <p className="mt-3 text-sm leading-6 text-muted">{department.summary}</p>
-                      <ul className="mt-4 space-y-2">
-                        {department.responsibilities.map((responsibility) => (
-                          <li key={responsibility} className="flex gap-2 text-xs leading-5 text-foreground-muted">
-                            <Check className="h-3.5 w-3.5 shrink-0 mt-0.5 text-emerald" />
-                            {responsibility}
-                          </li>
-                        ))}
-                      </ul>
-                      <p className="mt-4 border-t border-border pt-4 text-xs leading-5 text-muted">
-                        <strong className="font-semibold text-foreground">Strong fit:</strong> {department.idealFor}
-                      </p>
-                      <button
-                        type="button"
-                        onClick={() => chooseDepartment(department.id)}
-                        className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-blue/15 bg-blue-light/45 px-3.5 py-2 text-sm font-semibold text-blue shadow-[inset_0_1px_0_rgba(255,255,255,.75)] transition hover:border-blue/30 hover:bg-blue-light cursor-pointer"
-                      >
-                        Choose this team <ArrowRight className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </div>
-                </article>
-              );
-            })}
+                      <Icon className="h-4 w-4" />
+                    </span>
+                    <span className="whitespace-nowrap text-sm font-semibold lg:whitespace-normal">
+                      <span className="lg:hidden">{department.shortName}</span>
+                      <span className="hidden lg:inline">{department.name}</span>
+                    </span>
+                    <ArrowRight
+                      className={`ml-auto hidden h-4 w-4 shrink-0 transition-all lg:block ${
+                        active ? "" : "opacity-0 group-hover:opacity-60"
+                      }`}
+                    />
+                  </button>
+                );
+              })}
+            </div>
+
+            <div
+              id="dept-panel"
+              role="tabpanel"
+              aria-labelledby={`dept-tab-${activeDepartment.id}`}
+              className="lg:col-span-7"
+            >
+              <div
+                key={activeDepartment.id}
+                className="pop lg:sticky lg:top-24 rounded-3xl bg-blue p-8 text-white sm:p-10"
+              >
+                <span className="grid h-16 w-16 place-items-center rounded-full bg-white/15">
+                  <ActiveIcon className="h-7 w-7" />
+                </span>
+                <h3 className="mt-8 text-[clamp(2rem,3.5vw,3.25rem)] font-semibold leading-[1] tracking-[-0.04em]">
+                  {activeDepartment.name}
+                </h3>
+                <p className="mt-5 max-w-lg text-lg text-white/80">{activeDepartment.summary}</p>
+                <p className="mt-6 inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-sm">
+                  <Clock3 className="h-4 w-4" />
+                  {activeDepartment.commitment}
+                </p>
+                <div className="mt-10">
+                  <button
+                    type="button"
+                    onClick={() => chooseDepartment(activeDepartment.id)}
+                    className="group inline-flex h-14 items-center gap-2 rounded-full bg-signal px-8 text-[15px] font-semibold text-ink transition-colors hover:bg-white cursor-pointer"
+                  >
+                    Join {activeDepartment.shortName}
+                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      <section id="application" className="scroll-mt-16 border-y border-border bg-surface/75 py-20 backdrop-blur md:py-24">
-        <div ref={formRef} className="max-w-6xl mx-auto px-5 sm:px-8 scroll-mt-24">
-          <div className="grid lg:grid-cols-[0.68fr_1.32fr] gap-10 lg:gap-14 items-start">
-            <div className="rounded-lg border border-border/80 bg-background/70 p-6 shadow-[inset_0_1px_0_rgba(255,255,255,.8),0_18px_48px_rgba(15,23,42,.07)] backdrop-blur-xl lg:sticky lg:top-24 sm:p-7">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-blue mb-3">
-                Volunteer application
-              </p>
-              <h2 className="text-3xl md:text-4xl font-bold tracking-normal text-foreground">
-                Tell us what you can own.
-              </h2>
-              <p className="mt-5 text-sm leading-7 text-muted">
-                We value evidence, clarity, and reliability. A thoughtful application is more useful than
-                a long one. Shortlisted volunteers will be invited to a team conversation before placement.
-              </p>
-              <div className="mt-7 space-y-3 text-sm text-foreground-muted">
-                {[
-                  "Choose one primary department",
-                  "Show relevant work or a concrete example",
-                  "Commit to a realistic weekly schedule",
-                  "Expect onboarding and team accountability",
-                ].map((item) => (
-                  <div key={item} className="flex items-start gap-2.5">
-                    <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5 text-emerald" />
-                    <span>{item}</span>
+      <section id="application" className="scroll-mt-16 py-16 sm:py-20">
+        <div ref={formRef} className="max-w-[80rem] mx-auto px-5 sm:px-8 scroll-mt-24">
+          <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+            <aside className="lg:col-span-4 lg:sticky lg:top-24 relative overflow-hidden rounded-3xl border border-border bg-surface/70 p-8 backdrop-blur sm:p-9">
+              <div className="relative">
+                                <h2 className="text-4xl font-semibold tracking-[-0.045em] leading-[1]">
+                  Join the <span className="serif font-normal text-sky">team.</span>
+                </h2>
+                <p className="mt-4 text-muted">
+                  Short, honest answers are best.
+                </p>
+                <ul className="mt-6 space-y-3 border-t border-border pt-6 text-[15px]" role="list">
+                  {[
+                    "Pick one main team",
+                    "Share an example of your work",
+                    "Be honest about your time",
+                  ].map((item) => (
+                    <li key={item} className="flex items-start gap-2.5">
+                      <CheckCircle2 className="h-5 w-5 shrink-0 text-lime" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+                {selectedDepartment && (
+                  <div className="mt-6 rounded-2xl bg-signal p-5 text-ink">
+                    <p className="eyebrow text-muted">Applying for</p>
+                    <p className="mt-1.5 font-semibold">{selectedDepartment.name}</p>
+                    <p className="mt-1 text-xs text-muted">{selectedDepartment.commitment}</p>
                   </div>
-                ))}
+                )}
               </div>
-            </div>
+            </aside>
 
             {submitted ? (
-              <div className="rounded-lg border border-emerald/30 bg-emerald-light/35 p-8 shadow-[inset_0_1px_0_rgba(255,255,255,.75),0_20px_55px_rgba(5,150,105,.12)] backdrop-blur-xl sm:p-10">
-                <CheckCircle2 className="h-10 w-10 text-emerald mb-5" />
-                <h3 className="text-2xl font-bold text-foreground">Your application is with us.</h3>
-                <p className="mt-4 text-sm leading-7 text-muted max-w-xl">
-                  Thank you for offering your time to Cohort 2. We have sent a confirmation to your email.
-                  The team will review your evidence, department fit, and availability before contacting
-                  shortlisted volunteers.
+              <div className="pop lg:col-span-8 rounded-3xl bg-blue p-8 text-white sm:p-12">
+                <span className="grid h-16 w-16 place-items-center rounded-full bg-signal text-ink">
+                  <CheckCircle2 className="h-7 w-7" />
+                </span>
+                <h3 className="mt-8 text-4xl font-semibold tracking-[-0.04em]">
+                  You&apos;re in the queue!
+                </h3>
+                <p className="mt-4 text-lg text-white/80 max-w-xl">
+                  Thank you. Check your email for a confirmation. We&apos;ll be in touch if you&apos;re shortlisted.
                 </p>
                 <button
                   type="button"
                   onClick={() => setSubmitted(false)}
-                  className="mt-7 text-sm font-semibold text-blue hover:text-blue-dark"
+                  className="mt-8 text-sm font-semibold text-lime hover:text-white cursor-pointer"
                 >
                   Submit another application
                 </button>
               </div>
             ) : (
-              <form onSubmit={submit} className="relative space-y-8 overflow-hidden rounded-lg border border-border/80 bg-background/85 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,.9),0_24px_70px_rgba(15,23,42,.1)] backdrop-blur-xl before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white dark:before:bg-white/15 sm:p-8">
+              <form onSubmit={submit} className="lg:col-span-8 relative space-y-5">
                 <FormSection number="01" title="About you">
                   <div className="grid sm:grid-cols-2 gap-4">
                     <Field label="Full name" required>
@@ -403,10 +475,10 @@ export function VolunteerPage() {
                     </Field>
                   </div>
                   {selectedDepartment && (
-                    <div className="rounded-lg border border-blue/25 bg-blue-light/30 p-4 text-sm">
+                    <div className="rounded-2xl border border-blue/25 bg-blue/5 p-4 text-sm">
                       <p className="font-semibold text-foreground">{selectedDepartment.name}</p>
                       <p className="mt-1 leading-6 text-muted">{selectedDepartment.summary}</p>
-                      <p className="mt-2 text-xs font-medium text-blue">Expected rhythm: {selectedDepartment.commitment}</p>
+                      <p className="mt-2 text-xs font-medium text-lime">Expected rhythm: {selectedDepartment.commitment}</p>
                     </div>
                   )}
                   <Field label="Weekly availability" required>
@@ -455,7 +527,7 @@ export function VolunteerPage() {
                     <label>Website<input tabIndex={-1} autoComplete="off" value={form.website} onChange={(e) => update("website", e.target.value)} /></label>
                   </div>
 
-                  <label className="flex items-start gap-3 text-sm leading-6 text-foreground-muted cursor-pointer">
+                  <label className="flex items-start gap-3 rounded-2xl border border-border bg-background p-4 text-sm leading-6 text-foreground-muted cursor-pointer has-[:checked]:border-blue/40 has-[:checked]:bg-blue/5">
                     <input
                       type="checkbox"
                       required
@@ -465,7 +537,7 @@ export function VolunteerPage() {
                     />
                     <span>I understand this is an unpaid volunteer role and I can meet the commitment I selected.</span>
                   </label>
-                  <label className="flex items-start gap-3 text-sm leading-6 text-foreground-muted cursor-pointer">
+                  <label className="flex items-start gap-3 rounded-2xl border border-border bg-background p-4 text-sm leading-6 text-foreground-muted cursor-pointer has-[:checked]:border-blue/40 has-[:checked]:bg-blue/5">
                     <input
                       type="checkbox"
                       required
@@ -478,7 +550,7 @@ export function VolunteerPage() {
                 </FormSection>
 
                 {error && (
-                  <div role="alert" className="rounded-lg border border-danger/25 bg-danger/5 p-4 text-sm text-danger">
+                  <div role="alert" className="rounded-2xl border border-danger/25 bg-danger/5 p-4 text-sm text-danger">
                     {error}
                   </div>
                 )}
@@ -486,7 +558,7 @@ export function VolunteerPage() {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-blue px-5 py-3 text-sm font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,.25),0_14px_32px_rgba(37,99,235,.24)] transition hover:-translate-y-0.5 hover:bg-blue-dark hover:shadow-[inset_0_1px_0_rgba(255,255,255,.25),0_18px_38px_rgba(37,99,235,.3)] disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-full bg-foreground px-6 py-4 text-sm font-semibold text-foreground transition-colors hover:bg-foreground cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Handshake className="h-4 w-4" />}
                   {submitting ? "Submitting application" : "Submit volunteer application"}
@@ -500,26 +572,29 @@ export function VolunteerPage() {
         </div>
       </section>
 
-      <section className="py-20 md:py-24">
-        <div className="max-w-4xl mx-auto px-5 sm:px-8">
-          <div className="mb-10">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-blue mb-3">Before you apply</p>
-            <h2 className="text-3xl font-bold tracking-normal text-foreground">A few honest answers.</h2>
+      <section className="py-16 sm:py-20">
+        <div className="max-w-[80rem] mx-auto px-5 sm:px-8 grid lg:grid-cols-12 gap-12">
+          <div className="lg:col-span-4">
+            <h2 className="text-[clamp(2.25rem,4.2vw,3.75rem)] font-semibold tracking-[-0.045em] leading-[0.95] text-foreground">
+              Quick <span className="serif font-normal text-sky">answers.</span>
+            </h2>
           </div>
-          <div className="divide-y divide-border border-y border-border">
+          <div className="lg:col-span-8 space-y-3">
             {[
-              ["Is volunteering paid?", "No. These are unpaid service roles. We define responsibilities and time expectations clearly so nobody is surprised or quietly overloaded."],
-              ["Do I need to be a cybersecurity expert?", "Only some departments require deep security experience. Grading, curriculum, and technical mentoring do. Design, operations, communications, partnerships, technology, and impact roles are assessed against their own professional requirements."],
-              ["Can Cohort 1 participants apply?", "Yes. Cohort 1 participants understand the experience unusually well, but prior participation does not guarantee placement. Show the team what you can contribute now."],
-              ["Can I choose more than one department?", "Choose one primary department and, if it is genuinely realistic, one secondary option. We place people based on evidence, availability, team needs, and conflicts of interest."],
-              ["What happens after I apply?", "You will receive an email confirmation. The programme team will review applications, invite shortlisted people to a brief team conversation, and confirm responsibilities during onboarding."],
+              ["Is it paid?", "No. It\u2019s an unpaid volunteer role."],
+              ["Do I need to be a security expert?", "Only for grading, curriculum and tech mentoring. Other teams need other skills."],
+              ["Can Cohort 1 interns apply?", "Yes. Show us what you can do now."],
+              ["Can I pick more than one team?", "Pick one main team. You can add a second choice."],
+              ["What happens after I apply?", "You get an email. If shortlisted, we invite you to a short chat."],
             ].map(([question, answer]) => (
-              <details key={question} className="group py-5">
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-5 text-base font-semibold text-foreground">
+              <details key={question} className="group rounded-2xl border border-border bg-surface/60 transition-colors open:border-signal/40 open:bg-surface">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-5 px-6 py-5 text-lg font-semibold tracking-tight [&::-webkit-details-marker]:hidden">
                   {question}
-                  <span className="text-xl font-normal text-blue transition group-open:rotate-45">+</span>
+                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-surface-hover text-foreground transition group-open:rotate-45 group-open:bg-signal group-open:text-ink">
+                    <Plus className="h-4 w-4" />
+                  </span>
                 </summary>
-                <p className="mt-3 max-w-3xl text-sm leading-7 text-muted">{answer}</p>
+                <p className="px-6 pb-6 max-w-2xl text-muted">{answer}</p>
               </details>
             ))}
           </div>
@@ -539,12 +614,14 @@ function FormSection({
   children: React.ReactNode;
 }) {
   return (
-    <fieldset className="space-y-5">
-      <legend className="mb-5 flex items-center gap-3 text-lg font-semibold text-foreground">
-        <span className="font-mono text-xs text-blue">{number}</span>
+    <fieldset className="space-y-5 rounded-3xl border border-border bg-surface/70 p-6 backdrop-blur sm:p-8">
+      <legend className="float-left mb-6 flex w-full items-center gap-3 text-2xl font-semibold tracking-tight text-foreground">
+        <span className="grid h-10 w-10 place-items-center rounded-full bg-signal text-sm font-semibold text-ink">
+          {number}
+        </span>
         {title}
       </legend>
-      {children}
+      <div className="clear-both space-y-5">{children}</div>
     </fieldset>
   );
 }
@@ -566,7 +643,7 @@ function Field({
         {label} {required && <span className="text-danger" aria-hidden="true">*</span>}
       </span>
       {hint && <span className="mb-2 block text-xs leading-5 text-muted">{hint}</span>}
-      <div className="[&_input]:w-full [&_input]:rounded-lg [&_input]:border [&_input]:border-border [&_input]:bg-surface/90 [&_input]:px-3.5 [&_input]:py-2.5 [&_input]:text-sm [&_input]:text-foreground [&_input]:shadow-[inset_0_1px_0_rgba(255,255,255,.75),0_6px_18px_rgba(15,23,42,.04)] [&_input]:outline-none [&_input]:transition [&_input]:focus:border-blue [&_input]:focus:ring-2 [&_input]:focus:ring-blue/15 [&_select]:w-full [&_select]:rounded-lg [&_select]:border [&_select]:border-border [&_select]:bg-surface/90 [&_select]:px-3.5 [&_select]:py-2.5 [&_select]:text-sm [&_select]:text-foreground [&_select]:shadow-[inset_0_1px_0_rgba(255,255,255,.75),0_6px_18px_rgba(15,23,42,.04)] [&_select]:outline-none [&_select]:transition [&_select]:focus:border-blue [&_select]:focus:ring-2 [&_select]:focus:ring-blue/15 [&_textarea]:w-full [&_textarea]:resize-y [&_textarea]:rounded-lg [&_textarea]:border [&_textarea]:border-border [&_textarea]:bg-surface/90 [&_textarea]:px-3.5 [&_textarea]:py-2.5 [&_textarea]:text-sm [&_textarea]:leading-6 [&_textarea]:text-foreground [&_textarea]:shadow-[inset_0_1px_0_rgba(255,255,255,.75),0_6px_18px_rgba(15,23,42,.04)] [&_textarea]:outline-none [&_textarea]:transition [&_textarea]:focus:border-blue [&_textarea]:focus:ring-2 [&_textarea]:focus:ring-blue/15">
+      <div className="[&_input]:w-full [&_input]:rounded-2xl [&_input]:border [&_input]:border-border [&_input]:bg-background [&_input]:px-3.5 [&_input]:py-3.5 [&_input]:text-sm [&_input]:text-foreground [&_input]:outline-none [&_input]:transition [&_input]:placeholder:text-muted/70 [&_input]:hover:border-foreground/25 [&_input]:focus:border-blue [&_input]:focus:bg-surface [&_input]:focus:ring-4 [&_input]:focus:ring-blue/15 [&_select]:w-full [&_select]:rounded-2xl [&_select]:border [&_select]:border-border [&_select]:bg-background [&_select]:px-3.5 [&_select]:py-3.5 [&_select]:text-sm [&_select]:text-foreground [&_select]:outline-none [&_select]:transition [&_select]:placeholder:text-muted/70 [&_select]:hover:border-foreground/25 [&_select]:focus:border-blue [&_select]:focus:bg-surface [&_select]:focus:ring-4 [&_select]:focus:ring-blue/15 [&_textarea]:w-full [&_textarea]:rounded-2xl [&_textarea]:border [&_textarea]:border-border [&_textarea]:bg-background [&_textarea]:px-3.5 [&_textarea]:py-3.5 [&_textarea]:text-sm [&_textarea]:text-foreground [&_textarea]:outline-none [&_textarea]:transition [&_textarea]:placeholder:text-muted/70 [&_textarea]:hover:border-foreground/25 [&_textarea]:focus:border-blue [&_textarea]:focus:bg-surface [&_textarea]:focus:ring-4 [&_textarea]:focus:ring-blue/15 [&_textarea]:resize-y [&_textarea]:leading-6">
         {children}
       </div>
     </label>

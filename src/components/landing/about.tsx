@@ -1,94 +1,57 @@
-"use client";
-
 import Image from "next/image";
 
-
-const features = [
+const steps = [
   {
-    emoji: "⚡",
-    title: "You either do the work or you're out",
-    desc: "Every stage ends with a report. If the grader passes you, you move on. If not, you revise until the deadline. No participation trophies.",
-    color: "blue",
+    title: "Do real work",
+    desc: "Investigate attacks. Write reports.",
+    image: "/images/tracks/soc-analyst.jpg",
   },
   {
-    emoji: "👥",
-    title: "Graded by real people",
-    desc: "Not a quiz engine. Real cybersecurity practitioners read your reports and give you the kind of feedback you'd get in a working SOC.",
-    color: "cyan",
+    title: "Get expert feedback",
+    desc: "Real security pros check your work.",
+    image: "/images/programs/mentorship.jpg",
   },
   {
-    emoji: "🏆",
-    title: "Proof you can show an employer",
-    desc: "Every stage produces an artefact — a writeup, a forensic report, a pentest finding. By Stage 5 you have a portfolio, not just a certificate.",
-    color: "amber",
-  },
-  {
-    emoji: "💼",
-    title: "We pay for your certs",
-    desc: "Make it to Stage 5 and we cover your Security+ or ISO 27001 voucher. Weekly data credits too, if cost is what's in your way.",
-    color: "emerald",
+    title: "Earn free certs",
+    desc: "Reach Stage 5 and we pay for your exam.",
+    image: "/images/programs/tech-spotlight.jpg",
   },
 ];
 
 export function About() {
   return (
-    <section
-      id="program"
-      aria-labelledby="program-heading"
-      className="relative py-28 sm:py-36 bg-background bg-scan overflow-hidden"
-    >
-      {/* Decorative elements */}
-      <div className="crosshair bottom-[15%] right-[12%] hidden lg:block" aria-hidden="true" />
-      <div className="crosshair top-[20%] left-[8%] hidden lg:block" aria-hidden="true" />
-      <div className="orb orb-blue w-[350px] h-[350px] top-[5%] right-[0%] hidden lg:block" aria-hidden="true" />
-      <div className="orb orb-cyan w-[200px] h-[200px] bottom-[10%] left-[5%] hidden lg:block" style={{ animationDelay: "-8s" }} aria-hidden="true" />
-      <div className="absolute top-[30%] right-[6%] w-14 h-14 border border-blue/8 rounded-full float-medium hidden lg:block" aria-hidden="true" />
-      <div className="absolute bottom-[20%] left-[12%] w-3 h-3 bg-amber/20 rounded-full pulse-glow hidden lg:block" aria-hidden="true" />
-      <div className="ring-dashed w-[120px] h-[120px] top-[15%] right-[20%] ring-spin hidden lg:block" aria-hidden="true" />
-      <div className="hex-grid" aria-hidden="true" />
+    <section id="program" aria-labelledby="program-heading" className="scroll-mt-20 py-16 sm:py-20">
+      <div className="max-w-[80rem] mx-auto px-5 sm:px-8">
+        <h2
+          id="program-heading"
+          data-reveal
+          className="text-[clamp(2.25rem,4.2vw,3.75rem)] font-semibold leading-[1] tracking-[-0.045em]"
+        >
+          Not a course. <span className="serif font-normal text-sky">A real internship.</span>
+        </h2>
 
-      <div className="relative z-[1] max-w-6xl mx-auto px-5 sm:px-8">
-        {/* Header with image */}
-        <div className="grid lg:grid-cols-2 gap-12 items-center mb-16">
-          <div data-aos="fade-up">
-            <p className="text-xs font-medium text-blue uppercase tracking-[0.15em] mb-3">
-              How it works
-            </p>
-            <h2 id="program-heading" className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
-              This is not a course. It is an internship.
-            </h2>
-            <p className="mt-4 text-base text-muted leading-relaxed">
-              You will not sit through lectures. You will investigate a simulated
-              breach, find the flaws, write the report, and defend it. Most people
-              who start don&apos;t finish. The ones who do have something real to show.
-            </p>
-          </div>
-
-          <div className="hidden lg:block" data-aos="fade-left" data-aos-delay="200">
-            <div className="relative rounded-2xl overflow-hidden glass-card-elevated glass-shine h-[280px]">
-              <Image
-                src="/images/hero-3.jpg"
-                alt="Young professionals building careers"
-                fill
-                className="object-cover"
-                sizes="(min-width: 1024px) 500px, 0px"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
-            </div>
-          </div>
-        </div>
-
-        <div className="grid sm:grid-cols-2 gap-5">
-          {features.map((f, i) => (
+        <div className="mt-10 grid gap-5 md:grid-cols-3">
+          {steps.map((step, i) => (
             <article
-              key={f.title}
-              data-aos="fade-up"
-              data-aos-delay={i * 100}
-              className="glass-card glass-shine rounded-2xl p-7 group"
+              key={step.title}
+              data-reveal
+              style={{ "--d": i } as React.CSSProperties}
+              className="group flex flex-col rounded-3xl border border-border bg-surface/70 p-4 backdrop-blur transition-transform duration-500 hover:-translate-y-1"
             >
-              <span className="text-3xl block mb-4" aria-hidden="true">{f.emoji}</span>
-              <h3 className="text-sm font-semibold text-foreground mb-1.5">{f.title}</h3>
-              <p className="text-sm text-muted leading-relaxed">{f.desc}</p>
+              <div className="relative aspect-[4/3] overflow-hidden rounded-2xl">
+                <Image
+                  src={step.image}
+                  alt=""
+                  fill
+                  sizes="(min-width: 768px) 30vw, 90vw"
+                  className="object-cover transition duration-700 group-hover:scale-110"
+                />
+              </div>
+              <div className="px-2 pb-2 pt-5">
+                <span className="text-sm font-semibold text-lime">0{i + 1}</span>
+                <h3 className="mt-1 text-2xl font-semibold tracking-tight">{step.title}</h3>
+                <p className="mt-1 text-muted">{step.desc}</p>
+              </div>
             </article>
           ))}
         </div>

@@ -1,99 +1,192 @@
 "use client";
 
-const general = [
-  { num: 0, title: "Onboarding", desc: "Set up your environment, meet your cohort, complete your first security challenge." },
-  { num: 1, title: "Security Mindset", desc: "Think like a defender and an attacker. Risk thinking, threat modeling, attack surfaces." },
-  { num: 2, title: "Core Infrastructure", desc: "Networks, systems, cloud — understand the environments you'll be protecting or testing." },
-  { num: 3, title: "Offensive & Defensive Basics", desc: "Vulnerability scanning, log analysis, basic exploitation. See both sides of the coin." },
-  { num: 4, title: "Real-World Simulation", desc: "A cross-domain scenario that tests everything. Defend, attack, document, report." },
+import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
+
+const stages = [
+  { num: 0, title: "Onboarding", image: "/images/hero-1.jpg" },
+  { num: 1, title: "Security Mindset", image: "/images/stock/coding-monitors.jpg" },
+  { num: 2, title: "Core Infrastructure", image: "/images/stock/server-room-analyst.jpg" },
+  { num: 3, title: "Attack & Defence Basics", image: "/images/tracks/soc-analyst.jpg" },
+  { num: 4, title: "Real-World Simulation", image: "/images/programs/workshops.jpg" },
+  { num: 5, title: "Choose Your Track", image: "/images/stock/team-coding.jpg" },
+  { num: 6, title: "Deep Dive", image: "/images/tracks/ethical-hacking.jpg" },
+  { num: 7, title: "Advanced Operations", image: "/images/tracks/grc.png" },
+  { num: 8, title: "Team Project", image: "/images/programs/mentorship.jpg" },
+  { num: 9, title: "Capstone", image: "/images/programs/tech-spotlight.jpg" },
 ];
 
-const specialized = [
-  { num: 5, title: "Choose Your Track", desc: "SOC, Ethical Hacking, or GRC — pick the domain that matches your career goals." },
-  { num: 6, title: "Domain Deep-Dive", desc: "Hands-on labs with industry-standard tools specific to your chosen track." },
-  { num: 7, title: "Advanced Operations", desc: "Complex scenarios that push your expertise — no hand-holding, just execution." },
-  { num: 8, title: "Team Engagement", desc: "Work cross-functionally. Build, break, or audit real systems with your team." },
-  { num: 9, title: "Capstone", desc: "Final project judged by industry professionals. Prove you're ready." },
-];
-
-function StageItem({ s, i, variant }: { s: typeof general[0]; i: number; variant: "blue" | "dark" }) {
-  const isBlue = variant === "blue";
-  return (
-    <li
-      data-aos="fade-up"
-      data-aos-delay={i * 80}
-      className="flex gap-5 group"
-    >
-      <div className="relative flex flex-col items-center shrink-0">
-        <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold transition-all duration-300 ${
-          isBlue
-            ? "bg-blue/[0.07] text-blue group-hover:bg-blue group-hover:text-white"
-            : "bg-amber/[0.07] text-amber group-hover:bg-amber group-hover:text-white"
-        }`}>
-          {s.num}
-        </div>
-        <div className={`w-px flex-1 mt-2 ${isBlue ? "bg-blue/10" : "bg-amber/10"}`} />
-      </div>
-      <div className="pb-8 pt-1">
-        <h3 className="text-sm font-semibold text-foreground">{s.title}</h3>
-        <p className="text-sm text-muted mt-1 leading-relaxed">{s.desc}</p>
-      </div>
-    </li>
-  );
-}
-
+/**
+ * On desktop the section pins while vertical scroll drives the stage track
+ * sideways. The card nearest the centre of the screen lights up and the dot
+ * rail below follows it. On small screens it is a plain list.
+ */
 export function Stages() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const trackRef = useRef<HTMLOListElement>(null);
+  const [distance, setDistance] = useState(0);
+  const [active, setActive] = useState(0);
+
+  useEffect(() => {
+    const desktop = window.matchMedia("(min-width: 1024px)");
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
+    let raf = 0;
+
+    const measure = () => {
+      const track = trackRef.current;
+      if (!track || !desktop.matches || reduce.matches) {
+        setDistance(0);
+        return;
+      }
+      setDistance(Math.max(0, track.scrollWidth - window.innerWidth));
+    };
+
+    const onScroll = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const section = sectionRef.current;
+        const track = trackRef.current;
+        if (!section || !track) return;
+        const pinned = desktop.matches && !reduce.matches;
+        const max = section.offsetHeight - window.innerHeight;
+        const p = max > 0 ? Math.min(1, Math.max(0, -section.getBoundingClientRect().top / max)) : 0;
+        track.style.transform = pinned ? `translate3d(${-p * Math.max(0, track.scrollWidth - window.innerWidth)}px,0,0)` : "";
+
+        // Light up whichever card sits closest to the middle of the screen.
+        const cx = window.innerWidth / 2;
+        const cy = window.innerHeight / 2;
+        const cards = track.querySelectorAll<HTMLElement>("[data-stage]");
+        let best = 0;
+        let bestDist = Infinity;
+        cards.forEach((card, i) => {
+          const r = card.getBoundingClientRect();
+          const d = pinned ? Math.abs(r.left + r.width / 2 - cx) : Math.abs(r.top + r.height / 2 - cy);
+          if (d < bestDist) {
+            bestDist = d;
+            best = i;
+          }
+        });
+        cards.forEach((card, i) => {
+          card.dataset.active = String(i === best);
+        });
+        setActive(best);
+      });
+    };
+
+    raf = requestAnimationFrame(() => {
+      measure();
+      onScroll();
+    });
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", measure);
+    desktop.addEventListener("change", measure);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", measure);
+      desktop.removeEventListener("change", measure);
+    };
+  }, []);
+
+  const pinned = distance > 0;
+
   return (
     <section
+      ref={sectionRef}
       id="stages"
       aria-labelledby="stages-heading"
-      className="relative py-28 sm:py-36 bg-background bg-scan overflow-hidden"
+      className="relative scroll-mt-20"
+      style={pinned ? { height: `calc(100vh + ${distance}px)` } : undefined}
     >
-      {/* Decorative elements */}
-      <div className="crosshair top-[10%] left-[12%] hidden lg:block" aria-hidden="true" />
-      <div className="crosshair bottom-[15%] right-[10%] hidden lg:block" aria-hidden="true" />
-      <div className="orb orb-blue w-[300px] h-[300px] top-[0%] left-[50%] hidden lg:block" aria-hidden="true" />
-      <div className="orb orb-amber w-[250px] h-[250px] bottom-[5%] right-[0%] hidden lg:block" style={{ animationDelay: "-7s" }} aria-hidden="true" />
-      <div className="absolute top-[15%] right-[8%] w-12 h-12 border border-amber/10 rounded-xl rotate-45 float-delayed hidden lg:block" aria-hidden="true" />
-      <div className="absolute bottom-[20%] left-[6%] w-3 h-3 bg-blue/15 rounded-full pulse-glow hidden lg:block" aria-hidden="true" />
-      <div className="ring-dashed w-[100px] h-[100px] top-[50%] left-[48%] ring-spin hidden lg:block" aria-hidden="true" />
-      <div className="hex-grid" aria-hidden="true" />
+      <div className={pinned ? "sticky top-0 flex h-screen flex-col justify-center overflow-hidden pt-16" : "py-16"}>
+        <ol
+          ref={trackRef}
+          className="flex flex-col gap-4 px-5 sm:px-8 lg:w-max lg:flex-row lg:items-center lg:gap-5 lg:pl-[max(2rem,calc((100vw-80rem)/2+2rem))] lg:pr-[40vw] will-change-transform"
+          role="list"
+        >
+          <li className="mb-10 flex max-w-xl flex-col justify-center lg:mb-0 lg:w-[24rem] lg:shrink-0 lg:pr-8">
+            <h2 className="sr-only">The journey</h2>
+            <p
+              id="stages-heading"
+              className="text-[clamp(2.25rem,4.2vw,3.75rem)] font-semibold leading-[1] tracking-[-0.045em] text-foreground"
+            >
+              10 stages. <span className="serif font-normal text-sky">One at a time.</span>
+            </p>
+            <p className="mt-5 text-lg text-muted">Pass a stage to unlock the next.</p>
+            {pinned && <p className="mt-8 text-sm text-muted">Keep scrolling →</p>}
+          </li>
 
-      <div className="relative z-[1] max-w-6xl mx-auto px-5 sm:px-8">
-        <div className="max-w-2xl" data-aos="fade-up">
-          <p className="text-xs font-medium text-blue uppercase tracking-[0.15em] mb-3">
-            The journey
-          </p>
-          <h2 id="stages-heading" className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
-            10 stages. Two phases.
-          </h2>
-          <p className="mt-4 text-base text-muted leading-relaxed">
-            Stages 0–4 build your security foundation across all domains. At Stage 5, you
-            choose a specialization and go deep.
-          </p>
-        </div>
+          {stages.map((s) => {
+            const track = s.num >= 5;
+            return (
+              <li
+                key={s.num}
+                data-stage
+                data-active="false"
+                className="group relative flex flex-col overflow-hidden rounded-3xl border border-border bg-surface/80 p-3 backdrop-blur transition-all duration-500 ease-out data-[active=true]:-translate-y-2 data-[active=true]:border-lime/50 data-[active=true]:shadow-[0_30px_60px_-30px_rgba(59,108,255,.45)] lg:w-[17rem] lg:shrink-0"
+              >
+                <div className="relative h-44 overflow-hidden rounded-2xl">
+                  <Image
+                    src={s.image}
+                    alt=""
+                    fill
+                    sizes="272px"
+                    className="object-cover grayscale-[70%] transition duration-700 group-data-[active=true]:scale-110 group-data-[active=true]:grayscale-0"
+                  />
+                  <span
+                    className={`absolute left-3 top-3 rounded-full px-3 py-1 text-xs font-semibold backdrop-blur ${
+                      track ? "bg-signal text-ink" : "bg-white/85 text-ink"
+                    }`}
+                  >
+                    {s.num === 5 ? "Pick your track" : track ? "Your track" : "The basics"}
+                  </span>
+                </div>
+                <div className="flex items-end justify-between gap-3 px-3 pb-3 pt-4">
+                  <h3 className="text-lg font-semibold leading-tight tracking-tight">
+                    <span className="sr-only">Stage {s.num}: </span>
+                    {s.title}
+                  </h3>
+                  <span
+                    className="text-6xl font-semibold leading-none tracking-[-0.06em] text-foreground/15 transition-colors duration-500 group-data-[active=true]:text-lime"
+                    aria-hidden="true"
+                  >
+                    {s.num}
+                  </span>
+                </div>
+              </li>
+            );
+          })}
+        </ol>
 
-        <div className="mt-16 grid lg:grid-cols-2 gap-12 lg:gap-16">
-          <div>
-            <div className="flex items-center gap-3 mb-8" data-aos="fade-up">
-              <span className="text-xs font-semibold text-white bg-blue px-3.5 py-1.5 rounded-full">Phase 1</span>
-              <span className="text-sm font-medium text-foreground">General Foundation</span>
+        {pinned && (
+          <div className="mx-auto mt-12 w-full max-w-[80rem] px-8" aria-hidden="true">
+            <div className="relative flex items-center justify-between">
+              <div className="absolute inset-x-0 top-1/2 h-px -translate-y-1/2 bg-border" />
+              <div
+                className="absolute left-0 top-1/2 h-0.5 -translate-y-1/2 bg-lime transition-[width] duration-500"
+                style={{ width: `${(active / (stages.length - 1)) * 100}%` }}
+              />
+              {stages.map((s, i) => (
+                <span
+                  key={s.num}
+                  className={`relative grid place-items-center rounded-full text-xs font-semibold transition-all duration-500 ${
+                    i === active
+                      ? "h-9 w-9 bg-signal text-ink shadow-[0_0_0_6px_rgba(198,242,78,.2)]"
+                      : i < active
+                        ? "h-3 w-3 bg-lime"
+                        : "h-3 w-3 bg-border"
+                  }`}
+                >
+                  {i === active ? s.num : ""}
+                </span>
+              ))}
             </div>
-            <ol className="relative" role="list" aria-label="General stages">
-              {general.map((s, i) => <StageItem key={s.num} s={s} i={i} variant="blue" />)}
-            </ol>
-          </div>
-
-          <div>
-            <div className="flex items-center gap-3 mb-8" data-aos="fade-up" data-aos-delay="100">
-              <span className="text-xs font-semibold text-white bg-amber px-3.5 py-1.5 rounded-full">Phase 2</span>
-              <span className="text-sm font-medium text-foreground">Specialization</span>
+            <div className="mt-4 flex justify-between text-xs text-muted">
+              <span>The basics · 0–4</span>
+              <span>Your track · 5–9</span>
             </div>
-            <ol className="relative" role="list" aria-label="Specialized stages">
-              {specialized.map((s, i) => <StageItem key={s.num} s={s} i={i} variant="dark" />)}
-            </ol>
           </div>
-        </div>
+        )}
       </div>
     </section>
   );
