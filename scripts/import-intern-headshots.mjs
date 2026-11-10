@@ -11,23 +11,37 @@
  *   2. A local folder (e.g. the unzipped Drive download). Files are matched
  *      to people when the filename contains at least two of their names.
  *
- * Re-running is safe: existing photos are kept unless a new one is found.
+ * Re-running is safe: existing photos are kept unless a new one is found, and
+ * people added by hand stay in the list.
+ *
+ * To add or replace one person's photo (they are added if not listed yet):
+ *
+ *   node scripts/import-intern-headshots.mjs --photo "<Full Name>" <image>
  */
 import fs from "node:fs";
 import path from "node:path";
 import sharp from "sharp";
 
-const [csvPath, folder] = process.argv.slice(2);
-if (!csvPath) {
+const args = process.argv.slice(2);
+const single = args[0] === "--photo";
+const [csvPath, folder] = single ? [] : args;
+if (single ? args.length !== 3 : !csvPath) {
   console.error("usage: node scripts/import-intern-headshots.mjs <form.csv> [photos-folder]");
+  console.error('       node scripts/import-intern-headshots.mjs --photo "<Full Name>" <image>');
   process.exit(1);
 }
 
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..");
 const OUT_DIR = path.join(ROOT, "public/images/interns");
 const OUT_JSON = path.join(ROOT, "src/content/interns.json");
-// Photos where the smart crop misses the face.
-const CROP_TOP = { "richard-uwumwonse": 0.12, "alex-mulinge": 0.12, "tamera-obiageri-okafor": 0.4 };
+// Photos where the smart crop misses the face: a fixed vertical position
+// (y: 0 = top of the photo, 1 = bottom), optionally zoomed in for full-length shots.
+const CROP = {
+  "richard-uwumwonse": { y: 0.12 },
+  "alex-mulinge": { y: 0.12 },
+  "tamera-obiageri-okafor": { y: 0.4 },
+  "sanni-oluwanifemi": { y: 0.36, zoom: 1.6 },
+};
 const IMAGE_EXT = /\.(jpe?g|png|webp|heic|heif|avif|gif|tiff?)$/i;
 
 function parseCsv(text) {
@@ -57,6 +71,34 @@ const tidyName = (n) => n.trim().split(/\s+/).map(tidyWord).join(" ");
 const tokens = (s) => s.toLowerCase().normalize("NFKD").replace(/[^a-z\s]/g, " ").split(/\s+/).filter((t) => t.length > 1);
 const slugify = (s) => tokens(s).join("-");
 
+// Square 640px JPEG. Smart crop suits most photos; CROP pins the rest.
+async function saveSquare(buf, slug) {
+  const img = sharp(await sharp(buf).rotate().toBuffer());
+  const { width: w, height: h } = await img.metadata();
+  const fix = CROP[slug];
+  const side = Math.round(Math.min(w, h) / (fix?.zoom ?? 1));
+  const square = fix
+    ? img.extract({ left: Math.round((w - side) / 2), top: Math.round((h - side) * fix.y), width: side, height: side }).resize(640, 640)
+    : img.resize(640, 640, { fit: "cover", position: sharp.strategy.attention });
+  fs.mkdirSync(OUT_DIR, { recursive: true });
+  await square.jpeg({ quality: 80, mozjpeg: true }).toFile(path.join(OUT_DIR, `${slug}.jpg`));
+  return `/images/interns/${slug}.jpg`;
+}
+
+const previous = fs.existsSync(OUT_JSON) ? JSON.parse(fs.readFileSync(OUT_JSON, "utf8")) : [];
+
+if (single) {
+  const name = tidyName(args[1]);
+  const slug = slugify(name);
+  const photo = await saveSquare(fs.readFileSync(args[2]), slug);
+  const entry = previous.find((x) => x.slug === slug);
+  if (entry) entry.photo = photo;
+  else previous.push({ name, slug, photo, manual: true });
+  fs.writeFileSync(OUT_JSON, JSON.stringify(previous, null, 2) + "\n");
+  console.log(`${entry ? "Updated" : "Added"} ${name} -> ${photo}`);
+  process.exit(0);
+}
+
 // One person per entry. Repeat submissions ("Salman Butt" after "Salman Khalil
 // Butt") merge when one name's words are all inside the other's.
 const [, ...rows] = parseCsv(fs.readFileSync(csvPath, "utf8"));
@@ -79,7 +121,6 @@ for (const [, rawName, link] of rows) {
   }
 }
 
-const previous = fs.existsSync(OUT_JSON) ? JSON.parse(fs.readFileSync(OUT_JSON, "utf8")) : [];
 const localFiles = folder
   ? fs.readdirSync(folder, { recursive: true }).map(String).filter((f) => IMAGE_EXT.test(f))
   : [];
@@ -101,7 +142,6 @@ function fromFolder(name) {
   return best ? fs.readFileSync(path.join(folder, best)) : null;
 }
 
-fs.mkdirSync(OUT_DIR, { recursive: true });
 const out = [];
 const missing = [];
 for (const p of people) {
@@ -113,17 +153,7 @@ for (const p of people) {
   let photo = previous.find((x) => x.slug === slug)?.photo ?? null;
   if (buf) {
     try {
-      // Smart crop suits most photos; the few it gets wrong are pinned to a
-      // fixed vertical position (0 = top of the photo, 1 = bottom).
-      const img = sharp(await sharp(buf).rotate().toBuffer());
-      const { width: w, height: h } = await img.metadata();
-      const side = Math.min(w, h);
-      const square =
-        slug in CROP_TOP
-          ? img.extract({ left: Math.round((w - side) / 2), top: Math.round((h - side) * CROP_TOP[slug]), width: side, height: side }).resize(640, 640)
-          : img.resize(640, 640, { fit: "cover", position: sharp.strategy.attention });
-      await square.jpeg({ quality: 80, mozjpeg: true }).toFile(path.join(OUT_DIR, `${slug}.jpg`));
-      photo = `/images/interns/${slug}.jpg`;
+      photo = await saveSquare(buf, slug);
     } catch (e) {
       console.warn(`  could not read image for ${p.name}: ${e.message}`);
     }
@@ -131,6 +161,9 @@ for (const p of people) {
   if (!photo) missing.push(p.name);
   out.push({ name: p.name, slug, photo });
 }
+
+// Keep people who were added by hand rather than through the form.
+out.push(...previous.filter((x) => x.manual && !out.some((o) => o.slug === x.slug)));
 
 fs.writeFileSync(OUT_JSON, JSON.stringify(out, null, 2) + "\n");
 console.log(`${out.length} interns, ${out.length - missing.length} with photos -> ${path.relative(ROOT, OUT_JSON)}`);

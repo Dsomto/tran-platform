@@ -8,6 +8,7 @@ export const interns: Intern[] = data;
 // Clear, close portraits that lead the hero mosaic and face walls.
 const SPOTLIGHT = [
   "calvin-trammell",
+  "nwobodo-chukwuemeka-victor",
   "bukola-arikawe",
   "quadri-durodola",
   "nathalie-diane-tchoumi-mbiami",

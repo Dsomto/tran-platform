@@ -523,5 +523,11 @@
     "name": "Orji Ogechukwu Confidence",
     "slug": "orji-ogechukwu-confidence",
     "photo": "/images/interns/orji-ogechukwu-confidence.jpg"
+  },
+  {
+    "name": "Nwobodo Chukwuemeka Victor",
+    "slug": "nwobodo-chukwuemeka-victor",
+    "photo": "/images/interns/nwobodo-chukwuemeka-victor.jpg",
+    "manual": true
   }
 ]
