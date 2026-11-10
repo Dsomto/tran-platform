@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { InternFace } from "@/components/landing/intern-face";
 import { internFor, type Testimonial } from "@/lib/testimonials";
 
@@ -31,7 +32,9 @@ export function StoryCard({ story, index }: { story: Testimonial; index: number 
       <figcaption className="mt-5 flex items-center gap-3">
         <InternFace intern={internFor(story.name)} index={index} sizes="44px" className="h-11 w-11 shrink-0 rounded-full" />
         <span className="min-w-0">
-          <span className="block truncate font-semibold">{story.name}</span>
+          <Link href={`/interns/${internFor(story.name).slug}`} className="block truncate font-semibold hover:underline">
+            {story.name}
+          </Link>
           {story.role && <span className="block truncate text-sm text-muted">{story.role}</span>}
         </span>
       </figcaption>

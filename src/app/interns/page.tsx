@@ -7,7 +7,9 @@ import { SiteBackground } from "@/components/landing/site-background";
 import { InternFace } from "@/components/landing/intern-face";
 import { interns, internsPhotoFirst } from "@/lib/interns";
 import { testimonials } from "@/lib/testimonials";
-import { StoryCard } from "./story-card";
+import { StoryList } from "./story-list";
+import { InternWall } from "@/components/landing/intern-wall";
+import { ProjectsSection } from "./projects-section";
 
 export const metadata: Metadata = {
   title: "Meet the interns",
@@ -54,12 +56,20 @@ export default function InternsRoute() {
             <p className="rise rise-2 mt-6 max-w-sm text-lg text-foreground-muted">
               Real people. Real work. Their stories, in their own words.
             </p>
-            <a
-              href="#stories"
-              className="rise rise-3 mt-8 inline-flex h-14 items-center rounded-full bg-foreground px-8 text-[15px] font-semibold text-background transition-colors hover:bg-signal hover:text-ink"
-            >
-              Read their stories
-            </a>
+            <div className="rise rise-3 mt-8 flex flex-wrap gap-3">
+              <a
+                href="#stories"
+                className="inline-flex h-14 items-center rounded-full bg-foreground px-8 text-[15px] font-semibold text-background transition-colors hover:bg-signal hover:text-ink"
+              >
+                Read their stories
+              </a>
+              <a
+                href="#projects"
+                className="inline-flex h-14 items-center rounded-full border border-border px-8 text-[15px] font-semibold transition-colors hover:border-foreground"
+              >
+                See what they built
+              </a>
+            </div>
           </div>
 
           <div className="grid grid-cols-3 grid-rows-[repeat(3,7.5rem)] gap-3 sm:grid-rows-[repeat(3,9rem)]">
@@ -79,21 +89,7 @@ export default function InternsRoute() {
           </div>
         </section>
 
-        <section aria-label="All interns" className="max-w-[80rem] mx-auto px-5 py-12 sm:px-8">
-          <ul className="grid grid-cols-3 gap-x-3 gap-y-6 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8" role="list">
-            {internsPhotoFirst.map((intern, i) => (
-              <li key={intern.slug} data-reveal className="group">
-                <InternFace
-                  intern={intern}
-                  index={i}
-                  sizes="(min-width: 1024px) 140px, 30vw"
-                  className="aspect-square rounded-2xl transition-transform duration-500 group-hover:-translate-y-1"
-                />
-                <p className="mt-2 text-center text-xs font-medium leading-tight text-foreground/80">{intern.name}</p>
-              </li>
-            ))}
-          </ul>
-        </section>
+        <ProjectsSection />
 
         <section id="stories" aria-labelledby="stories-heading" className="scroll-mt-24 max-w-[80rem] mx-auto px-5 py-16 sm:px-8">
           <h2
@@ -103,12 +99,17 @@ export default function InternsRoute() {
           >
             In their <span className="serif font-normal text-sky">words.</span>
           </h2>
-          <div className="mt-10 columns-1 gap-5 md:columns-2 lg:columns-3">
-            {testimonials.map((t, i) => (
-              <StoryCard key={t.name + i} story={t} index={i} />
-            ))}
-          </div>
+          <StoryList stories={testimonials} />
         </section>
+
+        <InternWall
+          link={{ href: "/interns/board", label: "Open the intern board" }}
+          heading={
+            <>
+              All {interns.length}, <span className="serif font-normal text-sky">one cohort.</span>
+            </>
+          }
+        />
 
         <CTA />
       </main>

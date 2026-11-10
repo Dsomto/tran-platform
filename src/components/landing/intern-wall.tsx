@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { interns, internsPhotoFirst } from "@/lib/interns";
@@ -6,7 +7,14 @@ import { InternFace } from "./intern-face";
 // Two rows of faces drifting in opposite directions.
 const rows = [internsPhotoFirst.filter((_, i) => i % 2 === 0), internsPhotoFirst.filter((_, i) => i % 2 === 1)];
 
-export function InternWall() {
+export function InternWall({
+  heading = (
+    <>
+      Meet the <span className="serif font-normal text-sky">interns.</span>
+    </>
+  ),
+  link = { href: "/interns", label: `See all ${interns.length}` },
+}: { heading?: ReactNode; link?: { href: string; label: string } }) {
   return (
     <section aria-labelledby="interns-heading" className="overflow-hidden py-16 sm:py-20">
       <div className="max-w-[80rem] mx-auto flex flex-wrap items-end justify-between gap-4 px-5 sm:px-8">
@@ -15,13 +23,13 @@ export function InternWall() {
           data-reveal
           className="text-[clamp(2.25rem,4.2vw,3.75rem)] font-semibold tracking-[-0.045em]"
         >
-          Meet the <span className="serif font-normal text-sky">interns.</span>
+          {heading}
         </h2>
         <Link
-          href="/interns"
+          href={link.href}
           className="group inline-flex items-center gap-1.5 text-sm font-medium text-muted transition-colors hover:text-foreground"
         >
-          See all {interns.length}
+          {link.label}
           <ArrowUpRight className="h-4 w-4 transition-transform group-hover:rotate-45" aria-hidden="true" />
         </Link>
       </div>
