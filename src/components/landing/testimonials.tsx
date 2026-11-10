@@ -1,30 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
-const testimonials = [
-  {
-    quote:
-      "UBI pushed me harder than any bootcamp I've tried. The elimination pressure forced me to level up fast. I landed a SOC analyst role before the program even ended.",
-    name: "Aisha O.",
-    role: "SOC Analyst",
-    track: "SOC Analysis",
-  },
-  {
-    quote:
-      "The ethical hacking track is the real deal. The pentest labs were indistinguishable from actual client environments. This program prepared me for day-one impact.",
-    name: "Chidi E.",
-    role: "Penetration Tester",
-    track: "Ethical Hacking",
-  },
-  {
-    quote:
-      "As someone pivoting from IT to GRC, UBI gave me hands-on compliance experience that no certification could. The team projects were incredibly valuable.",
-    name: "Fatima A.",
-    role: "GRC Analyst",
-    track: "GRC",
-  },
-];
+import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
+import { featuredTestimonials as quotes, internFor, testimonials } from "@/lib/testimonials";
+import { InternFace } from "./intern-face";
 
 const ROTATE_MS = 8000;
 
@@ -34,11 +14,11 @@ export function Testimonials() {
 
   useEffect(() => {
     if (paused || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const id = window.setTimeout(() => setActive((a) => (a + 1) % testimonials.length), ROTATE_MS);
+    const id = window.setTimeout(() => setActive((a) => (a + 1) % quotes.length), ROTATE_MS);
     return () => window.clearTimeout(id);
   }, [active, paused]);
 
-  const t = testimonials[active];
+  const t = quotes[active];
 
   return (
     <section
@@ -49,50 +29,68 @@ export function Testimonials() {
       onMouseLeave={() => setPaused(false)}
     >
       <div className="max-w-[80rem] mx-auto px-5 sm:px-8">
-        <h2
-          id="testimonials-heading"
-          data-reveal
-          className="text-[clamp(2.25rem,4.2vw,3.75rem)] font-semibold tracking-[-0.045em]"
-        >
-          In their <span className="serif font-normal text-sky">words.</span>
-        </h2>
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <h2
+            id="testimonials-heading"
+            data-reveal
+            className="text-[clamp(2.25rem,4.2vw,3.75rem)] font-semibold tracking-[-0.045em]"
+          >
+            In their <span className="serif font-normal text-sky">words.</span>
+          </h2>
+          <Link
+            href="/interns#stories"
+            className="group inline-flex items-center gap-1.5 text-sm font-medium text-muted transition-colors hover:text-foreground"
+          >
+            Read all {testimonials.length} stories
+            <ArrowUpRight className="h-4 w-4 transition-transform group-hover:rotate-45" aria-hidden="true" />
+          </Link>
+        </div>
 
         <figure
           data-reveal
           aria-live="polite"
-          className="relative mt-10 overflow-hidden rounded-3xl border border-border bg-surface/70 p-8 backdrop-blur sm:p-12"
+          className="relative mt-10 grid gap-8 overflow-hidden rounded-3xl border border-border bg-surface/70 p-6 backdrop-blur sm:p-10 md:grid-cols-[13rem_1fr] md:items-center"
         >
-          <span className="absolute -top-8 right-8 text-[10rem] font-semibold leading-none text-lime/20" aria-hidden="true">
-            &ldquo;
-          </span>
-          <blockquote key={active} className="rise relative max-w-4xl">
-            <p className="text-[clamp(1.25rem,2vw,1.85rem)] font-medium leading-snug tracking-tight">{t.quote}</p>
-          </blockquote>
-          <figcaption className="relative mt-10 flex flex-wrap items-center justify-between gap-6">
-            <span className="flex items-center gap-4">
-              <span className="grid h-14 w-14 place-items-center rounded-full bg-signal text-lg font-semibold text-ink" aria-hidden="true">
-                {t.name.charAt(0)}
-              </span>
-              <span>
-                <span className="block font-semibold">{t.name}</span>
-                <span className="block text-sm text-muted">{t.role} · {t.track}</span>
-              </span>
+          <InternFace
+            key={`face-${active}`}
+            intern={internFor(t.name)}
+            index={active}
+            sizes="208px"
+            className="pop aspect-square w-32 rounded-t-[6rem] rounded-b-3xl md:w-full"
+          />
+          <div className="relative">
+            <span className="absolute -top-14 -left-2 text-[8rem] font-semibold leading-none text-lime/25" aria-hidden="true">
+              &ldquo;
             </span>
-            <span className="flex gap-2" role="tablist" aria-label="Graduates">
-              {testimonials.map((item, i) => (
-                <button
-                  key={item.name}
-                  type="button"
-                  role="tab"
-                  aria-selected={i === active}
-                  aria-label={item.name}
-                  onClick={() => setActive(i)}
-                  className={`h-3 rounded-full transition-all cursor-pointer ${i === active ? "w-10 bg-signal" : "w-3 bg-foreground/25"}`}
-                />
-              ))}
-            </span>
-          </figcaption>
+            <blockquote key={active} className="rise relative">
+              <p className="text-[clamp(1.15rem,1.8vw,1.6rem)] font-medium leading-snug tracking-tight">
+                {t.quote.join(" ")}
+              </p>
+            </blockquote>
+            <figcaption className="mt-6">
+              <span className="block font-semibold">{t.name}</span>
+              {t.role && <span className="block text-sm text-muted">{t.role}</span>}
+            </figcaption>
+          </div>
         </figure>
+
+        <div className="mt-6 flex flex-wrap gap-2" role="tablist" aria-label="Interns">
+          {quotes.map((q, i) => (
+            <button
+              key={q.name}
+              type="button"
+              role="tab"
+              aria-selected={i === active}
+              aria-label={q.name}
+              onClick={() => setActive(i)}
+              className={`cursor-pointer rounded-full p-0.5 transition-all ${
+                i === active ? "ring-2 ring-lime" : "opacity-60 hover:opacity-100"
+              }`}
+            >
+              <InternFace intern={internFor(q.name)} index={i} sizes="44px" className="h-11 w-11 rounded-full" />
+            </button>
+          ))}
+        </div>
       </div>
     </section>
   );

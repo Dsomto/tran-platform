@@ -11,6 +11,7 @@ import { Menu, X, ArrowLeft, ArrowRight, LogOut } from "lucide-react";
 const navLinks: [string, string][] = [
   ["Programme", "/#program"],
   ["Tracks", "/#tracks"],
+  ["Interns", "/interns"],
   ["Volunteer", "/volunteer"],
 ];
 

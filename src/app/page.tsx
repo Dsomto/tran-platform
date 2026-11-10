@@ -9,6 +9,7 @@ import { FAQ } from "@/components/landing/faq";
 import { CTA } from "@/components/landing/cta";
 import { Footer } from "@/components/landing/footer";
 import { StatsDashboard } from "@/components/landing/stats-dashboard";
+import { InternWall } from "@/components/landing/intern-wall";
 import { ScrollReveal } from "@/components/landing/scroll-reveal";
 import { SiteBackground } from "@/components/landing/site-background";
 import { getLandingStats } from "@/lib/landing-stats";
@@ -31,6 +32,7 @@ export default async function Home() {
         <Hero stats={stats} />
         <About />
         <StatsDashboard />
+        <InternWall />
         <Stages />
         <Tracks />
         <Gallery />

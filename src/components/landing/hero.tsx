@@ -3,6 +3,8 @@ import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import type { LandingStats } from "@/lib/landing-stats";
 import { CountUp } from "./count-up";
+import { InternFace } from "./intern-face";
+import { interns, internsPhotoFirst } from "@/lib/interns";
 
 const words = ["Learn by doing", "Expert feedback", "Free certification", "Fully online", "Real portfolio"];
 
@@ -49,6 +51,22 @@ export function Hero({ stats }: { stats: LandingStats }) {
               How it works
             </a>
           </div>
+          <a href="/interns" className="rise rise-3 group mt-8 inline-flex items-center gap-3">
+            <span className="flex -space-x-3" aria-hidden="true">
+              {internsPhotoFirst.slice(0, 5).map((intern, i) => (
+                <InternFace
+                  key={intern.slug}
+                  intern={intern}
+                  index={i}
+                  sizes="40px"
+                  className="h-10 w-10 rounded-full ring-2 ring-background transition-transform group-hover:-translate-y-0.5"
+                />
+              ))}
+            </span>
+            <span className="text-sm text-foreground-muted">
+              <span className="font-semibold text-foreground">{interns.length} interns</span> in Cohort 1
+            </span>
+          </a>
         </div>
 
         <div className="grid grid-cols-2 grid-rows-[repeat(3,8rem)] gap-3 sm:grid-rows-[repeat(3,9.5rem)]">

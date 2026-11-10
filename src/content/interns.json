@@ -1,0 +1,527 @@
+[
+  {
+    "name": "Lloyd Zwenyere",
+    "slug": "lloyd-zwenyere",
+    "photo": "/images/interns/lloyd-zwenyere.jpg"
+  },
+  {
+    "name": "Balqees Temitope Hamzat",
+    "slug": "balqees-temitope-hamzat",
+    "photo": "/images/interns/balqees-temitope-hamzat.jpg"
+  },
+  {
+    "name": "Zubair Sumayyah Ajike",
+    "slug": "zubair-sumayyah-ajike",
+    "photo": "/images/interns/zubair-sumayyah-ajike.jpg"
+  },
+  {
+    "name": "Oyesode Ayodeji Emmanuel",
+    "slug": "oyesode-ayodeji-emmanuel",
+    "photo": "/images/interns/oyesode-ayodeji-emmanuel.jpg"
+  },
+  {
+    "name": "Precious Kelechi Okafor",
+    "slug": "precious-kelechi-okafor",
+    "photo": "/images/interns/precious-kelechi-okafor.jpg"
+  },
+  {
+    "name": "Nnanna Adaobi Evelyn",
+    "slug": "nnanna-adaobi-evelyn",
+    "photo": "/images/interns/nnanna-adaobi-evelyn.jpg"
+  },
+  {
+    "name": "Treasure Fortune Osazee Ikpea",
+    "slug": "treasure-fortune-osazee-ikpea",
+    "photo": "/images/interns/treasure-fortune-osazee-ikpea.jpg"
+  },
+  {
+    "name": "Ebenezer Elikem Amankwah Ofori Dzam",
+    "slug": "ebenezer-elikem-amankwah-ofori-dzam",
+    "photo": "/images/interns/ebenezer-elikem-amankwah-ofori-dzam.jpg"
+  },
+  {
+    "name": "Muhammad Kamal Jibril",
+    "slug": "muhammad-kamal-jibril",
+    "photo": "/images/interns/muhammad-kamal-jibril.jpg"
+  },
+  {
+    "name": "Rasaq Ayomide",
+    "slug": "rasaq-ayomide",
+    "photo": "/images/interns/rasaq-ayomide.jpg"
+  },
+  {
+    "name": "Calvin Trammell",
+    "slug": "calvin-trammell",
+    "photo": "/images/interns/calvin-trammell.jpg"
+  },
+  {
+    "name": "Nathalie Diane Tchoumi Mbiami",
+    "slug": "nathalie-diane-tchoumi-mbiami",
+    "photo": "/images/interns/nathalie-diane-tchoumi-mbiami.jpg"
+  },
+  {
+    "name": "Richard Uwumwonse",
+    "slug": "richard-uwumwonse",
+    "photo": "/images/interns/richard-uwumwonse.jpg"
+  },
+  {
+    "name": "Benjamin Opeyemi Abraham",
+    "slug": "benjamin-opeyemi-abraham",
+    "photo": "/images/interns/benjamin-opeyemi-abraham.jpg"
+  },
+  {
+    "name": "Oluwatosin Deborah Ajinomisan",
+    "slug": "oluwatosin-deborah-ajinomisan",
+    "photo": "/images/interns/oluwatosin-deborah-ajinomisan.jpg"
+  },
+  {
+    "name": "Nwaka Ozioma Alberta",
+    "slug": "nwaka-ozioma-alberta",
+    "photo": "/images/interns/nwaka-ozioma-alberta.jpg"
+  },
+  {
+    "name": "Adedamola Adediran",
+    "slug": "adedamola-adediran",
+    "photo": "/images/interns/adedamola-adediran.jpg"
+  },
+  {
+    "name": "Bukola Arikawe",
+    "slug": "bukola-arikawe",
+    "photo": "/images/interns/bukola-arikawe.jpg"
+  },
+  {
+    "name": "Adebayo Aishat Oyebisi",
+    "slug": "adebayo-aishat-oyebisi",
+    "photo": "/images/interns/adebayo-aishat-oyebisi.jpg"
+  },
+  {
+    "name": "Samer Badawy",
+    "slug": "samer-badawy",
+    "photo": "/images/interns/samer-badawy.jpg"
+  },
+  {
+    "name": "Daniel Lawal",
+    "slug": "daniel-lawal",
+    "photo": "/images/interns/daniel-lawal.jpg"
+  },
+  {
+    "name": "Oluwanifemi Felix Oyeniyi",
+    "slug": "oluwanifemi-felix-oyeniyi",
+    "photo": "/images/interns/oluwanifemi-felix-oyeniyi.jpg"
+  },
+  {
+    "name": "David Taiwo Aanuoluwa",
+    "slug": "david-taiwo-aanuoluwa",
+    "photo": "/images/interns/david-taiwo-aanuoluwa.jpg"
+  },
+  {
+    "name": "Durvesh Chandrakant Patil",
+    "slug": "durvesh-chandrakant-patil",
+    "photo": "/images/interns/durvesh-chandrakant-patil.jpg"
+  },
+  {
+    "name": "Salman Khalil Butt",
+    "slug": "salman-khalil-butt",
+    "photo": "/images/interns/salman-khalil-butt.jpg"
+  },
+  {
+    "name": "Amina Mustapha Duze",
+    "slug": "amina-mustapha-duze",
+    "photo": "/images/interns/amina-mustapha-duze.jpg"
+  },
+  {
+    "name": "Alade MuhammadFathe Oluwatobiloba",
+    "slug": "alade-muhammadfathe-oluwatobiloba",
+    "photo": "/images/interns/alade-muhammadfathe-oluwatobiloba.jpg"
+  },
+  {
+    "name": "Stephanie Chinaza",
+    "slug": "stephanie-chinaza",
+    "photo": "/images/interns/stephanie-chinaza.jpg"
+  },
+  {
+    "name": "Gabriel Uwaechie",
+    "slug": "gabriel-uwaechie",
+    "photo": "/images/interns/gabriel-uwaechie.jpg"
+  },
+  {
+    "name": "Muhammad Alameen Abdullahi",
+    "slug": "muhammad-alameen-abdullahi",
+    "photo": "/images/interns/muhammad-alameen-abdullahi.jpg"
+  },
+  {
+    "name": "Oriaku Chioma Angela",
+    "slug": "oriaku-chioma-angela",
+    "photo": "/images/interns/oriaku-chioma-angela.jpg"
+  },
+  {
+    "name": "Olaniyan Sodiq Abiodun",
+    "slug": "olaniyan-sodiq-abiodun",
+    "photo": "/images/interns/olaniyan-sodiq-abiodun.jpg"
+  },
+  {
+    "name": "Onyeche Miracle Ugochukwu",
+    "slug": "onyeche-miracle-ugochukwu",
+    "photo": "/images/interns/onyeche-miracle-ugochukwu.jpg"
+  },
+  {
+    "name": "Francisca Umejesi Nkeiruka",
+    "slug": "francisca-umejesi-nkeiruka",
+    "photo": "/images/interns/francisca-umejesi-nkeiruka.jpg"
+  },
+  {
+    "name": "Ononogbu Daniella Iheoma",
+    "slug": "ononogbu-daniella-iheoma",
+    "photo": "/images/interns/ononogbu-daniella-iheoma.jpg"
+  },
+  {
+    "name": "Utibe Owoabasi Obot",
+    "slug": "utibe-owoabasi-obot",
+    "photo": "/images/interns/utibe-owoabasi-obot.jpg"
+  },
+  {
+    "name": "Jessica Ighoraye",
+    "slug": "jessica-ighoraye",
+    "photo": "/images/interns/jessica-ighoraye.jpg"
+  },
+  {
+    "name": "Quadri Durodola",
+    "slug": "quadri-durodola",
+    "photo": "/images/interns/quadri-durodola.jpg"
+  },
+  {
+    "name": "Thabiso Thelingoane",
+    "slug": "thabiso-thelingoane",
+    "photo": "/images/interns/thabiso-thelingoane.jpg"
+  },
+  {
+    "name": "Benedict Adjei",
+    "slug": "benedict-adjei",
+    "photo": "/images/interns/benedict-adjei.jpg"
+  },
+  {
+    "name": "Praise Olivia Mazana",
+    "slug": "praise-olivia-mazana",
+    "photo": "/images/interns/praise-olivia-mazana.jpg"
+  },
+  {
+    "name": "Sanni Oluwanifemi",
+    "slug": "sanni-oluwanifemi",
+    "photo": "/images/interns/sanni-oluwanifemi.jpg"
+  },
+  {
+    "name": "Chinonyelum Cynthia Asogwa",
+    "slug": "chinonyelum-cynthia-asogwa",
+    "photo": "/images/interns/chinonyelum-cynthia-asogwa.jpg"
+  },
+  {
+    "name": "Shedrach Nohense",
+    "slug": "shedrach-nohense",
+    "photo": "/images/interns/shedrach-nohense.jpg"
+  },
+  {
+    "name": "Aliu Muhammed Ohiada",
+    "slug": "aliu-muhammed-ohiada",
+    "photo": "/images/interns/aliu-muhammed-ohiada.jpg"
+  },
+  {
+    "name": "Hamza Hashim",
+    "slug": "hamza-hashim",
+    "photo": "/images/interns/hamza-hashim.jpg"
+  },
+  {
+    "name": "Oluwafisayomi Adekoya",
+    "slug": "oluwafisayomi-adekoya",
+    "photo": "/images/interns/oluwafisayomi-adekoya.jpg"
+  },
+  {
+    "name": "Ojukwu Immaculeta Chiamaka",
+    "slug": "ojukwu-immaculeta-chiamaka",
+    "photo": "/images/interns/ojukwu-immaculeta-chiamaka.jpg"
+  },
+  {
+    "name": "Daniel Williams",
+    "slug": "daniel-williams",
+    "photo": "/images/interns/daniel-williams.jpg"
+  },
+  {
+    "name": "Kipngeno Kendrick",
+    "slug": "kipngeno-kendrick",
+    "photo": "/images/interns/kipngeno-kendrick.jpg"
+  },
+  {
+    "name": "Oluwafemi Akinkoye",
+    "slug": "oluwafemi-akinkoye",
+    "photo": "/images/interns/oluwafemi-akinkoye.jpg"
+  },
+  {
+    "name": "Akande Kareemah Ayomide",
+    "slug": "akande-kareemah-ayomide",
+    "photo": "/images/interns/akande-kareemah-ayomide.jpg"
+  },
+  {
+    "name": "Oyindamola Kushimo",
+    "slug": "oyindamola-kushimo",
+    "photo": "/images/interns/oyindamola-kushimo.jpg"
+  },
+  {
+    "name": "Oladejo Abdullateef Babatunde",
+    "slug": "oladejo-abdullateef-babatunde",
+    "photo": "/images/interns/oladejo-abdullateef-babatunde.jpg"
+  },
+  {
+    "name": "Esther Idang",
+    "slug": "esther-idang",
+    "photo": "/images/interns/esther-idang.jpg"
+  },
+  {
+    "name": "Iwuji Chikaodi Edith",
+    "slug": "iwuji-chikaodi-edith",
+    "photo": "/images/interns/iwuji-chikaodi-edith.jpg"
+  },
+  {
+    "name": "Mary Ojo",
+    "slug": "mary-ojo",
+    "photo": "/images/interns/mary-ojo.jpg"
+  },
+  {
+    "name": "Chukwuemeka Oko",
+    "slug": "chukwuemeka-oko",
+    "photo": "/images/interns/chukwuemeka-oko.jpg"
+  },
+  {
+    "name": "Samson Attah Aboh",
+    "slug": "samson-attah-aboh",
+    "photo": "/images/interns/samson-attah-aboh.jpg"
+  },
+  {
+    "name": "Favour Ugochi Ogbonnaya",
+    "slug": "favour-ugochi-ogbonnaya",
+    "photo": "/images/interns/favour-ugochi-ogbonnaya.jpg"
+  },
+  {
+    "name": "Caleb Kimutai",
+    "slug": "caleb-kimutai",
+    "photo": "/images/interns/caleb-kimutai.jpg"
+  },
+  {
+    "name": "Mojisola Oluwatunbi",
+    "slug": "mojisola-oluwatunbi",
+    "photo": "/images/interns/mojisola-oluwatunbi.jpg"
+  },
+  {
+    "name": "Aselemi Kitoye",
+    "slug": "aselemi-kitoye",
+    "photo": "/images/interns/aselemi-kitoye.jpg"
+  },
+  {
+    "name": "Kabiru Soliu",
+    "slug": "kabiru-soliu",
+    "photo": "/images/interns/kabiru-soliu.jpg"
+  },
+  {
+    "name": "Erhuvwrghene Emmanuel Truth",
+    "slug": "erhuvwrghene-emmanuel-truth",
+    "photo": "/images/interns/erhuvwrghene-emmanuel-truth.jpg"
+  },
+  {
+    "name": "Ugboma Chukwunonso Kyrian",
+    "slug": "ugboma-chukwunonso-kyrian",
+    "photo": "/images/interns/ugboma-chukwunonso-kyrian.jpg"
+  },
+  {
+    "name": "Muhammad Ibrahim",
+    "slug": "muhammad-ibrahim",
+    "photo": "/images/interns/muhammad-ibrahim.jpg"
+  },
+  {
+    "name": "Shabnam Qureshi",
+    "slug": "shabnam-qureshi",
+    "photo": "/images/interns/shabnam-qureshi.jpg"
+  },
+  {
+    "name": "Victoria Peter Udoh",
+    "slug": "victoria-peter-udoh",
+    "photo": "/images/interns/victoria-peter-udoh.jpg"
+  },
+  {
+    "name": "Esther Itunuoluwa Adepoju",
+    "slug": "esther-itunuoluwa-adepoju",
+    "photo": "/images/interns/esther-itunuoluwa-adepoju.jpg"
+  },
+  {
+    "name": "Tamera Obiageri Okafor",
+    "slug": "tamera-obiageri-okafor",
+    "photo": "/images/interns/tamera-obiageri-okafor.jpg"
+  },
+  {
+    "name": "Olaniyan Mattew Olayinka",
+    "slug": "olaniyan-mattew-olayinka",
+    "photo": "/images/interns/olaniyan-mattew-olayinka.jpg"
+  },
+  {
+    "name": "Egwu Victor Uche",
+    "slug": "egwu-victor-uche",
+    "photo": "/images/interns/egwu-victor-uche.jpg"
+  },
+  {
+    "name": "Alayo Michael",
+    "slug": "alayo-michael",
+    "photo": "/images/interns/alayo-michael.jpg"
+  },
+  {
+    "name": "Alex M. Mulinge",
+    "slug": "alex-mulinge",
+    "photo": "/images/interns/alex-mulinge.jpg"
+  },
+  {
+    "name": "Etigbue Adaeze Claret",
+    "slug": "etigbue-adaeze-claret",
+    "photo": "/images/interns/etigbue-adaeze-claret.jpg"
+  },
+  {
+    "name": "Akpan Chongmin Edet",
+    "slug": "akpan-chongmin-edet",
+    "photo": "/images/interns/akpan-chongmin-edet.jpg"
+  },
+  {
+    "name": "Esogwa Jubilate Aghachiluru",
+    "slug": "esogwa-jubilate-aghachiluru",
+    "photo": "/images/interns/esogwa-jubilate-aghachiluru.jpg"
+  },
+  {
+    "name": "Omobolanle Rotimi",
+    "slug": "omobolanle-rotimi",
+    "photo": "/images/interns/omobolanle-rotimi.jpg"
+  },
+  {
+    "name": "Rosemary Gift Nelson",
+    "slug": "rosemary-gift-nelson",
+    "photo": "/images/interns/rosemary-gift-nelson.jpg"
+  },
+  {
+    "name": "Adegbite Adeyemi Sodiq",
+    "slug": "adegbite-adeyemi-sodiq",
+    "photo": "/images/interns/adegbite-adeyemi-sodiq.jpg"
+  },
+  {
+    "name": "Opeyemi Kayode Elizabeth",
+    "slug": "opeyemi-kayode-elizabeth",
+    "photo": "/images/interns/opeyemi-kayode-elizabeth.jpg"
+  },
+  {
+    "name": "Michael Ted Ndeda Kibanda",
+    "slug": "michael-ted-ndeda-kibanda",
+    "photo": "/images/interns/michael-ted-ndeda-kibanda.jpg"
+  },
+  {
+    "name": "Ajayi Collins Enesi",
+    "slug": "ajayi-collins-enesi",
+    "photo": "/images/interns/ajayi-collins-enesi.jpg"
+  },
+  {
+    "name": "Mercy David",
+    "slug": "mercy-david",
+    "photo": "/images/interns/mercy-david.jpg"
+  },
+  {
+    "name": "Maryjudith Ogunaka",
+    "slug": "maryjudith-ogunaka",
+    "photo": "/images/interns/maryjudith-ogunaka.jpg"
+  },
+  {
+    "name": "Utibe Eshiet",
+    "slug": "utibe-eshiet",
+    "photo": "/images/interns/utibe-eshiet.jpg"
+  },
+  {
+    "name": "Emmanuel Akeju",
+    "slug": "emmanuel-akeju",
+    "photo": "/images/interns/emmanuel-akeju.jpg"
+  },
+  {
+    "name": "Abdurrahman Bala Bako",
+    "slug": "abdurrahman-bala-bako",
+    "photo": "/images/interns/abdurrahman-bala-bako.jpg"
+  },
+  {
+    "name": "Chinemerem Ndubuisi",
+    "slug": "chinemerem-ndubuisi",
+    "photo": "/images/interns/chinemerem-ndubuisi.jpg"
+  },
+  {
+    "name": "Syed Azlan Shah",
+    "slug": "syed-azlan-shah",
+    "photo": "/images/interns/syed-azlan-shah.jpg"
+  },
+  {
+    "name": "Adedayo Ogunsemoyin",
+    "slug": "adedayo-ogunsemoyin",
+    "photo": "/images/interns/adedayo-ogunsemoyin.jpg"
+  },
+  {
+    "name": "Janet Oluwatosin Michael",
+    "slug": "janet-oluwatosin-michael",
+    "photo": "/images/interns/janet-oluwatosin-michael.jpg"
+  },
+  {
+    "name": "Suzzie Ukpong",
+    "slug": "suzzie-ukpong",
+    "photo": "/images/interns/suzzie-ukpong.jpg"
+  },
+  {
+    "name": "Annet Felly Atemba",
+    "slug": "annet-felly-atemba",
+    "photo": "/images/interns/annet-felly-atemba.jpg"
+  },
+  {
+    "name": "Ubebe Prince",
+    "slug": "ubebe-prince",
+    "photo": "/images/interns/ubebe-prince.jpg"
+  },
+  {
+    "name": "Adaeze Elizabeth Adeteye",
+    "slug": "adaeze-elizabeth-adeteye",
+    "photo": "/images/interns/adaeze-elizabeth-adeteye.jpg"
+  },
+  {
+    "name": "Moshood Bushroh",
+    "slug": "moshood-bushroh",
+    "photo": "/images/interns/moshood-bushroh.jpg"
+  },
+  {
+    "name": "Folayan Olumide",
+    "slug": "folayan-olumide",
+    "photo": "/images/interns/folayan-olumide.jpg"
+  },
+  {
+    "name": "Elizabeth Nyimenka Benson",
+    "slug": "elizabeth-nyimenka-benson",
+    "photo": "/images/interns/elizabeth-nyimenka-benson.jpg"
+  },
+  {
+    "name": "Ogungbire Ayodeji",
+    "slug": "ogungbire-ayodeji",
+    "photo": "/images/interns/ogungbire-ayodeji.jpg"
+  },
+  {
+    "name": "Momina Noor",
+    "slug": "momina-noor",
+    "photo": "/images/interns/momina-noor.jpg"
+  },
+  {
+    "name": "Sellwane Matsheka",
+    "slug": "sellwane-matsheka",
+    "photo": "/images/interns/sellwane-matsheka.jpg"
+  },
+  {
+    "name": "Rwotolara Innocent",
+    "slug": "rwotolara-innocent",
+    "photo": "/images/interns/rwotolara-innocent.jpg"
+  },
+  {
+    "name": "Orji Ogechukwu Confidence",
+    "slug": "orji-ogechukwu-confidence",
+    "photo": "/images/interns/orji-ogechukwu-confidence.jpg"
+  }
+]

@@ -1,6 +1,7 @@
 import Image from "next/image";
+import { interns } from "@/lib/interns";
 
-const photos = [
+const programmePhotos = [
   { src: "/images/programs/ubuntu-bridge.jpg", alt: "Ubuntu Bridge Initiative — powering interns through the training" },
   { src: "/images/hero-2.jpg", alt: "Young people passionate about tech and change" },
   { src: "/images/programs/school-tour.jpg", alt: "Cybersecurity Educational School Tour in secondary schools" },
@@ -11,6 +12,12 @@ const photos = [
   { src: "/images/hero-3.jpg", alt: "Young professionals building careers" },
   { src: "/images/programs/workshops.jpg", alt: "Community Cybersafe Workshops — hands-on training" },
 ];
+
+// Every third tile is an intern headshot once they have been imported.
+const faces = interns.filter((i) => i.photo).slice(0, 8);
+const photos = programmePhotos.flatMap((p, i) =>
+  faces[i] ? [p, { src: faces[i].photo as string, alt: faces[i].name }] : [p]
+);
 
 // Varied widths keep the strip from looking like a uniform carousel.
 const shapes = ["h-56 w-72 rounded-3xl", "h-56 w-56 rounded-3xl", "h-56 w-80 rounded-3xl", "h-56 w-64 rounded-3xl"];
