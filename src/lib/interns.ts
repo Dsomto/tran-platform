@@ -9,6 +9,7 @@ export const interns: Intern[] = data;
 const SPOTLIGHT = [
   "calvin-trammell",
   "nwobodo-chukwuemeka-victor",
+  "samuel-tobi-ogunnusi",
   "bukola-arikawe",
   "quadri-durodola",
   "nathalie-diane-tchoumi-mbiami",
