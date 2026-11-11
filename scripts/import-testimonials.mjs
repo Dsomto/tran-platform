@@ -18,6 +18,9 @@ const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..")
 const tidyWord = (w) =>
   w === w.toUpperCase() || w === w.toLowerCase() ? w.charAt(0).toUpperCase() + w.slice(1).toLowerCase() : w;
 
+// Consented but not used on the site: too short or generic to be a testimonial.
+const EXCLUDE = new Set(["Oluwatosin Deborah Ajinomisan"]);
+
 const out = [];
 for (const block of fs.readFileSync(src, "utf8").split(/^## \d+\.\s*/m).slice(1)) {
   const [head, ...lines] = block.split("\n");
@@ -40,8 +43,9 @@ for (const block of fs.readFileSync(src, "utf8").split(/^## \d+\.\s*/m).slice(1)
         : part
     )
     .join(" · ");
-  if (!quote.length) continue;
-  out.push({ name: head.trim().split(/\s+/).map(tidyWord).join(" "), role, quote });
+  const name = head.trim().split(/\s+/).map(tidyWord).join(" ");
+  if (!quote.length || EXCLUDE.has(name)) continue;
+  out.push({ name, role, quote });
 }
 
 const dest = path.join(ROOT, "src/content/testimonials.json");
