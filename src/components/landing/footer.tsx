@@ -73,7 +73,7 @@ export function Footer() {
 
         <div className="mt-24 flex flex-col gap-4 border-t border-[#2A3858] pt-8 text-sm text-[#9AA7C2] sm:flex-row sm:items-center sm:justify-between">
           <Link href="/" aria-label="UBI homepage" className="inline-flex items-center gap-2.5 text-[#F4F6FB]">
-            <LogoMark size={22} />
+            <LogoMark size={22} tone="dark" />
             <span className="font-medium">Ubuntu Bridge Initiative</span>
           </Link>
           <p>&copy; {new Date().getFullYear()} Ubuntu Bridge Initiative. All rights reserved.</p>

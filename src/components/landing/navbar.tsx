@@ -117,7 +117,6 @@ export function Navbar() {
               className="flex items-center gap-2"
             >
               <LogoMark size={22} />
-              <span className="text-[15px] font-semibold tracking-tight">UBI</span>
             </Link>
           </div>
 

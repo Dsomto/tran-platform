@@ -39,7 +39,7 @@ export function LetterContent({ name, track }: { name: string; track: string }) 
             {/* Letterhead */}
             <div className="flex items-center justify-between mb-10 pb-6 border-b-2 border-gray-800">
               <div className="flex items-center gap-3">
-                <LogoMark size={36} />
+                <LogoMark size={36} tone="light" />
                 <div>
                   <h1 className="text-xl font-bold tracking-tight text-gray-900" style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif" }}>
                     UBI

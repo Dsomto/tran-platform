@@ -159,7 +159,6 @@ export default function AdvancedProgrammeLanding() {
         <div className="max-w-6xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between gap-4">
           <Link href="/" className="flex items-center gap-2.5 shrink-0">
             <LogoMark size={26} />
-            <span className="font-bold tracking-tight text-foreground">UBI</span>
             <span className="hidden sm:inline-flex items-center text-[10px] font-semibold uppercase tracking-[0.14em] text-blue border border-blue/30 rounded-full px-2.5 py-1">
               Advanced
             </span>

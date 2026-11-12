@@ -25,10 +25,7 @@ export default function AuthLayout({
       <div className="relative flex-1 flex flex-col items-center justify-center px-4 py-12">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 mb-8">
-          <LogoMark size={32} />
-          <span className="text-2xl font-bold text-foreground tracking-tight">
-            UBI
-          </span>
+          <LogoMark size={36} />
         </Link>
 
         {/* Card */}

@@ -54,9 +54,9 @@ export const metadata: Metadata = {
       "Break into cybersecurity without paying for it. A free, selective internship for emerging talent. Five foundation stages plus specialist tracks.",
     images: [
       {
-        url: "/apple-touch-icon.svg",
-        width: 180,
-        height: 180,
+        url: "/favicon-512.png",
+        width: 512,
+        height: 512,
         alt: "UBI logo",
       },
     ],
@@ -66,7 +66,7 @@ export const metadata: Metadata = {
     title: "UBI — Free Cybersecurity Internship",
     description:
       "Break into cybersecurity without paying for it. Free, selective internship for emerging talent.",
-    images: ["/apple-touch-icon.svg"],
+    images: ["/favicon-512.png"],
   },
   robots: {
     index: true,
@@ -81,11 +81,11 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "/favicon.svg", type: "image/svg+xml" },
-      { url: "/favicon.png", type: "image/png" },
+      { url: "/favicon.png", type: "image/png", sizes: "64x64" },
+      { url: "/favicon-512.png", type: "image/png", sizes: "512x512" },
     ],
-    apple: "/apple-touch-icon.svg",
-    shortcut: "/favicon.svg",
+    apple: "/apple-touch-icon.png",
+    shortcut: "/favicon.png",
   },
 };
 

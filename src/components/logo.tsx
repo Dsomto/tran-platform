@@ -91,38 +91,42 @@ export function Logo({ className = "", size = 32, color = "#2563EB" }: LogoProps
   );
 }
 
-export function LogoMark({ className = "", size = 24 }: { className?: string; size?: number }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 64 64"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className={className}
+/* The official UBI symbol (built from public/brand/ubi-logo-official.jpg by
+   scripts/build-brand-assets.mjs). `size` is the old square-icon size; the
+   symbol is drawn a little taller than that and about 1.9x as wide.
+   tone: "auto" follows the site theme; "dark" is for always-dark surfaces
+   (the footer); "light" for always-light ones (printed letters). */
+const MARK_RATIO = 300 / 160;
+
+export function LogoMark({
+  className = "",
+  size = 24,
+  tone = "auto",
+}: {
+  className?: string;
+  size?: number;
+  tone?: "auto" | "light" | "dark";
+}) {
+  const height = Math.round(size * 1.2);
+  const width = Math.round(height * MARK_RATIO);
+  const img = (src: string, extra = "") => (
+    // eslint-disable-next-line @next/next/no-img-element -- tiny static PNG, no optimisation needed
+    <img
+      src={src}
+      alt=""
       aria-hidden="true"
-    >
-      <path
-        d="M32 4L56 18V46L32 60L8 46V18L32 4Z"
-        stroke="#2563EB"
-        strokeWidth="4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
-      />
-      <path
-        d="M22 24L30 32L22 40"
-        stroke="#2563EB"
-        strokeWidth="3.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M33 38H42"
-        stroke="#2563EB"
-        strokeWidth="3.5"
-        strokeLinecap="round"
-      />
-    </svg>
+      width={width}
+      height={height}
+      className={`max-w-full object-contain ${extra} ${className}`}
+      style={{ height, width: "auto" }}
+    />
+  );
+  if (tone === "light") return img("/brand/ubi-mark.png");
+  if (tone === "dark") return img("/brand/ubi-mark-dark.png");
+  return (
+    <>
+      {img("/brand/ubi-mark.png", "dark:hidden")}
+      {img("/brand/ubi-mark-dark.png", "hidden dark:block")}
+    </>
   );
 }

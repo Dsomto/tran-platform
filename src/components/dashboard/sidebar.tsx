@@ -157,12 +157,7 @@ export function Sidebar({
       {/* Logo */}
       <div className="h-16 flex items-center px-4 border-b border-border shrink-0">
         <Link href="/" className="flex items-center gap-2.5">
-          <LogoMark size={28} className="shrink-0" />
-          {!collapsed && (
-            <span className="text-lg font-bold text-foreground tracking-tight">
-              <span className="text-blue dark:text-blue-400">UBI</span>
-            </span>
-          )}
+          <LogoMark size={collapsed ? 17 : 26} className="shrink-0" />
         </Link>
       </div>
 
