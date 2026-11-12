@@ -11,7 +11,7 @@ export function CTA() {
       >
         <div>
           <h2 id="cta-heading" className="text-[clamp(2.5rem,5vw,4.5rem)] font-semibold leading-[0.95] tracking-[-0.045em]">
-            Earn your <span className="serif font-normal text-lime">place.</span>
+            Earn your <span className="serif font-normal text-signal">place.</span>
           </h2>
           <p className="mt-6 text-lg text-white/80">It takes about 15 minutes to apply.</p>
           <div className="mt-10 flex flex-wrap items-center gap-5">

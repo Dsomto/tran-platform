@@ -352,7 +352,8 @@
   {
     "name": "Tamera Obiageri Okafor",
     "slug": "tamera-obiageri-okafor",
-    "photo": "/images/interns/tamera-obiageri-okafor.jpg"
+    "photo": "/images/interns/tamera-obiageri-okafor.jpg",
+    "manual": true
   },
   {
     "name": "Olaniyan Mattew Olayinka",
@@ -534,6 +535,36 @@
     "name": "Samuel Tobi Ogunnusi",
     "slug": "samuel-tobi-ogunnusi",
     "photo": "/images/interns/samuel-tobi-ogunnusi.jpg",
+    "manual": true
+  },
+  {
+    "name": "Stephen Adeyemi Adejinmi",
+    "slug": "stephen-adeyemi-adejinmi",
+    "photo": "/images/interns/stephen-adeyemi-adejinmi.jpg",
+    "manual": true
+  },
+  {
+    "name": "Chizzym Marcus",
+    "slug": "chizzym-marcus",
+    "photo": "/images/interns/chizzym-marcus.jpg",
+    "manual": true
+  },
+  {
+    "name": "Najma Omary Mnyange",
+    "slug": "najma-omary-mnyange",
+    "photo": "/images/interns/najma-omary-mnyange.jpg",
+    "manual": true
+  },
+  {
+    "name": "Philip Adeyanju Oyeyemi",
+    "slug": "philip-adeyanju-oyeyemi",
+    "photo": "/images/interns/philip-adeyanju-oyeyemi.jpg",
+    "manual": true
+  },
+  {
+    "name": "Solomon Anamali",
+    "slug": "solomon-anamali",
+    "photo": "/images/interns/solomon-anamali.jpg",
     "manual": true
   }
 ]

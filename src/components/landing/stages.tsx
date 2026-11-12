@@ -50,22 +50,27 @@ export function Stages() {
         const pinned = desktop.matches && !reduce.matches;
         const max = section.offsetHeight - window.innerHeight;
         const p = max > 0 ? Math.min(1, Math.max(0, -section.getBoundingClientRect().top / max)) : 0;
+        section.style.setProperty("--p", p.toFixed(4));
         track.style.transform = pinned ? `translate3d(${-p * Math.max(0, track.scrollWidth - window.innerWidth)}px,0,0)` : "";
 
-        // Light up whichever card sits closest to the middle of the screen.
-        const cx = window.innerWidth / 2;
+        // Pinned: scroll progress picks the card, so the last stage is reached
+        // at the end on any screen width. Otherwise: the card nearest mid-screen.
         const cy = window.innerHeight / 2;
         const cards = track.querySelectorAll<HTMLElement>("[data-stage]");
         let best = 0;
-        let bestDist = Infinity;
-        cards.forEach((card, i) => {
-          const r = card.getBoundingClientRect();
-          const d = pinned ? Math.abs(r.left + r.width / 2 - cx) : Math.abs(r.top + r.height / 2 - cy);
-          if (d < bestDist) {
-            bestDist = d;
-            best = i;
-          }
-        });
+        if (pinned) {
+          best = Math.round(p * (cards.length - 1));
+        } else {
+          let bestDist = Infinity;
+          cards.forEach((card, i) => {
+            const r = card.getBoundingClientRect();
+            const d = Math.abs(r.top + r.height / 2 - cy);
+            if (d < bestDist) {
+              bestDist = d;
+              best = i;
+            }
+          });
+        }
         cards.forEach((card, i) => {
           card.dataset.active = String(i === best);
         });
@@ -77,11 +82,19 @@ export function Stages() {
       measure();
       onScroll();
     });
+    // Re-measure whenever the track's size settles (styles, fonts, images),
+    // not just on first paint, or a too-early read leaves it unpinned.
+    const observer = new ResizeObserver(() => {
+      measure();
+      onScroll();
+    });
+    if (trackRef.current) observer.observe(trackRef.current);
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", measure);
     desktop.addEventListener("change", measure);
     return () => {
       cancelAnimationFrame(raf);
+      observer.disconnect();
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", measure);
       desktop.removeEventListener("change", measure);
@@ -98,10 +111,32 @@ export function Stages() {
       className="relative scroll-mt-20"
       style={pinned ? { height: `calc(100vh + ${distance}px)` } : undefined}
     >
-      <div className={pinned ? "sticky top-0 flex h-screen flex-col justify-center overflow-hidden pt-16" : "py-16"}>
+      <div className={pinned ? "sticky top-0 flex h-screen flex-col justify-center overflow-hidden pt-16" : "overflow-x-auto py-16"}>
+        {pinned && (
+          // Background driven by scroll progress (--p, 0 to 1): a dot field drifting
+          // slower than the cards, and the active stage as a giant outlined numeral.
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
+            <div
+              className="absolute inset-0"
+              style={{
+                backgroundImage: "radial-gradient(color-mix(in oklab, var(--foreground) 16%, transparent) 1px, transparent 1.6px)",
+                backgroundSize: "28px 28px",
+                backgroundPositionX: "calc(var(--p, 0) * -640px)",
+                maskImage: "radial-gradient(ellipse 75% 60% at 50% 55%, #000 25%, transparent 75%)",
+              }}
+            />
+            <span
+              key={active}
+              className="stage-ghost absolute right-[3vw] top-1/2 -translate-y-[46%] select-none text-[70vh] font-semibold leading-none tracking-[-0.08em] text-transparent"
+              style={{ WebkitTextStroke: "2px color-mix(in oklab, var(--foreground) 11%, transparent)" }}
+            >
+              {active}
+            </span>
+          </div>
+        )}
         <ol
           ref={trackRef}
-          className="flex flex-col gap-4 px-5 sm:px-8 lg:w-max lg:flex-row lg:items-center lg:gap-5 lg:pl-[max(2rem,calc((100vw-80rem)/2+2rem))] lg:pr-[40vw] will-change-transform"
+          className="relative z-[1] flex flex-col gap-4 px-5 sm:px-8 lg:w-max lg:flex-row lg:items-center lg:gap-5 lg:pl-[max(2rem,calc((100vw-80rem)/2+2rem))] lg:pr-[max(2rem,calc((100vw-80rem)/2+2rem))] will-change-transform"
           role="list"
         >
           <li className="mb-10 flex max-w-xl flex-col justify-center lg:mb-0 lg:w-[24rem] lg:shrink-0 lg:pr-8">
@@ -159,7 +194,7 @@ export function Stages() {
         </ol>
 
         {pinned && (
-          <div className="mx-auto mt-12 w-full max-w-[80rem] px-8" aria-hidden="true">
+          <div className="relative z-[1] mx-auto mt-12 w-full max-w-[80rem] px-8" aria-hidden="true">
             <div className="relative flex items-center justify-between">
               <div className="absolute inset-x-0 top-1/2 h-px -translate-y-1/2 bg-border" />
               <div

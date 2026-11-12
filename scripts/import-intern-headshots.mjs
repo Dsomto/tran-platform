@@ -35,12 +35,16 @@ const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..")
 const OUT_DIR = path.join(ROOT, "public/images/interns");
 const OUT_JSON = path.join(ROOT, "src/content/interns.json");
 // Photos where the smart crop misses the face: a fixed vertical position
-// (y: 0 = top of the photo, 1 = bottom), optionally zoomed in for full-length shots.
+// (y: 0 = top of the photo, 1 = bottom; x likewise, default centre), optionally
+// zoomed in for full-length shots.
 const CROP = {
   "richard-uwumwonse": { y: 0.12 },
   "alex-mulinge": { y: 0.12 },
-  "tamera-obiageri-okafor": { y: 0.4 },
+  "tamera-obiageri-okafor": { y: 0.06 },
   "sanni-oluwanifemi": { y: 0.36, zoom: 1.6 },
+  "chizzym-marcus": { x: 0.12, y: 0.02, zoom: 1.5 },
+  "najma-omary-mnyange": { y: 0.02, zoom: 1.08 },
+  "solomon-anamali": { x: 0.43, y: 0.38, zoom: 2.05 },
 };
 const IMAGE_EXT = /\.(jpe?g|png|webp|heic|heif|avif|gif|tiff?)$/i;
 
@@ -78,7 +82,7 @@ async function saveSquare(buf, slug) {
   const fix = CROP[slug];
   const side = Math.round(Math.min(w, h) / (fix?.zoom ?? 1));
   const square = fix
-    ? img.extract({ left: Math.round((w - side) / 2), top: Math.round((h - side) * fix.y), width: side, height: side }).resize(640, 640)
+    ? img.extract({ left: Math.round((w - side) * (fix.x ?? 0.5)), top: Math.round((h - side) * fix.y), width: side, height: side }).resize(640, 640)
     : img.resize(640, 640, { fit: "cover", position: sharp.strategy.attention });
   fs.mkdirSync(OUT_DIR, { recursive: true });
   await square.jpeg({ quality: 80, mozjpeg: true }).toFile(path.join(OUT_DIR, `${slug}.jpg`));
@@ -92,7 +96,8 @@ if (single) {
   const slug = slugify(name);
   const photo = await saveSquare(fs.readFileSync(args[2]), slug);
   const entry = previous.find((x) => x.slug === slug);
-  if (entry) entry.photo = photo;
+  // Marked manual so a later full import keeps this photo instead of re-fetching.
+  if (entry) Object.assign(entry, { photo, manual: true });
   else previous.push({ name, slug, photo, manual: true });
   fs.writeFileSync(OUT_JSON, JSON.stringify(previous, null, 2) + "\n");
   console.log(`${entry ? "Updated" : "Added"} ${name} -> ${photo}`);
@@ -146,6 +151,11 @@ const out = [];
 const missing = [];
 for (const p of people) {
   const slug = slugify(p.name);
+  const kept = previous.find((x) => x.slug === slug && x.manual);
+  if (kept) {
+    out.push(kept);
+    continue;
+  }
   let buf = null;
   for (const id of p.ids) if (!buf) buf = await fromDrive(id).catch(() => null);
   if (!buf && folder) buf = fromFolder(p.name);

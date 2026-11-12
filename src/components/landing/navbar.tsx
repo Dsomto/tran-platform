@@ -95,9 +95,9 @@ export function Navbar() {
     <header role="banner" className="fixed inset-x-0 top-0 z-50 px-3 pt-3 sm:px-5">
       <nav
         aria-label="Main navigation"
-        className={`mx-auto max-w-[80rem] rounded-full border text-foreground backdrop-blur-xl transition-colors duration-500 ${
+        className={`mx-auto max-w-[80rem] border text-foreground backdrop-blur-xl transition-colors duration-500 ${
           scrolled || isOpen ? "border-border bg-background/85 shadow-[0_20px_50px_-24px_rgba(15,23,42,.45)]" : "border-transparent bg-transparent"
-        } ${isOpen ? "rounded-3xl" : ""}`}
+        } ${isOpen ? "rounded-3xl" : "rounded-full"}`}
       >
         <div className="relative flex h-14 items-center justify-between pl-4 pr-2 sm:pl-5">
           <div className="flex items-center gap-2">

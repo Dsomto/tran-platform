@@ -558,7 +558,7 @@ export function VolunteerPage() {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-full bg-foreground px-6 py-4 text-sm font-semibold text-foreground transition-colors hover:bg-foreground cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-full bg-foreground px-6 py-4 text-sm font-semibold text-background transition-colors hover:bg-signal hover:text-ink cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Handshake className="h-4 w-4" />}
                   {submitting ? "Submitting application" : "Submit volunteer application"}

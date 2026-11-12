@@ -73,6 +73,7 @@
   --emerald: #059669;
   --danger: #DC2626;
   --pattern: rgba(16, 24, 40, 0.11);
+  --torch: rgba(59, 108, 255, 0.7);
   color: var(--foreground);
   background-color: var(--background);
 }
@@ -93,6 +94,7 @@
   --emerald: #6EE7B7;
   --danger: #F87171;
   --pattern: rgba(198, 242, 78, 0.11);
+  --torch: rgba(198, 242, 78, 0.75);
   color-scheme: dark;
 }
 
@@ -111,6 +113,25 @@
   mask-composite: intersect;
   -webkit-mask-size: 64px 64px, 100% 100%;
 }
+/* Pattern torch: the same kente tile, lit in colour in a circle that follows
+   the mouse (see <PatternTorch />). Unlike .site-bg it is not faded out in the
+   middle, so moving over the content reveals the weave underneath. */
+.site-torch {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-color: var(--torch);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64' fill='none' stroke='black' stroke-width='1'%3E%3Cpath d='M0 7 8 2l8 5 8-5 8 5 8-5 8 5 8-5 8 5'/%3E%3Cpath d='M0 57l8 5 8-5 8 5 8-5 8 5 8-5 8 5 8-5'/%3E%3Cpath d='M32 18 46 32 32 46 18 32Z'/%3E%3Cpath d='M32 26 38 32 32 38 26 32Z' fill='black'/%3E%3Cpath d='M0 32h12M52 32h12M32 12v2M32 50v2'/%3E%3C/svg%3E"), radial-gradient(circle var(--tr, 190px) at var(--mx, -999px) var(--my, -999px), #000 0%, rgba(0, 0, 0, 0.35) 45%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64' fill='none' stroke='black' stroke-width='1'%3E%3Cpath d='M0 7 8 2l8 5 8-5 8 5 8-5 8 5 8-5 8 5'/%3E%3Cpath d='M0 57l8 5 8-5 8 5 8-5 8 5 8-5 8 5 8-5'/%3E%3Cpath d='M32 18 46 32 32 46 18 32Z'/%3E%3Cpath d='M32 26 38 32 32 38 26 32Z' fill='black'/%3E%3Cpath d='M0 32h12M52 32h12M32 12v2M32 50v2'/%3E%3C/svg%3E"), radial-gradient(circle var(--tr, 190px) at var(--mx, -999px) var(--my, -999px), #000 0%, rgba(0, 0, 0, 0.35) 45%, transparent 100%);
+  mask-size: 64px 64px, 100% 100%;
+  -webkit-mask-size: 64px 64px, 100% 100%;
+  mask-composite: intersect;
+}
+.site-torch.is-on { opacity: 1; }
 .site > main, .site > footer { position: relative; z-index: 1; }
 
 /* Film grain — keeps the dark from feeling flat and synthetic. */
@@ -177,6 +198,10 @@
 .site .pop-3 { animation-delay: 0.3s; }
 @keyframes ubi-pop { from { opacity: 0; transform: scale(0.94); } to { opacity: 1; transform: none; } }
 
+/* Stages: ghost numeral swaps in as each stage becomes active */
+.site .stage-ghost { animation: ubi-ghost 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+@keyframes ubi-ghost { from { opacity: 0; transform: translateY(8%) scale(0.94); } to { opacity: 1; transform: none; } }
+
 
 /* Photo film strip */
 .site .film { animation: ubi-film 70s linear infinite; }
@@ -197,6 +222,7 @@
   .site .rise,
   .site .line-mask > span,
   .site .film,
+  .site .stage-ghost,
   .site .pop { animation: none; }
 }
 

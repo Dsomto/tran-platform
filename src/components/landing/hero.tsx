@@ -15,7 +15,7 @@ export function Hero({ stats }: { stats: LandingStats }) {
         <div>
           <p className="rise inline-flex items-center gap-2 rounded-full bg-surface px-4 py-2 text-sm text-foreground-muted">
             <span className="h-2 w-2 rounded-full bg-signal" aria-hidden="true" />
-            Cohort 2026 · Applications open
+            Next cohort · Applications coming soon
           </p>
           <h1
             id="hero-heading"
