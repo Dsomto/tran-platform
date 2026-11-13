@@ -1,0 +1,17 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Ubuntu Bridge Initiative//Cohort One Closing Ceremony//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VEVENT
+UID:cohort-one-closing-ceremony-20261114@ubuntubridgeinitiatives.org
+DTSTAMP:20261113T080000Z
+DTSTART:20261114T160000Z
+DTEND:20261114T180000Z
+SUMMARY:UBI Cohort One Closing Ceremony
+DESCRIPTION:Celebrate Ubuntu Bridge Initiative Cohort One with awards, finalist projects, programme impact, and next steps. Join: https://meet.google.com/bvt-ahtb-dew
+LOCATION:https://meet.google.com/bvt-ahtb-dew
+URL:https://meet.google.com/bvt-ahtb-dew
+STATUS:CONFIRMED
+END:VEVENT
+END:VCALENDAR
