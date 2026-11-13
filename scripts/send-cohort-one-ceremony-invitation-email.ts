@@ -7,6 +7,7 @@ config({ path: ".env.local", override: true, quiet: true });
 const prisma = new PrismaClient();
 const RELEASE_ID = "cohort-one-closing-ceremony-2026-11-14";
 const FROM = "Somto from UBI <noreply@ubuntubridgeinitiatives.org>";
+const SUBJECT = "Tomorrow: UBI Cohort One Closing Ceremony";
 const EXPECTED_RECIPIENTS = 506;
 const INTERVAL_MS = 1100;
 const LOCK_REFRESH_MS = 60_000;
@@ -36,7 +37,7 @@ async function main(): Promise<void> {
   if (!apiKey) throw new Error("Resend API key is not configured.");
 
   const all = await prisma.emailQueueItem.findMany({
-    where: { status: { in: ["PENDING", "SENT", "FAILED"] } },
+    where: { subject: SUBJECT, status: { in: ["PENDING", "SENT", "FAILED"] } },
     orderBy: { enqueuedAt: "asc" },
   });
   const release = all.filter((item) => belongsToRelease(item.context));
@@ -57,15 +58,20 @@ async function main(): Promise<void> {
   }
 
   const pendingIds = pending.map((item) => item.id);
+  const leaseAt = new Date();
   const claimed = await prisma.emailQueueItem.updateMany({
     where: {
       id: { in: pendingIds },
       status: "PENDING",
       OR: [{ lockedAt: null }, { lockedAt: { isSet: false } }],
     },
-    data: { lockedAt: new Date() },
+    data: { lockedAt: leaseAt },
   });
   if (claimed.count !== pendingIds.length) {
+    await prisma.emailQueueItem.updateMany({
+      where: { id: { in: pendingIds }, status: "PENDING", lockedAt: leaseAt },
+      data: { lockedAt: null },
+    });
     throw new Error(`Claimed ${claimed.count} of ${pendingIds.length}; another sender changed the queue.`);
   }
 
@@ -118,7 +124,7 @@ async function main(): Promise<void> {
   });
 
   const after = await prisma.emailQueueItem.findMany({
-    where: { status: { in: ["PENDING", "SENT", "FAILED"] } },
+    where: { subject: SUBJECT, status: { in: ["PENDING", "SENT", "FAILED"] } },
     select: { status: true, context: true },
   });
   const finalRelease = after.filter((item) => belongsToRelease(item.context));
