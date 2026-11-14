@@ -76,7 +76,10 @@ export function Footer() {
             <LogoMark size={22} tone="dark" />
             <span className="font-medium">Ubuntu Bridge Initiative</span>
           </Link>
-          <p>&copy; {new Date().getFullYear()} Ubuntu Bridge Initiative. All rights reserved.</p>
+          <div className="sm:text-right">
+            <p>Founded by Okoma Somto and Quadri Omoloju.</p>
+            <p className="mt-1">&copy; {new Date().getFullYear()} Ubuntu Bridge Initiative. All rights reserved.</p>
+          </div>
         </div>
       </div>
     </footer>

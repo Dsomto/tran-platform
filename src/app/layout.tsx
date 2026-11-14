@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     template: "%s · UBI",
   },
   description:
-    "A free, selective cybersecurity internship for emerging talent. Five foundation stages, three specialist tracks — SOC, Ethical Hacking, and GRC. Real breaches, no tuition, no hidden fees.",
+    "Ubuntu Bridge Initiative (UBI), founded by Okoma Somto and Quadri Omoloju: a free, selective cybersecurity internship in SOC, Ethical Hacking and GRC. Real breaches, no fees.",
   keywords: [
     "cybersecurity internship",
     "free cybersecurity training",
@@ -36,10 +36,15 @@ export const metadata: Metadata = {
     "GRC compliance training",
     "penetration testing",
     "Ubuntu Bridge Initiative",
+    "Ubuntu Bridge Initiatives",
     "UBI",
+    "Okoma Somto",
+    "Okoma Somtochukwu",
+    "Quadri Omoloju",
+    "UBI founders",
   ],
-  authors: [{ name: "Ubuntu Bridge Initiative" }],
-  creator: "Ubuntu Bridge Initiative",
+  authors: [{ name: "Okoma Somto" }, { name: "Quadri Omoloju" }],
+  creator: "Okoma Somto",
   publisher: "Ubuntu Bridge Initiative",
   alternates: {
     canonical: "/",
@@ -51,7 +56,7 @@ export const metadata: Metadata = {
     siteName: "Ubuntu Bridge Initiative",
     title: "UBI — Free Cybersecurity Internship",
     description:
-      "Break into cybersecurity without paying for it. A free, selective internship for emerging talent. Five foundation stages plus specialist tracks.",
+      "Break into cybersecurity without paying for it. A free, selective internship founded by Okoma Somto and Quadri Omoloju.",
     images: [
       {
         url: "/favicon-512.png",
@@ -65,7 +70,7 @@ export const metadata: Metadata = {
     card: "summary",
     title: "UBI — Free Cybersecurity Internship",
     description:
-      "Break into cybersecurity without paying for it. Free, selective internship for emerging talent.",
+      "Break into cybersecurity without paying for it. A free, selective internship founded by Okoma Somto and Quadri Omoloju.",
     images: ["/favicon-512.png"],
   },
   robots: {
@@ -89,6 +94,50 @@ export const metadata: Metadata = {
   },
 };
 
+// Structured data for search engines: the organisation and the two people
+// who founded it, so a search for either founder surfaces UBI (and vice versa).
+const SITE = "https://ubuntubridgeinitiatives.org";
+const OKOMA = {
+  "@type": "Person",
+  "@id": `${SITE}/#okoma-somto`,
+  name: "Okoma Somto",
+  alternateName: ["Okoma Somtochukwu", "Somto Okoma"],
+  jobTitle: "Co-founder & Head of Programme",
+  worksFor: { "@id": `${SITE}/#organization` },
+};
+const QUADRI = {
+  "@type": "Person",
+  "@id": `${SITE}/#quadri-omoloju`,
+  name: "Quadri Omoloju",
+  jobTitle: "Co-founder",
+  worksFor: { "@id": `${SITE}/#organization` },
+};
+const STRUCTURED_DATA = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "EducationalOrganization",
+      "@id": `${SITE}/#organization`,
+      name: "Ubuntu Bridge Initiative",
+      alternateName: ["UBI", "Ubuntu Bridge Initiatives"],
+      url: SITE,
+      logo: `${SITE}/brand/ubi-lockup.png`,
+      description:
+        "A free, selective cybersecurity internship founded by Okoma Somto and Quadri Omoloju, training emerging talent in SOC analysis, ethical hacking and GRC.",
+      founder: [OKOMA, QUADRI],
+      employee: [{ "@id": OKOMA["@id"] }, { "@id": QUADRI["@id"] }],
+    },
+    {
+      "@type": "WebSite",
+      "@id": `${SITE}/#website`,
+      url: SITE,
+      name: "Ubuntu Bridge Initiative",
+      publisher: { "@id": `${SITE}/#organization` },
+      creator: { "@id": OKOMA["@id"] },
+    },
+  ],
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -107,6 +156,10 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: `(function(){try{var t=localStorage.getItem('theme');var d=t?t==='dark':window.matchMedia('(prefers-color-scheme: dark)').matches;var e=document.documentElement;if(d){e.classList.add('dark');}else{e.classList.remove('dark');}}catch(e){}})();`,
           }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(STRUCTURED_DATA) }}
         />
         {children}
       </body>
